@@ -25,10 +25,34 @@ without "always tails" (a composition); heads = 1, tails = 0 (to ℕ); the order
 * In Mathlib v4.34, `PMF.bernoulli` is deprecated in favour of `ProbabilityTheory.bernoulliMeasure`;
   the proofs still use `PMF` (they work with both versions).
 
+## Lean as the referee
+
+The game is built on the journal's `DiscreteMeasure` (`coin p` with `p : unitInterval`, its
+complement `σ p`, `binom`, `LawfulMonad`). After each move the game asks Lean for the normal form of
+the state: the moves played as a `DiscreteMeasure`, e.g. `((coin p).map not).map Bool.toNat`,
+simplified with `#simp only [rules]`; the rules of world 1 are `Lean/World1.lean` and lemmas of
+`DiscreteMeasure` (`coin_not'`, `map_pure`). The normal form is shown below the board
+(`map Bool.toNat (coin (σ p))`), and a level is solved when the sand fills the target and Lean gives
+the state and the target the same normal form, so that it holds for every `p`. Different correct
+ways to the target lead to the same normal form; a wrong one does not.
+
+Lean runs in the bridge of nng-verso (`repl/bridge.py`, `/simp`), on the Lean REPL, with
+`DiscreteMeasure` as its base:
+
+```bash
+cd ~/Code/lean/journal && BASE="import Journal.Notes.DiscreteMeasure.Thinning" \
+  REPL=~/Code/lean/repl-v4.34/.lake/build/bin/repl python3 -I ~/Code/lean/verso_game/repl/bridge.py 8091
+# then the site with ?backend=http://127.0.0.1:8091
+```
+
+Without the bridge the sand still plays, for the example `p = 1/3`, with a note that Lean is not
+connected. (The REPL with all of Mathlib loaded needs about 7 GB; `DiscreteMeasure` imports all of
+Mathlib, and importing only what it needs would make that much smaller.)
+
 ## Building
 
 ```bash
 lake build && lake exe probgame          # writes the site to _out/html-multi
 cd _out/html-multi && python3 -m http.server 8004
-./check-proofs.sh                        # the Lean statements of the levels
+./check-proofs.sh                        # the Lean statements of the levels, and the rules
 ```

@@ -31,7 +31,7 @@ sehen, woher ihr Sand kommt.
 Bring den Sand in die gestrichelte Form des Ziels.
 :::
 
-::::level (start := "bernoulli 1/3") (target := "bernoulli 2/3") (moves := "not") (lean := "(bernoulli p h).map not = bernoulli (1 - p) tsub_le_self")
+::::level (start := "bernoulli 1/3") (target := "bernoulli 2/3") (moves := "not") (lean := "(bernoulli p h).map not = bernoulli (1 - p) tsub_le_self") (leanTarget := "coin (σ p)")
 :::en
 *Flip the coin.* Heads becomes tails and tails heads: the two columns swap.
 :::
@@ -41,7 +41,7 @@ Bring den Sand in die gestrichelte Form des Ziels.
 :::
 ::::
 
-::::level (start := "bernoulli 1/3") (target := "pure true") (moves := "not, heads, tails") (lean := "(bernoulli p h).map (fun _ => true) = pure true")
+::::level (start := "bernoulli 1/3") (target := "pure true") (moves := "not, heads, tails") (lean := "(bernoulli p h).map (fun _ => true) = pure true") (leanTarget := "DiscreteMeasure.pure true")
 :::en
 *Always heads.* A constant map sends both outcomes to the same point: all the sand flows together.
 The result is sure, a point mass (Dirac measure).
@@ -53,7 +53,7 @@ fließt zusammen. Das Ergebnis ist sicher, eine Punktmasse (Dirac-Maß).
 :::
 ::::
 
-::::level (start := "bernoulli 1/3") (target := "pure false") (moves := "not, heads") (lean := "((bernoulli p h).map (fun _ => true)).map not = pure false")
+::::level (start := "bernoulli 1/3") (target := "pure false") (moves := "not, heads") (lean := "((bernoulli p h).map (fun _ => true)).map not = pure false") (leanTarget := "DiscreteMeasure.pure false")
 :::en
 *Surely tails, but there is no “always tails”.* Two moves one after the other: the image measure of
 the image measure is the image measure of the composition, $`(P \circ f^{-1}) \circ g^{-1} = P \circ (g \circ f)^{-1}`.
@@ -65,7 +65,7 @@ das Bildmaß der Verkettung, $`(P \circ f^{-1}) \circ g^{-1} = P \circ (g \circ 
 :::
 ::::
 
-::::level (start := "bernoulli 1/3") (target := "nat 1:1/3 0:2/3") (moves := "not, toNat") (lean := "(bernoulli p h).map Bool.toNat 1 = p")
+::::level (start := "bernoulli 1/3") (target := "nat 1:1/3 0:2/3") (moves := "not, toNat") (lean := "(bernoulli p h).map Bool.toNat 1 = p") (leanTarget := "map Bool.toNat (coin p)")
 :::en
 *From sides to numbers.* Count heads as $`1` and tails as $`0`: the distribution moves to the natural
 numbers. This is how a coin becomes a random number.
@@ -77,7 +77,7 @@ natürlichen Zahlen. So wird aus einer Münze eine Zufallszahl.
 :::
 ::::
 
-::::level (start := "bernoulli 1/3") (target := "nat 1:2/3 0:1/3") (moves := "not, toNat") (lean := "((bernoulli p h).map not).map Bool.toNat 1 = 1 - p")
+::::level (start := "bernoulli 1/3") (target := "nat 1:2/3 0:1/3") (moves := "not, toNat") (lean := "((bernoulli p h).map not).map Bool.toNat 1 = 1 - p") (leanTarget := "map Bool.toNat (coin (σ p))")
 :::en
 *The order matters.* Once the coin has become a number, it cannot be flipped any more.
 :::
@@ -87,7 +87,7 @@ natürlichen Zahlen. So wird aus einer Münze eine Zufallszahl.
 :::
 ::::
 
-::::level (start := "bernoulli 1/3") (target := "int 5:1/3 -2:2/3") (moves := "not, toNat, payoff 5 -2") (lean := "(bernoulli p h).map (fun b => if b then (5 : ℤ) else -2) 5 = p")
+::::level (start := "bernoulli 1/3") (target := "int 5:1/3 -2:2/3") (moves := "not, toNat, payoff 5 -2") (lean := "(bernoulli p h).map (fun b => if b then (5 : ℤ) else -2) 5 = p") (leanTarget := "map (fun b => if b = true then (5 : ℤ) else -2) (coin p)")
 :::en
 *A bet.* Heads wins 5 euros, tails loses 2. The image measure is the distribution of your gain.
 :::
@@ -98,7 +98,7 @@ deines Gewinns.
 :::
 ::::
 
-::::level (start := "bernoulli 1/3") (target := "int 5:2/3 -2:1/3") (moves := "not, toNat, payoff 5 -2") (lean := "((bernoulli p h).map not).map (fun b => if b then (5 : ℤ) else -2) 5 = 1 - p")
+::::level (start := "bernoulli 1/3") (target := "int 5:2/3 -2:1/3") (moves := "not, toNat, payoff 5 -2") (lean := "((bernoulli p h).map not).map (fun b => if b then (5 : ℤ) else -2) 5 = 1 - p") (leanTarget := "map (fun b => if b = true then (5 : ℤ) else -2) (coin (σ p))")
 :::en
 *A better bet.* Make winning the likely outcome.
 :::
@@ -108,7 +108,7 @@ deines Gewinns.
 :::
 ::::
 
-::::level (start := "bernoulli 1/3") (target := "nat 0:1") (moves := "not, heads, tails, toNat") (lean := "((bernoulli p h).map (fun _ => false)).map Bool.toNat = pure 0")
+::::level (start := "bernoulli 1/3") (target := "nat 0:1") (moves := "not, heads, tails, toNat") (lean := "((bernoulli p h).map (fun _ => false)).map Bool.toNat = pure 0") (leanTarget := "DiscreteMeasure.pure 0")
 :::en
 *Surely zero.* A point mass on the numbers, however you get there.
 :::

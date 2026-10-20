@@ -23,7 +23,9 @@
     '{b}: the sand comes from {from}, P = {sum}{m}': '{b}: Der Sand kommt aus {from}, P = {sum}{m}',
     'flip': 'umdrehen', 'always heads': 'immer Kopf', 'always tails': 'immer Zahl', 'do nothing': 'nichts tun',
     'heads = 1, tails = 0': 'Kopf = 1, Zahl = 0', 'heads: win {a}, tails: {b}': 'Kopf: {a} gewinnen, Zahl: {b}',
-    'the start': 'der Anfang',
+    'the start': 'der Anfang', 'Lean:': 'Lean:', 'Lean is not connected: only the example p = 1/3 is checked.': 'Lean ist nicht verbunden: geprüft ist nur das Beispiel p = 1/3.',
+    'confirmed by Lean, for every p': 'von Lean bestätigt, für jedes p', 'Lean is normalising …': 'Lean normalisiert …',
+    'Lean disagrees: the target is': 'Lean widerspricht: Das Ziel ist',
   }
   const tr = (s, vars = {}) => (LANG === 'de' ? DE[s] ?? s : s).replace(/\{(\w+)\}/g, (_, k) => vars[k])
   const applyLang = () => {
@@ -42,6 +44,31 @@
     for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v)
     if (text !== undefined) e.textContent = text
     return e
+  }
+
+  // ---------------------------------------------------------------- Lean
+
+  // A backend with Lean (repl/bridge.py of nng-verso, with the journal's DiscreteMeasure as base):
+  // `?backend=http://127.0.0.1:8091` in the address (kept; `?backend=` switches it off). After each
+  // move it normalises the state with the rules of the world; a level is solved when the state and
+  // the target have the same normal form, for every p.
+  const BACKEND = (() => {
+    try {
+      const q = new URLSearchParams(location.search).get('backend')
+      if (q !== null) { if (q) localStorage.setItem('pg:backend', q); else localStorage.removeItem('pg:backend') }
+      return localStorage.getItem('pg:backend')
+    } catch { return null }
+  })()
+  const RULES = "coin_not', unitInterval.symm_symm, ProbGame.coin_map_const, ProbGame.map_fun_id, map_pure, Bool.not_true, Bool.not_false, Bool.toNat_true, Bool.toNat_false"
+  const normalForms = new Map()
+  // the normal form of a Lean expression (a promise of { result } or { error })
+  const normalise = (context, expr) => {
+    if (!BACKEND) return Promise.resolve({ error: { message: 'no backend' } })
+    if (!normalForms.has(expr))
+      normalForms.set(expr, fetch(BACKEND.replace(/\/$/, '') + '/simp', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ context, open: 'MeasureTheory DiscreteMeasure unitInterval', vars: '(p : unitInterval)', rules: RULES, expr }) })
+        .then(r => r.json()).catch(e => ({ error: { message: String(e) } })))
+    return normalForms.get(expr)
   }
 
   // ---------------------------------------------------------------- exact fractions
@@ -129,6 +156,12 @@
       this.picked = null
       this.board = root.querySelector('.pg-board')
       this.key = `pg:${location.pathname}:${index}`
+      this.context = root.dataset.context ?? ''
+      this.leanStart = root.dataset.leanStart || 'coin p'
+      this.leanTarget = root.dataset.leanTarget
+      this.leanNow = null; this.leanGoal = null
+      if (this.leanTarget) normalise(this.context, this.leanTarget).then(r => { this.leanGoal = r; this.render() })
+      this.updateLean()
       this.render()
     }
 
@@ -139,6 +172,23 @@
       const ks = [...dist.mass.keys()]
       if (dist.space === this.target.space) ks.push(...this.target.mass.keys())
       return axis(dist.space, ks)
+    }
+
+    // the moves played, as a DiscreteMeasure, normalised by Lean
+    leanState() {
+      let e = this.leanStart
+      for (const s of this.steps) e = `(${e}).map ${s.move.lean}`
+      return e
+    }
+    updateLean() {
+      const expr = this.leanState()
+      this.leanNow = null
+      normalise(this.context, expr).then(r => { if (this.leanState() === expr) { this.leanNow = r; this.render(); this.check() } })
+    }
+    // whether Lean agrees: null while it is asked or not connected
+    leanAgrees() {
+      if (!BACKEND || !this.leanTarget || !this.leanNow?.result || !this.leanGoal?.result) return null
+      return this.leanNow.result === this.leanGoal.result
     }
 
     leanExpr() {
@@ -154,13 +204,17 @@
       const before = this.dist, after = push(before, move)
       this.steps.push({ move, before })
       this.picked = null
+      this.updateLean()
       this.animate(before, after, move, () => { this.dist = after; this.render(); this.check() })
     }
-    undo() { if (this.animating || !this.steps.length) return; this.dist = this.steps.pop().before; this.picked = null; this.render() }
-    reset() { if (this.animating) return; this.steps = []; this.dist = this.start; this.picked = null; this.render() }
+    undo() { if (this.animating || !this.steps.length) return; this.dist = this.steps.pop().before; this.picked = null; this.updateLean(); this.render() }
+    reset() { if (this.animating) return; this.steps = []; this.dist = this.start; this.picked = null; this.updateLean(); this.render() }
+
+    // solved: the sand is the target, and Lean agrees (if it is connected)
+    get done() { return sameDist(this.dist, this.target) && this.leanAgrees() !== false && (!BACKEND || !this.leanTarget || this.leanAgrees() === true) }
 
     check() {
-      if (!sameDist(this.dist, this.target)) return
+      if (this.animating || !this.done) return
       const first = !this.solved
       try { localStorage.setItem(this.key, '1') } catch {}
       this.render()
@@ -201,7 +255,7 @@
 
     render() {
       const d = this.dist, keys = this.keys(), xs = layout(keys)
-      const done = sameDist(d, this.target)
+      const done = this.done
       const s = svg('svg', { viewBox: `0 0 ${W} 300`, class: 'pg-svg' + (done ? ' pg-done' : '') })
       const defs = svg('defs')
       const mk = svg('marker', { id: 'pg-head', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' })
@@ -258,13 +312,25 @@
       } else this.info.textContent = tr('Tap a column to see where its sand came from.')
 
       const lean = el('pre', 'pg-lean', this.leanExpr())
-      const parts = [s, this.info, el('div', 'pg-moves-head', tr('Moves')), moves, tools, lean]
+      // what Lean makes of the state: its normal form
+      const ln = el('div', 'pg-lean-state')
+      if (!BACKEND) ln.textContent = tr('Lean is not connected: only the example p = 1/3 is checked.')
+      else if (!this.leanNow) ln.textContent = tr('Lean is normalising …')
+      else if (this.leanNow.error) ln.textContent = `Lean: ${this.leanNow.error.message}`
+      else {
+        ln.append(el('span', 'pg-lean-label', tr('Lean:') + ' '), el('code', '', this.leanNow.result))
+        if (sameDist(d, this.target) && this.leanAgrees() === false) ln.append(el('div', 'pg-warn', `${tr('Lean disagrees: the target is')} ${this.leanGoal.result}`))
+      }
+      const parts = [s, this.info, ln, el('div', 'pg-moves-head', tr('Moves')), moves, tools, lean]
       if (done) {
         const box = el('div', 'pg-solved')
-        box.append(el('div', 'pg-solved-head', '✓ ' + tr('Solved!')))
-        if (this.leanStatement) {
+        box.append(el('div', 'pg-solved-head', '✓ ' + tr('Solved!') + (this.leanAgrees() ? ` (${tr('confirmed by Lean, for every p')})` : '')))
+        // what Lean has confirmed: the moves played are the target, for every p (or, without Lean, the
+        // statement of the level, proved in Proofs/)
+        const statement = this.leanAgrees() ? `${this.leanState()} = ${this.leanGoal.result}` : this.leanStatement
+        if (statement) {
           box.append(el('div', 'pg-solved-lean-head', tr('In Lean, for every p:')))
-          box.append(el('pre', 'pg-lean', this.leanStatement))
+          box.append(el('pre', 'pg-lean', statement))
         }
         const next = el('button', 'pg-next', tr('Next level ›'))
         next.type = 'button'

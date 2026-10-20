@@ -34,17 +34,23 @@ namespace ProbGame
 
 def gameJs : String := include_str "game.js"
 def gameCss : String := include_str "game.css"
+/-- The rules of world 1, the context in which Lean normalises the state after each move. -/
+def world1Rules : String := include_str "../Lean/World1.lean"
 
--- A level: the distribution at the start, the target, the moves offered, and the Lean statement.
-block_extension Block.level (start target moves lean : String) where
-  data := Json.mkObj [("start", start), ("target", target), ("moves", moves), ("lean", lean)]
+-- A level: the distribution at the start, the target, the moves offered, and the Lean statement;
+-- `leanStart` and `leanTarget` are the start and the target as `DiscreteMeasure`s, which Lean
+-- compares after normalising them with the rules of the world (`context`).
+block_extension Block.level (start target moves lean leanStart leanTarget : String) where
+  data := Json.mkObj [("start", start), ("target", target), ("moves", moves), ("lean", lean),
+    ("leanStart", leanStart), ("leanTarget", leanTarget)]
   traverse _ _ _ := pure none
   extraJs := {JS.mk gameJs}
   extraCss := {CSS.mk gameCss}
   toHtml := some fun _ goB _ data content => do
     let get (k : String) := (data.getObjValAs? String k).toOption.getD ""
     pure <| .tag "div" #[("class", "pg-level"), ("data-start", get "start"), ("data-target", get "target"),
-        ("data-moves", get "moves"), ("data-lean", get "lean")] <|
+        ("data-moves", get "moves"), ("data-lean", get "lean"), ("data-lean-start", get "leanStart"),
+        ("data-lean-target", get "leanTarget"), ("data-context", world1Rules)] <|
       .seq #[.tag "div" #[("class", "pg-text")] (← content.mapM goB), .tag "div" #[("class", "pg-board")] .empty]
   toTeX := none
 
@@ -53,17 +59,21 @@ structure LevelConfig where
   target : String
   moves : String
   lean : String
+  leanStart : String
+  leanTarget : String
 
 instance : FromArgs LevelConfig DocElabM where
   fromArgs := LevelConfig.mk <$> .named `start .string false <*> .named `target .string false <*>
-    .named `moves .string false <*> .namedD `lean .string ""
+    .named `moves .string false <*> .namedD `lean .string "" <*> .namedD `leanStart .string "coin p" <*>
+    .namedD `leanTarget .string ""
 
 /-- A level of the probability game; see the module documentation. -/
 @[directive]
 def level : DirectiveExpanderOf LevelConfig
   | cfg, contents => do
     let blocks ← contents.mapM elabBlock
-    ``(Verso.Doc.Block.other (Block.level $(quote cfg.start) $(quote cfg.target) $(quote cfg.moves) $(quote cfg.lean))
+    ``(Verso.Doc.Block.other (Block.level $(quote cfg.start) $(quote cfg.target) $(quote cfg.moves) $(quote cfg.lean)
+        $(quote cfg.leanStart) $(quote cfg.leanTarget))
         #[$blocks,*])
 
 -- Text in one language: `:::en` and `:::de`; `game.js` shows the language chosen.
