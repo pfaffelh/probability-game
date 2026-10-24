@@ -1,8 +1,9 @@
 // The probability game: distributions as sand, moves as maps, the result as the image measure.
 //
 // Each `.pg-level` (from `::::level` in ProbGame/Level.lean) has a start distribution, a target and
-// the moves offered. A distribution is a space ('bool', 'nat', 'int') with masses (exact fractions)
-// on its points; a move is a map, and applying it pushes the distribution forward: the sand of each
+// the moves offered. A distribution is a space ('bool', 'nat', 'int') with masses a + b·p (exact
+// fractions a, b: the same for every p) on its points; the picture draws them for an example p,
+// which a slider changes; a move is a map, and applying it pushes the distribution forward: the sand of each
 // point flows to its image (animated), where it piles up with the sand of the other points of the
 // same image. A tapped column shows its preimage. The level is solved when the distribution is the
 // target; its Lean statement (for every p) is then shown. A world page shows one level at a time,
@@ -23,9 +24,12 @@
     '{b}: the sand comes from {from}, P = {sum}{m}': '{b}: Der Sand kommt aus {from}, P = {sum}{m}',
     'flip': 'umdrehen', 'always heads': 'immer Kopf', 'always tails': 'immer Zahl', 'do nothing': 'nichts tun',
     'heads = 1, tails = 0': 'Kopf = 1, Zahl = 0', 'heads: win {a}, tails: {b}': 'Kopf: {a} gewinnen, Zahl: {b}',
-    'the start': 'der Anfang', 'Lean:': 'Lean:', 'Lean is not connected: only the example p = 1/3 is checked.': 'Lean ist nicht verbunden: geprüft ist nur das Beispiel p = 1/3.',
+    'the start': 'der Anfang', 'Lean:': 'Lean:',
     'confirmed by Lean, for every p': 'von Lean bestätigt, für jedes p', 'Lean is normalising …': 'Lean normalisiert …',
     'Lean disagrees: the target is': 'Lean widerspricht: Das Ziel ist',
+    'Lean is not connected: the board checks for every p by itself, without Lean.': 'Lean ist nicht verbunden: Das Spielfeld prüft selbst, für jedes p, aber ohne Lean.',
+    'Task: bring the sand into the shape of the target:': 'Aufgabe: Bring den Sand in die Form des Ziels:',
+    'surely {b}': 'sicher {b}', 'the picture for p =': 'das Bild für p =', '(only an example; the masses hold for every p)': '(nur ein Beispiel; die Massen gelten für jedes p)',
   }
   const tr = (s, vars = {}) => (LANG === 'de' ? DE[s] ?? s : s).replace(/\{(\w+)\}/g, (_, k) => vars[k])
   const applyLang = () => {
@@ -87,23 +91,54 @@
     toString() { return this.d === 1 ? String(this.n) : `${this.n}/${this.d}` }
   }
   const parseQ = s => { const [n, d] = s.split('/'); return new Q(Number(n), Number(d ?? 1)) }
+  const neg = q => new Q(-q.n, q.d)
+
+  // A mass a + b·p, with exact fractions a and b: the same for every p.
+  class Lin {
+    constructor(a, b = new Q(0)) { this.a = a; this.b = b }
+    add(o) { return new Lin(this.a.add(o.a), this.b.add(o.b)) }
+    eq(o) { return this.a.eq(o.a) && this.b.eq(o.b) }
+    get zero() { return this.a.zero && this.b.zero }
+    value(p) { return this.a.value + this.b.value * p }
+    toString() {
+      const coef = q => (q.n === q.d ? '' : q.n === -q.d ? '−' : String(q).replace('-', '−'))
+      if (this.b.zero) return String(this.a).replace('-', '−')
+      const pt = `${coef(this.b)}p`
+      if (this.a.zero) return pt
+      return this.b.n < 0 ? `${this.a} − ${coef(neg(this.b))}p` : `${this.a} + ${pt}`
+    }
+  }
+  // `p`, `1-p`, `1`, `0`, `1/2`, `2p`, `1-2p`
+  const parseLin = str => {
+    const t = str.replace(/\s/g, ''), i = t.indexOf('p')
+    if (i < 0) return new Lin(parseQ(t))
+    const cut = Math.max(t.lastIndexOf('+', i), t.lastIndexOf('-', i))
+    const a = cut > 0 ? t.slice(0, cut) : '0', c = cut > 0 ? t.slice(cut, i) : t.slice(0, i)
+    return new Lin(parseQ(a), c === '' || c === '+' ? new Q(1) : c === '-' ? new Q(-1) : parseQ(c))
+  }
+  const ONE = new Lin(new Q(1)), ZERO = new Lin(new Q(0))
+  const complement = m => new Lin(new Q(1).add(neg(m.a)), neg(m.b))
+  // the example p of the picture
+  let P = 0.3
+  try { P = Number(localStorage.getItem('pg:p') ?? 0.3) || 0.3 } catch {}
 
   // ---------------------------------------------------------------- distributions
 
   // A distribution: a space and the masses of its points (keys: 'true'/'false', or numbers as text).
   function parseDist(spec) {
     const w = spec.trim().split(/\s+/)
-    if (w[0] === 'bernoulli') { const p = parseQ(w[1]); return { space: 'bool', mass: new Map([['true', p], ['false', new Q(p.d - p.n, p.d)]]) } }
-    if (w[0] === 'pure') return { space: /^-?\d+$/.test(w[1]) ? 'nat' : 'bool', mass: new Map([[w[1], new Q(1)]]) }
-    return { space: w[0], mass: new Map(w.slice(1).map(x => { const [k, q] = x.split(':'); return [k, parseQ(q)] })) }
+    if (w[0] === 'bernoulli') { const m = parseLin(w[1]); return { space: 'bool', mass: new Map([['true', m], ['false', complement(m)]]) } }
+    if (w[0] === 'pure') return { space: /^-?\d+$/.test(w[1]) ? 'nat' : 'bool', mass: new Map([[w[1], ONE]]) }
+    return { space: w[0], mass: new Map(w.slice(1).map(x => { const [k, q] = x.split(':'); return [k, parseLin(q)] })) }
   }
   const sameDist = (a, b) => {
     if (a.space !== b.space) return false
     const keys = new Set([...a.mass.keys(), ...b.mass.keys()])
-    return [...keys].every(k => (a.mass.get(k) ?? new Q(0)).eq(b.mass.get(k) ?? new Q(0)))
+    return [...keys].every(k => (a.mass.get(k) ?? ZERO).eq(b.mass.get(k) ?? ZERO))
   }
-  // the points shown on the axis: a coin always shows both sides; numbers in their order
-  const axis = (space, keys) => space === 'bool' ? ['true', 'false']
+  // the points shown on the axis: a coin always shows both sides, tails left and heads right (as 0
+  // and 1 on the numbers, so that renaming moves nothing sideways); numbers in their order
+  const axis = (space, keys) => space === 'bool' ? ['false', 'true']
     : [...new Set(keys)].sort((x, y) => Number(x) - Number(y))
   const pointName = (space, k) => space === 'bool' ? tr(k === 'true' ? 'heads' : 'tails') : k
   const spaceName = s => ({ bool: 'Bool', nat: 'ℕ', int: 'ℤ' })[s]
@@ -130,7 +165,7 @@
   // the image measure: the mass of each point flows to its image
   const push = (dist, move) => {
     const mass = new Map()
-    for (const [k, m] of dist.mass) { const b = move.f(k); mass.set(b, (mass.get(b) ?? new Q(0)).add(m)) }
+    for (const [k, m] of dist.mass) { const b = move.f(k); mass.set(b, (mass.get(b) ?? ZERO).add(m)) }
     return { space: move.to, mass }
   }
 
@@ -191,13 +226,6 @@
       return this.leanNow.result === this.leanGoal.result
     }
 
-    leanExpr() {
-      const w = this.startSpec.trim().split(/\s+/)
-      let e = w[0] === 'bernoulli' ? `bernoulli (${w[1]}) _` : this.startSpec
-      for (const s of this.steps) e = `(${e}).map ${s.move.lean}`
-      return e.replace(/^\((.*)\)\.map/, '($1).map')
-    }
-
     play(move) {
       if (this.animating) return
       if (move.from !== this.dist.space) { this.flash(tr('This move needs a coin, not a number.')); return }
@@ -232,7 +260,7 @@
       for (const k of ka) {
         const m = before.mass.get(k)
         if (!m || m.zero) continue
-        const b = move.f(k), h = m.value * H
+        const b = move.f(k), h = m.value(P) * H
         const y0 = BASE - h, y1 = BASE - (stack[b] ?? 0) - h
         stack[b] = (stack[b] ?? 0) + h
         const r = svg('rect', { class: 'pg-sand', x: xa[k] - BAR / 2, y: y0, width: BAR, height: h, rx: 3 })
@@ -253,6 +281,23 @@
       requestAnimationFrame(step)
     }
 
+    // the target, small, beside the board
+    targetPicture() {
+      const t = this.target, ks = axis(t.space, [...t.mass.keys()])
+      const w = 200, h = 150, base = 120, bh = 95, gap = Math.min(70, (w - 30) / Math.max(1, ks.length)), x0 = w / 2 - (gap * (ks.length - 1)) / 2, bw = Math.min(40, gap - 10)
+      const g = svg('svg', { viewBox: `0 0 ${w} ${h}`, class: 'pg-target-svg' })
+      g.append(svg('text', { x: 6, y: 16, class: 'pg-target-title' }, tr('Target')))
+      g.append(svg('line', { x1: 6, x2: w - 6, y1: base, y2: base, class: 'pg-axis' }))
+      ks.forEach((k, i) => {
+        const m = t.mass.get(k) ?? ZERO, x = x0 + i * gap, hh = m.value(P) * bh
+        if (hh > 0) g.append(svg('rect', { class: 'pg-target-sand', x: x - bw / 2, y: base - hh, width: bw, height: hh, rx: 3 }))
+        g.append(svg('text', { x, y: base - hh - 5, 'text-anchor': 'middle', class: 'pg-target-mass' }, m.toString()))
+        g.append(svg('text', { x, y: base + 16, 'text-anchor': 'middle', class: 'pg-target-point' }, pointName(t.space, k)))
+      })
+      g.append(svg('text', { x: w - 8, y: 16, 'text-anchor': 'end', class: 'pg-space' }, spaceName(t.space)))
+      return g
+    }
+
     render() {
       const d = this.dist, keys = this.keys(), xs = layout(keys)
       const done = this.done
@@ -268,10 +313,10 @@
         for (const k of keys) {
           const m = this.target.mass.get(k)
           if (!m || m.zero) continue
-          s.append(svg('rect', { class: 'pg-target', x: xs[k] - BAR / 2 - 6, y: BASE - m.value * H - 6, width: BAR + 12, height: m.value * H + 6, rx: 6 }))
+          s.append(svg('rect', { class: 'pg-target', x: xs[k] - BAR / 2 - 6, y: BASE - m.value(P) * H - 6, width: BAR + 12, height: m.value(P) * H + 6, rx: 6 }))
         }
       for (const k of keys) {
-        const m = d.mass.get(k) ?? new Q(0), h = m.value * H
+        const m = d.mass.get(k) ?? ZERO, h = m.value(P) * H
         const bar = svg('g', { class: 'pg-bar' + (this.picked === k ? ' pg-picked' : '') })
         bar.append(svg('rect', { class: 'pg-hit', x: xs[k] - BAR / 2 - 8, y: 20, width: BAR + 16, height: BASE - 20 }))
         if (h > 0) bar.append(svg('rect', { class: 'pg-sand', x: xs[k] - BAR / 2, y: BASE - h, width: BAR, height: h, rx: 3 }))
@@ -300,28 +345,41 @@
       // what a tapped column is made of: its preimage under the last move
       this.info = el('div', 'pg-info')
       if (this.picked !== null) {
-        const m = d.mass.get(this.picked) ?? new Q(0), name = pointName(d.space, this.picked)
+        const m = d.mass.get(this.picked) ?? ZERO, name = pointName(d.space, this.picked)
         const last = this.steps[this.steps.length - 1]
         if (last) {
-          const pre = [...last.before.mass.keys()].filter(k => last.move.f(k) === this.picked)
+          const pre = axis(last.before.space, [...last.before.mass.keys()]).filter(k => last.before.mass.has(k) && last.move.f(k) === this.picked)
           const from = `{${pre.map(k => pointName(last.before.space, k)).join(', ')}}`
-          const sum = pre.length > 1 ? `${pre.map(k => last.before.mass.get(k).toString()).join(' + ')} = ` : ''
+          const sum = pre.length > 1 ? `${pre.map(k => { const q = last.before.mass.get(k); return q.a.zero || q.b.zero ? String(q) : `(${q})` }).join(' + ')} = ` : ''
           this.info.textContent = pre.length ? tr('{b}: the sand comes from {from}, P = {sum}{m}', { b: name, from, sum, m: m.toString() })
             : `${name}: ${tr('nothing flows here')}`
         } else this.info.textContent = `${name}: P = ${m} (${tr('the start')})`
       } else this.info.textContent = tr('Tap a column to see where its sand came from.')
 
-      const lean = el('pre', 'pg-lean', this.leanExpr())
+      const lean = el('pre', 'pg-lean', this.leanState())
       // what Lean makes of the state: its normal form
       const ln = el('div', 'pg-lean-state')
-      if (!BACKEND) ln.textContent = tr('Lean is not connected: only the example p = 1/3 is checked.')
+      if (!BACKEND) ln.textContent = tr('Lean is not connected: the board checks for every p by itself, without Lean.')
       else if (!this.leanNow) ln.textContent = tr('Lean is normalising …')
       else if (this.leanNow.error) ln.textContent = `Lean: ${this.leanNow.error.message}`
       else {
         ln.append(el('span', 'pg-lean-label', tr('Lean:') + ' '), el('code', '', this.leanNow.result))
         if (sameDist(d, this.target) && this.leanAgrees() === false) ln.append(el('div', 'pg-warn', `${tr('Lean disagrees: the target is')} ${this.leanGoal.result}`))
       }
-      const parts = [s, this.info, ln, el('div', 'pg-moves-head', tr('Moves')), moves, tools, lean]
+      // the task, in words, and the target as a picture of its own (always, also on another space)
+      const task = el('div', 'pg-task')
+      const tk = axis(this.target.space, [...this.target.mass.keys()]).filter(k => !(this.target.mass.get(k) ?? ZERO).zero)
+      task.append(el('b', '', tr('Task: bring the sand into the shape of the target:') + ' '),
+        tk.length === 1 && (this.target.mass.get(tk[0]) ?? ZERO).eq(ONE) ? tr('surely {b}', { b: pointName(this.target.space, tk[0]) })
+          : tk.map(k => `P(${pointName(this.target.space, k)}) = ${this.target.mass.get(k)}`).join(', '))
+      const row = el('div', 'pg-row')
+      row.append(s, this.targetPicture())
+      // the example p of the picture
+      const slider = el('label', 'pg-slider')
+      const input = el('input'); input.type = 'range'; input.min = '0.05'; input.max = '0.95'; input.step = '0.05'; input.value = String(P)
+      input.addEventListener('input', () => { P = Number(input.value); try { localStorage.setItem('pg:p', input.value) } catch {}; this.render() })
+      slider.append(`${tr('the picture for p =')} ${P.toFixed(2)} `, input, el('span', 'pg-slider-note', ' ' + tr('(only an example; the masses hold for every p)')))
+      const parts = [task, row, slider, this.info, ln, el('div', 'pg-moves-head', tr('Moves')), moves, tools, lean]
       if (done) {
         const box = el('div', 'pg-solved')
         box.append(el('div', 'pg-solved-head', '✓ ' + tr('Solved!') + (this.leanAgrees() ? ` (${tr('confirmed by Lean, for every p')})` : '')))

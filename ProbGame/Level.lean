@@ -3,20 +3,20 @@ import VersoManual
 /-!
 # Levels of the probability game
 
-`::::level (start := "bernoulli 1/3") (target := "bernoulli 2/3") (moves := "not")` embeds a level
+`::::level (start := "bernoulli p") (target := "bernoulli 1-p") (moves := "not")` embeds a level
 for `game.js`: a distribution is shown as columns of sand over the points of its space, and a move
 applies a map to it, so that the sand flows to the images: the distribution becomes its image
 measure (pushforward). The level is solved when the distribution is the target.
 
-Distributions are written as `bernoulli 1/3`, `pure true`, or as a space with points and masses:
-`bool true:1/3 false:2/3`, `nat 1:1/3 0:2/3`, `int 5:1/3 -2:2/3`. The moves are names of the
+Distributions are written as `bernoulli p`, `pure true`, or as a space with points and masses
+`a + b·p` (written `p`, `1-p`, `1/2`, …): `bool true:p false:1-p`, `nat 1:p 0:1-p`, `int 5:p -2:1-p`. The moves are names of the
 catalogue in `game.js` (`id`, `not`, `heads`, `tails`, `toNat`, `payoff 5 -2`).
 
 `lean` is the statement of the level in Lean, for every `p` (with Mathlib's `PMF`); it is shown
 when the level is solved and proved in `Proofs/`.
 
 ````
-::::level (start := "bernoulli 1/3") (target := "bernoulli 2/3") (moves := "not")
+::::level (start := "bernoulli p") (target := "bernoulli 1-p") (moves := "not")
   (lean := "(bernoulli p h).map not = bernoulli (1 - p) _")
 :::en
 Flip the coin.
