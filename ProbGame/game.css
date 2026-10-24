@@ -128,7 +128,11 @@
 .pg-goal-later summary { cursor: pointer; }
 .pg-goal-no { font-size: 0.75em; color: #8f7a55; font-family: var(--verso-structure-font-family, sans-serif); }
 .pg-proof-done { font-weight: bold; color: #1f6b27; font-family: var(--verso-structure-font-family, sans-serif); background: #eef8ef; border: 1px solid #8cc4a2; border-radius: 8px; padding: 0.5em 0.8em; }
-.pg-proof-error { color: #b03a2e; background: #fbeeec; border-radius: 6px; padding: 0.4em 0.6em; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.82em; max-height: 12em; overflow-y: auto; }
+.pg-proof-error { color: #b03a2e; background: #fbeeec; border-radius: 6px; padding: 0.4em 0.6em; font-size: 0.9em; }
+.pg-proof-error[hidden] { display: none; }
+.pg-proof-error pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.85em; max-height: 12em; overflow-y: auto; margin: 0.3em 0 0; }
+.pg-proof-advice { font-family: var(--verso-structure-font-family, sans-serif); font-weight: bold; }
+.pg-proof-error summary { cursor: pointer; font-size: 0.85em; color: #8a4a40; }
 .pg-proof-input { display: flex; gap: 0.5rem; margin: 0.4rem 0; }
 .pg-proof-input input { flex: 1 1 auto; min-width: 0; font: 16px var(--verso-code-font-family, monospace); padding: 0.45em 0.6em; border: 2px solid #c9b48f; border-radius: 10px; }
 .pg-proof-input input:focus { outline: none; border-color: #2e6fb8; }

@@ -835,6 +835,22 @@
     'Statement': 'Aussage', 'a tactic, e.g. rw [coin_not]': 'eine Taktik, z. B. rw [coin_not]',
     'Proved earlier; the proof is kept.': 'Schon bewiesen; der Beweis ist gespeichert.',
   })
+  // Lean's messages, as the player sees the goals: short names, I for the unit interval; and in front of
+  // the usual ones a sentence that says what to do
+  const leanText = m => m.replace(/MeasureTheory\.DiscreteMeasure\./g, '').replace(/ProbGame\./g, '').replace(/↑I/g, 'I')
+  const ADVICE = [
+    [/Did not find an occurrence of the pattern/, 'The left side of the rule does not occur in the goal as it stands. (Where names of a do block occur, rw cannot rewrite; simp only can.)',
+      'Die linke Seite der Regel kommt im Ziel so nicht vor. (Wo Namen eines do-Blocks vorkommen, kann rw nicht umschreiben; simp only kann es.)'],
+    [/motive is not type correct/, 'rw cannot rewrite here; try simp only.', 'rw kann hier nicht umschreiben; versuche simp only.'],
+    [/simp made no progress/, 'simp only found nothing to rewrite with these rules.', 'simp only hat mit diesen Regeln nichts gefunden, was es umschreiben kann.'],
+    [/could not unify the conclusion of `@funext`/, 'funext needs a goal g = h between functions (first congr 1?).', 'funext braucht ein Ziel g = h zwischen Funktionen (vorher congr 1?).'],
+    [/Tactic `rfl` failed/, 'The two sides are not the same, not even after computing.', 'Die beiden Seiten sind nicht gleich, auch nicht nach Ausrechnen.'],
+    [/[Nn]o goals/, 'There is no goal left.', 'Es ist kein Ziel mehr übrig.'],
+    [/Unknown (identifier|constant)/, 'Lean does not know this name.', 'Diesen Namen kennt Lean nicht.'],
+    [/unexpected token|expected/, 'Lean cannot read this line: a typo?', 'Lean kann diese Zeile nicht lesen: ein Tippfehler?'],
+  ]
+  const advice = m => { const a = ADVICE.find(([r]) => r.test(m)); return a ? (LANG === 'de' ? a[2] : a[1]) : '' }
+  Object.assign(DE, { 'What Lean says': 'Was Lean sagt' })
   const atLeast = (a, b) => { const [x, y] = a.split('.').map(Number), [u, v] = b.split('.').map(Number); return x > u || (x === u && y >= v) }
 
   class Proof {
@@ -982,12 +998,21 @@
         // the goal now; the others folded, one line each
         const box = el(i ? 'details' : 'div', 'pg-goal' + (i ? ' pg-goal-later' : ''))
         if (this.goals.length > 1) box.append(el(i ? 'summary' : 'div', 'pg-goal-no', tr('goal {i} of {n}', { i: i + 1, n: this.goals.length })))
-        box.append(el('pre', '', g.replace(/↑I/g, 'I')))
+        box.append(el('pre', '', leanText(g)))
         goals.append(box)
       })
       if (this.busy) goals.append(el('div', 'pg-info', tr('Lean is thinking …')))
-      const err = el('pre', 'pg-proof-error', this.error)
+      // an error: our sentence, and Lean's message (folded when there is a sentence)
+      const err = el('div', 'pg-proof-error')
       err.hidden = !this.error
+      if (this.error) {
+        const msg = leanText(this.error), say = advice(msg)
+        if (say) {
+          const d = el('details'), sm = el('summary', '', tr('What Lean says'))
+          d.append(sm, el('pre', '', msg))
+          err.append(el('div', 'pg-proof-advice', say), d)
+        } else err.append(el('pre', '', msg))
+      }
 
       // the input
       const row = el('div', 'pg-proof-input')
