@@ -7,8 +7,8 @@ $P \circ f^{-1}$. Tapping a column shows its preimage. A level is solved when th
 dashed target; then its Lean statement is shown, which holds for every probability $p$ and is proved
 with Mathlib's `PMF`.
 
-**World 1, one coin** (Bernoulli(1/3) at the start): flip; always heads (a point mass); surely tails
-without "always tails" (a composition); heads = 1, tails = 0 (to ℕ); the order matters; a bet
+**World 1, one coin** (`coin p` at the start, sides `false`/`true` as in Lean): `not`; always `true` (a point mass); surely `false`
+without "always `false`" (a composition); `toNat` (to ℕ); the order matters; a bet
 (+5 / −2, to ℤ); the better bet; surely zero.
 
 ## How it works

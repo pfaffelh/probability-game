@@ -16,14 +16,14 @@
   let LANG = 'en'
   try { LANG = localStorage.getItem('pg:lang') ?? ((navigator.language ?? '').startsWith('de') ? 'de' : 'en') } catch {}
   const DE = {
-    heads: 'Kopf', tails: 'Zahl', Moves: 'Züge', Undo: 'Zurück', 'Start over': 'Neu anfangen', 'Next level ›': 'Nächstes Level ›',
+    Moves: 'Züge', Undo: 'Zurück', 'Start over': 'Neu anfangen', 'Next level ›': 'Nächstes Level ›',
     'Solved!': 'Geschafft!', Target: 'Ziel', 'In Lean, for every p:': 'In Lean, für jedes p:', 'proved': 'bewiesen',
     'Tap a column to see where its sand came from.': 'Tippe eine Säule an, um zu sehen, woher ihr Sand kommt.',
     'This move needs a coin, not a number.': 'Dieser Zug braucht eine Münze, keine Zahl.',
     'Level {i} of {n}': 'Level {i} von {n}', 'nothing flows here': 'hierher fließt nichts',
     '{b}: the sand comes from {from}, P = {sum}{m}': '{b}: Der Sand kommt aus {from}, P = {sum}{m}',
-    'flip': 'umdrehen', 'always heads': 'immer Kopf', 'always tails': 'immer Zahl', 'do nothing': 'nichts tun',
-    'heads = 1, tails = 0': 'Kopf = 1, Zahl = 0', 'heads: win {a}, tails: {b}': 'Kopf: {a} gewinnen, Zahl: {b}',
+    'not: swap the sides': 'not: Seiten tauschen', 'always true': 'immer true', 'always false': 'immer false', 'do nothing': 'nichts tun',
+    'toNat: false = 0, true = 1': 'toNat: false = 0, true = 1', 'true: win {a}, false: {b}': 'true: {a} gewinnen, false: {b}',
     'the start': 'der Anfang', 'Lean:': 'Lean:',
     'confirmed by Lean, for every p': 'von Lean bestätigt, für jedes p', 'Lean is normalising …': 'Lean normalisiert …',
     'Lean disagrees: the target is': 'Lean widerspricht: Das Ziel ist',
@@ -201,11 +201,11 @@
     const keys = new Set([...a.mass.keys(), ...b.mass.keys()])
     return [...keys].every(k => (a.mass.get(k) ?? ZERO).eq(b.mass.get(k) ?? ZERO))
   }
-  // the points shown on the axis: a coin always shows both sides, tails left and heads right (as 0
+  // the points shown on the axis: a coin always shows both sides, false left and true right (as 0
   // and 1 on the numbers, so that renaming moves nothing sideways); numbers in their order
   const axis = (space, keys) => space === 'bool' ? ['false', 'true']
     : [...new Set(keys)].sort((x, y) => Number(x) - Number(y))
-  const pointName = (space, k) => space === 'bool' ? tr(k === 'true' ? 'heads' : 'tails') : k
+  const pointName = (space, k) => k
   const spaceName = s => ({ bool: 'Bool', nat: 'ℕ', int: 'ℤ' })[s]
 
   // ---------------------------------------------------------------- moves
@@ -215,14 +215,14 @@
     const w = spec.trim().split(/\s+/)
     switch (w[0]) {
       case 'id': return { from: 'bool', to: 'bool', f: k => k, lean: 'id', label: () => tr('do nothing') }
-      case 'not': return { from: 'bool', to: 'bool', f: k => (k === 'true' ? 'false' : 'true'), lean: 'not', label: () => tr('flip') }
-      case 'heads': return { from: 'bool', to: 'bool', f: () => 'true', lean: '(fun _ => true)', label: () => tr('always heads') }
-      case 'tails': return { from: 'bool', to: 'bool', f: () => 'false', lean: '(fun _ => false)', label: () => tr('always tails') }
-      case 'toNat': return { from: 'bool', to: 'nat', f: k => (k === 'true' ? '1' : '0'), lean: 'Bool.toNat', label: () => tr('heads = 1, tails = 0') }
+      case 'not': return { from: 'bool', to: 'bool', f: k => (k === 'true' ? 'false' : 'true'), lean: 'not', label: () => tr('not: swap the sides') }
+      case 'heads': return { from: 'bool', to: 'bool', f: () => 'true', lean: '(fun _ => true)', label: () => tr('always true') }
+      case 'tails': return { from: 'bool', to: 'bool', f: () => 'false', lean: '(fun _ => false)', label: () => tr('always false') }
+      case 'toNat': return { from: 'bool', to: 'nat', f: k => (k === 'true' ? '1' : '0'), lean: 'Bool.toNat', label: () => tr('toNat: false = 0, true = 1') }
       case 'payoff': {
         const [a, b] = [w[1], w[2]]
         return { from: 'bool', to: 'int', f: k => (k === 'true' ? a : b), lean: `(fun b => if b then (${a} : ℤ) else ${b})`,
-          label: () => tr('heads: win {a}, tails: {b}', { a, b }) }
+          label: () => tr('true: win {a}, false: {b}', { a, b }) }
       }
     }
     throw new Error(`unknown move ${spec}`)
@@ -482,20 +482,20 @@
     or: { arity: 2, more: true, from: 'bool', to: 'bool', f: xs => xs.some(x => x), show: xs => xs.join(' ∨ '), lean: xs => xs.join(' || '), label: 'or (∨)' },
     xor: { arity: 2, more: true, from: 'bool', to: 'bool', f: xs => xs.filter(x => x).length % 2 === 1, show: xs => xs.join(' ⊕ '),
       lean: xs => xs.slice(1).reduce((e, x) => `xor (${e}) ${x}`, xs[0]), label: 'xor (⊕)' },
-    toNat: { arity: 1, from: 'bool', to: 'nat', f: ([a]) => (a ? 1 : 0), show: ([a]) => `𝟙(${a})`, lean: ([a]) => `${a}.toNat`, label: 'heads = 1, tails = 0' },
+    toNat: { arity: 1, from: 'bool', to: 'nat', f: ([a]) => (a ? 1 : 0), show: ([a]) => `𝟙(${a})`, lean: ([a]) => `${a}.toNat`, label: 'toNat: false = 0, true = 1' },
     count: { arity: 1, more: true, from: 'bool', to: 'nat', f: xs => xs.filter(x => x).length, show: xs => `#(${xs.join(', ')})`,
-      lean: xs => `[${xs.join(', ')}].count true`, label: 'number of heads' },
+      lean: xs => `[${xs.join(', ')}].count true`, label: 'number of true' },
     add: { arity: 2, more: true, from: 'nat', to: 'nat', f: xs => xs.reduce((a, b) => a + b, 0), show: xs => xs.join(' + '), lean: xs => xs.join(' + '), label: 'add (+)' },
     max: { arity: 2, more: true, from: 'nat', to: 'nat', f: xs => Math.max(...xs), show: xs => `max(${xs.join(', ')})`,
       lean: xs => xs.slice(1).reduce((e, x) => `max (${e}) ${x}`, xs[0]), label: 'maximum' },
   }
   Object.assign(DE, {
     'not (¬)': 'nicht (¬)', 'and (∧)': 'und (∧)', 'or (∨)': 'oder (∨)', 'xor (⊕)': 'genau eins (⊕)', 'add (+)': 'addieren (+)',
-    'number of heads': 'Anzahl Kopf', maximum: 'Maximum', 'new p-coin': 'neue p-Münze', Check: 'Prüfen', 'Remove the last': 'Letztes entfernen',
+    'number of true': 'Anzahl true', maximum: 'Maximum', 'new p-coin': 'neue p-Münze', Check: 'Prüfen', 'Remove the last': 'Letztes entfernen',
     '{n} left': 'noch {n}', 'Building blocks': 'Bausteine',
     'Lay down a coin with “new p-coin”. Tap cards to choose them (in this order), then a function.': 'Leg mit „neue p-Münze“ eine Münze hin. Tippe Karten an, um sie auszuwählen (in dieser Reihenfolge), dann eine Funktion.',
     'Choose {n} cards first (tap them).': 'Wähle erst {n} Karten aus (antippen).', 'Choose at least {n} cards first (tap them).': 'Wähle erst mindestens {n} Karten aus (antippen).',
-    'This function needs coins (heads/tails).': 'Diese Funktion braucht Münzen (Kopf/Zahl).', 'This function needs numbers.': 'Diese Funktion braucht Zahlen.',
+    'This function needs coins (true/false).': 'Diese Funktion braucht Münzen (true/false).', 'This function needs numbers.': 'Diese Funktion braucht Zahlen.',
     'No more coins in this level.': 'In diesem Level gibt es keine weiteren Münzen.', 'There is nothing to check yet.': 'Es gibt noch nichts zu prüfen.',
     'Checked: {x}. It lives on {a}, the target on {b}.': 'Geprüft: {x}. Es lebt auf {a}, das Ziel auf {b}.',
     'Checked: {x}. At {k} it has P = {m}, the target {t}.': 'Geprüft: {x}. Bei {k} hat es P = {m}, das Ziel {t}.',
@@ -575,7 +575,7 @@
     apply(f) {
       const F = FUNS[f], sel = this.selected
       const bad = sel.length < F.arity || (!F.more && sel.length > F.arity) ? tr(F.more ? 'Choose at least {n} cards first (tap them).' : 'Choose {n} cards first (tap them).', { n: F.arity })
-        : sel.some(j => this.space(j) !== F.from) ? tr(F.from === 'bool' ? 'This function needs coins (heads/tails).' : 'This function needs numbers.') : null
+        : sel.some(j => this.space(j) !== F.from) ? tr(F.from === 'bool' ? 'This function needs coins (true/false).' : 'This function needs numbers.') : null
       if (bad) { this.message = bad; this.render(); return }
       this.nodes.push({ fun: f, inputs: sel.slice() }); this.selected = [this.nodes.length - 1]; this.changed()
     }

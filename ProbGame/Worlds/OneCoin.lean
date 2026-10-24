@@ -11,7 +11,8 @@ htmlSplit := .never
 %%%
 
 :::en
-A coin shows *heads* with probability $`p` and *tails* with probability $`1 - p`, for any $`p`. Its
+A coin shows `true` with probability $`p` and `false` with probability $`1 - p`, for any $`p`, as in
+Lean, where a coin is a random `Bool`. Its
 distribution is drawn as two columns of sand. A *move* applies a map $`f` to the outcome: the sand
 of each outcome flows to its image, and where several outcomes have the same image, their sand piles
 up. What you get is the distribution of $`f(X)`, the *image measure* $`P \circ f^{-1}`:
@@ -23,8 +24,8 @@ $`p`, which the slider changes.
 :::
 
 :::de
-Eine Münze zeigt *Kopf* mit Wahrscheinlichkeit $`p` und *Zahl* mit Wahrscheinlichkeit $`1 - p`, für
-ein beliebiges $`p`. Ihre Verteilung ist als zwei Säulen aus Sand gezeichnet. Ein *Zug* wendet eine
+Eine Münze zeigt `true` mit Wahrscheinlichkeit $`p` und `false` mit Wahrscheinlichkeit $`1 - p`, für
+ein beliebiges $`p`, wie in Lean, wo eine Münze ein zufälliges `Bool` ist. Ihre Verteilung ist als zwei Säulen aus Sand gezeichnet. Ein *Zug* wendet eine
 Abbildung $`f` auf das Ergebnis an: Der Sand jedes Ergebnisses fließt zu seinem Bild, und wo mehrere
 Ergebnisse dasselbe Bild haben, häuft er sich. Was herauskommt, ist die Verteilung von $`f(X)`, das
 *Bildmaß* $`P \circ f^{-1}`: $`P(f(X) = b) = P(X \in f^{-1}(\{b\}))`. Tippe eine Säule an, um zu
@@ -37,47 +38,47 @@ Beispiel-$`p`, das der Schieberegler ändert.
 
 ::::level (start := "bernoulli p") (target := "bernoulli 1-p") (moves := "not") (lean := "(bernoulli p h).map not = bernoulli (1 - p) tsub_le_self") (leanTarget := "coin (σ p)")
 :::en
-*Flip the coin.* Heads becomes tails and tails heads: the two columns swap.
+*Flip the coin.* `not` makes `true` into `false` and `false` into `true`: the two columns swap.
 :::
 
 :::de
-*Dreh die Münze um.* Aus Kopf wird Zahl und aus Zahl Kopf: Die beiden Säulen tauschen.
+*Dreh die Münze um.* `not` macht aus `true` `false` und aus `false` `true`: Die beiden Säulen tauschen.
 :::
 ::::
 
 ::::level (start := "bernoulli p") (target := "pure true") (moves := "not, heads, tails") (lean := "(bernoulli p h).map (fun _ => true) = pure true") (leanTarget := "DiscreteMeasure.pure true")
 :::en
-*Always heads.* A constant map sends both outcomes to the same point: all the sand flows together.
+*Always `true`.* A constant map sends both outcomes to the same point: all the sand flows together.
 The result is sure, a point mass (Dirac measure).
 :::
 
 :::de
-*Immer Kopf.* Eine konstante Abbildung schickt beide Ergebnisse auf denselben Punkt: Der ganze Sand
+*Immer `true`.* Eine konstante Abbildung schickt beide Ergebnisse auf denselben Punkt: Der ganze Sand
 fließt zusammen. Das Ergebnis ist sicher, eine Punktmasse (Dirac-Maß).
 :::
 ::::
 
 ::::level (start := "bernoulli p") (target := "pure false") (moves := "not, heads") (lean := "((bernoulli p h).map (fun _ => true)).map not = pure false") (leanTarget := "DiscreteMeasure.pure false")
 :::en
-*Surely tails, but there is no “always tails”.* Two moves one after the other: the image measure of
+*Surely `false`, but there is no “always `false`”.* Two moves one after the other: the image measure of
 the image measure is the image measure of the composition, $`(P \circ f^{-1}) \circ g^{-1} = P \circ (g \circ f)^{-1}`.
 :::
 
 :::de
-*Sicher Zahl, aber es gibt kein „immer Zahl“.* Zwei Züge nacheinander: Das Bildmaß des Bildmaßes ist
+*Sicher `false`, aber es gibt kein „immer `false`“.* Zwei Züge nacheinander: Das Bildmaß des Bildmaßes ist
 das Bildmaß der Verkettung, $`(P \circ f^{-1}) \circ g^{-1} = P \circ (g \circ f)^{-1}`.
 :::
 ::::
 
 ::::level (start := "bernoulli p") (target := "nat 1:p 0:1-p") (moves := "not, toNat") (lean := "(bernoulli p h).map Bool.toNat 1 = p") (leanTarget := "map Bool.toNat (coin p)")
 :::en
-*From sides to numbers.* Count heads as $`1` and tails as $`0`: the distribution moves to the natural
-numbers. This is how a coin becomes a random number.
+*From sides to numbers.* `Bool.toNat` counts `true` as $`1` and `false` as $`0`: the distribution
+moves to the natural numbers. This is how a coin becomes a random number.
 :::
 
 :::de
-*Von Seiten zu Zahlen.* Zähle Kopf als $`1` und Zahl als $`0`: Die Verteilung wandert zu den
-natürlichen Zahlen. So wird aus einer Münze eine Zufallszahl.
+*Von Seiten zu Zahlen.* `Bool.toNat` zählt `true` als $`1` und `false` als $`0`: Die Verteilung
+wandert zu den natürlichen Zahlen. So wird aus einer Münze eine Zufallszahl.
 :::
 ::::
 
@@ -93,11 +94,11 @@ natürlichen Zahlen. So wird aus einer Münze eine Zufallszahl.
 
 ::::level (start := "bernoulli p") (target := "int 5:p -2:1-p") (moves := "not, toNat, payoff 5 -2") (lean := "(bernoulli p h).map (fun b => if b then (5 : ℤ) else -2) 5 = p") (leanTarget := "map (fun b => if b = true then (5 : ℤ) else -2) (coin p)")
 :::en
-*A bet.* Heads wins 5 euros, tails loses 2. The image measure is the distribution of your gain.
+*A bet.* `true` wins 5 euros, `false` loses 2. The image measure is the distribution of your gain.
 :::
 
 :::de
-*Eine Wette.* Bei Kopf gewinnst du 5 Euro, bei Zahl verlierst du 2. Das Bildmaß ist die Verteilung
+*Eine Wette.* Bei `true` gewinnst du 5 Euro, bei `false` verlierst du 2. Das Bildmaß ist die Verteilung
 deines Gewinns.
 :::
 ::::
