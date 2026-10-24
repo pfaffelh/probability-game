@@ -77,17 +77,17 @@ def level : DirectiveExpanderOf LevelConfig
         #[$blocks,*])
 
 -- A level of the building site: the target, the functions offered and the number of coins allowed
--- (`""`: as many as wanted). The player lays down coins and applies functions to them, into a network
+-- (`""`: as many as wanted), or else the sources offered with their numbers (`"coin:1, binom2:2"`). The player lays down coins and applies functions to them, into a network
 -- that runs into the target; `game.js` checks it exactly, for every `p`.
-block_extension Block.build (target moves coins : String) where
-  data := Json.mkObj [("target", target), ("moves", moves), ("coins", coins)]
+block_extension Block.build (target moves coins sources : String) where
+  data := Json.mkObj [("target", target), ("moves", moves), ("coins", coins), ("sources", sources)]
   traverse _ _ _ := pure none
   extraJs := {JS.mk gameJs}
   extraCss := {CSS.mk gameCss}
   toHtml := some fun _ goB _ data content => do
     let get (k : String) := (data.getObjValAs? String k).toOption.getD ""
     pure <| .tag "div" #[("class", "pg-level pg-build"), ("data-target", get "target"), ("data-moves", get "moves"),
-        ("data-coins", get "coins")] <|
+        ("data-coins", get "coins"), ("data-sources", get "sources")] <|
       .seq #[.tag "div" #[("class", "pg-text")] (← content.mapM goB), .tag "div" #[("class", "pg-board")] .empty]
   toTeX := none
 
@@ -95,18 +95,20 @@ structure BuildConfig where
   target : String
   moves : String
   coins : String
+  sources : String
 
 instance : FromArgs BuildConfig DocElabM where
   fromArgs := BuildConfig.mk <$> .named `target .string false <*> .named `moves .string false <*>
-    .namedD `coins .string ""
+    .namedD `coins .string "" <*> .namedD `sources .string ""
 
 /-- A level of the building site: `::::build (target := "bool true:p^2 false:1-p^2") (moves := "and, or, not")
-(coins := "2")`; the functions are those of `FUNS` in `game.js`. -/
+(coins := "2")`, or with other sources: `(sources := "coin:1, binom2:2")`; the functions are those of
+`FUNS` in `game.js`, the sources those of `source`. -/
 @[directive]
 def build : DirectiveExpanderOf BuildConfig
   | cfg, contents => do
     let blocks ← contents.mapM elabBlock
-    ``(Verso.Doc.Block.other (Block.build $(quote cfg.target) $(quote cfg.moves) $(quote cfg.coins)) #[$blocks,*])
+    ``(Verso.Doc.Block.other (Block.build $(quote cfg.target) $(quote cfg.moves) $(quote cfg.coins) $(quote cfg.sources)) #[$blocks,*])
 
 -- Text in one language: `:::en` and `:::de`; `game.js` shows the language chosen.
 block_extension Block.lang (lang : String) where

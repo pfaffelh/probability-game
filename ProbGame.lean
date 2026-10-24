@@ -2,6 +2,7 @@ import VersoManual
 import ProbGame.Level
 import ProbGame.Worlds.OneCoin
 import ProbGame.Worlds.TwoCoins
+import ProbGame.Worlds.Binomial
 
 open Verso.Genre Manual
 open ProbGame
@@ -29,3 +30,5 @@ das *Bildmaß*. Jedes Level ist eine Aussage über Verteilungen, die in Lean bew
 {include 1 ProbGame.Worlds.OneCoin}
 
 {include 1 ProbGame.Worlds.TwoCoins}
+
+{include 1 ProbGame.Worlds.Binomial}

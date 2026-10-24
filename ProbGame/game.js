@@ -349,8 +349,8 @@
     // the target, small, beside the board
     targetPicture() {
       const t = this.target, ks = axis(t.space, [...t.mass.keys()])
-      const w = 200, h = 150, base = 120, bh = 95, gap = Math.min(70, (w - 30) / Math.max(1, ks.length)), x0 = w / 2 - (gap * (ks.length - 1)) / 2, bw = Math.min(40, gap - 10)
-      const g = svg('svg', { viewBox: `0 0 ${w} ${h}`, class: 'pg-target-svg' })
+      const gap = Math.max(46, ...ks.map(k => String(t.mass.get(k) ?? ZERO).length * 7 + 8)), w = Math.max(200, gap * ks.length + 16), h = 150, base = 120, bh = 95, x0 = w / 2 - (gap * (ks.length - 1)) / 2, bw = Math.min(40, gap - 10)
+      const g = svg('svg', { viewBox: `0 0 ${w} ${h}`, class: 'pg-target-svg', width: w })
       g.append(svg('text', { x: 6, y: 16, class: 'pg-target-title' }, tr('Target')))
       g.append(svg('line', { x1: 6, x2: w - 6, y1: base, y2: base, class: 'pg-axis' }))
       ks.forEach((k, i) => {
@@ -486,23 +486,35 @@
     count: { sym: '#', arity: 1, more: true, from: 'bool', to: 'nat', f: xs => xs.filter(x => x).length, show: xs => `#(${xs.join(', ')})`,
       lean: xs => `[${xs.join(', ')}].count true`, label: 'number of true' },
     add: { sym: '+', arity: 2, more: true, from: 'nat', to: 'nat', f: xs => xs.reduce((a, b) => a + b, 0), show: xs => xs.join(' + '), lean: xs => xs.join(' + '), label: 'add' },
+    pos: { sym: '≥1', arity: 1, from: 'nat', to: 'bool', f: ([a]) => a >= 1, show: ([a]) => `${a} ≥ 1`, lean: ([a]) => `decide (1 ≤ ${a})`, label: 'at least 1' },
     max: { sym: 'max', arity: 2, more: true, from: 'nat', to: 'nat', f: xs => Math.max(...xs), show: xs => `max(${xs.join(', ')})`,
       lean: xs => xs.slice(1).reduce((e, x) => `max (${e}) ${x}`, xs[0]), label: 'maximum' },
   }
   Object.assign(DE, {
     not: 'nicht', and: 'und', or: 'oder', xor: 'genau eins', add: 'addieren',
-    'number of true': 'Anzahl true', maximum: 'Maximum', 'new p-coin': 'neue p-Münze', Check: 'Prüfen', 'Remove the last': 'Letztes entfernen',
+    'number of true': 'Anzahl true', 'at least 1': 'mindestens 1', maximum: 'Maximum', 'new p-coin': 'neue p-Münze', Check: 'Prüfen', 'Remove the last': 'Letztes entfernen',
     '{n} left': 'noch {n}', 'Building blocks': 'Bausteine',
     'Lay down a coin with “new p-coin”. Tap lines to choose them (in this order), then a function.': 'Leg mit „neue p-Münze“ eine Münze hin. Tippe Leitungen an, um sie auszuwählen (in dieser Reihenfolge), dann eine Funktion.',
     'Choose {n} lines first (tap them).': 'Wähle erst {n} Leitungen aus (antippen).', 'Choose at least {n} lines first (tap them).': 'Wähle erst mindestens {n} Leitungen aus (antippen).',
     'This function needs coins (true/false).': 'Diese Funktion braucht Münzen (true/false).', 'This function needs numbers.': 'Diese Funktion braucht Zahlen.',
-    'No more coins in this level.': 'In diesem Level gibt es keine weiteren Münzen.', 'There is nothing to check yet.': 'Es gibt noch nichts zu prüfen.',
+    'No more of these in this level.': 'Davon gibt es in diesem Level keine weiteren.', 'There is nothing to check yet.': 'Es gibt noch nichts zu prüfen.',
     'Checked: {x}. It lives on {a}, the target on {b}.': 'Geprüft: {x}. Es lebt auf {a}, das Ziel auf {b}.',
     'Checked: {x}. At {k} it has P = {m}, the target {t}.': 'Geprüft: {x}. Bei {k} hat es P = {m}, das Ziel {t}.',
     'Checked: {x}, the selected line (or else the newest).': 'Geprüft wird {x}: die ausgewählte Leitung (sonst die neueste).',
     'As a do block in Lean:': 'Als do-Block in Lean:',
-    'Task: build the target from coins:': 'Aufgabe: Bau das Ziel aus Münzen:',
+    'Task: build the target:': 'Aufgabe: Bau das Ziel:',
   })
+  // The sources: a coin, or a binomial B(n, p), each new one independent of the others.
+  const choose = (n, k) => { let r = 1; for (let i = 0; i < k; i++) r = r * (n - i) / (i + 1); return r }
+  const pow = (m, k) => { let r = ONE; for (let i = 0; i < k; i++) r = r.mul(m); return r }
+  const source = spec => {
+    if (spec === 'coin') return { space: 'bool', prefix: 'M', lean: 'coin p', label: () => tr('new p-coin'),
+      outcomes: () => [[false, complement(PP)], [true, PP]] }
+    const n = Number(/^binom(\d+)$/.exec(spec)?.[1])
+    if (n) return { space: 'nat', prefix: 'B', lean: `binom p ${n}`, label: () => `B(${n}, p)`,
+      outcomes: () => Array.from({ length: n + 1 }, (_, k) => [k, new Poly([new Q(choose(n, k))]).mul(pow(PP, k)).mul(pow(complement(PP), n - k))]) }
+    throw new Error(`unknown source ${spec}`)
+  }
   const funLabel = f => `${FUNS[f].sym}  ${tr(FUNS[f].label)}`
   const COLORS = ['#b0782a', '#2e6fb8', '#8e44ad', '#c0392b', '#16a085', '#d35400', '#34495e', '#7d6608']
 
@@ -511,11 +523,14 @@
       this.root = root; this.index = index; this.onSolved = onSolved
       this.target = parseDist(root.dataset.target)
       this.funs = root.dataset.moves.split(',').map(x => x.trim()).filter(x => FUNS[x])
-      this.maxCoins = Number(root.dataset.coins || 0) || Infinity
+      // the sources offered, with how many of each (`coin:3, binom2:2`; no number: as many as wanted)
+      this.sources = (root.dataset.sources || `coin:${root.dataset.coins || ''}`).split(',').map(x => {
+        const [k, m] = x.trim().split(':'); return { spec: k, max: Number(m || 0) || Infinity }
+      })
       this.board = root.querySelector('.pg-board')
       this.key = `pg:${location.pathname}:${index}`
-      this.nodes = []      // { coin: true } or { fun, inputs: [indices] }
-      try { this.nodes = JSON.parse(localStorage.getItem(this.key + ':tree') ?? '[]') } catch {}
+      this.nodes = []      // { src } (a source) or { fun, inputs: [indices] }
+      try { this.nodes = JSON.parse(localStorage.getItem(this.key + ':tree') ?? '[]').map(n => (n.coin ? { src: 'coin' } : n)) } catch {}
       this.selected = []   // indices, in the order chosen
       this.checked = null  // { node, ok }
       this.message = ''
@@ -525,13 +540,10 @@
     get solved() { try { return localStorage.getItem(this.key) === '1' } catch { return false } }
     save() { try { localStorage.setItem(this.key + ':tree', JSON.stringify(this.nodes)) } catch {} }
 
-    // names: coins M1, M2, …; results Z1, Z2, …
-    name(i) {
-      const n = this.nodes[i], k = this.nodes.slice(0, i + 1).filter(x => !!x.coin === !!n.coin).length
-      return (n.coin ? 'M' : 'Z') + k
-    }
-    space(i) { const n = this.nodes[i]; return n.coin ? 'bool' : FUNS[n.fun].to }
-    depth(i) { const n = this.nodes[i]; return n.coin ? 0 : 1 + Math.max(...n.inputs.map(j => this.depth(j))) }
+    // names: coins M1, M2, …; binomials B1, …; results Z1, Z2, …
+    prefix(i) { const n = this.nodes[i]; return n.src ? source(n.src).prefix : 'Z' }
+    name(i) { return this.prefix(i) + this.nodes.slice(0, i + 1).filter((_, j) => this.prefix(j) === this.prefix(i)).length }
+    space(i) { const n = this.nodes[i]; return n.src ? source(n.src).space : FUNS[n.fun].to }
     // the nodes below i (with i), in their order
     below(i) {
       const seen = new Set(), go = j => { if (seen.has(j)) return; seen.add(j); (this.nodes[j].inputs ?? []).forEach(go) }
@@ -542,7 +554,7 @@
     // a coin two; later sources and random functions (kernels) more)
     outcomes(j, val) {
       const n = this.nodes[j]
-      if (n.coin) return [[false, complement(PP)], [true, PP]]
+      if (n.src) return source(n.src).outcomes()
       return [[FUNS[n.fun].f(n.inputs.map(k => val.get(k))), ONE]]
     }
     // the distribution of node i: the nodes below it, one after the other as in a do block, each
@@ -558,20 +570,21 @@
       return { space: this.space(i), mass }
     }
     // the formula of a result, in the names of its inputs
-    formula(i) { const n = this.nodes[i]; return n.coin ? '' : FUNS[n.fun].show(n.inputs.map(j => this.name(j))) }
+    formula(i) { const n = this.nodes[i]; return n.src ? '' : FUNS[n.fun].show(n.inputs.map(j => this.name(j))) }
     // node i as a do block of DiscreteMeasure
     lean(i) {
       const lines = this.below(i).map(j => {
         const n = this.nodes[j], x = this.name(j).toLowerCase()
-        return n.coin ? `  let ${x} ← coin p` : `  let ${x} := ${FUNS[n.fun].lean(n.inputs.map(k => this.name(k).toLowerCase()))}`
+        return n.src ? `  let ${x} ← ${source(n.src).lean}` : `  let ${x} := ${FUNS[n.fun].lean(n.inputs.map(k => this.name(k).toLowerCase()))}`
       })
       return ['do', ...lines, `  return ${this.name(i).toLowerCase()}`].join('\n')
     }
 
     changed() { this.checked = null; this.message = ''; this.save(); this.render() }
-    addCoin() {
-      if (this.nodes.filter(n => n.coin).length >= this.maxCoins) { this.message = tr('No more coins in this level.'); this.render(); return }
-      this.nodes.push({ coin: true }); this.selected = [this.nodes.length - 1]; this.changed()
+    left(src) { return src.max - this.nodes.filter(n => n.src === src.spec).length }
+    addSource(src) {
+      if (this.left(src) <= 0) { this.message = tr('No more of these in this level.'); this.render(); return }
+      this.nodes.push({ src: src.spec }); this.selected = [this.nodes.length - 1]; this.changed()
     }
     apply(f) {
       const F = FUNS[f], sel = this.selected
@@ -630,10 +643,10 @@
     // crosses carry no dot (and the column passes over them).
     circuit() {
       const RH = 64, TOP = 14, LAB = 40, GW = 50, n = this.nodes.length
-      const funs = this.nodes.map((m, i) => (m.coin ? -1 : i)).filter(i => i >= 0)
+      const funs = this.nodes.map((m, i) => (m.src ? -1 : i)).filter(i => i >= 0)
       const col = i => funs.indexOf(i)
       // where a line starts: a result at its column, a coin after the columns made before it
-      const start = i => this.nodes[i].coin ? LAB + this.nodes.slice(0, i).filter(m => !m.coin).length * GW : LAB + col(i) * GW + GW / 2 + 13
+      const start = i => this.nodes[i].src ? LAB + this.nodes.slice(0, i).filter(m => !m.src).length * GW : LAB + col(i) * GW + GW / 2 + 13
       const xe = LAB + funs.length * GW + 14, y = i => TOP + i * RH + RH / 2
       const focus = this.checked?.ok ? new Set(this.below(this.checked.node))
         : this.selected.length ? new Set(this.selected.flatMap(j => this.below(j))) : null
@@ -653,8 +666,8 @@
           row.append(svg('text', { x: LAB - 6, y: y(i) - 10.5, 'text-anchor': 'middle', class: 'pg-row-badge-text' }, String(sel + 1)))
         }
         row.append(svg('line', { x1: start(i), x2: xe, y1: y(i), y2: y(i), class: 'pg-line', stroke: COLORS[i % COLORS.length] }))
-        if (m.coin) row.append(svg('circle', { cx: start(i), cy: y(i), r: 5, class: 'pg-source', fill: COLORS[i % COLORS.length] }))
-        const t = el('title'); t.textContent = m.coin ? `${this.name(i)} ← coin p` : `${this.name(i)} = ${this.formula(i)}`; row.append(t)
+        if (m.src) row.append(svg('circle', { cx: start(i), cy: y(i), r: 5, class: 'pg-source', fill: COLORS[i % COLORS.length] }))
+        const t = el('title'); t.textContent = m.src ? `${this.name(i)} ← ${source(m.src).lean}` : `${this.name(i)} = ${this.formula(i)}`; row.append(t)
         row.addEventListener('click', () => this.pick(i))
         rows.append(row)
         wmax = Math.max(wmax, this.chart(charts, dists[i], xe + 12, y(i) - RH / 2 + 8, (ok ? 'pg-ok' : '') + dim(i)))
@@ -689,18 +702,20 @@
       // the task
       const task = el('div', 'pg-task'), t = this.target
       const tk = axis(t.space, [...t.mass.keys()]).filter(k => !(t.mass.get(k) ?? ZERO).zero)
-      task.append(el('b', '', tr('Task: build the target from coins:') + ' '),
+      task.append(el('b', '', tr('Task: build the target:') + ' '),
         tk.length === 1 && (t.mass.get(tk[0]) ?? ZERO).eq(ONE) ? tr('surely {b}', { b: pointName(t.space, tk[0]) })
           : tk.map(k => `P(${pointName(t.space, k)}) = ${t.mass.get(k)}`).join(', '))
 
       // the building blocks
       const blocks = el('div', 'pg-blocks')
       blocks.append(el('div', 'pg-moves-head', tr('Building blocks')))
-      const used = this.nodes.filter(n => n.coin).length
-      const coin = el('button', 'pg-move pg-coin-btn', '+ ' + tr('new p-coin') + (this.maxCoins < Infinity ? ` (${tr('{n} left', { n: this.maxCoins - used })})` : ''))
-      coin.type = 'button'; coin.disabled = used >= this.maxCoins
-      coin.addEventListener('click', () => this.addCoin())
-      blocks.append(coin)
+      for (const src of this.sources) {
+        if (src.max === 0) continue
+        const b = el('button', 'pg-move pg-coin-btn', '+ ' + source(src.spec).label() + (src.max < Infinity ? ` (${tr('{n} left', { n: this.left(src) })})` : ''))
+        b.type = 'button'; b.disabled = this.left(src) <= 0
+        b.addEventListener('click', () => this.addSource(src))
+        blocks.append(b)
+      }
       for (const f of this.funs) {
         const F = FUNS[f], fits = this.selected.length >= F.arity && (F.more || this.selected.length === F.arity) && this.selected.every(j => this.space(j) === F.from)
         const b = el('button', 'pg-move' + (fits ? '' : ' pg-move-off'), funLabel(f))
@@ -727,7 +742,7 @@
 
       const now = this.selected.length === 1 ? this.selected[0] : this.nodes.length - 1
       const info = el('div', 'pg-info' + (this.message ? ' pg-warn' : ''),
-        this.message || (this.nodes.length ? tr('Checked: {x}, the selected line (or else the newest).', { x: this.name(now) + (this.nodes[now].coin ? '' : ` = ${this.formula(now)}`) }) : ''))
+        this.message || (this.nodes.length ? tr('Checked: {x}, the selected line (or else the newest).', { x: this.name(now) + (this.nodes[now].src ? '' : ` = ${this.formula(now)}`) }) : ''))
 
       const slider = el('label', 'pg-slider')
       const input = el('input'); input.type = 'range'; input.min = '0.05'; input.max = '0.95'; input.step = '0.05'; input.value = String(P)

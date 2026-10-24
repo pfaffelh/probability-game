@@ -52,7 +52,7 @@
 .pg-task { margin: 0.2rem 0 0.4rem; font-family: var(--verso-structure-font-family, sans-serif); }
 .pg-row { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: center; gap: 0.5rem; }
 .pg-row .pg-svg { flex: 1 1 22rem; max-width: 560px; margin: 0; }
-.pg-target-svg { flex: 0 0 auto; width: 200px; height: auto; border: 2px dashed #2e6fb8; border-radius: 10px; background: #f5f8fd; }
+.pg-target-svg { flex: 0 1 auto; max-width: 100%; height: auto; border: 2px dashed #2e6fb8; border-radius: 10px; background: #f5f8fd; }
 .pg-target-title { font: bold 14px var(--verso-structure-font-family, sans-serif); fill: #2e6fb8; }
 .pg-target-sand { fill: #b9cff0; stroke: #2e6fb8; stroke-width: 1.2; }
 .pg-target-mass { font: bold 12px var(--verso-code-font-family, monospace); fill: #1d3f73; }
@@ -95,7 +95,6 @@
 .pg-arrow-ok { font: bold 16px sans-serif; fill: #2e8b37; }
 .pg-arrow-bad { font: bold 16px sans-serif; fill: #b03a2e; }
 .pg-target-box.pg-card-ok .pg-target-svg { border-color: #2e8b37; border-style: solid; background: #eef8ef; }
-.pg-build .pg-target-svg { width: 180px; }
 .pg-check { font: inherit; font-family: var(--verso-structure-font-family, sans-serif); font-weight: bold; color: white; background: #2e6fb8; border: none; border-radius: 20px; padding: 0.4em 1.4em; cursor: pointer; }
 .pg-check:hover { background: #245a96; }
 @media (max-width: 760px) {
@@ -103,3 +102,5 @@
   .pg-target-box { order: -1; justify-self: center; }
 }
 .pg-mini, .pg-colm, .pg-arrow-ok, .pg-arrow-bad { pointer-events: none; }
+.pg-build-area .pg-target-box { max-width: 280px; }
+.pg-build-area .pg-target-svg { width: 100%; }
