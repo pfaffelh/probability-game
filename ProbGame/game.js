@@ -1,8 +1,8 @@
 // The probability game: distributions as sand, moves as maps, the result as the image measure.
 //
 // Each `.pg-level` (from `::::level` in ProbGame/Level.lean) has a start distribution, a target and
-// the moves offered. A distribution is a space ('bool', 'nat', 'int') with masses a + b·p (exact
-// fractions a, b: the same for every p) on its points; the picture draws them for an example p,
+// the moves offered. A distribution is a space ('bool', 'nat', 'int') with masses on its points that
+// are polynomials in p (with exact fractions: the same for every p); the picture draws them for an example p,
 // which a slider changes; a move is a map, and applying it pushes the distribution forward: the sand of each
 // point flows to its image (animated), where it piles up with the sand of the other points of the
 // same image. A tapped column shows its preimage. The level is solved when the distribution is the
@@ -93,31 +93,96 @@
   const parseQ = s => { const [n, d] = s.split('/'); return new Q(Number(n), Number(d ?? 1)) }
   const neg = q => new Q(-q.n, q.d)
 
-  // A mass a + b·p, with exact fractions a and b: the same for every p.
-  class Lin {
-    constructor(a, b = new Q(0)) { this.a = a; this.b = b }
-    add(o) { return new Lin(this.a.add(o.a), this.b.add(o.b)) }
-    eq(o) { return this.a.eq(o.a) && this.b.eq(o.b) }
-    get zero() { return this.a.zero && this.b.zero }
-    value(p) { return this.a.value + this.b.value * p }
-    toString() {
-      const coef = q => (q.n === q.d ? '' : q.n === -q.d ? '−' : String(q).replace('-', '−'))
-      if (this.b.zero) return String(this.a).replace('-', '−')
-      const pt = `${coef(this.b)}p`
-      if (this.a.zero) return pt
-      return this.b.n < 0 ? `${this.a} − ${coef(neg(this.b))}p` : `${this.a} + ${pt}`
+  // A mass: a polynomial in p with exact fractions as coefficients (c[i] at p^i), the same for every
+  // p; two masses are equal for every p exactly when their coefficients are.
+  class Poly {
+    constructor(c) {
+      c = c.slice(); while (c.length && c[c.length - 1].zero) c.pop()
+      this.c = c
     }
+    coef(i) { return this.c[i] ?? new Q(0) }
+    add(o) { return new Poly(Array.from({ length: Math.max(this.c.length, o.c.length) }, (_, i) => this.coef(i).add(o.coef(i)))) }
+    neg() { return new Poly(this.c.map(neg)) }
+    sub(o) { return this.add(o.neg()) }
+    mul(o) {
+      const r = Array.from({ length: Math.max(0, this.c.length + o.c.length - 1) }, () => new Q(0))
+      this.c.forEach((a, i) => o.c.forEach((b, j) => { r[i + j] = r[i + j].add(new Q(a.n * b.n, a.d * b.d)) }))
+      return new Poly(r)
+    }
+    eq(o) { return this.sub(o).zero }
+    get zero() { return this.c.length === 0 }
+    value(p) { return this.c.reduce((s, q, i) => s + q.value * p ** i, 0) }
+    toString() { return this.text ?? showPoly(this) }
   }
-  // `p`, `1-p`, `1`, `0`, `1/2`, `2p`, `1-2p`
-  const parseLin = str => {
-    const t = str.replace(/\s/g, ''), i = t.indexOf('p')
-    if (i < 0) return new Lin(parseQ(t))
-    const cut = Math.max(t.lastIndexOf('+', i), t.lastIndexOf('-', i))
-    const a = cut > 0 ? t.slice(0, cut) : '0', c = cut > 0 ? t.slice(cut, i) : t.slice(0, i)
-    return new Lin(parseQ(a), c === '' || c === '+' ? new Q(1) : c === '-' ? new Q(-1) : parseQ(c))
+  const SUP = n => (n === 1 ? '' : String(n).replace(/\d/g, d => '⁰¹²³⁴⁵⁶⁷⁸⁹'[d]))
+  const showQ = q => String(q).replace('-', '−')
+  // c·p^i·(1 − p)^j, when the mass is of this form (as in the binomial masses); else as a sum
+  function showPoly(m) {
+    if (m.zero) return '0'
+    if (m.c.length === 1) return showQ(m.c[0])
+    let i = 0; while (m.c[i].zero) i++
+    let r = new Poly(m.c.slice(i)), j = 0
+    // divide by 1 − p while 1 is a root
+    while (r.c.length > 1 && r.c.reduce((s, q) => s.add(q), new Q(0)).zero) {
+      const d = r.c.length - 1, b = Array(d)
+      b[d - 1] = r.c[d]
+      for (let k = d - 1; k >= 1; k--) b[k - 1] = r.c[k].add(b[k])
+      r = new Poly(b).neg(); j++
+    }
+    if (j > 0 && r.c.length === 1) {
+      const c = r.c[0], cs = c.n === c.d ? '' : c.n === -c.d ? '−' : showQ(c)
+      return `${cs}${i ? 'p' + SUP(i) : ''}${j === 1 && !i && !cs ? '1 − p' : `(1 − p)${SUP(j)}`}`
+    }
+    let out = ''
+    m.c.forEach((q, k) => {
+      if (q.zero) return
+      const a = new Q(Math.abs(q.n), q.d), sign = q.n < 0 ? '−' : '+'
+      const body = k === 0 ? String(a) : `${a.n === a.d ? '' : a.d === 1 ? String(a) : a + '·'}p${SUP(k)}`
+      out += out ? ` ${sign} ${body}` : (sign === '−' ? '−' : '') + body
+    })
+    return out
   }
-  const ONE = new Lin(new Q(1)), ZERO = new Lin(new Q(0))
-  const complement = m => new Lin(new Q(1).add(neg(m.a)), neg(m.b))
+  // a mass as a term of a sum: in brackets when it is a sum itself
+  const paren = m => (/ [+−] /.test(m.toString().replace(/\([^)]*\)/g, '')) ? `(${m})` : m.toString())
+  // `p`, `1-p`, `p^2`, `2p(1-p)`, `(1-p)^2`, `1/2`, `3p^2-2p^3`; shown as written
+  function parsePoly(str) {
+    const r = parsePoly1(str)
+    r.text = str.replace(/\s/g, '').replace(/\^(\d+)/g, (_, n) => SUP(Number(n))).replace(/\*/g, '·')
+      .replace(/(?<=[\dp)²³⁴⁵⁶⁷⁸⁹])-/g, ' − ').replace(/\+/g, ' + ').replace(/-/g, '−')
+    return r
+  }
+  function parsePoly1(str) {
+    const t = str.replace(/\s/g, '').match(/\d+|[p+\-*/^()]/g) ?? []
+    let i = 0
+    const peek = () => t[i], take = () => t[i++]
+    const expr = () => {
+      let r = term()
+      while (peek() === '+' || peek() === '-') r = take() === '+' ? r.add(term()) : r.sub(term())
+      return r
+    }
+    const term = () => {
+      let r = factor()
+      for (;;) {
+        if (peek() === '*') { take(); r = r.mul(factor()) }
+        else if (peek() === '/') { take(); const d = factor(); r = r.mul(new Poly([new Q(d.c[0].d, d.c[0].n)])) }
+        else if (peek() !== undefined && /^(\d+|p|\()$/.test(peek())) r = r.mul(factor())
+        else return r
+      }
+    }
+    const factor = () => {
+      if (peek() === '-') { take(); return factor().neg() }
+      let b
+      const x = take()
+      if (x === 'p') b = new Poly([new Q(0), new Q(1)])
+      else if (x === '(') { b = expr(); take() }
+      else b = new Poly([new Q(Number(x))])
+      if (peek() === '^') { take(); const n = Number(take()); let r = ONE; for (let k = 0; k < n; k++) r = r.mul(b); b = r }
+      return b
+    }
+    return expr()
+  }
+  const ONE = new Poly([new Q(1)]), ZERO = new Poly([]), PP = new Poly([new Q(0), new Q(1)])
+  const complement = m => ONE.sub(m)
   // the example p of the picture
   let P = 0.3
   try { P = Number(localStorage.getItem('pg:p') ?? 0.3) || 0.3 } catch {}
@@ -127,9 +192,9 @@
   // A distribution: a space and the masses of its points (keys: 'true'/'false', or numbers as text).
   function parseDist(spec) {
     const w = spec.trim().split(/\s+/)
-    if (w[0] === 'bernoulli') { const m = parseLin(w[1]); return { space: 'bool', mass: new Map([['true', m], ['false', complement(m)]]) } }
+    if (w[0] === 'bernoulli') { const m = parsePoly(w[1]); return { space: 'bool', mass: new Map([['true', m], ['false', complement(m)]]) } }
     if (w[0] === 'pure') return { space: /^-?\d+$/.test(w[1]) ? 'nat' : 'bool', mass: new Map([[w[1], ONE]]) }
-    return { space: w[0], mass: new Map(w.slice(1).map(x => { const [k, q] = x.split(':'); return [k, parseLin(q)] })) }
+    return { space: w[0], mass: new Map(w.slice(1).map(x => { const [k, q] = x.split(':'); return [k, parsePoly(q)] })) }
   }
   const sameDist = (a, b) => {
     if (a.space !== b.space) return false
@@ -350,7 +415,7 @@
         if (last) {
           const pre = axis(last.before.space, [...last.before.mass.keys()]).filter(k => last.before.mass.has(k) && last.move.f(k) === this.picked)
           const from = `{${pre.map(k => pointName(last.before.space, k)).join(', ')}}`
-          const sum = pre.length > 1 ? `${pre.map(k => { const q = last.before.mass.get(k); return q.a.zero || q.b.zero ? String(q) : `(${q})` }).join(' + ')} = ` : ''
+          const sum = pre.length > 1 ? `${pre.map(k => { const q = last.before.mass.get(k); return paren(q) }).join(' + ')} = ` : ''
           this.info.textContent = pre.length ? tr('{b}: the sand comes from {from}, P = {sum}{m}', { b: name, from, sum, m: m.toString() })
             : `${name}: ${tr('nothing flows here')}`
         } else this.info.textContent = `${name}: P = ${m} (${tr('the start')})`
@@ -400,6 +465,280 @@
     }
   }
 
+  // ---------------------------------------------------------------- the building site
+
+  // A level of the building site (`::::build`): the player lays down coins, all with the same p and
+  // independent of each other, and applies functions to one or several of them; each result is a new
+  // node, to which functions apply again. A coin may feed several functions, so the nodes form a
+  // network, which runs into the target. "Check" compares the distribution of the chosen node (the
+  // one selected, or else the newest) with the target, exactly, for every p. The distribution of a
+  // node is found by going through all outcomes of the coins below it.
+
+  // The functions: their arity (a number, or the least number of inputs), the space of their inputs and
+  // of their value, the value, and the forms for the card and for Lean.
+  const FUNS = {
+    not: { arity: 1, from: 'bool', to: 'bool', f: ([a]) => !a, show: ([a]) => `¬${a}`, lean: ([a]) => `!${a}`, label: 'not (¬)' },
+    and: { arity: 2, more: true, from: 'bool', to: 'bool', f: xs => xs.every(x => x), show: xs => xs.join(' ∧ '), lean: xs => xs.join(' && '), label: 'and (∧)' },
+    or: { arity: 2, more: true, from: 'bool', to: 'bool', f: xs => xs.some(x => x), show: xs => xs.join(' ∨ '), lean: xs => xs.join(' || '), label: 'or (∨)' },
+    xor: { arity: 2, more: true, from: 'bool', to: 'bool', f: xs => xs.filter(x => x).length % 2 === 1, show: xs => xs.join(' ⊕ '),
+      lean: xs => xs.slice(1).reduce((e, x) => `xor (${e}) ${x}`, xs[0]), label: 'xor (⊕)' },
+    toNat: { arity: 1, from: 'bool', to: 'nat', f: ([a]) => (a ? 1 : 0), show: ([a]) => `𝟙(${a})`, lean: ([a]) => `${a}.toNat`, label: 'heads = 1, tails = 0' },
+    count: { arity: 1, more: true, from: 'bool', to: 'nat', f: xs => xs.filter(x => x).length, show: xs => `#(${xs.join(', ')})`,
+      lean: xs => `[${xs.join(', ')}].count true`, label: 'number of heads' },
+    add: { arity: 2, more: true, from: 'nat', to: 'nat', f: xs => xs.reduce((a, b) => a + b, 0), show: xs => xs.join(' + '), lean: xs => xs.join(' + '), label: 'add (+)' },
+    max: { arity: 2, more: true, from: 'nat', to: 'nat', f: xs => Math.max(...xs), show: xs => `max(${xs.join(', ')})`,
+      lean: xs => xs.slice(1).reduce((e, x) => `max (${e}) ${x}`, xs[0]), label: 'maximum' },
+  }
+  Object.assign(DE, {
+    'not (¬)': 'nicht (¬)', 'and (∧)': 'und (∧)', 'or (∨)': 'oder (∨)', 'xor (⊕)': 'genau eins (⊕)', 'add (+)': 'addieren (+)',
+    'number of heads': 'Anzahl Kopf', maximum: 'Maximum', 'new p-coin': 'neue p-Münze', Check: 'Prüfen', 'Remove the last': 'Letztes entfernen',
+    '{n} left': 'noch {n}', 'Building blocks': 'Bausteine',
+    'Lay down a coin with “new p-coin”. Tap cards to choose them (in this order), then a function.': 'Leg mit „neue p-Münze“ eine Münze hin. Tippe Karten an, um sie auszuwählen (in dieser Reihenfolge), dann eine Funktion.',
+    'Choose {n} cards first (tap them).': 'Wähle erst {n} Karten aus (antippen).', 'Choose at least {n} cards first (tap them).': 'Wähle erst mindestens {n} Karten aus (antippen).',
+    'This function needs coins (heads/tails).': 'Diese Funktion braucht Münzen (Kopf/Zahl).', 'This function needs numbers.': 'Diese Funktion braucht Zahlen.',
+    'No more coins in this level.': 'In diesem Level gibt es keine weiteren Münzen.', 'There is nothing to check yet.': 'Es gibt noch nichts zu prüfen.',
+    'Checked: {x}. It lives on {a}, the target on {b}.': 'Geprüft: {x}. Es lebt auf {a}, das Ziel auf {b}.',
+    'Checked: {x}. At {k} it has P = {m}, the target {t}.': 'Geprüft: {x}. Bei {k} hat es P = {m}, das Ziel {t}.',
+    'Checked: {x}, the selected card (or else the newest).': 'Geprüft wird {x}: die ausgewählte Karte (sonst die neueste).',
+    'As a do block in Lean:': 'Als do-Block in Lean:',
+    'Task: build the target from coins:': 'Aufgabe: Bau das Ziel aus Münzen:',
+  })
+  const funLabel = f => tr(FUNS[f].label)
+
+  class Builder {
+    constructor(root, index, onSolved) {
+      this.root = root; this.index = index; this.onSolved = onSolved
+      this.target = parseDist(root.dataset.target)
+      this.funs = root.dataset.moves.split(',').map(x => x.trim()).filter(x => FUNS[x])
+      this.maxCoins = Number(root.dataset.coins || 0) || Infinity
+      this.board = root.querySelector('.pg-board')
+      this.key = `pg:${location.pathname}:${index}`
+      this.nodes = []      // { coin: true } or { fun, inputs: [indices] }
+      try { this.nodes = JSON.parse(localStorage.getItem(this.key + ':tree') ?? '[]') } catch {}
+      this.selected = []   // indices, in the order chosen
+      this.checked = null  // { node, ok }
+      this.message = ''
+      addEventListener('resize', () => this.wires())
+      this.render()
+    }
+
+    get solved() { try { return localStorage.getItem(this.key) === '1' } catch { return false } }
+    save() { try { localStorage.setItem(this.key + ':tree', JSON.stringify(this.nodes)) } catch {} }
+
+    // names: coins M1, M2, …; results Z1, Z2, …
+    name(i) {
+      const n = this.nodes[i], k = this.nodes.slice(0, i + 1).filter(x => !!x.coin === !!n.coin).length
+      return (n.coin ? 'M' : 'Z') + k
+    }
+    space(i) { const n = this.nodes[i]; return n.coin ? 'bool' : FUNS[n.fun].to }
+    depth(i) { const n = this.nodes[i]; return n.coin ? 0 : 1 + Math.max(...n.inputs.map(j => this.depth(j))) }
+    // the nodes below i (with i), in their order
+    below(i) {
+      const seen = new Set(), go = j => { if (seen.has(j)) return; seen.add(j); (this.nodes[j].inputs ?? []).forEach(go) }
+      go(i)
+      return [...seen].sort((a, b) => a - b)
+    }
+    // the distribution of node i: all outcomes of the coins below it, each with its mass
+    dist(i) {
+      const coins = this.below(i).filter(j => this.nodes[j].coin), mass = new Map()
+      for (let mask = 0; mask < 2 ** coins.length; mask++) {
+        const val = new Map(), out = new Map(coins.map((c, b) => [c, !!(mask >> b & 1)]))
+        let w = ONE
+        for (const c of coins) w = w.mul(out.get(c) ? PP : complement(PP))
+        const v = j => {
+          if (out.has(j)) return out.get(j)
+          if (!val.has(j)) { const n = this.nodes[j]; val.set(j, FUNS[n.fun].f(n.inputs.map(v))) }
+          return val.get(j)
+        }
+        const k = String(v(i))
+        mass.set(k, (mass.get(k) ?? ZERO).add(w))
+      }
+      for (const [k, m] of mass) if (m.zero) mass.delete(k)
+      return { space: this.space(i), mass }
+    }
+    // the formula of a result, in the names of its inputs
+    formula(i) { const n = this.nodes[i]; return n.coin ? '' : FUNS[n.fun].show(n.inputs.map(j => this.name(j))) }
+    // node i as a do block of DiscreteMeasure
+    lean(i) {
+      const lines = this.below(i).map(j => {
+        const n = this.nodes[j], x = this.name(j).toLowerCase()
+        return n.coin ? `  let ${x} ← coin p` : `  let ${x} := ${FUNS[n.fun].lean(n.inputs.map(k => this.name(k).toLowerCase()))}`
+      })
+      return ['do', ...lines, `  return ${this.name(i).toLowerCase()}`].join('\n')
+    }
+
+    changed() { this.checked = null; this.message = ''; this.save(); this.render() }
+    addCoin() {
+      if (this.nodes.filter(n => n.coin).length >= this.maxCoins) { this.message = tr('No more coins in this level.'); this.render(); return }
+      this.nodes.push({ coin: true }); this.selected = [this.nodes.length - 1]; this.changed()
+    }
+    apply(f) {
+      const F = FUNS[f], sel = this.selected
+      const bad = sel.length < F.arity || (!F.more && sel.length > F.arity) ? tr(F.more ? 'Choose at least {n} cards first (tap them).' : 'Choose {n} cards first (tap them).', { n: F.arity })
+        : sel.some(j => this.space(j) !== F.from) ? tr(F.from === 'bool' ? 'This function needs coins (heads/tails).' : 'This function needs numbers.') : null
+      if (bad) { this.message = bad; this.render(); return }
+      this.nodes.push({ fun: f, inputs: sel.slice() }); this.selected = [this.nodes.length - 1]; this.changed()
+    }
+    pick(i) {
+      const k = this.selected.indexOf(i)
+      if (k >= 0) this.selected.splice(k, 1); else this.selected.push(i)
+      this.message = ''; this.render()
+    }
+    removeLast() { if (!this.nodes.length) return; this.nodes.pop(); this.selected = this.selected.filter(j => j < this.nodes.length); this.changed() }
+    reset() { this.nodes = []; this.selected = []; this.changed() }
+
+    check() {
+      if (!this.nodes.length) { this.message = tr('There is nothing to check yet.'); this.render(); return }
+      const i = this.selected.length === 1 ? this.selected[0] : this.nodes.length - 1
+      const d = this.dist(i), t = this.target, x = this.name(i)
+      const ok = sameDist(d, t)
+      this.checked = { node: i, ok }
+      if (ok) {
+        this.message = ''
+        const first = !this.solved
+        try { localStorage.setItem(this.key, '1') } catch {}
+        this.onSolved?.(first)
+      } else if (d.space !== t.space) this.message = tr('Checked: {x}. It lives on {a}, the target on {b}.', { x, a: spaceName(d.space), b: spaceName(t.space) })
+      else {
+        const k = axis(t.space, [...d.mass.keys(), ...t.mass.keys()]).find(k => !(d.mass.get(k) ?? ZERO).eq(t.mass.get(k) ?? ZERO))
+        this.message = tr('Checked: {x}. At {k} it has P = {m}, the target {t}.', { x, k: pointName(t.space, k), m: String(d.mass.get(k) ?? ZERO), t: String(t.mass.get(k) ?? ZERO) })
+      }
+      this.render()
+    }
+
+    // a small picture of a distribution
+    chart(d, cls) {
+      const ks = axis(d.space, [...d.mass.keys()]), gap = Math.max(50, ...ks.map(k => String(d.mass.get(k) ?? ZERO).length * 6.2 + 8)), w = Math.max(104, gap * ks.length + 6), h = 84, base = 66, bh = 44
+      const g = svg('svg', { viewBox: `0 0 ${w} ${h}`, class: 'pg-mini ' + cls, width: w, height: h })
+      g.append(svg('line', { x1: 4, x2: w - 4, y1: base, y2: base, class: 'pg-axis' }))
+      const x0 = w / 2 - (gap * (ks.length - 1)) / 2, bw = Math.min(30, gap - 14)
+      ks.forEach((k, j) => {
+        const m = d.mass.get(k) ?? ZERO, x = x0 + j * gap, hh = m.value(P) * bh
+        if (hh > 0) g.append(svg('rect', { class: 'pg-mini-sand', x: x - bw / 2, y: base - hh, width: bw, height: hh, rx: 2 }))
+        g.append(svg('text', { x, y: base - hh - 4, 'text-anchor': 'middle', class: 'pg-mini-mass' }, m.toString()))
+        g.append(svg('text', { x, y: base + 14, 'text-anchor': 'middle', class: 'pg-mini-point' }, pointName(d.space, k)))
+      })
+      return g
+    }
+
+    // the wires: from each input to its result, and from the checked node to the target
+    wires() {
+      const area = this.area, layer = this.layer
+      if (!area || !area.isConnected || this.root.hidden) return
+      const r0 = area.getBoundingClientRect()
+      layer.setAttribute('viewBox', `0 0 ${r0.width} ${r0.height}`)
+      layer.replaceChildren()
+      const ok = this.checked?.ok ? new Set(this.below(this.checked.node)) : new Set()
+      // the wires between cards stay inside the site (which may scroll)
+      const rs = this.site.getBoundingClientRect(), clip = svg('clipPath', { id: `pg-clip-${this.index}` })
+      clip.append(svg('rect', { x: rs.left - r0.left, y: rs.top - r0.top, width: rs.width, height: rs.height }))
+      layer.append(clip)
+      const line = (a, b, cls, inside = true) => {
+        const x1 = a.right - r0.left, y1 = a.top + a.height / 2 - r0.top, x2 = b.left - r0.left, y2 = b.top + b.height / 2 - r0.top
+        const mx = (x1 + x2) / 2
+        const path = svg('path', { d: `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`, class: 'pg-wire ' + cls })
+        if (inside) path.setAttribute('clip-path', `url(#pg-clip-${this.index})`)
+        layer.append(path)
+      }
+      this.nodes.forEach((n, i) => (n.inputs ?? []).forEach(j => {
+        const a = this.cards[j]?.getBoundingClientRect(), b = this.cards[i]?.getBoundingClientRect()
+        if (a && b) line(a, b, ok.has(i) ? 'pg-wire-ok' : '')
+      }))
+      if (this.checked) {
+        const a = this.cards[this.checked.node]?.getBoundingClientRect(), b = this.targetBox.getBoundingClientRect()
+        if (a && b.left > a.right && a.right <= this.site.getBoundingClientRect().right + 1) line(a, b, this.checked.ok ? 'pg-wire-ok' : 'pg-wire-bad', false)
+      }
+    }
+
+    render() {
+      const done = this.checked?.ok
+      // the task
+      const task = el('div', 'pg-task'), t = this.target
+      const tk = axis(t.space, [...t.mass.keys()]).filter(k => !(t.mass.get(k) ?? ZERO).zero)
+      task.append(el('b', '', tr('Task: build the target from coins:') + ' '),
+        tk.length === 1 && (t.mass.get(tk[0]) ?? ZERO).eq(ONE) ? tr('surely {b}', { b: pointName(t.space, tk[0]) })
+          : tk.map(k => `P(${pointName(t.space, k)}) = ${t.mass.get(k)}`).join(', '))
+
+      // the building blocks
+      const blocks = el('div', 'pg-blocks')
+      blocks.append(el('div', 'pg-moves-head', tr('Building blocks')))
+      const used = this.nodes.filter(n => n.coin).length
+      const coin = el('button', 'pg-move pg-coin-btn', '+ ' + tr('new p-coin') + (this.maxCoins < Infinity ? ` (${tr('{n} left', { n: this.maxCoins - used })})` : ''))
+      coin.type = 'button'; coin.disabled = used >= this.maxCoins
+      coin.addEventListener('click', () => this.addCoin())
+      blocks.append(coin)
+      for (const f of this.funs) {
+        const F = FUNS[f], fits = this.selected.length >= F.arity && (F.more || this.selected.length === F.arity) && this.selected.every(j => this.space(j) === F.from)
+        const b = el('button', 'pg-move' + (fits ? '' : ' pg-move-off'), funLabel(f))
+        b.type = 'button'
+        b.addEventListener('click', () => this.apply(f))
+        blocks.append(b)
+      }
+
+      // the site: a column per depth, a card per node
+      const site = el('div', 'pg-site'), cols = []
+      this.site = site
+      this.cards = []
+      this.nodes.forEach((n, i) => {
+        const dp = this.depth(i)
+        while (cols.length <= dp) { const c = el('div', 'pg-col'); cols.push(c); site.append(c) }
+        const k = this.selected.indexOf(i), ok = done && this.below(this.checked.node).includes(i)
+        const card = el('button', 'pg-card' + (k >= 0 ? ' pg-card-sel' : '') + (ok ? ' pg-card-ok' : '') + (this.checked?.node === i && !this.checked.ok ? ' pg-card-bad' : ''))
+        card.type = 'button'
+        const head = el('div', 'pg-card-head')
+        head.append(el('b', '', this.name(i)), n.coin ? '' : ` = ${this.formula(i)}`)
+        if (k >= 0) head.append(el('span', 'pg-card-badge', String(k + 1)))
+        card.append(head, this.chart(this.dist(i), ''))
+        card.dataset.node = String(i)
+        card.addEventListener('click', () => this.pick(i))
+        cols[dp].append(card)
+        this.cards[i] = card
+      })
+      if (!this.nodes.length) site.append(el('div', 'pg-site-empty', tr('Lay down a coin with “new p-coin”. Tap cards to choose them (in this order), then a function.')))
+      site.addEventListener('scroll', () => this.wires())
+
+      // the target
+      this.targetBox = el('div', 'pg-target-box' + (done ? ' pg-card-ok' : ''))
+      this.targetBox.append(this.targetPicture())
+
+      this.area = el('div', 'pg-build-area')
+      this.layer = svg('svg', { class: 'pg-wires' })
+      this.area.append(this.layer, site, this.targetBox)
+
+      const tools = el('div', 'pg-tools')
+      const check = el('button', 'pg-check', tr('Check')), undo = el('button', 'pg-tool', '↶ ' + tr('Remove the last')), reset = el('button', 'pg-tool', '⟲ ' + tr('Start over'))
+      check.type = undo.type = reset.type = 'button'
+      undo.disabled = reset.disabled = !this.nodes.length
+      check.addEventListener('click', () => this.check())
+      undo.addEventListener('click', () => this.removeLast()); reset.addEventListener('click', () => this.reset())
+      tools.append(check, undo, reset)
+
+      const info = el('div', 'pg-info' + (this.message ? ' pg-warn' : ''),
+        this.message || (this.nodes.length ? tr('Checked: {x}, the selected card (or else the newest).', { x: this.name(this.selected.length === 1 ? this.selected[0] : this.nodes.length - 1) }) : ''))
+
+      const slider = el('label', 'pg-slider')
+      const input = el('input'); input.type = 'range'; input.min = '0.05'; input.max = '0.95'; input.step = '0.05'; input.value = String(P)
+      input.addEventListener('input', () => { P = Number(input.value); try { localStorage.setItem('pg:p', input.value) } catch {}; this.render() })
+      slider.append(`${tr('the picture for p =')} ${P.toFixed(2)} `, input, el('span', 'pg-slider-note', ' ' + tr('(only an example; the masses hold for every p)')))
+
+      const parts = [task, blocks, this.area, tools, info, slider]
+      if (done) {
+        const box = el('div', 'pg-solved')
+        box.append(el('div', 'pg-solved-head', '✓ ' + tr('Solved!')))
+        box.append(el('div', 'pg-solved-lean-head', tr('As a do block in Lean:')))
+        box.append(el('pre', 'pg-lean', this.lean(this.checked.node)))
+        const next = el('button', 'pg-next', tr('Next level ›'))
+        next.type = 'button'
+        next.addEventListener('click', () => this.onNext?.())
+        box.append(next)
+        parts.push(box)
+      }
+      this.board.replaceChildren(...parts)
+      requestAnimationFrame(() => this.wires())
+    }
+  }
+  Builder.prototype.targetPicture = Level.prototype.targetPicture
+
   // ---------------------------------------------------------------- the stage
 
   function stage() {
@@ -415,7 +754,7 @@
     top.append(langs, dots)
     roots[0].before(top)
     let current = 0
-    const levels = roots.map((r, i) => new Level(r, i, () => refresh()))
+    const levels = roots.map((r, i) => new (r.classList.contains('pg-build') ? Builder : Level)(r, i, () => refresh()))
     const refresh = () => {
       dots.replaceChildren()
       levels.forEach((l, k) => {
@@ -431,6 +770,7 @@
       roots.forEach((r, i) => { r.hidden = i !== current })
       history.replaceState(null, '', `${location.pathname}${location.search}#level-${current + 1}`)
       refresh()
+      levels[current].wires?.()
     }
     levels.forEach((l, k) => { l.onNext = () => show(k + 1) })
     const fromHash = Number(/^#level-(\d+)$/.exec(location.hash)?.[1] ?? 0) - 1

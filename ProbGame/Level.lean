@@ -76,6 +76,38 @@ def level : DirectiveExpanderOf LevelConfig
         $(quote cfg.leanStart) $(quote cfg.leanTarget))
         #[$blocks,*])
 
+-- A level of the building site: the target, the functions offered and the number of coins allowed
+-- (`""`: as many as wanted). The player lays down coins and applies functions to them, into a network
+-- that runs into the target; `game.js` checks it exactly, for every `p`.
+block_extension Block.build (target moves coins : String) where
+  data := Json.mkObj [("target", target), ("moves", moves), ("coins", coins)]
+  traverse _ _ _ := pure none
+  extraJs := {JS.mk gameJs}
+  extraCss := {CSS.mk gameCss}
+  toHtml := some fun _ goB _ data content => do
+    let get (k : String) := (data.getObjValAs? String k).toOption.getD ""
+    pure <| .tag "div" #[("class", "pg-level pg-build"), ("data-target", get "target"), ("data-moves", get "moves"),
+        ("data-coins", get "coins")] <|
+      .seq #[.tag "div" #[("class", "pg-text")] (← content.mapM goB), .tag "div" #[("class", "pg-board")] .empty]
+  toTeX := none
+
+structure BuildConfig where
+  target : String
+  moves : String
+  coins : String
+
+instance : FromArgs BuildConfig DocElabM where
+  fromArgs := BuildConfig.mk <$> .named `target .string false <*> .named `moves .string false <*>
+    .namedD `coins .string ""
+
+/-- A level of the building site: `::::build (target := "bool true:p^2 false:1-p^2") (moves := "and, or, not")
+(coins := "2")`; the functions are those of `FUNS` in `game.js`. -/
+@[directive]
+def build : DirectiveExpanderOf BuildConfig
+  | cfg, contents => do
+    let blocks ← contents.mapM elabBlock
+    ``(Verso.Doc.Block.other (Block.build $(quote cfg.target) $(quote cfg.moves) $(quote cfg.coins)) #[$blocks,*])
+
 -- Text in one language: `:::en` and `:::de`; `game.js` shows the language chosen.
 block_extension Block.lang (lang : String) where
   data := Json.str lang
