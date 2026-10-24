@@ -455,7 +455,7 @@
           box.append(el('div', 'pg-solved-lean-head', tr('In Lean, for every p:')))
           box.append(el('pre', 'pg-lean', statement))
         }
-        const next = el('button', 'pg-next', tr('Next level ›'))
+        const next = el('button', 'pg-next', tr(this.root.dataset.proof ? 'To the proof ↓' : 'Next level ›'))
         next.type = 'button'
         next.addEventListener('click', () => this.onNext?.())
         box.append(next)
@@ -755,7 +755,7 @@
         box.append(el('div', 'pg-solved-head', '✓ ' + tr('Solved!')))
         box.append(el('div', 'pg-solved-lean-head', tr('As a do block in Lean:')))
         box.append(el('pre', 'pg-lean', this.lean(this.checked.node)))
-        const next = el('button', 'pg-next', tr('Next level ›'))
+        const next = el('button', 'pg-next', tr(this.root.dataset.proof ? 'To the proof ↓' : 'Next level ›'))
         next.type = 'button'
         next.addEventListener('click', () => this.onNext?.())
         box.append(next)
@@ -766,6 +766,279 @@
   }
   Builder.prototype.targetPicture = Level.prototype.targetPicture
 
+  // ---------------------------------------------------------------- the proof
+
+  // The second part of a level, as in the Natural Number Game: once the board is solved, its statement
+  // is to be proved in Lean, one tactic after another (`/start` and `/check` of the bridge, in the
+  // context Lean/Rules.lean). The inventory holds the tactics and rules introduced so far (by the
+  // number of the level, `"2.3"`) and the lemmas proved in earlier levels; a line that uses anything
+  // else is refused before Lean sees it.
+
+  const INVENTORY = [
+    { name: 'rw', kind: 'tactic', at: '1.1', insert: 'rw []', sig: 'rw [h]   rw [← h]   rw [h₁, h₂]',
+      en: 'Rewrites the goal with the equation h: its left side becomes its right side (with ←, the other way round). Closes the goal when it then reads a = a. It does not rewrite where names bound in a do block occur; there, use simp only.',
+      de: 'Schreibt das Ziel mit der Gleichung h um: Ihre linke Seite wird zu ihrer rechten (mit ← umgekehrt). Schließt das Ziel, wenn es danach a = a lautet. Es schreibt nicht dort um, wo in einem do-Block gebundene Namen vorkommen; dort hilft simp only.' },
+    { name: 'rfl', kind: 'tactic', at: '1.3', insert: 'rfl', sig: 'rfl',
+      en: 'Closes a goal a = b whose sides are the same after computing (!true is false, 1 + 1 is 2).',
+      de: 'Schließt ein Ziel a = b, dessen Seiten nach Ausrechnen gleich sind (!true ist false, 1 + 1 ist 2).' },
+    { name: 'congr', kind: 'tactic', at: '1.4', insert: 'congr 1', sig: 'congr 1',
+      en: 'For a goal f a = f b, or μ >>= g = μ >>= h (a do block): reduces it to the parts that differ (a = b, g = h).',
+      de: 'Für ein Ziel f a = f b, oder μ >>= g = μ >>= h (ein do-Block): führt es auf die Teile zurück, die sich unterscheiden (a = b, g = h).' },
+    { name: 'funext', kind: 'tactic', at: '1.4', insert: 'funext x', sig: 'funext x',
+      en: 'For a goal g = h between functions: it suffices that g x = h x for every x.',
+      de: 'Für ein Ziel g = h zwischen Funktionen: Es genügt, dass g x = h x für jedes x.' },
+    { name: 'cases', kind: 'tactic', at: '1.4', insert: 'cases x', sig: 'cases x',
+      en: 'Splits into the cases of x: for x : Bool, the goals for false and for true, one after the other.',
+      de: 'Teilt in die Fälle von x: für x : Bool die Ziele für false und für true, eines nach dem anderen.' },
+    { name: 'simp only', kind: 'tactic', at: '2.2', insert: 'simp only []', sig: 'simp only [h₁, h₂, …]',
+      en: 'Rewrites with the given rules everywhere, also inside do blocks, as often as it can; closes the goal when both sides become the same.',
+      de: 'Schreibt mit den angegebenen Regeln überall um, auch in do-Blöcken, so oft es geht; schließt das Ziel, wenn beide Seiten gleich werden.' },
+    { name: '<;>', kind: 'tactic', at: '2.5', insert: ' <;> ', sig: 't₁ <;> t₂',
+      en: 'Runs t₂ on every goal that t₁ leaves: cases x <;> cases y <;> rfl.',
+      de: 'Führt t₂ auf jedem Ziel aus, das t₁ übrig lässt: cases x <;> cases y <;> rfl.' },
+    { name: "induction'", kind: 'tactic', at: '3.3', insert: "induction' n with n ih", sig: "induction' n with n ih",
+      en: 'Induction on the natural number n: first the goal for 0, then the goal for n + 1, with the hypothesis ih for n.',
+      de: 'Induktion nach der natürlichen Zahl n: zuerst das Ziel für 0, dann das Ziel für n + 1, mit der Annahme ih für n.' },
+    { name: 'coin_not', kind: 'rule', at: '1.1', sig: 'not <$> coin p = coin (σ p)', en: 'Flipping a coin swaps the masses.', de: 'Umdrehen tauscht die Massen.' },
+    { name: 'coin_const', kind: 'rule', at: '1.2', sig: '(fun _ => b) <$> coin p = pure b', en: 'A constant move: all the sand to one point.', de: 'Ein konstanter Zug: der ganze Sand an einen Punkt.' },
+    { name: 'map_pure', kind: 'rule', at: '1.3', sig: 'f <$> pure a = pure (f a)', en: 'A move on a point mass moves the point.', de: 'Ein Zug auf einer Punktmasse verschiebt den Punkt.' },
+    { name: 'map_map', kind: 'rule', at: '1.6', sig: 'g <$> (f <$> μ) = (fun x => g (f x)) <$> μ', en: 'Two moves are one move.', de: 'Zwei Züge sind ein Zug.' },
+    { name: 'coin_and', kind: 'rule', at: '2.1', sig: '(do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)', en: 'Independence: both true with probability p · q.', de: 'Unabhängigkeit: beide true mit Wahrscheinlichkeit p · q.' },
+    { name: 'bind_map_left', kind: 'rule', at: '2.2', sig: '(do let x ← f <$> μ; g x) = (do let x ← μ; g (f x))', en: 'A move on a throw goes into the result.', de: 'Ein Zug auf einem Wurf wandert ins Ergebnis.' },
+    { name: 'map_bind', kind: 'rule', at: '2.3', sig: 'f <$> (do let x ← μ; g x) = (do let x ← μ; f <$> g x)', en: 'A move after a do block goes into it.', de: 'Ein Zug nach einem do-Block wandert in ihn hinein.' },
+    { name: 'or_eq', kind: 'rule', at: '2.3', sig: '(x || y) = !(!x && !y)', en: 'De Morgan.', de: 'De Morgan.' },
+    { name: 'Bool.and_not_self', kind: 'rule', at: '2.4', sig: '(x && !x) = false', en: 'Never both x and not x.', de: 'Nie zugleich x und nicht x.' },
+    { name: 'coin_unused', kind: 'rule', at: '2.4', sig: '(do let _ ← coin p; ν) = ν', en: 'A coin whose result is not used changes nothing.', de: 'Eine Münze, deren Ergebnis nicht benutzt wird, ändert nichts.' },
+    { name: 'binom_zero', kind: 'rule', at: '2.6', sig: 'binom p 0 = pure 0', en: 'The definition of binom: no throw.', de: 'Die Definition von binom: kein Wurf.' },
+    { name: 'binom_succ', kind: 'rule', at: '2.6', sig: 'binom p (n + 1) = do let X ← coin p; let Y ← binom p n; pure (X.toNat + Y)', en: 'The definition of binom: one throw more.', de: 'Die Definition von binom: ein Wurf mehr.' },
+    { name: 'bind_assoc', kind: 'rule', at: '2.6', sig: '(do let y ← (do let x ← μ; f x); g y) = (do let x ← μ; let y ← f x; g y)', en: 'A do block in a do block is one do block.', de: 'Ein do-Block in einem do-Block ist ein do-Block.' },
+    { name: 'pure_bind', kind: 'rule', at: '2.6', sig: '(do let x ← pure a; f x) = f a', en: 'Throwing a point mass is no throw.', de: 'Eine Punktmasse zu werfen ist kein Wurf.' },
+    { name: 'add_zero', kind: 'rule', at: '2.6', sig: 'n + 0 = n', en: 'Adding zero.', de: 'Null addieren.' },
+    { name: 'add_assoc', kind: 'rule', at: '3.1', sig: 'a + b + c = a + (b + c)', en: 'Brackets in sums.', de: 'Klammern in Summen.' },
+    { name: 'map_eq_pure_bind', kind: 'rule', at: '3.2', sig: 'f <$> μ = do let x ← μ; pure (f x)', en: 'A move as a do block.', de: 'Ein Zug als do-Block.' },
+    { name: 'zero_add', kind: 'rule', at: '3.3', sig: '0 + n = n', en: 'Adding to zero.', de: 'Zu null addieren.' },
+    { name: 'bind_pure', kind: 'rule', at: '3.5', sig: '(do let x ← μ; pure x) = μ', en: 'A throw whose result is the result.', de: 'Ein Wurf, dessen Ergebnis das Ergebnis ist.' },
+    { name: 'binom_one', kind: 'lemma', at: '3.2', sig: 'Bool.toNat <$> coin p = binom p 1', en: 'Proved by you in world 3, level 2.', de: 'Von dir bewiesen in Welt 3, Level 2.' },
+    { name: "binom_succ'", kind: 'lemma', at: '3.3', sig: "(do let X ← binom p n; let Y ← coin p; pure (X + Y.toNat)) = binom p (n + 1)", en: 'Proved by you in world 3, level 3.', de: 'Von dir bewiesen in Welt 3, Level 3.' },
+    { name: 'binom_add', kind: 'lemma', at: '3.5', sig: '(do let X ← binom p n; let Y ← binom p m; pure (X + Y)) = binom p (n + m)', en: 'Proved by you: the boss of world 3.', de: 'Von dir bewiesen: der Endgegner von Welt 3.' },
+  ]
+  Object.assign(DE, {
+    Proof: 'Beweis', 'Run': 'Ausführen', 'Inventory': 'Inventar', Tactics: 'Taktiken', Theorems: 'Sätze',
+    'Proved!': 'Bewiesen!', 'Goal': 'Ziel', 'goal {i} of {n}': 'Ziel {i} von {n}', 'Lean is thinking …': 'Lean denkt …',
+    'Your lemma {x} is now in your inventory.': 'Dein Lemma {x} ist jetzt in deinem Inventar.',
+    'To the proof ↓': 'Zum Beweis ↓', 'Insert': 'Einsetzen', 'Remove the last line': 'Letzte Zeile entfernen',
+    'The proof needs Lean: open the game with ?backend=… (the address of a bridge).': 'Der Beweis braucht Lean: Öffne das Spiel mit ?backend=… (der Adresse einer Bridge).',
+    'Lean cannot be reached: {e}': 'Lean ist nicht erreichbar: {e}',
+    '{x} is not unlocked yet.': '{x} ist noch nicht freigeschaltet.',
+    '{x} is not in your inventory.': '{x} ist nicht in deinem Inventar.',
+    'This tactic is not in your inventory: {x}': 'Diese Taktik ist nicht in deinem Inventar: {x}',
+    'Statement': 'Aussage', 'a tactic, e.g. rw [coin_not]': 'eine Taktik, z. B. rw [coin_not]',
+    'Proved earlier; the proof is kept.': 'Schon bewiesen; der Beweis ist gespeichert.',
+  })
+  const atLeast = (a, b) => { const [x, y] = a.split('.').map(Number), [u, v] = b.split('.').map(Number); return x > u || (x === u && y >= v) }
+
+  class Proof {
+    constructor(level, onChange) {
+      const root = level.root
+      this.level = level; this.root = root; this.onChange = onChange
+      this.no = root.dataset.no; this.statement = root.dataset.proof; this.lemma = root.dataset.lemma
+      this.context = root.dataset.proofContext ?? ''
+      this.key = level.key + ':proof'
+      this.lines = []
+      try { this.lines = JSON.parse(localStorage.getItem(this.key) ?? '[]') } catch {}
+      this.goals = null; this.error = ''; this.busy = false; this.session = null; this.picked = null
+      this.box = el('section', 'pg-proof')
+      this.box.hidden = true
+      this.texts = [...root.querySelectorAll(':scope > .pg-text > .pg-proof-text, :scope .pg-proof-text')]
+      for (const t of this.texts) {
+        // a paragraph that begins with “Tip.” is folded
+        t.querySelectorAll('p').forEach(p => {
+          const first = p.firstElementChild
+          if (first && p.textContent.trimStart().startsWith(first.textContent) && /^(Tip|Tipp)\.$/.test(first.textContent.trim())) {
+            const d = el('details', 'pg-tip'), s = el('summary', '', first.textContent.replace('.', ''))
+            first.remove(); p.before(d); d.append(s, p)
+          }
+        })
+      }
+      root.append(this.box)
+      this.update()
+    }
+
+    get proved() { try { return localStorage.getItem(this.key + 'd') === '1' } catch { return false } }
+    // the inventory at this level: what was introduced up to here; the lemma of this level is not yet
+    available(item) { return atLeast(this.no, item.at) && !(item.kind === 'lemma' && item.at === this.no) }
+
+    // shown once the board is solved
+    update() {
+      const show = this.level.solved
+      if (show && this.box.hidden) { this.box.hidden = false; this.render(); this.begin() }
+      else if (!show) this.box.hidden = true
+    }
+    focus() { this.box.scrollIntoView({ behavior: 'smooth', block: 'start' }); setTimeout(() => this.input?.focus({ preventScroll: true }), 400) }
+
+    async post(path, body) {
+      const r = await fetch(BACKEND.replace(/\/$/, '') + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      return r.json()
+    }
+    async begin() {
+      if (!BACKEND) { this.render(); return }
+      this.busy = true; this.render()
+      try {
+        const r = await this.post('/start', { context: this.context, statement: `example ${this.statement}` })
+        if (r.error) { this.error = r.error.message; this.goals = null }
+        else { this.session = r.session; this.goals = r.state.goals; await this.check(this.lines, true) }
+      } catch (e) { this.error = tr('Lean cannot be reached: {e}', { e: String(e) }) }
+      this.busy = false; this.render()
+    }
+    // Lean on the proof `lines`: on success they become the proof, else the error is shown
+    async check(lines, quiet = false) {
+      let r = await this.post('/check', { session: this.session, proof: lines.join('\n') })
+      if (r.error?.kind === 'session') { await this.begin(); return false }
+      if (r.error) { this.error = r.error.message; return false }
+      const bad = r.steps.flatMap(s => s.diags.filter(d => d.severity === 1).map(d => d.message.text))
+      if (bad.length) {
+        this.error = bad[0]
+        if (quiet) { this.lines = lines.slice(0, Math.max(0, r.steps.length - 1)); this.goals = r.steps[r.steps.length - 1].goals.map(g => g.goal.text) }
+        return false
+      }
+      this.lines = lines; this.error = ''
+      this.goals = r.steps[r.steps.length - 1].goals.map(g => g.goal.text)
+      try { localStorage.setItem(this.key, JSON.stringify(lines)) } catch {}
+      if (r.completed && !this.proved) {
+        try { localStorage.setItem(this.key + 'd', '1') } catch {}
+        this.onChange?.()
+      }
+      this.done = r.completed
+      return true
+    }
+
+    // the game's rules for a line: only tactics and theorems of the inventory
+    refuse(line) {
+      const local = new Set((this.goals ?? []).join('\n').split('\n').flatMap(l => (/^([^⊢:][^:]*?) :/.exec(l.trim())?.[1] ?? '').split(/\s+/)).filter(Boolean))
+      if (/sorry|\?|DiscreteMeasure|MeasureTheory|ProbGame\./.test(line)) return tr('{x} is not in your inventory.', { x: line })
+      const parts = line.split('<;>')
+      if (parts.length > 1 && !this.available(INVENTORY.find(i => i.name === '<;>'))) return tr('This tactic is not in your inventory: {x}', { x: '<;>' })
+      for (let t of parts) {
+        t = t.trim()
+        const tac = /^(rw|simp only|rfl|congr|funext|cases|induction')(?=\s|\[|$)/.exec(t)?.[1]
+        const item = INVENTORY.find(i => i.name === tac)
+        if (!item || !this.available(item)) return tr('This tactic is not in your inventory: {x}', { x: t.split(/\s/)[0] || t })
+        const inside = /\[(.*)\]/.exec(t)?.[1]
+        if ((tac === 'rw' || tac === 'simp only') && inside === undefined) return tr('This tactic is not in your inventory: {x}', { x: t })
+        // each rule: its name is in the inventory (or a hypothesis of the goal, as ih), and so are the
+        // names in its arguments
+        for (const arg of (inside ?? '').split(',').map(a => a.replace('←', '').trim()).filter(Boolean)) {
+          const ids = arg.match(/[A-Za-z_][\w.']*/g) ?? []
+          for (const [k, id] of ids.entries()) {
+            const it = INVENTORY.find(i => i.name === id)
+            if (it && it.kind !== 'tactic' && !this.available(it)) return tr('{x} is not unlocked yet.', { x: id })
+            if (!it && !local.has(id) && (k === 0 || /[._]/.test(id))) return tr('{x} is not in your inventory.', { x: id })
+          }
+        }
+      }
+      return null
+    }
+
+    async run() {
+      const line = this.input.value.trim()
+      if (!line || this.busy || !this.session) return
+      const no = this.refuse(line)
+      if (no) { this.error = no; this.render(); return }
+      this.busy = true; this.render()
+      try { if (await this.check([...this.lines, line])) this.typed = '' } catch (e) { this.error = tr('Lean cannot be reached: {e}', { e: String(e) }) }
+      this.busy = false; this.render(); this.input?.focus({ preventScroll: true })
+    }
+    async back() {
+      if (this.busy || !this.lines.length) return
+      this.busy = true; this.render()
+      await this.check(this.lines.slice(0, -1)); this.done = false
+      this.busy = false; this.render()
+    }
+    // a tapped item goes into the input: a rule into the brackets of rw/simp only, or as rw [rule]
+    insert(item) {
+      let v = this.input.value
+      if (item.kind === 'tactic') v = item.name === '<;>' ? v + item.insert : (v.trim() ? v : item.insert)
+      else if (/\[[^\]]*$/.test(v) || /\[\s*\]$/.test(v)) v = v.replace(/\[\s*\]$/, '[').replace(/(\[.*\S)$/, '$1, ') + item.name + (v.endsWith('[') || /\[\s*\]$/.test(v) ? ']' : '')
+      else if (/\[.*\]/.test(v)) v = v.replace(/\s*\]([^\]]*)$/, (m, rest) => (/\[\s*$/.test(v.slice(0, v.lastIndexOf(']'))) ? '' : ', ') + item.name + ']' + rest)
+      else v = `rw [${item.name}]`
+      this.input.value = this.typed = v
+      this.input.focus({ preventScroll: true })
+    }
+
+    render() {
+      if (this.box.hidden) return
+      const head = el('h3', 'pg-proof-head', tr('Proof'))
+      const stmt = el('pre', 'pg-proof-statement', `${this.lemma ? `theorem ${this.lemma}` : 'example'} ${this.statement}`)
+      const parts = [head, ...this.texts, stmt]
+      if (!BACKEND) { parts.push(el('div', 'pg-info pg-warn', tr('The proof needs Lean: open the game with ?backend=… (the address of a bridge).'))); this.box.replaceChildren(...parts); return }
+
+      // the lines so far, and the goals now
+      const hist = el('ol', 'pg-proof-lines')
+      this.lines.forEach(l => hist.append(el('li', '', l)))
+      const goals = el('div', 'pg-goals')
+      if (this.done) goals.append(el('div', 'pg-proof-done', '✓ ' + tr('Proved!') + (this.lemma ? ' ' + tr('Your lemma {x} is now in your inventory.', { x: this.lemma }) : '')))
+      else if (this.goals) this.goals.forEach((g, i) => {
+        // the goal now; the others folded, one line each
+        const box = el(i ? 'details' : 'div', 'pg-goal' + (i ? ' pg-goal-later' : ''))
+        if (this.goals.length > 1) box.append(el(i ? 'summary' : 'div', 'pg-goal-no', tr('goal {i} of {n}', { i: i + 1, n: this.goals.length })))
+        box.append(el('pre', '', g.replace(/↑I/g, 'I')))
+        goals.append(box)
+      })
+      if (this.busy) goals.append(el('div', 'pg-info', tr('Lean is thinking …')))
+      const err = el('pre', 'pg-proof-error', this.error)
+      err.hidden = !this.error
+
+      // the input
+      const row = el('div', 'pg-proof-input')
+      this.input = el('input'); this.input.type = 'text'; this.input.spellcheck = false; this.input.autocapitalize = 'off'; this.input.autocomplete = 'off'; this.input.enterKeyHint = 'go'; this.input.setAttribute('autocorrect', 'off')
+      this.input.placeholder = tr('a tactic, e.g. rw [coin_not]')
+      this.input.value = this.typed ?? ''
+      this.input.addEventListener('input', () => { this.typed = this.input.value })
+      this.input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); this.run() } })
+      const run = el('button', 'pg-check', tr('Run')); run.type = 'button'; run.disabled = this.busy || this.done
+      run.addEventListener('click', () => this.run())
+      row.append(this.input, run)
+      const tools = el('div', 'pg-tools')
+      const back = el('button', 'pg-tool', '↶ ' + tr('Remove the last line')); back.type = 'button'; back.disabled = this.busy || !this.lines.length
+      back.addEventListener('click', () => this.back())
+      tools.append(back)
+
+      // the inventory
+      const inv = el('div', 'pg-inventory')
+      inv.append(el('div', 'pg-moves-head', tr('Inventory')))
+      for (const [kind, title] of [['tactic', tr('Tactics')], ['rule', tr('Theorems')]]) {
+        const group = el('div', 'pg-inv-group')
+        group.append(el('span', 'pg-inv-title', title + ':'))
+        for (const item of INVENTORY.filter(i => (kind === 'tactic' ? i.kind === 'tactic' : i.kind !== 'tactic') && this.available(i))) {
+          const b = el('button', 'pg-chip' + (item.kind === 'lemma' ? ' pg-chip-lemma' : '') + (this.picked === item.name ? ' pg-chip-on' : '') + (item.at === this.no ? ' pg-chip-new' : ''), item.name)
+          b.type = 'button'
+          b.addEventListener('click', () => { this.picked = this.picked === item.name ? null : item.name; this.render() })
+          group.append(b)
+        }
+        inv.append(group)
+      }
+      const it = INVENTORY.find(i => i.name === this.picked)
+      if (it) {
+        const doc = el('div', 'pg-inv-doc')
+        doc.append(el('code', 'pg-inv-sig', it.sig), el('div', '', LANG === 'de' ? it.de : it.en))
+        const ins = el('button', 'pg-tool', tr('Insert')); ins.type = 'button'
+        ins.addEventListener('click', () => this.insert(it))
+        doc.append(ins)
+        inv.append(doc)
+      }
+
+      parts.push(hist, goals, err)
+      if (!this.done) parts.push(row, tools)
+      parts.push(inv)
+      if (this.done) {
+        const next = el('button', 'pg-next', tr('Next level ›')); next.type = 'button'
+        next.addEventListener('click', () => this.level.onNextLevel?.())
+        parts.push(next)
+      }
+      this.box.replaceChildren(...parts)
+    }
+  }
+
   // ---------------------------------------------------------------- the stage
 
   function stage() {
@@ -775,17 +1048,22 @@
     for (const l of ['en', 'de']) {
       const b = el('button', 'pg-langbtn' + (LANG === l ? ' pg-current' : ''), l.toUpperCase())
       b.type = 'button'
-      b.addEventListener('click', () => { LANG = l; try { localStorage.setItem('pg:lang', l) } catch {}; applyLang(); levels.forEach(x => x.render()); refresh(); langs.querySelectorAll('button').forEach(x => x.classList.toggle('pg-current', x === b)) })
+      b.addEventListener('click', () => { LANG = l; try { localStorage.setItem('pg:lang', l) } catch {}; applyLang(); levels.forEach(x => { x.render(); x.proof?.render() }); refresh(); langs.querySelectorAll('button').forEach(x => x.classList.toggle('pg-current', x === b)) })
       langs.append(b)
     }
     top.append(langs, dots)
     roots[0].before(top)
     let current = 0
     const levels = roots.map((r, i) => new (r.classList.contains('pg-build') ? Builder : Level)(r, i, () => refresh()))
+    // the proofs, below the boards
+    levels.forEach(l => { if (l.root.dataset.proof) l.proof = new Proof(l, () => refresh()) })
+    // a level is done when its board is solved and its statement proved
+    const done = l => l.solved && (!l.proof || l.proof.proved)
     const refresh = () => {
       dots.replaceChildren()
       levels.forEach((l, k) => {
-        const d = el('button', 'pg-dot' + (l.solved ? ' pg-dot-done' : '') + (k === current ? ' pg-dot-current' : ''))
+        l.proof?.update()
+        const d = el('button', 'pg-dot' + (done(l) ? ' pg-dot-done' : l.solved ? ' pg-dot-half' : '') + (k === current ? ' pg-dot-current' : ''))
         d.type = 'button'
         d.title = tr('Level {i} of {n}', { i: k + 1, n: levels.length })
         d.addEventListener('click', () => show(k))
@@ -798,9 +1076,9 @@
       history.replaceState(null, '', `${location.pathname}${location.search}#level-${current + 1}`)
       refresh()
     }
-    levels.forEach((l, k) => { l.onNext = () => show(k + 1) })
+    levels.forEach((l, k) => { l.onNextLevel = () => { show(k + 1); scrollTo({ top: roots[current].getBoundingClientRect().top + scrollY - 80, behavior: 'smooth' }) }; l.onNext = () => (l.proof ? l.proof.focus() : l.onNextLevel()) })
     const fromHash = Number(/^#level-(\d+)$/.exec(location.hash)?.[1] ?? 0) - 1
-    show(fromHash >= 0 ? fromHash : Math.max(0, levels.findIndex(l => !l.solved)))
+    show(fromHash >= 0 ? fromHash : Math.max(0, levels.findIndex(l => !done(l))))
   }
 
   function init() {

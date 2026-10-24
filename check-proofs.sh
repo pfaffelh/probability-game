@@ -1,7 +1,8 @@
 #!/bin/sh
 # Checks the Lean side of the game against Mathlib and the journal's DiscreteMeasure:
 # * Proofs/*.lean: the statements of the levels with Mathlib's PMF;
-# * Lean/*.lean: the rules of the worlds (the context in which the game normalises its state), with
+# * Lean/Rules.lean, Lean/World1.lean: the rules of the proofs and of world 1 (the contexts), and
+#   Lean/Solutions.lean, the proofs of the levels as a player types them, with
 #   `import Journal.Notes.DiscreteMeasure.Thinning` in front, as the bridge loads them.
 # Usage: ./check-proofs.sh [journal]   (default ~/Code/lean/journal)
 set -e
@@ -13,10 +14,13 @@ for f in "$here"/Proofs/*.lean; do
   lake env lean "$f"
 done
 tmp=$(mktemp -d)
-for f in "$here"/Lean/*.lean; do
+for f in "$here"/Lean/Rules.lean "$here"/Lean/World1.lean; do
   echo "checking the rules $(basename "$f")"
   { echo "import Journal.Notes.DiscreteMeasure.Thinning"; cat "$f"; } > "$tmp/$(basename "$f")"
   lake env lean "$tmp/$(basename "$f")"
 done
+echo "checking the solutions Solutions.lean"
+{ echo "import Journal.Notes.DiscreteMeasure.Thinning"; cat "$here/Lean/Rules.lean" "$here/Lean/Solutions.lean"; } > "$tmp/Solutions.lean"
+lake env lean "$tmp/Solutions.lean"
 rm -r "$tmp"
 echo "all checked"
