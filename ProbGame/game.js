@@ -64,6 +64,27 @@
     } catch { return null }
   })()
   const RULES = "coin_not', unitInterval.symm_symm, ProbGame.coin_map_const, ProbGame.map_fun_id, map_pure, Bool.not_true, Bool.not_false, Bool.toNat_true, Bool.toNat_false"
+  // a term of DiscreteMeasure as the proofs write it: `map f μ` and `μ.map f` as `f <$> μ`
+  const functorForm = t => {
+    t = t.trim().replace(/DiscreteMeasure\.pure/g, 'pure')
+    // the next argument: a bracket, or a word
+    const arg = s => {
+      s = s.trimStart()
+      if (s[0] !== '(') { const m = /^\S+/.exec(s)[0]; return [m, s.slice(m.length)] }
+      let d = 0
+      for (let i = 0; i < s.length; i++) { d += s[i] === '(' ? 1 : s[i] === ')' ? -1 : 0; if (!d) return [s.slice(0, i + 1), s.slice(i + 1)] }
+      return [s, '']
+    }
+    const unbracket = s => (s[0] === '(' && arg(s)[1].trim() === '' ? s.slice(1, -1) : s)
+    if (t.startsWith('map ')) {
+      const [f, rest] = arg(t.slice(4)), [mu] = arg(rest), inner = functorForm(unbracket(mu))
+      return `${f} <$> ${inner.includes('<$>') ? `(${inner})` : inner}`
+    }
+    // (μ).map f, as the moves are written
+    const m = /^\((.*)\)\.map (.*)$/.exec(t)
+    if (m) { const inner = functorForm(m[1]); return `${m[2]} <$> ${inner.includes('<$>') ? `(${inner})` : inner}` }
+    return t
+  }
   const normalForms = new Map()
   // the normal form of a Lean expression (a promise of { result } or { error })
   const normalise = (context, expr) => {
@@ -421,15 +442,15 @@
         } else this.info.textContent = `${name}: P = ${m} (${tr('the start')})`
       } else this.info.textContent = tr('Tap a column to see where its sand came from.')
 
-      const lean = el('pre', 'pg-lean', this.leanState())
+      const lean = el('pre', 'pg-lean', functorForm(this.leanState()))
       // what Lean makes of the state: its normal form
       const ln = el('div', 'pg-lean-state')
       if (!BACKEND) ln.textContent = tr('Lean is not connected: the board checks for every p by itself, without Lean.')
       else if (!this.leanNow) ln.textContent = tr('Lean is normalising …')
       else if (this.leanNow.error) ln.textContent = `Lean: ${this.leanNow.error.message}`
       else {
-        ln.append(el('span', 'pg-lean-label', tr('Lean:') + ' '), el('code', '', this.leanNow.result))
-        if (sameDist(d, this.target) && this.leanAgrees() === false) ln.append(el('div', 'pg-warn', `${tr('Lean disagrees: the target is')} ${this.leanGoal.result}`))
+        ln.append(el('span', 'pg-lean-label', tr('Lean:') + ' '), el('code', '', functorForm(this.leanNow.result)))
+        if (sameDist(d, this.target) && this.leanAgrees() === false) ln.append(el('div', 'pg-warn', `${tr('Lean disagrees: the target is')} ${functorForm(this.leanGoal.result)}`))
       }
       // the task, in words, and the target as a picture of its own (always, also on another space)
       const task = el('div', 'pg-task')
@@ -450,7 +471,7 @@
         box.append(el('div', 'pg-solved-head', '✓ ' + tr('Solved!') + (this.leanAgrees() ? ` (${tr('confirmed by Lean, for every p')})` : '')))
         // what Lean has confirmed: the moves played are the target, for every p (or, without Lean, the
         // statement of the level, proved in Proofs/)
-        const statement = this.leanAgrees() ? `${this.leanState()} = ${this.leanGoal.result}` : this.leanStatement
+        const statement = this.leanAgrees() ? `${functorForm(this.leanState())} = ${functorForm(this.leanGoal.result)}` : this.leanStatement
         if (statement) {
           box.append(el('div', 'pg-solved-lean-head', tr('In Lean, for every p:')))
           box.append(el('pre', 'pg-lean', statement))

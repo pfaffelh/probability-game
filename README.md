@@ -87,4 +87,5 @@ lake build && lake exe probgame          # writes the site to _out/html-multi
 cd _out/html-multi && python3 -m http.server 8004
 ./check-proofs.sh                        # the Lean statements, the rules and the solutions
 python3 -I tests/proofs.py               # the solutions through the bridge, line by line
+node tests/play.mjs [desktop|phone]      # every level in Chrome: board, then proof (playwright-core)
 ```
