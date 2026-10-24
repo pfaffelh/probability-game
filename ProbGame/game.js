@@ -861,7 +861,6 @@
         })
       }
       root.append(this.box)
-      this.update()
     }
 
     get proved() { try { return localStorage.getItem(this.key + 'd') === '1' } catch { return false } }
@@ -871,8 +870,10 @@
     // shown once the board is solved
     update() {
       const show = this.level.solved
-      if (show && this.box.hidden) { this.box.hidden = false; this.render(); this.begin() }
+      if (show && this.box.hidden) { this.box.hidden = false; this.render() }
       else if (!show) this.box.hidden = true
+      // Lean is asked only for the level shown
+      if (show && !this.started && !this.root.hidden) { this.started = true; this.begin() }
     }
     focus() { this.box.scrollIntoView({ behavior: 'smooth', block: 'start' }); setTimeout(() => this.input?.focus({ preventScroll: true }), 400) }
 
