@@ -11,25 +11,30 @@ htmlSplit := .never
 %%%
 
 :::en
-Now you build. *New p-coin* lays down a coin; all coins have the same $`p` and are independent of
-each other. Tap one or several cards and then a function: the result is a new card, with its
-distribution, and functions apply to it again. A coin may go into several functions; then the
-results depend on each other, and the game takes that into account. The distribution of a card is
-found by going through all outcomes of the coins below it: with two coins, `true`–`true` has mass
-$`p^2`, `true`–`false` $`p(1 - p)`, and so on.
+Now you build a circuit. *New p-coin* lays down a coin, as a line; all coins have the same $`p` and
+are independent of each other. Tap one or several lines and then a function: a column takes the
+lines with a dot as its inputs, and its result runs on as a new line. A line that a column only
+crosses, without a dot, is not used. A coin may go into several functions; then the results depend
+on each other, and the game takes that into account. At the end of each line is its distribution,
+found by going through all outcomes of the coins it comes from: with two coins, `true`–`true` has
+mass $`p^2`, `true`–`false` $`p(1 - p)`, and so on. The circuit, read from left to right, is a
+`do` block in Lean.
 
-*Check* compares the selected card (or else the newest) with the target, for every $`p`.
+*Check* compares the selected line (or else the newest) with the target, for every $`p`.
 :::
 
 :::de
-Jetzt wird gebaut. *Neue p-Münze* legt eine Münze hin; alle Münzen haben dasselbe $`p` und sind
-unabhängig voneinander. Tippe eine oder mehrere Karten an und dann eine Funktion: Das Ergebnis ist
-eine neue Karte mit ihrer Verteilung, und auf sie lassen sich wieder Funktionen anwenden. Eine Münze
-darf in mehrere Funktionen gehen; dann hängen die Ergebnisse voneinander ab, und das Spiel
-berücksichtigt das. Die Verteilung einer Karte ergibt sich, indem man alle Ausgänge der Münzen unter
-ihr durchgeht: Bei zwei Münzen hat `true`–`true` die Masse $`p^2`, `true`–`false` $`p(1 - p)`, und so weiter.
+Jetzt baust du einen Schaltplan. *Neue p-Münze* legt eine Münze hin, als Leitung; alle Münzen haben
+dasselbe $`p` und sind unabhängig voneinander. Tippe eine oder mehrere Leitungen an und dann eine
+Funktion: Eine Spalte nimmt die Leitungen mit einem Punkt als Eingänge, und ihr Ergebnis läuft als
+neue Leitung weiter. Eine Leitung, die eine Spalte nur kreuzt, ohne Punkt, wird nicht benutzt. Eine
+Münze darf in mehrere Funktionen gehen; dann hängen die Ergebnisse voneinander ab, und das Spiel
+berücksichtigt das. Am Ende jeder Leitung steht ihre Verteilung, die sich ergibt, indem man alle
+Ausgänge der Münzen durchgeht, aus denen sie kommt: Bei zwei Münzen hat `true`–`true` die Masse
+$`p^2`, `true`–`false` $`p(1 - p)`, und so weiter. Der Schaltplan, von links nach rechts gelesen, ist
+ein `do`-Block in Lean.
 
-*Prüfen* vergleicht die ausgewählte Karte (sonst die neueste) mit dem Ziel, für jedes $`p`.
+*Prüfen* vergleicht die ausgewählte Leitung (sonst die neueste) mit dem Ziel, für jedes $`p`.
 :::
 
 ::::build (target := "bool true:p^2 false:1-p^2") (moves := "not, and, or") (coins := "2")
@@ -97,11 +102,11 @@ dieselbe: Die Ergebnisse hängen voneinander ab.
 ::::build (target := "bool true:3p^2-2p^3 false:1-3p^2+2p^3") (moves := "not, and, or") (coins := "3")
 :::en
 *Boss: the majority of three.* `true` when at least two of three coins show `true`. Each coin has to
-go into several functions.
+go into two functions.
 :::
 
 :::de
 *Boss: die Mehrheit von dreien.* `true`, wenn mindestens zwei von drei Münzen `true` zeigen. Jede Münze
-muss in mehrere Funktionen gehen.
+muss in zwei Funktionen gehen.
 :::
 ::::

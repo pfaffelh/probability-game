@@ -477,33 +477,34 @@
   // The functions: their arity (a number, or the least number of inputs), the space of their inputs and
   // of their value, the value, and the forms for the card and for Lean.
   const FUNS = {
-    not: { arity: 1, from: 'bool', to: 'bool', f: ([a]) => !a, show: ([a]) => `¬${a}`, lean: ([a]) => `!${a}`, label: 'not (¬)' },
-    and: { arity: 2, more: true, from: 'bool', to: 'bool', f: xs => xs.every(x => x), show: xs => xs.join(' ∧ '), lean: xs => xs.join(' && '), label: 'and (∧)' },
-    or: { arity: 2, more: true, from: 'bool', to: 'bool', f: xs => xs.some(x => x), show: xs => xs.join(' ∨ '), lean: xs => xs.join(' || '), label: 'or (∨)' },
-    xor: { arity: 2, more: true, from: 'bool', to: 'bool', f: xs => xs.filter(x => x).length % 2 === 1, show: xs => xs.join(' ⊕ '),
-      lean: xs => xs.slice(1).reduce((e, x) => `xor (${e}) ${x}`, xs[0]), label: 'xor (⊕)' },
-    toNat: { arity: 1, from: 'bool', to: 'nat', f: ([a]) => (a ? 1 : 0), show: ([a]) => `𝟙(${a})`, lean: ([a]) => `${a}.toNat`, label: 'toNat: false = 0, true = 1' },
-    count: { arity: 1, more: true, from: 'bool', to: 'nat', f: xs => xs.filter(x => x).length, show: xs => `#(${xs.join(', ')})`,
+    not: { sym: '¬', arity: 1, from: 'bool', to: 'bool', f: ([a]) => !a, show: ([a]) => `¬${a}`, lean: ([a]) => `!${a}`, label: 'not' },
+    and: { sym: '∧', arity: 2, more: true, from: 'bool', to: 'bool', f: xs => xs.every(x => x), show: xs => xs.join(' ∧ '), lean: xs => xs.join(' && '), label: 'and' },
+    or: { sym: '∨', arity: 2, more: true, from: 'bool', to: 'bool', f: xs => xs.some(x => x), show: xs => xs.join(' ∨ '), lean: xs => xs.join(' || '), label: 'or' },
+    xor: { sym: '⊕', arity: 2, more: true, from: 'bool', to: 'bool', f: xs => xs.filter(x => x).length % 2 === 1, show: xs => xs.join(' ⊕ '),
+      lean: xs => xs.slice(1).reduce((e, x) => `xor (${e}) ${x}`, xs[0]), label: 'xor' },
+    toNat: { sym: 'ℕ', arity: 1, from: 'bool', to: 'nat', f: ([a]) => (a ? 1 : 0), show: ([a]) => `𝟙(${a})`, lean: ([a]) => `${a}.toNat`, label: 'toNat: false = 0, true = 1' },
+    count: { sym: '#', arity: 1, more: true, from: 'bool', to: 'nat', f: xs => xs.filter(x => x).length, show: xs => `#(${xs.join(', ')})`,
       lean: xs => `[${xs.join(', ')}].count true`, label: 'number of true' },
-    add: { arity: 2, more: true, from: 'nat', to: 'nat', f: xs => xs.reduce((a, b) => a + b, 0), show: xs => xs.join(' + '), lean: xs => xs.join(' + '), label: 'add (+)' },
-    max: { arity: 2, more: true, from: 'nat', to: 'nat', f: xs => Math.max(...xs), show: xs => `max(${xs.join(', ')})`,
+    add: { sym: '+', arity: 2, more: true, from: 'nat', to: 'nat', f: xs => xs.reduce((a, b) => a + b, 0), show: xs => xs.join(' + '), lean: xs => xs.join(' + '), label: 'add' },
+    max: { sym: 'max', arity: 2, more: true, from: 'nat', to: 'nat', f: xs => Math.max(...xs), show: xs => `max(${xs.join(', ')})`,
       lean: xs => xs.slice(1).reduce((e, x) => `max (${e}) ${x}`, xs[0]), label: 'maximum' },
   }
   Object.assign(DE, {
-    'not (¬)': 'nicht (¬)', 'and (∧)': 'und (∧)', 'or (∨)': 'oder (∨)', 'xor (⊕)': 'genau eins (⊕)', 'add (+)': 'addieren (+)',
+    not: 'nicht', and: 'und', or: 'oder', xor: 'genau eins', add: 'addieren',
     'number of true': 'Anzahl true', maximum: 'Maximum', 'new p-coin': 'neue p-Münze', Check: 'Prüfen', 'Remove the last': 'Letztes entfernen',
     '{n} left': 'noch {n}', 'Building blocks': 'Bausteine',
-    'Lay down a coin with “new p-coin”. Tap cards to choose them (in this order), then a function.': 'Leg mit „neue p-Münze“ eine Münze hin. Tippe Karten an, um sie auszuwählen (in dieser Reihenfolge), dann eine Funktion.',
-    'Choose {n} cards first (tap them).': 'Wähle erst {n} Karten aus (antippen).', 'Choose at least {n} cards first (tap them).': 'Wähle erst mindestens {n} Karten aus (antippen).',
+    'Lay down a coin with “new p-coin”. Tap lines to choose them (in this order), then a function.': 'Leg mit „neue p-Münze“ eine Münze hin. Tippe Leitungen an, um sie auszuwählen (in dieser Reihenfolge), dann eine Funktion.',
+    'Choose {n} lines first (tap them).': 'Wähle erst {n} Leitungen aus (antippen).', 'Choose at least {n} lines first (tap them).': 'Wähle erst mindestens {n} Leitungen aus (antippen).',
     'This function needs coins (true/false).': 'Diese Funktion braucht Münzen (true/false).', 'This function needs numbers.': 'Diese Funktion braucht Zahlen.',
     'No more coins in this level.': 'In diesem Level gibt es keine weiteren Münzen.', 'There is nothing to check yet.': 'Es gibt noch nichts zu prüfen.',
     'Checked: {x}. It lives on {a}, the target on {b}.': 'Geprüft: {x}. Es lebt auf {a}, das Ziel auf {b}.',
     'Checked: {x}. At {k} it has P = {m}, the target {t}.': 'Geprüft: {x}. Bei {k} hat es P = {m}, das Ziel {t}.',
-    'Checked: {x}, the selected card (or else the newest).': 'Geprüft wird {x}: die ausgewählte Karte (sonst die neueste).',
+    'Checked: {x}, the selected line (or else the newest).': 'Geprüft wird {x}: die ausgewählte Leitung (sonst die neueste).',
     'As a do block in Lean:': 'Als do-Block in Lean:',
     'Task: build the target from coins:': 'Aufgabe: Bau das Ziel aus Münzen:',
   })
-  const funLabel = f => tr(FUNS[f].label)
+  const funLabel = f => `${FUNS[f].sym}  ${tr(FUNS[f].label)}`
+  const COLORS = ['#b0782a', '#2e6fb8', '#8e44ad', '#c0392b', '#16a085', '#d35400', '#34495e', '#7d6608']
 
   class Builder {
     constructor(root, index, onSolved) {
@@ -518,7 +519,6 @@
       this.selected = []   // indices, in the order chosen
       this.checked = null  // { node, ok }
       this.message = ''
-      addEventListener('resize', () => this.wires())
       this.render()
     }
 
@@ -538,21 +538,22 @@
       go(i)
       return [...seen].sort((a, b) => a - b)
     }
-    // the distribution of node i: all outcomes of the coins below it, each with its mass
+    // the outcomes of node j, given the values of its inputs: [value, mass] (a function has one, of mass 1;
+    // a coin two; later sources and random functions (kernels) more)
+    outcomes(j, val) {
+      const n = this.nodes[j]
+      if (n.coin) return [[false, complement(PP)], [true, PP]]
+      return [[FUNS[n.fun].f(n.inputs.map(k => val.get(k))), ONE]]
+    }
+    // the distribution of node i: the nodes below it, one after the other as in a do block, each
+    // branching over its outcomes
     dist(i) {
-      const coins = this.below(i).filter(j => this.nodes[j].coin), mass = new Map()
-      for (let mask = 0; mask < 2 ** coins.length; mask++) {
-        const val = new Map(), out = new Map(coins.map((c, b) => [c, !!(mask >> b & 1)]))
-        let w = ONE
-        for (const c of coins) w = w.mul(out.get(c) ? PP : complement(PP))
-        const v = j => {
-          if (out.has(j)) return out.get(j)
-          if (!val.has(j)) { const n = this.nodes[j]; val.set(j, FUNS[n.fun].f(n.inputs.map(v))) }
-          return val.get(j)
-        }
-        const k = String(v(i))
-        mass.set(k, (mass.get(k) ?? ZERO).add(w))
+      const order = this.below(i), mass = new Map(), val = new Map()
+      const go = (k, w) => {
+        if (k === order.length) { const v = String(val.get(i)); mass.set(v, (mass.get(v) ?? ZERO).add(w)); return }
+        for (const [v, m] of this.outcomes(order[k], val)) { val.set(order[k], v); go(k + 1, w.mul(m)) }
       }
+      go(0, ONE)
       for (const [k, m] of mass) if (m.zero) mass.delete(k)
       return { space: this.space(i), mass }
     }
@@ -574,7 +575,7 @@
     }
     apply(f) {
       const F = FUNS[f], sel = this.selected
-      const bad = sel.length < F.arity || (!F.more && sel.length > F.arity) ? tr(F.more ? 'Choose at least {n} cards first (tap them).' : 'Choose {n} cards first (tap them).', { n: F.arity })
+      const bad = sel.length < F.arity || (!F.more && sel.length > F.arity) ? tr(F.more ? 'Choose at least {n} lines first (tap them).' : 'Choose {n} lines first (tap them).', { n: F.arity })
         : sel.some(j => this.space(j) !== F.from) ? tr(F.from === 'bool' ? 'This function needs coins (true/false).' : 'This function needs numbers.') : null
       if (bad) { this.message = bad; this.render(); return }
       this.nodes.push({ fun: f, inputs: sel.slice() }); this.selected = [this.nodes.length - 1]; this.changed()
@@ -606,48 +607,81 @@
       this.render()
     }
 
-    // a small picture of a distribution
-    chart(d, cls) {
-      const ks = axis(d.space, [...d.mass.keys()]), gap = Math.max(50, ...ks.map(k => String(d.mass.get(k) ?? ZERO).length * 6.2 + 8)), w = Math.max(104, gap * ks.length + 6), h = 84, base = 66, bh = 44
-      const g = svg('svg', { viewBox: `0 0 ${w} ${h}`, class: 'pg-mini ' + cls, width: w, height: h })
-      g.append(svg('line', { x1: 4, x2: w - 4, y1: base, y2: base, class: 'pg-axis' }))
-      const x0 = w / 2 - (gap * (ks.length - 1)) / 2, bw = Math.min(30, gap - 14)
+    // a small picture of a distribution, at (x, y): its width is returned
+    chart(g, d, x, y, cls) {
+      const ks = axis(d.space, [...d.mass.keys()])
+      const gap = Math.max(46, ...ks.map(k => String(d.mass.get(k) ?? ZERO).length * 6 + 8)), w = Math.max(96, gap * ks.length), base = y + 14, bh = 30
+      const x0 = x + w / 2 - (gap * (ks.length - 1)) / 2, bw = Math.min(26, gap - 14)
+      const c = svg('g', { class: 'pg-mini ' + cls })
+      c.append(svg('line', { x1: x, x2: x + w, y1: base, y2: base, class: 'pg-axis-thin' }))
       ks.forEach((k, j) => {
-        const m = d.mass.get(k) ?? ZERO, x = x0 + j * gap, hh = m.value(P) * bh
-        if (hh > 0) g.append(svg('rect', { class: 'pg-mini-sand', x: x - bw / 2, y: base - hh, width: bw, height: hh, rx: 2 }))
-        g.append(svg('text', { x, y: base - hh - 4, 'text-anchor': 'middle', class: 'pg-mini-mass' }, m.toString()))
-        g.append(svg('text', { x, y: base + 14, 'text-anchor': 'middle', class: 'pg-mini-point' }, pointName(d.space, k)))
+        const m = d.mass.get(k) ?? ZERO, xx = x0 + j * gap, hh = m.value(P) * bh
+        if (hh > 0) c.append(svg('rect', { class: 'pg-mini-sand', x: xx - bw / 2, y: base - hh, width: bw, height: hh, rx: 2 }))
+        c.append(svg('text', { x: xx, y: base - hh - 3, 'text-anchor': 'middle', class: 'pg-mini-mass' }, m.toString()))
+        c.append(svg('text', { x: xx, y: base + 12, 'text-anchor': 'middle', class: 'pg-mini-point' }, pointName(d.space, k)))
       })
-      return g
+      g.append(c)
+      return w
     }
 
-    // the wires: from each input to its result, and from the checked node to the target
-    wires() {
-      const area = this.area, layer = this.layer
-      if (!area || !area.isConnected || this.root.hidden) return
-      const r0 = area.getBoundingClientRect()
-      layer.setAttribute('viewBox', `0 0 ${r0.width} ${r0.height}`)
-      layer.replaceChildren()
-      const ok = this.checked?.ok ? new Set(this.below(this.checked.node)) : new Set()
-      // the wires between cards stay inside the site (which may scroll)
-      const rs = this.site.getBoundingClientRect(), clip = svg('clipPath', { id: `pg-clip-${this.index}` })
-      clip.append(svg('rect', { x: rs.left - r0.left, y: rs.top - r0.top, width: rs.width, height: rs.height }))
-      layer.append(clip)
-      const line = (a, b, cls, inside = true) => {
-        const x1 = a.right - r0.left, y1 = a.top + a.height / 2 - r0.top, x2 = b.left - r0.left, y2 = b.top + b.height / 2 - r0.top
-        const mx = (x1 + x2) / 2
-        const path = svg('path', { d: `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`, class: 'pg-wire ' + cls })
-        if (inside) path.setAttribute('clip-path', `url(#pg-clip-${this.index})`)
-        layer.append(path)
-      }
-      this.nodes.forEach((n, i) => (n.inputs ?? []).forEach(j => {
-        const a = this.cards[j]?.getBoundingClientRect(), b = this.cards[i]?.getBoundingClientRect()
-        if (a && b) line(a, b, ok.has(i) ? 'pg-wire-ok' : '')
-      }))
+    // The circuit: a line per node (coins and results), in the order they were made; a column per
+    // function, with a dot on each line it takes, ending in a box with its symbol, from which its
+    // result runs on as a new line. At the end of each line, its distribution. Lines a column only
+    // crosses carry no dot (and the column passes over them).
+    circuit() {
+      const RH = 64, TOP = 14, LAB = 40, GW = 50, n = this.nodes.length
+      const funs = this.nodes.map((m, i) => (m.coin ? -1 : i)).filter(i => i >= 0)
+      const col = i => funs.indexOf(i)
+      // where a line starts: a result at its column, a coin after the columns made before it
+      const start = i => this.nodes[i].coin ? LAB + this.nodes.slice(0, i).filter(m => !m.coin).length * GW : LAB + col(i) * GW + GW / 2 + 13
+      const xe = LAB + funs.length * GW + 14, y = i => TOP + i * RH + RH / 2
+      const focus = this.checked?.ok ? new Set(this.below(this.checked.node))
+        : this.selected.length ? new Set(this.selected.flatMap(j => this.below(j))) : null
+      const dim = i => (focus && !focus.has(i) ? ' pg-dim' : '')
+      const g = svg('g')
+      const dists = this.nodes.map((_, i) => this.dist(i))
+      // the rows: a band to tap, the name, the line, the distribution
+      let wmax = 0
+      const rows = svg('g'), cols = svg('g'), charts = svg('g')
+      this.nodes.forEach((m, i) => {
+        const sel = this.selected.indexOf(i), ok = this.checked?.ok && focus.has(i), bad = this.checked && !this.checked.ok && this.checked.node === i
+        const row = svg('g', { class: 'pg-card' + (sel >= 0 ? ' pg-card-sel' : '') + (ok ? ' pg-card-ok' : '') + (bad ? ' pg-card-bad' : '') + dim(i), 'data-node': i })
+        row.append(svg('rect', { class: 'pg-row-band', x: 0, y: y(i) - RH / 2 + 2, width: 10, height: RH - 4, rx: 8 }))
+        row.append(svg('text', { x: 8, y: y(i) + 5, class: 'pg-row-name', fill: COLORS[i % COLORS.length] }, this.name(i)))
+        if (sel >= 0) {
+          row.append(svg('circle', { cx: LAB - 6, cy: y(i) - 14, r: 8, class: 'pg-row-badge' }))
+          row.append(svg('text', { x: LAB - 6, y: y(i) - 10.5, 'text-anchor': 'middle', class: 'pg-row-badge-text' }, String(sel + 1)))
+        }
+        row.append(svg('line', { x1: start(i), x2: xe, y1: y(i), y2: y(i), class: 'pg-line', stroke: COLORS[i % COLORS.length] }))
+        if (m.coin) row.append(svg('circle', { cx: start(i), cy: y(i), r: 5, class: 'pg-source', fill: COLORS[i % COLORS.length] }))
+        const t = el('title'); t.textContent = m.coin ? `${this.name(i)} ← coin p` : `${this.name(i)} = ${this.formula(i)}`; row.append(t)
+        row.addEventListener('click', () => this.pick(i))
+        rows.append(row)
+        wmax = Math.max(wmax, this.chart(charts, dists[i], xe + 12, y(i) - RH / 2 + 8, (ok ? 'pg-ok' : '') + dim(i)))
+      })
+      // the columns: a halo where they pass over lines, the dots on their inputs, the box
+      funs.forEach(i => {
+        const m = this.nodes[i], x = LAB + col(i) * GW + GW / 2, top = Math.min(...m.inputs.map(y)), c = COLORS[i % COLORS.length]
+        const cg = svg('g', { class: 'pg-colm' + dim(i) })
+        cg.append(svg('line', { x1: x, x2: x, y1: top, y2: y(i) - 12, class: 'pg-colm-halo' }))
+        cg.append(svg('line', { x1: x, x2: x, y1: top, y2: y(i) - 12, class: 'pg-colm-line', stroke: c }))
+        for (const j of m.inputs) cg.append(svg('circle', { cx: x, cy: y(j), r: 5.5, class: 'pg-dot-in', fill: COLORS[j % COLORS.length] }))
+        const sym = FUNS[m.fun].sym, bw = Math.max(24, sym.length * 9 + 8)
+        cg.append(svg('rect', { x: x - bw / 2, y: y(i) - 12, width: bw, height: 24, rx: 6, class: 'pg-gate', stroke: c }))
+        cg.append(svg('text', { x, y: y(i) + 5, 'text-anchor': 'middle', class: 'pg-gate-sym' }, sym))
+        cols.append(cg)
+      })
+      g.append(rows, cols, charts)
+      // checked: an arrow from the end of the line, towards the target
+      const W = xe + 12 + wmax + 40
+      rows.querySelectorAll('.pg-row-band').forEach(b => b.setAttribute('width', W))
       if (this.checked) {
-        const a = this.cards[this.checked.node]?.getBoundingClientRect(), b = this.targetBox.getBoundingClientRect()
-        if (a && b.left > a.right && a.right <= this.site.getBoundingClientRect().right + 1) line(a, b, this.checked.ok ? 'pg-wire-ok' : 'pg-wire-bad', false)
+        const yy = y(this.checked.node)
+        g.append(svg('text', { x: W - 30, y: yy + 6, class: this.checked.ok ? 'pg-arrow-ok' : 'pg-arrow-bad' }, this.checked.ok ? '✓ ▶' : '✗'))
       }
+      const s = svg('svg', { viewBox: `0 0 ${W} ${TOP + n * RH + 6}`, class: 'pg-circuit', width: W })
+      s.append(g)
+      return s
     }
 
     render() {
@@ -675,35 +709,13 @@
         blocks.append(b)
       }
 
-      // the site: a column per depth, a card per node
-      const site = el('div', 'pg-site'), cols = []
-      this.site = site
-      this.cards = []
-      this.nodes.forEach((n, i) => {
-        const dp = this.depth(i)
-        while (cols.length <= dp) { const c = el('div', 'pg-col'); cols.push(c); site.append(c) }
-        const k = this.selected.indexOf(i), ok = done && this.below(this.checked.node).includes(i)
-        const card = el('button', 'pg-card' + (k >= 0 ? ' pg-card-sel' : '') + (ok ? ' pg-card-ok' : '') + (this.checked?.node === i && !this.checked.ok ? ' pg-card-bad' : ''))
-        card.type = 'button'
-        const head = el('div', 'pg-card-head')
-        head.append(el('b', '', this.name(i)), n.coin ? '' : ` = ${this.formula(i)}`)
-        if (k >= 0) head.append(el('span', 'pg-card-badge', String(k + 1)))
-        card.append(head, this.chart(this.dist(i), ''))
-        card.dataset.node = String(i)
-        card.addEventListener('click', () => this.pick(i))
-        cols[dp].append(card)
-        this.cards[i] = card
-      })
-      if (!this.nodes.length) site.append(el('div', 'pg-site-empty', tr('Lay down a coin with “new p-coin”. Tap cards to choose them (in this order), then a function.')))
-      site.addEventListener('scroll', () => this.wires())
-
-      // the target
+      // the circuit, and the target beside it
+      const site = el('div', 'pg-site')
+      site.append(this.nodes.length ? this.circuit() : el('div', 'pg-site-empty', tr('Lay down a coin with “new p-coin”. Tap lines to choose them (in this order), then a function.')))
       this.targetBox = el('div', 'pg-target-box' + (done ? ' pg-card-ok' : ''))
       this.targetBox.append(this.targetPicture())
-
-      this.area = el('div', 'pg-build-area')
-      this.layer = svg('svg', { class: 'pg-wires' })
-      this.area.append(this.layer, site, this.targetBox)
+      const area = el('div', 'pg-build-area')
+      area.append(site, this.targetBox)
 
       const tools = el('div', 'pg-tools')
       const check = el('button', 'pg-check', tr('Check')), undo = el('button', 'pg-tool', '↶ ' + tr('Remove the last')), reset = el('button', 'pg-tool', '⟲ ' + tr('Start over'))
@@ -713,15 +725,16 @@
       undo.addEventListener('click', () => this.removeLast()); reset.addEventListener('click', () => this.reset())
       tools.append(check, undo, reset)
 
+      const now = this.selected.length === 1 ? this.selected[0] : this.nodes.length - 1
       const info = el('div', 'pg-info' + (this.message ? ' pg-warn' : ''),
-        this.message || (this.nodes.length ? tr('Checked: {x}, the selected card (or else the newest).', { x: this.name(this.selected.length === 1 ? this.selected[0] : this.nodes.length - 1) }) : ''))
+        this.message || (this.nodes.length ? tr('Checked: {x}, the selected line (or else the newest).', { x: this.name(now) + (this.nodes[now].coin ? '' : ` = ${this.formula(now)}`) }) : ''))
 
       const slider = el('label', 'pg-slider')
       const input = el('input'); input.type = 'range'; input.min = '0.05'; input.max = '0.95'; input.step = '0.05'; input.value = String(P)
       input.addEventListener('input', () => { P = Number(input.value); try { localStorage.setItem('pg:p', input.value) } catch {}; this.render() })
       slider.append(`${tr('the picture for p =')} ${P.toFixed(2)} `, input, el('span', 'pg-slider-note', ' ' + tr('(only an example; the masses hold for every p)')))
 
-      const parts = [task, blocks, this.area, tools, info, slider]
+      const parts = [task, blocks, area, tools, info, slider]
       if (done) {
         const box = el('div', 'pg-solved')
         box.append(el('div', 'pg-solved-head', '✓ ' + tr('Solved!')))
@@ -734,7 +747,6 @@
         parts.push(box)
       }
       this.board.replaceChildren(...parts)
-      requestAnimationFrame(() => this.wires())
     }
   }
   Builder.prototype.targetPicture = Level.prototype.targetPicture
@@ -770,7 +782,6 @@
       roots.forEach((r, i) => { r.hidden = i !== current })
       history.replaceState(null, '', `${location.pathname}${location.search}#level-${current + 1}`)
       refresh()
-      levels[current].wires?.()
     }
     levels.forEach((l, k) => { l.onNext = () => show(k + 1) })
     const fromHash = Number(/^#level-(\d+)$/.exec(location.hash)?.[1] ?? 0) - 1
