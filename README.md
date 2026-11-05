@@ -89,3 +89,7 @@ cd _out/html-multi && python3 -m http.server 8004
 python3 -I tests/proofs.py               # the solutions through the bridge, line by line
 node tests/play.mjs [desktop|phone]      # every level in Chrome: board, then proof (playwright-core)
 ```
+
+## License
+
+Apache 2.0, see `LICENSE`.
