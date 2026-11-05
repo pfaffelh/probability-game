@@ -67,12 +67,12 @@ simplified with `#simp only [rules]`; the rules of world 1 are `Lean/World1.lean
 the state and the target the same normal form, so that it holds for every `p`. Different correct
 ways to the target lead to the same normal form; a wrong one does not.
 
-Lean runs in the bridge of nng-verso (`repl/bridge.py`, `/simp`), on the Lean REPL, with
+Lean runs in the bridge `server/bridge.py` (copied from nng-verso's `repl/bridge.py`), on the Lean REPL, with
 `DiscreteMeasure` as its base:
 
 ```bash
 cd ~/Code/lean/journal && BASE="import Journal.Notes.DiscreteMeasure.Thinning" \
-  REPL=~/Code/lean/repl-v4.34/.lake/build/bin/repl python3 -I ~/Code/lean/verso_game/repl/bridge.py 8091
+  REPL=~/Code/lean/repl-v4.34/.lake/build/bin/repl python3 -I ~/Code/lean/probability-game/server/bridge.py 8091
 # then the site with ?backend=http://127.0.0.1:8091
 ```
 
