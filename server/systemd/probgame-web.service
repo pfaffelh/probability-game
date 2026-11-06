@@ -1,0 +1,12 @@
+[Unit]
+Description=Probability game: the site and /lean/ on port 8080 (nginx without root)
+
+[Service]
+ExecStartPre=/usr/bin/mkdir -p %h/lean/nginx/tmp
+ExecStart=/usr/sbin/nginx -p %h/lean/nginx -c %h/lean/probability-game/server/nginx.conf -e stderr
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

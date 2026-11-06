@@ -1,0 +1,19 @@
+[Unit]
+Description=Probability game: Lean (server/bridge.py, in bubblewrap)
+
+[Service]
+WorkingDirectory=%h/lean/journal
+Environment=PATH=%h/.elan/bin:/usr/bin:/bin
+Environment="BASE=import Journal.Notes.DiscreteMeasure.Thinning"
+Environment=REPL=%h/lean/repl/.lake/build/bin/repl
+Environment=SANDBOX=1 POOL=4 TIMEOUT=30 MEMORY_GB=5
+Environment=ALLOWED=%h/lean/allowed.txt
+ExecStart=/usr/bin/python3 -I %h/lean/probability-game/server/bridge.py 8091
+Restart=always
+RestartSec=5
+# all REPLs together, and their processes
+MemoryMax=26G
+TasksMax=512
+
+[Install]
+WantedBy=default.target

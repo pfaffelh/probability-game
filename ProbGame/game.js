@@ -52,16 +52,19 @@
 
   // ---------------------------------------------------------------- Lean
 
-  // A backend with Lean (repl/bridge.py of nng-verso, with the journal's DiscreteMeasure as base):
-  // `?backend=http://127.0.0.1:8091` in the address (kept; `?backend=` switches it off). After each
-  // move it normalises the state with the rules of the world; a level is solved when the state and
-  // the target have the same normal form, for every p.
+  // A backend with Lean (server/bridge.py, with the journal's DiscreteMeasure as base): on a server,
+  // `/lean` next to the site; else `?backend=http://127.0.0.1:8091` in the address (kept;
+  // `?backend=` switches it off). After each move it normalises the state with the rules of the
+  // world; a level is solved when the state and the target have the same normal form, for every p.
   const BACKEND = (() => {
+    const local = !/^https?:$/.test(location.protocol) || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)
+    const served = local ? null : location.origin + '/lean'
     try {
       const q = new URLSearchParams(location.search).get('backend')
-      if (q !== null) { if (q) localStorage.setItem('pg:backend', q); else localStorage.removeItem('pg:backend') }
-      return localStorage.getItem('pg:backend')
-    } catch { return null }
+      if (q !== null) { if (q) localStorage.setItem('pg:backend', q); else localStorage.setItem('pg:backend', '') }
+      const stored = localStorage.getItem('pg:backend')
+      return stored === null ? served : stored || null
+    } catch { return served }
   })()
   const RULES = "coin_not', unitInterval.symm_symm, ProbGame.coin_map_const, ProbGame.map_fun_id, map_pure, Bool.not_true, Bool.not_false, Bool.toNat_true, Bool.toNat_false"
   // a term of DiscreteMeasure as the proofs write it: `map f μ` and `μ.map f` as `f <$> μ`
