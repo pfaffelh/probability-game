@@ -61,7 +61,17 @@ for (const [name, vp] of [['desktop', { width: 1200, height: 900 }], ['phone', {
         err = await lvl().locator('.pg-proof-error').isVisible() ? await lvl().locator('.pg-proof-error').innerText() : ''
         if (err) { console.log(`   line "${line}": ${err.slice(0, 200)}`); break }
       }
-      const proved = await lvl().locator('.pg-proof-done').count()
+      let proved = await lvl().locator('.pg-proof-done').count()
+      // in the first level of each world: start the proof over (the lines go, the input comes back), and prove it again
+      if (i === 0 && proved) {
+        await lvl().locator('.pg-proof .pg-tool', { hasText: 'Neu anfangen' }).click()
+        await page.waitForTimeout(50); await idle()
+        const fresh = !(await lvl().locator('.pg-proof-lines li').count()) && !(await lvl().locator('.pg-proof-done').count()) && await input.isVisible() && await lvl().locator('.pg-goal').count() > 0
+        if (!fresh) { fails++; console.log(`   start over: not back at the start`) }
+        for (const line of proofs[pi]) { await input.fill(line); await input.press('Enter'); await page.waitForTimeout(50); await idle() }
+        proved = await lvl().locator('.pg-proof-done').count()
+        console.log(`   start over: ${fresh ? 'ok' : 'NOT'}, proved again: ${proved ? 'ok' : 'NOT'}`)
+      }
       if (!board || !proved) fails++
       console.log(`${name} ${path.slice(0, 7)} level ${i + 1}: board ${board ? 'ok' : 'NOT'}, proof ${proved ? 'ok' : 'NOT'} (${proofs[pi].length} lines, ${Date.now() - t0} ms)`)
       pi++

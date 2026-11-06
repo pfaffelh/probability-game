@@ -1298,6 +1298,14 @@
       await this.check(this.lines.slice(0, -1)); this.done = false
       this.busy = false; this.render()
     }
+    // the proof from the start again: no lines (a proof found stays found)
+    async restart() {
+      if (this.busy || !this.lines.length) return
+      this.busy = true; this.error = ''; this.typed = ''; this.render()
+      try { await this.check([]) } catch (e) { this.error = tr('Lean cannot be reached: {e}', { e: String(e) }) }
+      this.done = false
+      this.busy = false; this.render(); this.input?.focus({ preventScroll: true })
+    }
     // a tapped item goes into the input: a rule into the brackets of rw/simp only, or as rw [rule]
     insert(item) {
       let v = this.input.value
@@ -1355,7 +1363,9 @@
       const tools = el('div', 'pg-tools')
       const back = el('button', 'pg-tool', '↶ ' + tr('Remove the last line')); back.type = 'button'; back.disabled = this.busy || !this.lines.length
       back.addEventListener('click', () => this.back())
-      tools.append(back)
+      const again = el('button', 'pg-tool', '⟲ ' + tr('Start over')); again.type = 'button'; again.disabled = this.busy || !this.lines.length
+      again.addEventListener('click', () => this.restart())
+      tools.append(back, again)
 
       // the inventory
       const inv = el('div', 'pg-inventory')
@@ -1383,7 +1393,8 @@
       }
 
       parts.push(hist, goals, err)
-      if (!this.done) parts.push(row, tools)
+      if (!this.done) parts.push(row)
+      parts.push(tools)
       parts.push(inv)
       if (this.done) {
         const next = el('button', 'pg-next', tr('Next level ›')); next.type = 'button'
