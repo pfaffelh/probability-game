@@ -36,6 +36,44 @@
     document.documentElement.classList.toggle('pg-de', LANG === 'de')
     document.documentElement.lang = LANG
   }
+  // Headings of the site, which come from Verso.
+  const DE_TITLES = {
+    'The Probability Game': 'Das Wahrscheinlichkeits\u00ADspiel',  // (a soft hyphen, for phones)
+    'World 1: One Coin': 'Welt 1: Eine Münze', 'World 2: Building with Coins': 'Welt 2: Bauen mit Münzen',
+    'World 3: Counting': 'Welt 3: Zählen', 'Table of Contents': 'Inhalt', 'Contents': 'Inhalt',
+  }
+  function translatePage() {
+    const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
+    for (let n = walk.nextNode(); n; n = walk.nextNode()) {
+      if (n.parentElement?.closest('.pg-level, .pg-lang')) continue
+      if (LANG === 'de')
+        for (const [en, de] of Object.entries(DE_TITLES)) if (n.nodeValue.includes(en)) n.nodeValue = n.nodeValue.replace(en, de)
+      // The worlds are numbered anyway (1. …): "1. World 1: One Coin" is shown as "1. One Coin".
+      n.nodeValue = n.nodeValue.replace(/(World|Welt) \d+: /g, '')
+    }
+    if (LANG === 'de') {
+      for (const [en, de] of Object.entries(DE_TITLES)) document.title = document.title.replace(en, de.replace('\u00AD', ''))
+      document.querySelectorAll('input[placeholder="Search..."]').forEach(i => { i.placeholder = 'Suchen …' })
+    }
+  }
+  // The switch in the header: EN | DE. Changing the language reloads the page; progress is kept.
+  function languageSwitch() {
+    const header = document.querySelector('header')
+    if (!header || header.querySelector('.pg-langs')) return
+    const box = el('div', 'pg-langs')
+    for (const l of ['en', 'de']) {
+      const b = el('button', 'pg-langbtn' + (LANG === l ? ' pg-current' : ''), l.toUpperCase())
+      b.type = 'button'
+      b.setAttribute('aria-pressed', l === LANG)
+      b.addEventListener('click', () => {
+        if (l === LANG) return
+        try { localStorage.setItem('pg:lang', l) } catch {}
+        location.reload()
+      })
+      box.append(b)
+    }
+    header.append(box)
+  }
 
   const el = (tag, cls, text) => {
     const e = document.createElement(tag)
@@ -1094,14 +1132,8 @@
   function stage() {
     const roots = [...document.querySelectorAll('.pg-level')]
     if (!roots.length) return
-    const top = el('div', 'pg-top'), dots = el('div', 'pg-dots'), langs = el('div', 'pg-langs')
-    for (const l of ['en', 'de']) {
-      const b = el('button', 'pg-langbtn' + (LANG === l ? ' pg-current' : ''), l.toUpperCase())
-      b.type = 'button'
-      b.addEventListener('click', () => { LANG = l; try { localStorage.setItem('pg:lang', l) } catch {}; applyLang(); levels.forEach(x => { x.render(); x.proof?.render() }); refresh(); langs.querySelectorAll('button').forEach(x => x.classList.toggle('pg-current', x === b)) })
-      langs.append(b)
-    }
-    top.append(langs, dots)
+    const top = el('div', 'pg-top'), dots = el('div', 'pg-dots')
+    top.append(dots)
     roots[0].before(top)
     let current = 0
     const levels = roots.map((r, i) => new (r.classList.contains('pg-build') ? Builder : Level)(r, i, () => refresh()))
@@ -1133,6 +1165,8 @@
 
   function init() {
     applyLang()
+    translatePage()
+    languageSwitch()
     stage()
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init)

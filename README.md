@@ -35,7 +35,7 @@ $B(2, p) * B(2, p) = B(4, p)$, proved for all $n$, $m$ (`binom_add`, by inductio
   (`ProbGame/Level.lean`), with `:::en` and `:::de` texts.
 * `ProbGame/game.js` plays it in the browser: exact fractions, the moves as maps, the pushforward,
   the animation, the preimage of a tapped column, the Lean expression of the moves played, one
-  level at a time with a dot per level, progress in the browser, English or German.
+  level at a time with a dot per level, progress in the browser, English or German (the switch EN | DE in the header, as in the IPM; texts in `:::en` and `:::de`, headings translated by `game.js`).
 * The Lean statements of the levels are in `Proofs/` and checked against Mathlib with
   `./check-proofs.sh [project with Mathlib]` (default `~/Code/lean/journal`; also checked with
   nng4's Mathlib). The game needs no Lean while it is played.
@@ -87,6 +87,7 @@ lake build && lake exe probgame          # writes the site to _out/html-multi
 cd _out/html-multi && python3 -m http.server 8004
 ./check-proofs.sh                        # the Lean statements, the rules and the solutions
 python3 -I tests/proofs.py               # the solutions through the bridge, line by line
+node tests/language.mjs                  # EN and DE on every page
 node tests/play.mjs [desktop|phone]      # every level in Chrome: board, then proof (playwright-core)
 ```
 
