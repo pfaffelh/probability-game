@@ -13,6 +13,17 @@ grows from level to level. A few rules are given (as Peano's axioms in the NNG: 
 `binom_succ`); the lemmas the player proves (`binom_one`, `binom_succ'`, `binom_add`) are unlocked
 after their levels. A level's dot is half green after the board, green after the proof.
 
+**World 0, walking on the grid** (before chance; `::::walk`, `Lean/World0.lean`): a figure on
+$\mathbb{Z} \times \mathbb{Z}$, the moves `north`, `east`, `south`, `west` as maps `Pos → m Pos`
+into a monad, a walk as the program `pure (0, 0) >>= north >>= east`. First in `Id` (sure moves:
+one step, around the corner, the other way past a wall); then in `Set`, where `step` goes all four
+ways and the figure is the set of the points it can reach (everywhere at once; back home after two
+steps, `mem_bind`; the colours of a chessboard, `odd_bind_step`; boss: after $n$ steps all points
+have the colour of $n$, `odd_walk`, by induction; never home after five steps). Lean normalises the
+walk after each move to `pure (x, y)` or a set of points, which the board reads back. World 0 has
+an inventory of its own (`w0` in `INVENTORY`); its proofs use only the monad laws and `odd_step`, so
+that they carry over to the random walk.
+
 **World 1, one coin** (`coin p` at the start, sides `false`/`true` as in Lean): `not`; always `true` (a point mass); surely `false`
 without "always `false`" (a composition); `toNat` (to ℕ); the order matters; a bet
 (+5 / −2, to ℤ); the better bet; surely zero. The proofs: `rw`, `rfl`, `congr`, `funext`, `cases`.
@@ -53,7 +64,8 @@ $B(2, p) * B(2, p) = B(4, p)$, proved for all $n$, $m$ (`binom_add`, by inductio
 * `INVENTORY` in `game.js` lists the tactics, rules and lemmas with the level that introduces them;
   a line is refused before Lean sees it when it uses a tactic or theorem that is not in the inventory
   yet (or anything from Mathlib or the journal by its full name).
-* `Lean/Solutions.lean` holds a proof of every level as a player types it; `./check-proofs.sh`
+* `Lean/Solutions.lean` (and `Lean/Solutions0.lean` for world 0, whose context is
+  `Lean/World0.lean`) holds a proof of every level as a player types it; `./check-proofs.sh`
   checks it with Lean, `python3 -I tests/proofs.py` plays it through the bridge.
 
 ## Lean as the referee

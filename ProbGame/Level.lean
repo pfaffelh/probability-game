@@ -36,14 +36,16 @@ def gameJs : String := include_str "game.js"
 def gameCss : String := include_str "game.css"
 /-- The rules of world 1, the context in which Lean normalises the state after each move. -/
 def world1Rules : String := include_str "../Lean/World1.lean"
+/-- The rules of world 0, walking on the grid: the context of its board and of its proofs. -/
+def world0Rules : String := include_str "../Lean/World0.lean"
 /-- The rules of the proofs: the context in which the levels are proved. -/
 def proofRules : String := include_str "../Lean/Rules.lean"
 
 /-- The attributes of the proof of a level: its number (`"2.3"`, which decides what is unlocked),
 its statement (binders and type, for `example`), the name of the lemma it becomes, and the rules. -/
-def proofAttrs (no proof lemma : String) : Array (String × String) :=
+def proofAttrs (no proof lemma : String) (context := proofRules) : Array (String × String) :=
   if proof.isEmpty then #[] else
-    #[("data-no", no), ("data-proof", proof), ("data-lemma", lemma), ("data-proof-context", proofRules)]
+    #[("data-no", no), ("data-proof", proof), ("data-lemma", lemma), ("data-proof-context", context)]
 
 -- A level: the distribution at the start, the target, the moves offered, and the Lean statement;
 -- `leanStart` and `leanTarget` are the start and the target as `DiscreteMeasure`s, which Lean
@@ -126,6 +128,50 @@ def build : DirectiveExpanderOf BuildConfig
     let blocks ← contents.mapM elabBlock
     ``(Verso.Doc.Block.other (Block.build $(quote cfg.target) $(quote cfg.moves) $(quote cfg.coins) $(quote cfg.sources)
         $(quote cfg.no) $(quote cfg.proof) $(quote cfg.lemma)) #[$blocks,*])
+
+-- A level of world 0, walking on the grid: the figure starts at `start` (`"0,0"`), the target is a
+-- point or a set of points (`"1,1"`, `"2,0 0,0 1,1 1,-1"`), the moves are `north, east, south, west`
+-- and `step` (all four ways), `walls` are fields the figure cannot enter. In the monad `Id` the
+-- figure is at one point; in `Set` it is at all the points it can reach. `colours := "yes"` draws
+-- the grid as a chessboard. Lean normalises the walk after each move, in `Lean/World0.lean`.
+block_extension Block.walk (monad start target moves walls colours no proof lemma : String) where
+  data := Json.mkObj [("monad", monad), ("start", start), ("target", target), ("moves", moves), ("walls", walls),
+    ("colours", colours), ("no", no), ("proof", proof), ("lemma", lemma)]
+  traverse _ _ _ := pure none
+  extraJs := {JS.mk gameJs}
+  extraCss := {CSS.mk gameCss}
+  toHtml := some fun _ goB _ data content => do
+    let get (k : String) := (data.getObjValAs? String k).toOption.getD ""
+    pure <| .tag "div" (#[("class", "pg-level pg-walk"), ("data-monad", get "monad"), ("data-start", get "start"),
+        ("data-target", get "target"), ("data-moves", get "moves"), ("data-walls", get "walls"),
+        ("data-colours", get "colours"), ("data-context", world0Rules)] ++
+        proofAttrs (get "no") (get "proof") (get "lemma") world0Rules) <|
+      .seq #[.tag "div" #[("class", "pg-text")] (← content.mapM goB), .tag "div" #[("class", "pg-board")] .empty]
+  toTeX := none
+
+structure WalkConfig where
+  monad : String
+  start : String
+  target : String
+  moves : String
+  walls : String
+  colours : String
+  no : String
+  proof : String
+  lemma : String
+
+instance : FromArgs WalkConfig DocElabM where
+  fromArgs := WalkConfig.mk <$> .namedD `monad .string "Id" <*> .namedD `start .string "0,0" <*>
+    .named `target .string false <*> .named `moves .string false <*> .namedD `walls .string "" <*>
+    .namedD `colours .string "" <*> .namedD `no .string "" <*> .namedD `proof .string "" <*> .namedD `lemma .string ""
+
+/-- A level of world 0: `::::walk (monad := "Set") (target := "1,0 -1,0 0,1 0,-1") (moves := "step")`. -/
+@[directive]
+def walk : DirectiveExpanderOf WalkConfig
+  | cfg, contents => do
+    let blocks ← contents.mapM elabBlock
+    ``(Verso.Doc.Block.other (Block.walk $(quote cfg.monad) $(quote cfg.start) $(quote cfg.target) $(quote cfg.moves)
+        $(quote cfg.walls) $(quote cfg.colours) $(quote cfg.no) $(quote cfg.proof) $(quote cfg.lemma)) #[$blocks,*])
 
 -- Text in one language: `:::en` and `:::de`; `game.js` shows the language chosen.
 block_extension Block.lang (lang : String) where
