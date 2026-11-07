@@ -13,7 +13,7 @@ distribution on `Bool` is fixed by its mass at `true`), `map_true` (where the sa
 `coin_true`, `coin_false`, `coin_and` (independence), the monad laws, the definition of `binom` by
 `binom_zero` and `binom_succ`); the lemmas the player proves (`coin_not_true`, `coin_not`, the boss
 of world 1, `binom_one`, `binom_succ'`, `binom_add`) are unlocked after their levels. The proofs of
-have no `simp`: it only normalises the board. A level's dot is half green after the board, green after the proof.
+worlds 1–3 have no `simp`: it only normalises the board. A level's dot is half green after the board, green after the proof.
 
 **World 0, walking on the grid** (before chance; `::::walk`, `Lean/World0.lean`): a figure on
 $\mathbb{Z} \times \mathbb{Z}$, the moves `north`, `east`, `south`, `west` as maps `Pos → m Pos`
