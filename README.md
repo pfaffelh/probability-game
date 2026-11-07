@@ -15,6 +15,14 @@ distribution on `Bool` is fixed by its mass at `true`), `map_true` (where the sa
 the boss of world 1, `binom_one`, `binom_succ'`, `binom_add`) are unlocked after their levels. The proofs
 have no `simp`: it only normalises the board. A level's dot is half green after the board, green after the proof.
 
+**True and false** (the first world, before chance; `::::boolean`, `Lean/WorldBool.lean`): a coin
+lies surely on one side, once or for every `b` (two rows); the moves are the maps `Bool → Bool`
+(`not`, always `true`, always `false`), and Lean normalises the value or the map after each move.
+The proofs: `(!true) = false` by `rfl`, rewriting with `Bool.not_true`, `cases b` for `!(!b) = b`
+(the player's `Bool.not_not`), `funext` for `not ∘ not = id`, a hypothesis in `rw`; the boss is
+`f (f (f b)) = f b` for every `f : Bool → Bool`, by `cases h : f false`. Its levels are numbered
+`b.1`, …, with an inventory of their own (`wb` in `game.js`); solutions in `Lean/SolutionsBool.lean`.
+
 **World 0, walking on the grid** (before chance; `::::walk`, `Lean/World0.lean`): a figure on
 $\mathbb{Z} \times \mathbb{Z}$, the moves `north`, `east`, `south`, `west` as maps `Pos → m Pos`
 into a monad, a walk as the program `pure (0, 0) >>= north >>= east`. First in `Id` (sure moves:

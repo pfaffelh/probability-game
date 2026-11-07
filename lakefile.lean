@@ -18,8 +18,11 @@ input_file world1Rules where
 input_file world0Rules where
   path := "Lean/World0.lean"
 
+input_file boolRules where
+  path := "Lean/WorldBool.lean"
+
 lean_lib ProbGame where
-  needs := #[gameJs, gameCss, world0Rules, world1Rules]
+  needs := #[gameJs, gameCss, boolRules, world0Rules, world1Rules]
 
 @[default_target]
 lean_exe probgame where

@@ -15,7 +15,7 @@ for f in "$here"/Proofs/*.lean; do
   lake env lean "$f"
 done
 tmp=$(mktemp -d)
-for f in "$here"/Lean/Rules.lean "$here"/Lean/World0.lean "$here"/Lean/World1.lean; do
+for f in "$here"/Lean/Rules.lean "$here"/Lean/WorldBool.lean "$here"/Lean/World0.lean "$here"/Lean/World1.lean; do
   echo "checking the rules $(basename "$f")"
   { echo "import Journal.Notes.DiscreteMeasure.Thinning"; cat "$f"; } > "$tmp/$(basename "$f")"
   lake env lean "$tmp/$(basename "$f")"
@@ -23,6 +23,9 @@ done
 echo "checking the solutions Solutions.lean"
 { echo "import Journal.Notes.DiscreteMeasure.Thinning"; cat "$here/Lean/Rules.lean" "$here/Lean/Solutions.lean"; } > "$tmp/Solutions.lean"
 lake env lean "$tmp/Solutions.lean"
+echo "checking the solutions SolutionsBool.lean"
+{ echo "import Journal.Notes.DiscreteMeasure.Thinning"; cat "$here/Lean/WorldBool.lean" "$here/Lean/SolutionsBool.lean"; } > "$tmp/SolutionsBool.lean"
+lake env lean "$tmp/SolutionsBool.lean"
 echo "checking the solutions Solutions0.lean"
 { echo "import Journal.Notes.DiscreteMeasure.Thinning"; cat "$here/Lean/World0.lean" "$here/Lean/Solutions0.lean"; } > "$tmp/Solutions0.lean"
 lake env lean "$tmp/Solutions0.lean"

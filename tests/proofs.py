@@ -1,4 +1,4 @@
-"""Plays the solutions of Lean/Solutions0.lean and Lean/Solutions.lean through a bridge, line by line, as the game does.
+"""Plays the solutions of Lean/SolutionsBool.lean, Lean/Solutions0.lean and Lean/Solutions.lean through a bridge, line by line, as the game does.
 
     python3 -I tests/proofs.py [http://127.0.0.1:8091]
 
@@ -17,8 +17,8 @@ def post(path, obj):
 
 
 failures = 0
-# world 0 has a context of its own
-for solutions, rules in [('Solutions0.lean', 'World0.lean'), ('Solutions.lean', 'Rules.lean')]:
+# the first world and world 0 have contexts of their own
+for solutions, rules in [('SolutionsBool.lean', 'WorldBool.lean'), ('Solutions0.lean', 'World0.lean'), ('Solutions.lean', 'Rules.lean')]:
     context = (here / 'Lean' / rules).read_text()
     for block in (here / 'Lean' / solutions).read_text().split('\nexample ')[1:]:
         head, body = block.split(' := by\n', 1)

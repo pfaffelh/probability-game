@@ -4,7 +4,7 @@
 #   repl/               leanprover-community/repl, built with the journal's toolchain
 #   probability-game/   this repository; the site is built into _out/html-multi
 #   nginx/              nginx's prefix: `site` links the built site
-#   allowed.txt         the contexts the bridge accepts (World0.lean, World1.lean, Rules.lean)
+#   allowed.txt         the contexts the bridge accepts (WorldBool.lean, World0.lean, World1.lean, Rules.lean)
 # The first time: clone the three repositories into ~/lean (see server/README.md).
 set -euo pipefail
 L=$HOME/lean
@@ -19,7 +19,7 @@ git -C $L/journal pull -q --ff-only
 (cd $L/journal && lake exe cache get >/dev/null && lake build Journal.Notes.DiscreteMeasure.Thinning)
 cp $L/journal/lean-toolchain $L/repl/lean-toolchain && (cd $L/repl && lake build)
 (cd $L/probability-game && lake build && lake exe probgame)
-(cd $L/probability-game && sha256sum Lean/World0.lean Lean/World1.lean Lean/Rules.lean) > $L/allowed.txt
+(cd $L/probability-game && sha256sum Lean/WorldBool.lean Lean/World0.lean Lean/World1.lean Lean/Rules.lean) > $L/allowed.txt
 mkdir -p $L/nginx/tmp && ln -sfn $L/probability-game/_out/html-multi $L/nginx/site
 
 mkdir -p ~/.config/systemd/user && cp $L/probability-game/server/systemd/*.service ~/.config/systemd/user/

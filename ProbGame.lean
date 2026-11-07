@@ -1,5 +1,6 @@
 import VersoManual
 import ProbGame.Level
+import ProbGame.Worlds.Bool
 import ProbGame.Worlds.Walk
 import ProbGame.Worlds.OneCoin
 import ProbGame.Worlds.TwoCoins
@@ -21,8 +22,9 @@ Distributions as sand: a distribution is drawn as columns of sand over the point
 on the board, then you prove it in Lean, for every probability $`p`, with the tactics and theorems of
 your inventory. Each lemma you prove is unlocked for the levels after it. Lean runs on the server;
 your progress stays in your browser.
-The first world comes before chance: a figure walks on a grid, with moves that are sure or that go
-several ways at once; there the same monad laws are at work as later for distributions.
+Two worlds come before chance: first `true` and `false`, a coin that lies surely on one side and the
+maps `Bool → Bool` that move it; then a figure that walks on a grid, with moves that are sure or that
+go several ways at once; there the same monad laws are at work as later for distributions.
 :::
 
 :::de
@@ -32,10 +34,13 @@ das *Bildmaß*. Jedes Level hat zwei Teile, wie im Natural Number Game: Zuerst f
 auf dem Spielfeld, dann beweist du sie in Lean, für jede Wahrscheinlichkeit $`p`, mit den Taktiken und
 Sätzen deines Inventars. Jedes Lemma, das du beweist, wird für die Level danach freigeschaltet. Lean
 läuft auf dem Server; dein Fortschritt bleibt in deinem Browser.
-Die erste Welt kommt vor dem Zufall: Eine Figur geht auf einem Gitter, mit Zügen, die sicher sind oder
-in mehrere Richtungen zugleich gehen; dort wirken schon dieselben Monadengesetze wie später für
-Verteilungen.
+Zwei Welten kommen vor dem Zufall: zuerst `true` und `false`, eine Münze, die sicher auf einer Seite
+liegt, und die Abbildungen `Bool → Bool`, die sie bewegen; dann eine Figur, die auf einem Gitter geht,
+mit Zügen, die sicher sind oder in mehrere Richtungen zugleich gehen; dort wirken schon dieselben
+Monadengesetze wie später für Verteilungen.
 :::
+
+{include 1 ProbGame.Worlds.Bool}
 
 {include 1 ProbGame.Worlds.Walk}
 

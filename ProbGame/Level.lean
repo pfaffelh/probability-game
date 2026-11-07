@@ -38,6 +38,8 @@ def gameCss : String := include_str "game.css"
 def world1Rules : String := include_str "../Lean/World1.lean"
 /-- The rules of world 0, walking on the grid: the context of its board and of its proofs. -/
 def world0Rules : String := include_str "../Lean/World0.lean"
+/-- The rules of the first world, true and false: the context of its board and of its proofs. -/
+def boolRules : String := include_str "../Lean/WorldBool.lean"
 /-- The rules of the proofs: the context in which the levels are proved. -/
 def proofRules : String := include_str "../Lean/Rules.lean"
 
@@ -172,6 +174,45 @@ def walk : DirectiveExpanderOf WalkConfig
     let blocks ← contents.mapM elabBlock
     ``(Verso.Doc.Block.other (Block.walk $(quote cfg.monad) $(quote cfg.start) $(quote cfg.target) $(quote cfg.moves)
         $(quote cfg.walls) $(quote cfg.colours) $(quote cfg.no) $(quote cfg.proof) $(quote cfg.lemma)) #[$blocks,*])
+
+-- A level of the first world: a coin lies surely on one side, for each value of `inputs` ("true",
+-- or "false true" for every `b`), and the moves are maps `Bool → Bool`; the level is solved when
+-- each row lies on its value of `target` (after exactly `count` moves, when it is given).
+block_extension Block.bool (inputs target moves count no proof lemma : String) where
+  data := Json.mkObj [("inputs", inputs), ("target", target), ("moves", moves), ("count", count),
+    ("no", no), ("proof", proof), ("lemma", lemma)]
+  traverse _ _ _ := pure none
+  extraJs := {JS.mk gameJs}
+  extraCss := {CSS.mk gameCss}
+  toHtml := some fun _ goB _ data content => do
+    let get (k : String) := (data.getObjValAs? String k).toOption.getD ""
+    pure <| .tag "div" (#[("class", "pg-level pg-bool"), ("data-inputs", get "inputs"), ("data-target", get "target"),
+        ("data-moves", get "moves"), ("data-count", get "count"), ("data-context", boolRules)] ++
+        proofAttrs (get "no") (get "proof") (get "lemma") boolRules) <|
+      .seq #[.tag "div" #[("class", "pg-text")] (← content.mapM goB), .tag "div" #[("class", "pg-board")] .empty]
+  toTeX := none
+
+structure BoolConfig where
+  inputs : String
+  target : String
+  moves : String
+  count : String
+  no : String
+  proof : String
+  lemma : String
+
+instance : FromArgs BoolConfig DocElabM where
+  fromArgs := BoolConfig.mk <$> .namedD `inputs .string "true" <*> .named `target .string false <*>
+    .named `moves .string false <*> .namedD `count .string "" <*> .namedD `no .string "" <*>
+    .namedD `proof .string "" <*> .namedD `lemma .string ""
+
+/-- A level of the first world: `::::boolean (inputs := "false true") (target := "true true") (moves := "not, false")`. -/
+@[directive]
+def boolean : DirectiveExpanderOf BoolConfig
+  | cfg, contents => do
+    let blocks ← contents.mapM elabBlock
+    ``(Verso.Doc.Block.other (Block.bool $(quote cfg.inputs) $(quote cfg.target) $(quote cfg.moves)
+        $(quote cfg.count) $(quote cfg.no) $(quote cfg.proof) $(quote cfg.lemma)) #[$blocks,*])
 
 -- Text in one language: `:::en` and `:::de`; `game.js` shows the language chosen.
 block_extension Block.lang (lang : String) where

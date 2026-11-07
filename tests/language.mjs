@@ -6,11 +6,11 @@ const base = process.env.BASE ?? 'http://127.0.0.1:8004/'
 const browser = await chromium.launch({ channel: 'chrome' })
 const page = await (await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })).newPage()
 page.on('pageerror', e => console.log('PAGEERROR', e.message))
-const pages = ['', 'World-0___-Walking-on-the-Grid/', 'World-1___-One-Coin/', 'World-2___-Building-with-Coins/', 'World-3___-Counting/']
+const pages = ['', 'True-and-False/', 'World-0___-Walking-on-the-Grid/', 'World-1___-One-Coin/', 'World-2___-Building-with-Coins/', 'World-3___-Counting/']
 let failures = 0
 const check = (ok, what) => { if (!ok) { failures++; console.log('FAIL', what) } }
 await page.goto(base); await page.evaluate(() => localStorage.clear()); await page.reload()
-for (const [lang, other, title] of [['de', 'en', 'Wahrscheinlichkeit|Gitter|Münze|Bauen|Zählen'], ['en', 'de', 'Probability|Grid|Coin|Building|Counting']]) {
+for (const [lang, other, title] of [['de', 'en', 'Wahrscheinlichkeit|Wahr und falsch|Gitter|Münze|Bauen|Zählen'], ['en', 'de', 'Probability|True and False|Grid|Coin|Building|Counting']]) {
   await page.locator('header .pg-langbtn', { hasText: lang.toUpperCase() }).click()
   await page.waitForLoadState('load'); await page.waitForTimeout(300)
   for (const path of pages) {

@@ -1,11 +1,12 @@
 // Plays every level in a browser: the board, then the proof, typed line by line (the solutions of
-// Lean/Solutions0.lean and Lean/Solutions.lean), on a desktop and a phone. Needs playwright-core and Chrome, the site on port
+// Lean/SolutionsBool.lean, Lean/Solutions0.lean and Lean/Solutions.lean), on a desktop and a phone. Needs playwright-core and Chrome, the site on port
 // 8004 and the bridge on 8091 (see README):  node tests/play.mjs [desktop|phone]
 import { chromium } from 'playwright-core'
 import { readFileSync } from 'fs'
-const sol = ['Solutions0', 'Solutions'].map(f => readFileSync(new URL(`../Lean/${f}.lean`, import.meta.url), 'utf8')).join('\n')
+const sol = ['SolutionsBool', 'Solutions0', 'Solutions'].map(f => readFileSync(new URL(`../Lean/${f}.lean`, import.meta.url), 'utf8')).join('\n')
 const proofs = sol.split('\nexample ').slice(1).map(b => b.split(':= by\n')[1].split('\n').filter(l => l.startsWith('  ')).map(l => l.trim()))
 const S = n => Array(n).fill('step')
+const WB = [['not'], ['not', 'not'], ['immer false', 'not'], ['not', 'not'], ['not', 'not'], ['immer true', 'immer true'], ['not', 'not', 'not']]
 const W0 = [['Norden'], ['Norden', 'Osten'], ['Osten', 'Norden'], ['Osten', 'step'], S(2), S(3), S(4), S(5)]
 const W1 = [['not', 'not'], ['not'], ['immer true'], ['immer true', 'not'], ['toNat'], ['true: 5'], ['immer false', 'toNat'], ['not']]
 const W2 = [
@@ -14,7 +15,7 @@ const W2 = [
   ['c', 'c', 'c', [0, 1, 'und'], [0, 2, 'und'], [1, 2, 'und'], [3, 4, 5, 'oder']]]
 const W3 = [['c', 'c', 'c', [0, 'toNat'], [1, 'toNat'], [2, 'toNat'], [3, 4, 5, 'addieren']], ['c', [0, 'toNat']],
   ['b', 'c', [1, 'toNat'], [0, 2, 'addieren']], ['b', [0, 'mindestens']], ['b', 'b', [0, 1, 'addieren']]]
-const worlds = [['World-0___-Walking-on-the-Grid', W0, 'walk'], ['World-1___-One-Coin', W1, 'level'], ['World-2___-Building-with-Coins', W2, 'build'], ['World-3___-Counting', W3, 'build']]
+const worlds = [['True-and-False', WB, 'walk'], ['World-0___-Walking-on-the-Grid', W0, 'walk'], ['World-1___-One-Coin', W1, 'level'], ['World-2___-Building-with-Coins', W2, 'build'], ['World-3___-Counting', W3, 'build']]
 const only = process.argv[2]  // 'desktop' or 'phone'
 const browser = await chromium.launch({ executablePath: '/usr/bin/google-chrome', headless: true })
 let pi = 0, fails = 0

@@ -168,3 +168,8 @@ header .pg-langs { align-self: center; margin: 0 0.8em 0 0.5em; flex-shrink: 0; 
 .pg-walk-pt.pg-walk-off { fill: #d9805f; stroke: #8e3b21; }
 .pg-walk-target { fill: none; stroke: #2e6fb8; stroke-width: 2; stroke-dasharray: 4 3; pointer-events: none; }
 .pg-walk-flow circle { pointer-events: none; }
+
+/* the first world: true and false */
+.pg-svg.pg-bools { max-width: 300px; }
+.pg-bool-label { font-size: 12px; fill: #6b5634; font-family: system-ui, sans-serif; }
+.pg-bool-side { font-size: 13px; fill: #6b5634; font-family: ui-monospace, monospace; }
