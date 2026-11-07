@@ -17,9 +17,45 @@ open unitInterval
 
 namespace ProbGame
 
-/-- Flipping a coin: `not` swaps the masses `p` and `1 - p`. -/
-theorem coin_not (p : I) : not <$> coin p = coin (σ p) := by
-  rw [← MeasureTheory.DiscreteMeasure.map_eq_map]; exact MeasureTheory.DiscreteMeasure.coin_not' p
+/-! World 1: what a distribution on `Bool` is, and where the sand of a move goes. -/
+
+/-- A number of `I` as a mass, written `↑p`. -/
+@[coe] noncomputable def mass (p : I) : ENNReal := ENNReal.ofReal p
+noncomputable instance : CoeTC I ENNReal := ⟨mass⟩
+
+/-- `μ` is a distribution: its total mass is one. -/
+class Prob {α : Type} (μ : DiscreteMeasure α) : Prop where
+  hasSum : HasSum μ.weight 1
+
+instance (p : I) : Prob (coin p) := ⟨MeasureTheory.DiscreteMeasure.hasSum_coin p⟩
+instance {α β : Type} (μ : DiscreteMeasure α) [h : Prob μ] (f : α → β) : Prob (f <$> μ) :=
+  ⟨MeasureTheory.DiscreteMeasure.hasSum_map h.hasSum f⟩
+
+/-- The mass of a coin at `true`. -/
+theorem coin_true (p : I) : coin p true = p := MeasureTheory.DiscreteMeasure.coin_apply_true p
+
+/-- The mass of a coin at `false`. -/
+theorem coin_false (p : I) : coin p false = σ p := MeasureTheory.DiscreteMeasure.coin_apply_false p
+
+/-- Two distributions on `Bool` are the same when they have the same mass at `true`: the rest of
+the sand lies at `false`. -/
+theorem bool_ext (μ ν : DiscreteMeasure Bool) [hμ : Prob μ] [hν : Prob ν] (h : μ true = ν true) : μ = ν := by
+  have a := hμ.hasSum.tsum_eq; have b := hν.hasSum.tsum_eq
+  rw [tsum_fintype, Fintype.sum_bool] at a b
+  simp only [MeasureTheory.DiscreteMeasure.weight_eq] at a b
+  have ht : μ true ≠ ⊤ := ne_top_of_le_ne_top ENNReal.one_ne_top (a ▸ le_self_add)
+  ext x; cases x
+  · rw [h] at a ht
+    exact (ENNReal.add_right_inj ht).1 (a.trans b.symm)
+  · exact h
+
+/-- Where the sand of a move goes: the mass of `f <$> μ` at `true` is the mass of `μ` at the points
+that `f` sends to `true` (`bif c then a else b` is `a` when `c` is `true`, else `b`). -/
+theorem map_true (f : Bool → Bool) (μ : DiscreteMeasure Bool) :
+    (f <$> μ) true = (bif f true then μ true else 0) + (bif f false then μ false else 0) := by
+  rw [← MeasureTheory.DiscreteMeasure.map_eq_map, MeasureTheory.DiscreteMeasure.map_apply_eq_tsum_mul,
+    tsum_fintype, Fintype.sum_bool]
+  cases f true <;> cases f false <;> simp [Set.indicator]
 
 /-- A coin whose result is not used changes nothing. -/
 theorem coin_unused {β : Type} (p : I) (ν : DiscreteMeasure β) : (do let _ ← coin p; ν) = ν :=
@@ -53,7 +89,20 @@ theorem binom_zero (p : I) : binom p 0 = pure 0 := rfl
 theorem binom_succ (p : I) (n : ℕ) :
     binom p (n + 1) = (do let X ← coin p; let Y ← binom p n; pure (X.toNat + Y)) := rfl
 
-/-! The lemmas the player proves (world 3); the game unlocks each after its level. -/
+/-! The lemmas the player proves; the game unlocks each after its level. -/
+
+/-- World 1, level 2: flipped, the coin has the mass `1 - p` at `true`. -/
+theorem coin_not_true (p : I) : (not <$> coin p) true = σ p := by
+  rw [map_true]
+  rw [Bool.not_true, Bool.not_false]
+  rw [Bool.cond_false, Bool.cond_true, zero_add]
+  rw [coin_false]
+
+/-- World 1, the boss: flipping a coin swaps the masses `p` and `1 - p`. -/
+theorem coin_not (p : I) : not <$> coin p = coin (σ p) := by
+  apply bool_ext
+  rw [coin_not_true, coin_true]
+
 
 /-- World 3, level 2: `B(1, p)` is a coin as a number. -/
 theorem binom_one (p : I) : Bool.toNat <$> coin p = binom p 1 := by

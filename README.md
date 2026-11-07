@@ -8,10 +8,12 @@ $P \circ f^{-1}$. Tapping a column shows its preimage.
 Every level has two parts, as in the Natural Number Game: first the **statement**, found on the board
 (the sand fills the target, checked exactly for every $p$, the masses being polynomials in $p$); then
 the **proof** in Lean, one tactic after another, with an inventory of tactics and theorems that
-grows from level to level. A few rules are given (as Peano's axioms in the NNG: `coin_not`,
-`coin_and` (independence), the monad laws, the definition of `binom` by `binom_zero` and
-`binom_succ`); the lemmas the player proves (`binom_one`, `binom_succ'`, `binom_add`) are unlocked
-after their levels. A level's dot is half green after the board, green after the proof.
+grows from level to level. A few rules are given (as Peano's axioms in the NNG: `bool_ext` (a
+distribution on `Bool` is fixed by its mass at `true`), `map_true` (where the sand of a move goes),
+`coin_true`, `coin_false`, `coin_and` (independence), the monad laws, the definition of `binom` by
+`binom_zero` and `binom_succ`); the lemmas the player proves (`coin_not_true`, `coin_not`, the boss
+of world 1, `binom_one`, `binom_succ'`, `binom_add`) are unlocked after their levels. The proofs of
+have no `simp`: it only normalises the board. A level's dot is half green after the board, green after the proof.
 
 **World 0, walking on the grid** (before chance; `::::walk`, `Lean/World0.lean`): a figure on
 $\mathbb{Z} \times \mathbb{Z}$, the moves `north`, `east`, `south`, `west` as maps `Pos → m Pos`

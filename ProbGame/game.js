@@ -366,7 +366,7 @@
     reset() { if (this.animating) return; this.steps = []; this.dist = this.start; this.picked = null; this.updateLean(); this.render() }
 
     // solved: the sand is the target, and Lean agrees (if it is connected)
-    get done() { return sameDist(this.dist, this.target) && this.leanAgrees() !== false && (!BACKEND || !this.leanTarget || this.leanAgrees() === true) }
+    get done() { return this.steps.length > 0 && sameDist(this.dist, this.target) && this.leanAgrees() !== false && (!BACKEND || !this.leanTarget || this.leanAgrees() === true) }
 
     check() {
       if (this.animating || !this.done) return
@@ -1072,16 +1072,19 @@
     { name: 'rw', kind: 'tactic', at: '1.1', w0: '0.1', insert: 'rw []', sig: 'rw [h]   rw [← h]   rw [h₁, h₂]',
       en: 'Rewrites the goal with the equation h: its left side becomes its right side (with ←, the other way round). Closes the goal when it then reads a = a. It does not rewrite where names bound in a do block occur; there, use simp only.',
       de: 'Schreibt das Ziel mit der Gleichung h um: Ihre linke Seite wird zu ihrer rechten (mit ← umgekehrt). Schließt das Ziel, wenn es danach a = a lautet. Es schreibt nicht dort um, wo in einem do-Block gebundene Namen vorkommen; dort hilft simp only.' },
-    { name: 'rfl', kind: 'tactic', at: '1.3', w0: '0.1', insert: 'rfl', sig: 'rfl',
+    { name: 'apply', kind: 'tactic', at: '1.1', insert: 'apply ', sig: 'apply h',
+      en: 'For a goal that is the conclusion of the rule h: leaves what h needs (its hypotheses) as the new goals.',
+      de: 'Für ein Ziel, das die Folgerung der Regel h ist: lässt das, was h braucht (ihre Annahmen), als neue Ziele.' },
+    { name: 'rfl', kind: 'tactic', at: '1.4', w0: '0.1', insert: 'rfl', sig: 'rfl',
       en: 'Closes a goal a = b whose sides are the same after computing (!true is false, 1 + 1 is 2).',
       de: 'Schließt ein Ziel a = b, dessen Seiten nach Ausrechnen gleich sind (!true ist false, 1 + 1 ist 2).' },
-    { name: 'congr', kind: 'tactic', at: '1.4', insert: 'congr 1', sig: 'congr 1',
+    { name: 'congr', kind: 'tactic', at: '1.5', insert: 'congr 1', sig: 'congr 1',
       en: 'For a goal f a = f b, or μ >>= g = μ >>= h (a do block): reduces it to the parts that differ (a = b, g = h).',
       de: 'Für ein Ziel f a = f b, oder μ >>= g = μ >>= h (ein do-Block): führt es auf die Teile zurück, die sich unterscheiden (a = b, g = h).' },
-    { name: 'funext', kind: 'tactic', at: '1.4', insert: 'funext x', sig: 'funext x',
+    { name: 'funext', kind: 'tactic', at: '1.5', insert: 'funext x', sig: 'funext x',
       en: 'For a goal g = h between functions: it suffices that g x = h x for every x.',
       de: 'Für ein Ziel g = h zwischen Funktionen: Es genügt, dass g x = h x für jedes x.' },
-    { name: 'cases', kind: 'tactic', at: '1.4', w0: '0.8', insert: 'cases x', sig: 'cases x',
+    { name: 'cases', kind: 'tactic', at: '1.5', w0: '0.8', insert: 'cases x', sig: 'cases x',
       en0: 'Splits a hypothesis h into its cases. For h : false = true there is no case: the goal is done.',
       de0: 'Teilt eine Annahme h in ihre Fälle. Für h : false = true gibt es keinen Fall: Das Ziel ist erledigt.',
       en: 'Splits into the cases of x: for x : Bool, the goals for false and for true, one after the other.',
@@ -1095,9 +1098,19 @@
     { name: "induction'", kind: 'tactic', at: '3.3', w0: '0.7', insert: "induction' n with n ih", sig: "induction' n with n ih",
       en: 'Induction on the natural number n: first the goal for 0, then the goal for n + 1, with the hypothesis ih for n.',
       de: 'Induktion nach der natürlichen Zahl n: zuerst das Ziel für 0, dann das Ziel für n + 1, mit der Annahme ih für n.' },
-    { name: 'coin_not', kind: 'rule', at: '1.1', sig: 'not <$> coin p = coin (σ p)', en: 'Flipping a coin swaps the masses.', de: 'Umdrehen tauscht die Massen.' },
-    { name: 'coin_const', kind: 'rule', at: '1.2', sig: '(fun _ => b) <$> coin p = pure b', en: 'A constant move: all the sand to one point.', de: 'Ein konstanter Zug: der ganze Sand an einen Punkt.' },
-    { name: 'map_pure', kind: 'rule', at: '1.3', w0: '0.7', sig: 'f <$> pure a = pure (f a)', en0: 'A move on a sure point moves the point.', de0: 'Ein Zug auf einem sicheren Punkt verschiebt den Punkt.', en: 'A move on a point mass moves the point.', de: 'Ein Zug auf einer Punktmasse verschiebt den Punkt.' },
+    { name: 'bool_ext', kind: 'rule', at: '1.1', sig: 'bool_ext μ ν (h : μ true = ν true) : μ = ν', en: 'Two distributions on Bool are the same when they have the same mass at true.', de: 'Zwei Verteilungen auf Bool sind gleich, wenn sie bei true dieselbe Masse haben.' },
+    { name: 'coin_true', kind: 'rule', at: '1.1', sig: '(coin p) true = ↑p', en: 'The mass of the coin at true.', de: 'Die Masse der Münze bei true.' },
+    { name: 'coin_false', kind: 'rule', at: '1.2', sig: '(coin p) false = ↑(σ p)', en: 'The mass of the coin at false.', de: 'Die Masse der Münze bei false.' },
+    { name: 'map_true', kind: 'rule', at: '1.2', sig: '(f <$> μ) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)', en: 'Where the sand of a move goes: to true comes the sand of the points that f sends to true.', de: 'Wohin der Sand eines Zuges fließt: Nach true kommt der Sand der Punkte, die f nach true schickt.' },
+    { name: 'Bool.not_true', kind: 'rule', at: '1.2', sig: '(!true) = false', en: 'Not true is false.', de: 'Nicht true ist false.' },
+    { name: 'Bool.not_false', kind: 'rule', at: '1.2', sig: '(!false) = true', en: 'Not false is true.', de: 'Nicht false ist true.' },
+    { name: 'Bool.cond_true', kind: 'rule', at: '1.2', sig: '(bif true then a else b) = a', en: 'bif with true: the first.', de: 'bif mit true: das Erste.' },
+    { name: 'Bool.cond_false', kind: 'rule', at: '1.2', sig: '(bif false then a else b) = b', en: 'bif with false: the second.', de: 'bif mit false: das Zweite.' },
+    { name: 'zero_add', kind: 'rule', at: '1.2', sig: '0 + n = n', en: 'Adding to zero.', de: 'Zu null addieren.' },
+    { name: 'coin_not_true', kind: 'lemma', at: '1.2', sig: '(not <$> coin p) true = ↑(σ p)', en: 'Proved by you in world 1, level 2.', de: 'Von dir bewiesen in Welt 1, Level 2.' },
+    { name: 'coin_not', kind: 'lemma', at: '1.8', sig: 'not <$> coin p = coin (σ p)', en: 'Proved by you: the boss of world 1. Flipping a coin swaps the masses.', de: 'Von dir bewiesen: der Endgegner von Welt 1. Umdrehen tauscht die Massen.' },
+    { name: 'coin_const', kind: 'rule', at: '1.3', sig: '(fun _ => b) <$> coin p = pure b', en: 'A constant move: all the sand to one point.', de: 'Ein konstanter Zug: der ganze Sand an einen Punkt.' },
+    { name: 'map_pure', kind: 'rule', at: '1.4', w0: '0.7', sig: 'f <$> pure a = pure (f a)', en0: 'A move on a sure point moves the point.', de0: 'Ein Zug auf einem sicheren Punkt verschiebt den Punkt.', en: 'A move on a point mass moves the point.', de: 'Ein Zug auf einer Punktmasse verschiebt den Punkt.' },
     { name: 'map_map', kind: 'rule', at: '1.6', w0: '0.6', sig: 'g <$> (f <$> μ) = (fun x => g (f x)) <$> μ', sig0: 'g <$> (f <$> s) = (fun x => g (f x)) <$> s', en: 'Two moves are one move.', de: 'Zwei Züge sind ein Zug.' },
     { name: 'coin_and', kind: 'rule', at: '2.1', sig: '(do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)', en: 'Independence: both true with probability p · q.', de: 'Unabhängigkeit: beide true mit Wahrscheinlichkeit p · q.' },
     { name: 'bind_map_left', kind: 'rule', at: '2.2', sig: '(do let x ← f <$> μ; g x) = (do let x ← μ; g (f x))', en: 'A move on a throw goes into the result.', de: 'Ein Zug auf einem Wurf wandert ins Ergebnis.' },
@@ -1114,7 +1127,6 @@
     { name: 'add_assoc', kind: 'rule', at: '3.1', sig: 'a + b + c = a + (b + c)', en: 'Brackets in sums.', de: 'Klammern in Summen.' },
     { name: 'map_eq_pure_bind', kind: 'rule', at: '3.2', w0: '0.6', sig: 'f <$> μ = do let x ← μ; pure (f x)', sig0: 'f <$> s = s >>= fun x => pure (f x)',
       en0: 'Applying f to every point, as a walk.', de0: 'f auf jeden Punkt anwenden, als Weg.', en: 'A move as a do block.', de: 'Ein Zug als do-Block.' },
-    { name: 'zero_add', kind: 'rule', at: '3.3', sig: '0 + n = n', en: 'Adding to zero.', de: 'Zu null addieren.' },
     { name: 'bind_pure', kind: 'rule', at: '3.5', sig: '(do let x ← μ; pure x) = μ', en: 'A throw whose result is the result.', de: 'Ein Wurf, dessen Ergebnis das Ergebnis ist.' },
     { name: 'binom_one', kind: 'lemma', at: '3.2', sig: 'Bool.toNat <$> coin p = binom p 1', en: 'Proved by you in world 3, level 2.', de: 'Von dir bewiesen in Welt 3, Level 2.' },
     { name: "binom_succ'", kind: 'lemma', at: '3.3', sig: "(do let X ← binom p n; let Y ← coin p; pure (X + Y.toNat)) = binom p (n + 1)", en: 'Proved by you in world 3, level 3.', de: 'Von dir bewiesen in Welt 3, Level 3.' },
@@ -1155,7 +1167,7 @@
     '{x} is not unlocked yet.': '{x} ist noch nicht freigeschaltet.',
     '{x} is not in your inventory.': '{x} ist nicht in deinem Inventar.',
     'This tactic is not in your inventory: {x}': 'Diese Taktik ist nicht in deinem Inventar: {x}',
-    'Statement': 'Aussage', 'a tactic, e.g. rw [coin_not]': 'eine Taktik, z. B. rw [coin_not]', 'a tactic, e.g. rw [pure_bind]': 'eine Taktik, z. B. rw [pure_bind]',
+    'Statement': 'Aussage', 'a tactic, e.g. rw [coin_true]': 'eine Taktik, z. B. rw [coin_true]', 'a tactic, e.g. rw [pure_bind]': 'eine Taktik, z. B. rw [pure_bind]',
     'Proved earlier; the proof is kept.': 'Schon bewiesen; der Beweis ist gespeichert.',
   })
   // Lean's messages, as the player sees the goals: short names, I for the unit interval; and in front of
@@ -1263,11 +1275,11 @@
       if (parts.length > 1 && !this.available(INVENTORY.find(i => i.name === '<;>'))) return tr('This tactic is not in your inventory: {x}', { x: '<;>' })
       for (let t of parts) {
         t = t.trim()
-        const tac = /^(rw|simp only|simp|rfl|congr|funext|cases|induction'|exists|intro|have)(?=\s|\[|$)/.exec(t)?.[1]
+        const tac = /^(rw|simp only|simp|rfl|congr|funext|cases|induction'|exists|intro|have|apply)(?=\s|\[|$)/.exec(t)?.[1]
         const item = INVENTORY.find(i => i.name === tac)
         if (!item || !this.available(item)) return tr('This tactic is not in your inventory: {x}', { x: t.split(/\s/)[0] || t })
         // the rules: in brackets, or the term of `have h := rule args`
-        const inside = tac === 'have' ? /:=(.*)$/.exec(t)?.[1]?.trim().split(/\s+/)[0] : /\[(.*)\]/.exec(t)?.[1]
+        const inside = tac === 'have' ? /:=(.*)$/.exec(t)?.[1]?.trim().split(/\s+/)[0] : tac === 'apply' ? t.slice(5).trim().split(/\s+/)[0] : /\[(.*)\]/.exec(t)?.[1]
         if ((tac === 'rw' || tac === 'simp only') && inside === undefined) return tr('This tactic is not in your inventory: {x}', { x: t })
         // each rule: its name is in the inventory (or a hypothesis of the goal, as ih), and so are the
         // names in its arguments
@@ -1310,7 +1322,7 @@
     insert(item) {
       let v = this.input.value
       if (item.kind === 'tactic') v = item.name === '<;>' ? v + item.insert : (v.trim() ? v : item.insert)
-      else if (/^have \S+ :=\s*$/.test(v)) v = v.replace(/\s*$/, ' ') + item.name + ' '
+      else if (/^have \S+ :=\s*$/.test(v) || /^apply\s*$/.test(v)) v = v.replace(/\s*$/, ' ') + item.name + (v.startsWith('have') ? ' ' : '')
       else if (/\[[^\]]*$/.test(v) || /\[\s*\]$/.test(v)) v = v.replace(/\[\s*\]$/, '[').replace(/(\[.*\S)$/, '$1, ') + item.name + (v.endsWith('[') || /\[\s*\]$/.test(v) ? ']' : '')
       else if (/\[.*\]/.test(v)) v = v.replace(/\s*\]([^\]]*)$/, (m, rest) => (/\[\s*$/.test(v.slice(0, v.lastIndexOf(']'))) ? '' : ', ') + item.name + ']' + rest)
       else v = `rw [${item.name}]`
@@ -1353,7 +1365,7 @@
       // the input
       const row = el('div', 'pg-proof-input')
       this.input = el('input'); this.input.type = 'text'; this.input.spellcheck = false; this.input.autocapitalize = 'off'; this.input.autocomplete = 'off'; this.input.enterKeyHint = 'go'; this.input.setAttribute('autocorrect', 'off')
-      this.input.placeholder = this.world0 ? tr('a tactic, e.g. rw [pure_bind]') : tr('a tactic, e.g. rw [coin_not]')
+      this.input.placeholder = this.world0 ? tr('a tactic, e.g. rw [pure_bind]') : tr('a tactic, e.g. rw [coin_true]')
       this.input.value = this.typed ?? ''
       this.input.addEventListener('input', () => { this.typed = this.input.value })
       this.input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); this.run() } })

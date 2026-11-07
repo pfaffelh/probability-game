@@ -6,8 +6,14 @@ the bridge, as the game does.
 -/
 
 -- World 1
-example (p : I) : not <$> coin p = coin (σ p) := by
-  rw [coin_not]
+example (p : I) (μ : DiscreteMeasure Bool) [hμ : Prob μ] (h : μ true = p) : μ = coin p := by
+  apply bool_ext
+  rw [h, coin_true]
+example (p : I) : (not <$> coin p) true = σ p := by
+  rw [map_true]
+  rw [Bool.not_true, Bool.not_false]
+  rw [Bool.cond_false, Bool.cond_true, zero_add]
+  rw [coin_false]
 example (p : I) : (fun _ => true) <$> coin p = pure true := by
   rw [coin_const]
 example (p : I) : not <$> ((fun _ => true) <$> coin p) = pure false := by
@@ -20,8 +26,6 @@ example (p : I) : Bool.toNat <$> coin p = (fun b => if b then 1 else 0) <$> coin
   cases b
   rfl
   rfl
-example (p : I) : Bool.toNat <$> (not <$> coin p) = Bool.toNat <$> coin (σ p) := by
-  rw [coin_not]
 example (p : I) : (fun b => if b then (5 : ℤ) else -2) <$> coin p = (fun n : ℕ => 7 * (n : ℤ) - 2) <$> (Bool.toNat <$> coin p) := by
   rw [map_map]
   congr 1
@@ -29,11 +33,12 @@ example (p : I) : (fun b => if b then (5 : ℤ) else -2) <$> coin p = (fun n : �
   cases b
   rfl
   rfl
-example (p : I) : (fun b => if b then (5 : ℤ) else -2) <$> (not <$> coin p) = (fun b => if b then (5 : ℤ) else -2) <$> coin (σ p) := by
-  rw [coin_not]
 example (p : I) : Bool.toNat <$> ((fun _ => false) <$> coin p) = pure 0 := by
   rw [coin_const, map_pure]
   rfl
+example (p : I) : not <$> coin p = coin (σ p) := by
+  apply bool_ext
+  rw [coin_not_true, coin_true]
 
 -- World 2
 example (p : I) : (do let x ← coin p; let y ← coin p; pure (x && y)) = coin (p * p) := by

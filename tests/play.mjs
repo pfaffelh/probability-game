@@ -7,7 +7,7 @@ const sol = ['Solutions0', 'Solutions'].map(f => readFileSync(new URL(`../Lean/$
 const proofs = sol.split('\nexample ').slice(1).map(b => b.split(':= by\n')[1].split('\n').filter(l => l.startsWith('  ')).map(l => l.trim()))
 const S = n => Array(n).fill('step')
 const W0 = [['Norden'], ['Norden', 'Osten'], ['Osten', 'Norden'], ['Osten', 'step'], S(2), S(3), S(4), S(5)]
-const W1 = [['not'], ['immer true'], ['immer true', 'not'], ['toNat'], ['not', 'toNat'], ['true: 5'], ['not', 'true: 5'], ['immer false', 'toNat']]
+const W1 = [['not', 'not'], ['not'], ['immer true'], ['immer true', 'not'], ['toNat'], ['true: 5'], ['immer false', 'toNat'], ['not']]
 const W2 = [
   ['c', 'c', [0, 1, 'und']], ['c', 'c', [1, 'nicht'], [0, 2, 'und']], ['c', 'c', [0, 1, 'oder']], ['c', [0, 'nicht'], [0, 1, 'und']],
   ['c', 'c', [0, 1, 'oder'], [0, 1, 'und'], [3, 'nicht'], [2, 4, 'und']], ['c', 'c', [0, 'toNat'], [1, 'toNat'], [2, 3, 'addieren']],

@@ -36,41 +36,103 @@ wenn es auf demselben Raum lebt). Die Massen sind $`p` und $`1 - p`; das Bild ze
 Beispiel-$`p`, das der Schieberegler ändert.
 :::
 
-::::level (start := "bernoulli p") (target := "bernoulli 1-p") (moves := "not") (lean := "(bernoulli p h).map not = bernoulli (1 - p) tsub_le_self") (leanTarget := "coin (σ p)") (no := "1.1") (proof := "(p : I) : not <$> coin p = coin (σ p)")
+::::level (start := "bernoulli p") (target := "bernoulli p") (moves := "not") (lean := "((bernoulli p h).map not).map not = bernoulli p h") (leanTarget := "coin p") (no := "1.1") (proof := "(p : I) (μ : DiscreteMeasure Bool) [hμ : Prob μ] (h : μ true = p) : μ = coin p")
 :::en
-*Flip the coin.* `not` makes `true` into `false` and `false` into `true`: the two columns swap.
+*Flip it twice.* `not` makes `true` into `false` and `false` into `true`: the two columns swap. Flip
+twice, and the coin is back as it was. The board sees this by comparing the columns with the target.
 :::
 
 :::de
-*Dreh die Münze um.* `not` macht aus `true` `false` und aus `false` `true`: Die beiden Säulen tauschen.
+*Zweimal umdrehen.* `not` macht aus `true` `false` und aus `false` `true`: Die beiden Säulen tauschen.
+Zweimal umgedreht, ist die Münze wieder wie vorher. Das Spielfeld sieht das, indem es die Säulen mit
+dem Ziel vergleicht.
 :::
 
 :::proofen
-*Now the proof.* What the board showed, now in Lean, for every $`p`. In Lean the coin is `coin p`,
-and `f <$> μ` is the image measure of `μ` under `f`: the move `f` applied to the distribution `μ`;
-`σ p` is $`1 - p`, and `p : I` says that $`p` lies in the unit interval $`I = [0, 1]`. Below is the
-*goal*, what is to be shown.
+*Now the proof.* In Lean the coin is `coin p`, and `f <$> μ` is the image measure of `μ` under `f`:
+the move `f` applied to the distribution `μ`; `σ p` is $`1 - p`, and `p : I` says that $`p` lies in
+the unit interval $`I = [0, 1]`. `μ x` is the mass of `μ` at `x`, the height of its column, and
+`↑p` is the number $`p` as a mass. `Prob μ` says that `μ` is a distribution: its total mass is $`1`.
+Below is the *goal*, what is to be shown, and above it the hypotheses, here `hμ` and `h`.
 
-The first rule of the game is `coin_not : not <$> coin p = coin (σ p)`: flipping swaps the masses.
-The tactic `rw [coin_not]` *rewrites* the goal with it: it replaces the left side of the rule by its
-right side. When both sides of the goal are then the same, the goal is closed. Type it (or tap
-`coin_not` in the inventory) and press *Run*.
+On the two points `false` and `true`, the column at `true` decides everything: the rest of the sand lies at
+`false`. This is the first rule of the game,
+`bool_ext μ ν (h : μ true = ν true) : μ = ν`. So every distribution with mass $`p` at `true` is the
+coin `coin p`, as the statement says.
+
+The tactic `apply bool_ext` turns the goal `μ = coin p` into what the rule needs:
+`μ true = (coin p) true`. The tactic `rw [h]` *rewrites* the goal with `h`: it replaces the left
+side of `h` by its right side. The rule `coin_true : (coin p) true = ↑p` gives the mass of the coin.
+When both sides of the goal are the same, the goal is closed.
+
+*Tip.* `apply bool_ext`, then `rw [h, coin_true]` (type it, or tap the inventory, and press *Run*).
 :::
 
 :::proofde
-*Jetzt der Beweis.* Was das Spielfeld gezeigt hat, jetzt in Lean, für jedes $`p`. In Lean ist die
-Münze `coin p`, und `f <$> μ` ist das Bildmaß von `μ` unter `f`: der Zug `f`, angewandt auf die
-Verteilung `μ`; `σ p` ist $`1 - p`, und `p : I` sagt, dass $`p` im Einheitsintervall $`I = [0, 1]` liegt. Unten
-steht das *Ziel*, also das, was zu zeigen ist.
+*Jetzt der Beweis.* In Lean ist die Münze `coin p`, und `f <$> μ` ist das Bildmaß von `μ` unter
+`f`: der Zug `f`, angewandt auf die Verteilung `μ`; `σ p` ist $`1 - p`, und `p : I` sagt, dass $`p`
+im Einheitsintervall $`I = [0, 1]` liegt. `μ x` ist die Masse von `μ` in `x`, die Höhe seiner Säule,
+und `↑p` ist die Zahl $`p` als Masse. `Prob μ` sagt, dass `μ` eine Verteilung ist: Die Gesamtmasse
+ist $`1`. Unten steht das *Ziel*, also das, was zu zeigen ist, und darüber die Annahmen, hier `hμ` und `h`.
 
-Die erste Regel des Spiels ist `coin_not : not <$> coin p = coin (σ p)`: Umdrehen tauscht die
-Massen. Die Taktik `rw [coin_not]` *schreibt* das Ziel damit *um*: Sie ersetzt die linke Seite der
-Regel durch ihre rechte. Sind danach beide Seiten des Ziels gleich, ist das Ziel erledigt. Tippe sie
-ein (oder tippe `coin_not` im Inventar an) und drücke *Ausführen*.
+Auf den zwei Punkten `false` und `true` entscheidet die Säule bei `true` alles: Der Rest des Sandes liegt bei
+`false`. Das ist die erste Regel des Spiels, `bool_ext μ ν (h : μ true = ν true) : μ = ν`. Also ist
+jede Verteilung mit Masse $`p` bei `true` die Münze `coin p`, wie die Aussage sagt.
+
+Die Taktik `apply bool_ext` macht aus dem Ziel `μ = coin p` das, was die Regel braucht:
+`μ true = (coin p) true`. Die Taktik `rw [h]` *schreibt* das Ziel mit `h` *um*: Sie ersetzt die
+linke Seite von `h` durch ihre rechte. Die Regel `coin_true : (coin p) true = ↑p` gibt die Masse der
+Münze. Sind beide Seiten des Ziels gleich, ist das Ziel erledigt.
+
+*Tipp.* `apply bool_ext`, dann `rw [h, coin_true]` (eintippen oder im Inventar antippen, dann
+*Ausführen*).
 :::
 ::::
 
-::::level (start := "bernoulli p") (target := "pure true") (moves := "not, heads, tails") (lean := "(bernoulli p h).map (fun _ => true) = pure true") (leanTarget := "DiscreteMeasure.pure true") (no := "1.2") (proof := "(p : I) : (fun _ => true) <$> coin p = pure true")
+::::level (start := "bernoulli p") (target := "bernoulli 1-p") (moves := "not") (lean := "(bernoulli p h).map not true = 1 - p") (leanTarget := "coin (σ p)") (no := "1.2") (proof := "(p : I) : (not <$> coin p) true = σ p") (lemma := "coin_not_true")
+:::en
+*Where does the sand go?* Flip the coin once, and look at the column at `true`: its sand came from
+`false`.
+:::
+
+:::de
+*Wohin fließt der Sand?* Dreh die Münze einmal um und sieh dir die Säule bei `true` an: Ihr Sand kam
+von `false`.
+:::
+
+:::proofen
+The rule of moves:
+`map_true : (f <$> μ) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)`.
+The sand at `true` comes from `true` when `f true` is `true`, and from `false` when `f false` is
+`true`; `bif c then a else b` is `a` when `c` is `true`, and `b` when it is `false`.
+
+What is left is computing, one rule after another: `Bool.not_true : (!true) = false`,
+`Bool.not_false : (!false) = true`, `Bool.cond_false : (bif false then a else b) = b`,
+`Bool.cond_true : (bif true then a else b) = a`, `zero_add : 0 + a = a`, and
+`coin_false : (coin p) false = ↑(σ p)`. Your result becomes the lemma `coin_not_true`.
+
+*Tip.* `rw [map_true]`, `rw [Bool.not_true, Bool.not_false]`,
+`rw [Bool.cond_false, Bool.cond_true, zero_add]`, `rw [coin_false]`.
+:::
+
+:::proofde
+Die Regel der Züge:
+`map_true : (f <$> μ) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)`.
+Der Sand bei `true` kommt von `true`, wenn `f true` gleich `true` ist, und von `false`, wenn
+`f false` gleich `true` ist; `bif c then a else b` ist `a`, wenn `c` gleich `true` ist, und `b`,
+wenn es `false` ist.
+
+Der Rest ist Rechnen, eine Regel nach der anderen: `Bool.not_true : (!true) = false`,
+`Bool.not_false : (!false) = true`, `Bool.cond_false : (bif false then a else b) = b`,
+`Bool.cond_true : (bif true then a else b) = a`, `zero_add : 0 + a = a` und
+`coin_false : (coin p) false = ↑(σ p)`. Dein Ergebnis wird das Lemma `coin_not_true`.
+
+*Tipp.* `rw [map_true]`, `rw [Bool.not_true, Bool.not_false]`,
+`rw [Bool.cond_false, Bool.cond_true, zero_add]`, `rw [coin_false]`.
+:::
+::::
+
+::::level (start := "bernoulli p") (target := "pure true") (moves := "not, heads, tails") (lean := "(bernoulli p h).map (fun _ => true) = pure true") (leanTarget := "DiscreteMeasure.pure true") (no := "1.3") (proof := "(p : I) : (fun _ => true) <$> coin p = pure true")
 :::en
 *Always `true`.* A constant map sends both outcomes to the same point: all the sand flows together.
 The result is sure, a point mass (Dirac measure).
@@ -94,7 +156,7 @@ Sand fließt zu einem Punkt.
 :::
 ::::
 
-::::level (start := "bernoulli p") (target := "pure false") (moves := "not, heads") (lean := "((bernoulli p h).map (fun _ => true)).map not = pure false") (leanTarget := "DiscreteMeasure.pure false") (no := "1.3") (proof := "(p : I) : not <$> ((fun _ => true) <$> coin p) = pure false")
+::::level (start := "bernoulli p") (target := "pure false") (moves := "not, heads") (lean := "((bernoulli p h).map (fun _ => true)).map not = pure false") (leanTarget := "DiscreteMeasure.pure false") (no := "1.4") (proof := "(p : I) : not <$> ((fun _ => true) <$> coin p) = pure false")
 :::en
 *Surely `false`, but there is no “always `false`”.* Two moves one after the other: the image measure of
 the image measure is the image measure of the composition, $`(P \circ f^{-1}) \circ g^{-1} = P \circ (g \circ f)^{-1}`.
@@ -124,7 +186,7 @@ dann `rfl`.
 :::
 ::::
 
-::::level (start := "bernoulli p") (target := "nat 1:p 0:1-p") (moves := "not, toNat") (lean := "(bernoulli p h).map Bool.toNat 1 = p") (leanTarget := "map Bool.toNat (coin p)") (no := "1.4") (proof := "(p : I) : Bool.toNat <$> coin p = (fun b => if b then 1 else 0) <$> coin p")
+::::level (start := "bernoulli p") (target := "nat 1:p 0:1-p") (moves := "not, toNat") (lean := "(bernoulli p h).map Bool.toNat 1 = p") (leanTarget := "map Bool.toNat (coin p)") (no := "1.5") (proof := "(p : I) : Bool.toNat <$> coin p = (fun b => if b then 1 else 0) <$> coin p")
 :::en
 *From sides to numbers.* `Bool.toNat` counts `true` as $`1` and `false` as $`0`: the distribution
 moves to the natural numbers. This is how a coin becomes a random number.
@@ -154,24 +216,6 @@ dass die beiden Abbildungen gleich sind; `funext b` darauf, dass sie an jeder St
 :::
 ::::
 
-::::level (start := "bernoulli p") (target := "nat 1:1-p 0:p") (moves := "not, toNat") (lean := "((bernoulli p h).map not).map Bool.toNat 1 = 1 - p") (leanTarget := "map Bool.toNat (coin (σ p))") (no := "1.5") (proof := "(p : I) : Bool.toNat <$> (not <$> coin p) = Bool.toNat <$> coin (σ p)")
-:::en
-*The order matters.* Once the coin has become a number, it cannot be flipped any more.
-:::
-
-:::de
-*Die Reihenfolge zählt.* Ist die Münze erst eine Zahl, lässt sie sich nicht mehr umdrehen.
-:::
-
-:::proofen
-Nothing new: `rw` also finds the left side of a rule inside a bigger term.
-:::
-
-:::proofde
-Nichts Neues: `rw` findet die linke Seite einer Regel auch in einem größeren Term.
-:::
-::::
-
 ::::level (start := "bernoulli p") (target := "int 5:p -2:1-p") (moves := "not, toNat, payoff 5 -2") (lean := "(bernoulli p h).map (fun b => if b then (5 : ℤ) else -2) 5 = p") (leanTarget := "map (fun b => if b = true then (5 : ℤ) else -2) (coin p)") (no := "1.6") (proof := "(p : I) : (fun b => if b then (5 : ℤ) else -2) <$> coin p = (fun n : ℕ => 7 * (n : ℤ) - 2) <$> (Bool.toNat <$> coin p)")
 :::en
 *A bet.* `true` wins 5 euros, `false` loses 2. The image measure is the distribution of your gain.
@@ -186,36 +230,18 @@ deines Gewinns.
 The bet is $`7 \cdot (\text{the coin as a number}) - 2`. The new rule
 `map_map : g <$> (f <$> μ) = (fun x => g (f x)) <$> μ`: two moves are one move.
 
-*Tip.* `rw [map_map]`, then as in level 4.
+*Tip.* `rw [map_map]`, then as in level 5.
 :::
 
 :::proofde
 Die Wette ist $`7 \cdot (\text{die Münze als Zahl}) - 2`. Die neue Regel
 `map_map : g <$> (f <$> μ) = (fun x => g (f x)) <$> μ`: Zwei Züge sind ein Zug.
 
-*Tipp.* `rw [map_map]`, dann wie in Level 4.
+*Tipp.* `rw [map_map]`, dann wie in Level 5.
 :::
 ::::
 
-::::level (start := "bernoulli p") (target := "int 5:1-p -2:p") (moves := "not, toNat, payoff 5 -2") (lean := "((bernoulli p h).map not).map (fun b => if b then (5 : ℤ) else -2) 5 = 1 - p") (leanTarget := "map (fun b => if b = true then (5 : ℤ) else -2) (coin (σ p))") (no := "1.7") (proof := "(p : I) : (fun b => if b then (5 : ℤ) else -2) <$> (not <$> coin p) = (fun b => if b then (5 : ℤ) else -2) <$> coin (σ p)")
-:::en
-*A better bet.* Make winning the likely outcome.
-:::
-
-:::de
-*Eine bessere Wette.* Mach den Gewinn zum wahrscheinlichen Ausgang.
-:::
-
-:::proofen
-The better bet is the bet on the flipped coin: $`1 - p` instead of $`p`.
-:::
-
-:::proofde
-Die bessere Wette ist die Wette auf die umgedrehte Münze: $`1 - p` statt $`p`.
-:::
-::::
-
-::::level (start := "bernoulli p") (target := "nat 0:1") (moves := "not, heads, tails, toNat") (lean := "((bernoulli p h).map (fun _ => false)).map Bool.toNat = pure 0") (leanTarget := "DiscreteMeasure.pure 0") (no := "1.8") (proof := "(p : I) : Bool.toNat <$> ((fun _ => false) <$> coin p) = pure 0")
+::::level (start := "bernoulli p") (target := "nat 0:1") (moves := "not, heads, tails, toNat") (lean := "((bernoulli p h).map (fun _ => false)).map Bool.toNat = pure 0") (leanTarget := "DiscreteMeasure.pure 0") (no := "1.7") (proof := "(p : I) : Bool.toNat <$> ((fun _ => false) <$> coin p) = pure 0")
 :::en
 *Surely zero.* A point mass on the numbers, however you get there.
 :::
@@ -225,10 +251,38 @@ Die bessere Wette ist die Wette auf die umgedrehte Münze: $`1 - p` statt $`p`.
 :::
 
 :::proofen
-World 1 in one proof.
+As in levels 3 and 4, now with a number.
 :::
 
 :::proofde
-Welt 1 in einem Beweis.
+Wie in den Leveln 3 und 4, jetzt mit einer Zahl.
+:::
+::::
+
+::::level (start := "bernoulli p") (target := "bernoulli 1-p") (moves := "not, heads, tails, toNat") (lean := "(bernoulli p h).map not = bernoulli (1 - p) tsub_le_self") (leanTarget := "coin (σ p)") (no := "1.8") (proof := "(p : I) : not <$> coin p = coin (σ p)") (lemma := "coin_not")
+:::en
+*The boss: flip the coin.* Not just the column at `true`: the whole coin.
+:::
+
+:::de
+*Der Endgegner: Dreh die Münze um.* Nicht nur die Säule bei `true`: die ganze Münze.
+:::
+
+:::proofen
+Flipping turns the coin `p` into the coin $`1 - p`. Two distributions on `Bool` are the same when
+their columns at `true` are (`bool_ext`, level 1), and you know the column at `true` of the flipped
+coin (`coin_not_true`, level 2). Your result becomes the lemma `coin_not`, which worlds 2 and 3 use
+all the time.
+
+*Tip.* `apply bool_ext`, then `rw` with your lemma and `coin_true`.
+:::
+
+:::proofde
+Umdrehen macht aus der Münze $`p` die Münze $`1 - p`. Zwei Verteilungen auf `Bool` sind gleich, wenn
+ihre Säulen bei `true` gleich sind (`bool_ext`, Level 1), und die Säule bei `true` der umgedrehten
+Münze kennst du (`coin_not_true`, Level 2). Dein Ergebnis wird das Lemma `coin_not`, das die Welten
+2 und 3 ständig benutzen.
+
+*Tipp.* `apply bool_ext`, dann `rw` mit deinem Lemma und `coin_true`.
 :::
 ::::
