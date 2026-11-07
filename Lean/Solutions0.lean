@@ -21,7 +21,10 @@ example : (pure (0, 0) >>= east >>= step : Set Pos) = {(2, 0), (0, 0), (1, 1), (
 example : (0, 0) ∈ (pure (0, 0) >>= step >>= step : Set Pos) := by
   rw [mem_bind]
   exists (1, 0)
-  simp [step]
+  constructor
+  rw [pure_bind]
+  apply step_east
+  apply step_west
 example (μ : Set Pos) : odd <$> (μ >>= step) = not <$> (odd <$> μ) := by
   rw [map_bind]
   simp only [odd_step]

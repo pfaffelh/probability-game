@@ -145,17 +145,28 @@ Dieselben Regeln wie in `Id`: `pure_bind` gilt in jeder Monade. Neu ist
 :::proofen
 A point is in `s >>= f` when there is a way to it: a point `a ∈ s` from which `f` reaches it. That is
 `mem_bind : b ∈ s >>= f ↔ ∃ a ∈ s, b ∈ f a`. After `rw [mem_bind]`, the tactic `exists (1, 0)` names
-such a point. Two facts remain, which are a matter of computing: $`(1, 0)` is one step from the
-start, and $`(0, 0)` one step from $`(1, 0)`. `simp [step]` computes them; plain `simp` knows many
-rules by itself.
+such a point. Two facts remain, joined by `∧`: $`(1, 0)` is one step from the start, and $`(0, 0)`
+one step from $`(1, 0)`. The tactic `constructor` splits them into two goals, one after the other.
+The rules `step_east : (x + 1, y) ∈ step (x, y)` and `step_west : (x - 1, y) ∈ step (x, y)` say that
+east and west are among the ways of `step`; the tactic `apply step_east` closes a goal of this form
+(Lean computes `0 + 1 = 1` by itself).
+
+*Tip.* `rw [mem_bind]`, `exists (1, 0)`, `constructor`, `rw [pure_bind]`, `apply step_east`,
+`apply step_west`.
 :::
 
 :::proofde
 Ein Punkt liegt in `s >>= f`, wenn es einen Weg zu ihm gibt: einen Punkt `a ∈ s`, von dem aus `f` ihn
 erreicht. Das ist `mem_bind : b ∈ s >>= f ↔ ∃ a ∈ s, b ∈ f a`. Nach `rw [mem_bind]` nennt die Taktik
-`exists (1, 0)` so einen Punkt. Zwei Tatsachen bleiben, die man ausrechnen kann: $`(1, 0)` ist einen
-Schritt vom Anfang entfernt, und $`(0, 0)` einen Schritt von $`(1, 0)`. `simp [step]` rechnet sie
-aus; `simp` ohne `only` kennt viele Regeln von selbst.
+`exists (1, 0)` so einen Punkt. Zwei Tatsachen bleiben: $`(1, 0)` ist einen Schritt vom Anfang
+entfernt, und $`(0, 0)` einen Schritt von $`(1, 0)`, verbunden durch `∧`. Die
+Taktik `constructor` teilt sie in zwei Ziele, eines nach dem anderen. Die Regeln
+`step_east : (x + 1, y) ∈ step (x, y)` und `step_west : (x - 1, y) ∈ step (x, y)` sagen, dass Osten
+und Westen unter den Wegen von `step` sind; die Taktik `apply step_east` schließt ein Ziel dieser
+Form (`0 + 1 = 1` rechnet Lean selbst aus).
+
+*Tipp.* `rw [mem_bind]`, `exists (1, 0)`, `constructor`, `rw [pure_bind]`, `apply step_east`,
+`apply step_west`.
 :::
 ::::
 

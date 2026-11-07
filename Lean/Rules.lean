@@ -30,12 +30,24 @@ class Prob {α : Type} (μ : DiscreteMeasure α) : Prop where
 instance (p : I) : Prob (coin p) := ⟨MeasureTheory.DiscreteMeasure.hasSum_coin p⟩
 instance {α β : Type} (μ : DiscreteMeasure α) [h : Prob μ] (f : α → β) : Prob (f <$> μ) :=
   ⟨MeasureTheory.DiscreteMeasure.hasSum_map h.hasSum f⟩
+instance {α : Type} (a : α) : Prob (pure a : DiscreteMeasure α) := ⟨MeasureTheory.DiscreteMeasure.hasSum_pure a⟩
 
 /-- The mass of a coin at `true`. -/
 theorem coin_true (p : I) : coin p true = p := MeasureTheory.DiscreteMeasure.coin_apply_true p
 
 /-- The mass of a coin at `false`. -/
 theorem coin_false (p : I) : coin p false = σ p := MeasureTheory.DiscreteMeasure.coin_apply_false p
+
+/-- The total mass of a coin is one. -/
+theorem coin_total (p : I) : coin p true + coin p false = 1 := by
+  have := (MeasureTheory.DiscreteMeasure.hasSum_coin p).tsum_eq
+  rw [tsum_fintype, Fintype.sum_bool] at this; exact this
+
+/-- The mass of a point mass at `true`: one if it sits there, else zero. -/
+theorem pure_true (b : Bool) : (pure b : DiscreteMeasure Bool) true = bif b then 1 else 0 := by
+  cases b
+  · exact MeasureTheory.DiscreteMeasure.pure_apply_nonself (by decide)
+  · exact MeasureTheory.DiscreteMeasure.pure_apply_self
 
 /-- Two distributions on `Bool` are the same when they have the same mass at `true`: the rest of
 the sand lies at `false`. -/
@@ -60,10 +72,6 @@ theorem map_true (f : Bool → Bool) (μ : DiscreteMeasure Bool) :
 /-- A coin whose result is not used changes nothing. -/
 theorem coin_unused {β : Type} (p : I) (ν : DiscreteMeasure β) : (do let _ ← coin p; ν) = ν :=
   MeasureTheory.DiscreteMeasure.bind_const_of_hasSum (MeasureTheory.DiscreteMeasure.hasSum_coin p) ν
-
-/-- A constant map sends all the sand to one point. -/
-theorem coin_const {β : Type} (p : I) (b : β) : (fun _ => b) <$> coin p = pure b := by
-  rw [← bind_pure_comp]; exact coin_unused p _
 
 /-- Two moves are one move. -/
 theorem map_map {α β γ : Type} (μ : DiscreteMeasure α) (f : α → β) (g : β → γ) :
@@ -98,11 +106,18 @@ theorem coin_not_true (p : I) : (not <$> coin p) true = σ p := by
   rw [Bool.cond_false, Bool.cond_true, zero_add]
   rw [coin_false]
 
+/-- World 1, level 3: a constant move sends all the sand to one point. -/
+theorem coin_const (p : I) (b : Bool) : (fun _ => b) <$> coin p = pure b := by
+  apply bool_ext
+  rw [map_true, pure_true]
+  cases b
+  rw [Bool.cond_false, Bool.cond_false, Bool.cond_false, zero_add]
+  rw [Bool.cond_true, Bool.cond_true, Bool.cond_true, coin_total]
+
 /-- World 1, the boss: flipping a coin swaps the masses `p` and `1 - p`. -/
 theorem coin_not (p : I) : not <$> coin p = coin (σ p) := by
   apply bool_ext
   rw [coin_not_true, coin_true]
-
 
 /-- World 3, level 2: `B(1, p)` is a coin as a number. -/
 theorem binom_one (p : I) : Bool.toNat <$> coin p = binom p 1 := by

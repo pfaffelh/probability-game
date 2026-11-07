@@ -1072,7 +1072,7 @@
     { name: 'rw', kind: 'tactic', at: '1.1', w0: '0.1', insert: 'rw []', sig: 'rw [h]   rw [← h]   rw [h₁, h₂]',
       en: 'Rewrites the goal with the equation h: its left side becomes its right side (with ←, the other way round). Closes the goal when it then reads a = a. It does not rewrite where names bound in a do block occur; there, use simp only.',
       de: 'Schreibt das Ziel mit der Gleichung h um: Ihre linke Seite wird zu ihrer rechten (mit ← umgekehrt). Schließt das Ziel, wenn es danach a = a lautet. Es schreibt nicht dort um, wo in einem do-Block gebundene Namen vorkommen; dort hilft simp only.' },
-    { name: 'apply', kind: 'tactic', at: '1.1', insert: 'apply ', sig: 'apply h',
+    { name: 'apply', kind: 'tactic', at: '1.1', w0: '0.5', insert: 'apply ', sig: 'apply h',
       en: 'For a goal that is the conclusion of the rule h: leaves what h needs (its hypotheses) as the new goals.',
       de: 'Für ein Ziel, das die Folgerung der Regel h ist: lässt das, was h braucht (ihre Annahmen), als neue Ziele.' },
     { name: 'rfl', kind: 'tactic', at: '1.4', w0: '0.1', insert: 'rfl', sig: 'rfl',
@@ -1084,7 +1084,7 @@
     { name: 'funext', kind: 'tactic', at: '1.5', insert: 'funext x', sig: 'funext x',
       en: 'For a goal g = h between functions: it suffices that g x = h x for every x.',
       de: 'Für ein Ziel g = h zwischen Funktionen: Es genügt, dass g x = h x für jedes x.' },
-    { name: 'cases', kind: 'tactic', at: '1.5', w0: '0.8', insert: 'cases x', sig: 'cases x',
+    { name: 'cases', kind: 'tactic', at: '1.3', w0: '0.8', insert: 'cases x', sig: 'cases x',
       en0: 'Splits a hypothesis h into its cases. For h : false = true there is no case: the goal is done.',
       de0: 'Teilt eine Annahme h in ihre Fälle. Für h : false = true gibt es keinen Fall: Das Ziel ist erledigt.',
       en: 'Splits into the cases of x: for x : Bool, the goals for false and for true, one after the other.',
@@ -1109,7 +1109,9 @@
     { name: 'zero_add', kind: 'rule', at: '1.2', sig: '0 + n = n', en: 'Adding to zero.', de: 'Zu null addieren.' },
     { name: 'coin_not_true', kind: 'lemma', at: '1.2', sig: '(not <$> coin p) true = ↑(σ p)', en: 'Proved by you in world 1, level 2.', de: 'Von dir bewiesen in Welt 1, Level 2.' },
     { name: 'coin_not', kind: 'lemma', at: '1.8', sig: 'not <$> coin p = coin (σ p)', en: 'Proved by you: the boss of world 1. Flipping a coin swaps the masses.', de: 'Von dir bewiesen: der Endgegner von Welt 1. Umdrehen tauscht die Massen.' },
-    { name: 'coin_const', kind: 'rule', at: '1.3', sig: '(fun _ => b) <$> coin p = pure b', en: 'A constant move: all the sand to one point.', de: 'Ein konstanter Zug: der ganze Sand an einen Punkt.' },
+    { name: 'coin_total', kind: 'rule', at: '1.3', sig: '(coin p) true + (coin p) false = 1', en: 'The total mass of a coin is one.', de: 'Die Gesamtmasse einer Münze ist eins.' },
+    { name: 'pure_true', kind: 'rule', at: '1.3', sig: '(pure b) true = bif b then 1 else 0', en: 'The mass of a point mass at true.', de: 'Die Masse einer Punktmasse bei true.' },
+    { name: 'coin_const', kind: 'lemma', at: '1.3', sig: '(fun _ => b) <$> coin p = pure b', en: 'Proved by you in world 1, level 3: a constant move sends all the sand to one point.', de: 'Von dir bewiesen in Welt 1, Level 3: Ein konstanter Zug schickt den ganzen Sand an einen Punkt.' },
     { name: 'map_pure', kind: 'rule', at: '1.4', w0: '0.7', sig: 'f <$> pure a = pure (f a)', en0: 'A move on a sure point moves the point.', de0: 'Ein Zug auf einem sicheren Punkt verschiebt den Punkt.', en: 'A move on a point mass moves the point.', de: 'Ein Zug auf einer Punktmasse verschiebt den Punkt.' },
     { name: 'map_map', kind: 'rule', at: '1.6', w0: '0.6', sig: 'g <$> (f <$> μ) = (fun x => g (f x)) <$> μ', sig0: 'g <$> (f <$> s) = (fun x => g (f x)) <$> s', en: 'Two moves are one move.', de: 'Zwei Züge sind ein Zug.' },
     { name: 'coin_and', kind: 'rule', at: '2.1', sig: '(do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)', en: 'Independence: both true with probability p · q.', de: 'Unabhängigkeit: beide true mit Wahrscheinlichkeit p · q.' },
@@ -1131,9 +1133,8 @@
     { name: 'binom_one', kind: 'lemma', at: '3.2', sig: 'Bool.toNat <$> coin p = binom p 1', en: 'Proved by you in world 3, level 2.', de: 'Von dir bewiesen in Welt 3, Level 2.' },
     { name: "binom_succ'", kind: 'lemma', at: '3.3', sig: "(do let X ← binom p n; let Y ← coin p; pure (X + Y.toNat)) = binom p (n + 1)", en: 'Proved by you in world 3, level 3.', de: 'Von dir bewiesen in Welt 3, Level 3.' },
     // world 0 only
-    { name: 'simp', kind: 'tactic', w0: '0.5', insert: 'simp []', sig: 'simp   simp [h₁, h₂]',
-      en: 'Rewrites with many rules it knows by itself (and with h₁, h₂, …) and computes; closes the goal when it becomes true.',
-      de: 'Schreibt mit vielen Regeln um, die es selbst kennt (und mit h₁, h₂, …), und rechnet; schließt das Ziel, wenn es wahr wird.' },
+    { name: 'constructor', kind: 'tactic', w0: '0.5', insert: 'constructor', sig: 'constructor',
+      en: 'For a goal A ∧ B: the two goals A and B, one after the other.', de: 'Für ein Ziel A ∧ B: die zwei Ziele A und B, eines nach dem anderen.' },
     { name: 'exists', kind: 'tactic', w0: '0.5', insert: 'exists ', sig: 'exists a',
       en: 'For a goal ∃ x, P x: names the x, and leaves P a.', de: 'Für ein Ziel ∃ x, P x: nennt das x und lässt P a übrig.' },
     { name: 'intro', kind: 'tactic', w0: '0.8', insert: 'intro h', sig: 'intro h',
@@ -1147,6 +1148,8 @@
     { name: 'south', kind: 'rule', w0: '0.1', sig: 'south (x, y) = pure (x, y - 1)', en: 'One step south.', de: 'Ein Schritt nach Süden.' },
     { name: 'west', kind: 'rule', w0: '0.1', sig: 'west (x, y) = pure (x - 1, y)', en: 'One step west.', de: 'Ein Schritt nach Westen.' },
     { name: 'step', kind: 'rule', w0: '0.4', sig: 'step (x, y) = {(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)}', en: 'One step, all four ways.', de: 'Ein Schritt, alle vier Richtungen.' },
+    { name: 'step_east', kind: 'rule', w0: '0.5', sig: '(x + 1, y) ∈ step (x, y)', en: 'East is one of the ways of step.', de: 'Osten ist einer der Wege von step.' },
+    { name: 'step_west', kind: 'rule', w0: '0.5', sig: '(x - 1, y) ∈ step (x, y)', en: 'West is one of the ways of step.', de: 'Westen ist einer der Wege von step.' },
     { name: 'mem_bind', kind: 'rule', w0: '0.5', sig: 'b ∈ s >>= f ↔ ∃ a ∈ s, b ∈ f a', en: 'Reachable: there is a way.', de: 'Erreichbar: Es gibt einen Weg.' },
     { name: 'odd_step', kind: 'rule', w0: '0.6', sig: 'odd <$> step p = pure (!odd p)', en: 'A step changes the colour.', de: 'Ein Schritt wechselt die Farbe.' },
     { name: 'walk_zero', kind: 'rule', w0: '0.7', sig: 'walk 0 = pure (0, 0)', en: 'No step.', de: 'Kein Schritt.' },
@@ -1275,7 +1278,7 @@
       if (parts.length > 1 && !this.available(INVENTORY.find(i => i.name === '<;>'))) return tr('This tactic is not in your inventory: {x}', { x: '<;>' })
       for (let t of parts) {
         t = t.trim()
-        const tac = /^(rw|simp only|simp|rfl|congr|funext|cases|induction'|exists|intro|have|apply)(?=\s|\[|$)/.exec(t)?.[1]
+        const tac = /^(rw|simp only|rfl|congr|funext|cases|induction'|exists|intro|have|apply|constructor)(?=\s|\[|$)/.exec(t)?.[1]
         const item = INVENTORY.find(i => i.name === tac)
         if (!item || !this.available(item)) return tr('This tactic is not in your inventory: {x}', { x: t.split(/\s/)[0] || t })
         // the rules: in brackets, or the term of `have h := rule args`

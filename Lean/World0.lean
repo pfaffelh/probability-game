@@ -37,6 +37,12 @@ end
 /-- One step in any direction: the four neighbours. -/
 def step : Pos → Set Pos | (x, y) => {(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)}
 
+/-- A step east is one of the ways of `step`. -/
+theorem step_east (x y : ℤ) : (x + 1, y) ∈ step (x, y) := by simp [step]
+
+/-- A step west is one of the ways of `step`. -/
+theorem step_west (x y : ℤ) : (x - 1, y) ∈ step (x, y) := by simp [step]
+
 /-- Where one can be after `n` steps. -/
 def walk : ℕ → Set Pos
   | 0 => pure (0, 0)

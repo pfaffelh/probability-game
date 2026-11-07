@@ -132,7 +132,7 @@ Der Rest ist Rechnen, eine Regel nach der anderen: `Bool.not_true : (!true) = fa
 :::
 ::::
 
-::::level (start := "bernoulli p") (target := "pure true") (moves := "not, heads, tails") (lean := "(bernoulli p h).map (fun _ => true) = pure true") (leanTarget := "DiscreteMeasure.pure true") (no := "1.3") (proof := "(p : I) : (fun _ => true) <$> coin p = pure true")
+::::level (start := "bernoulli p") (target := "pure true") (moves := "not, heads, tails") (lean := "(bernoulli p h).map (fun _ => true) = pure true") (leanTarget := "DiscreteMeasure.pure true") (no := "1.3") (proof := "(p : I) (b : Bool) : (fun _ => b) <$> coin p = pure b") (lemma := "coin_const")
 :::en
 *Always `true`.* A constant map sends both outcomes to the same point: all the sand flows together.
 The result is sure, a point mass (Dirac measure).
@@ -144,15 +144,35 @@ fließt zusammen. Das Ergebnis ist sicher, eine Punktmasse (Dirac-Maß).
 :::
 
 :::proofen
-`pure b` is the point mass at `b`, and `fun _ => true` is the constant map. The new rule
-`coin_const : (fun _ => b) <$> coin p = pure b` says what the board showed: all the sand flows to
-one point.
+`pure b` is the point mass at `b`, and `fun _ => b` is the constant map. The statement says what
+the board showed, for both values `b`: all the sand flows to one point. It becomes your lemma
+`coin_const`.
+
+Compare the columns at `true`: `apply bool_ext`, then `map_true`, and
+the new rule `pure_true : (pure b) true = bif b then 1 else 0`. Then `b` has to be known: the new
+tactic `cases b` splits into the cases `false` and `true`, two goals, one after the other. For
+`true`, the new rule `coin_total : (coin p) true + (coin p) false = 1` says that the coin has total
+mass one. `rw [Bool.cond_true]` rewrites one `bif` at a time.
+
+*Tip.* `apply bool_ext`, `rw [map_true, pure_true]`, `cases b`, then
+`rw [Bool.cond_false, Bool.cond_false, Bool.cond_false, zero_add]` and
+`rw [Bool.cond_true, Bool.cond_true, Bool.cond_true, coin_total]`.
 :::
 
 :::proofde
-`pure b` ist die Punktmasse in `b`, und `fun _ => true` ist die konstante Abbildung. Die neue
-Regel `coin_const : (fun _ => b) <$> coin p = pure b` sagt, was das Spielfeld gezeigt hat: Der ganze
-Sand fließt zu einem Punkt.
+`pure b` ist die Punktmasse in `b`, und `fun _ => b` ist die konstante Abbildung. Die Aussage sagt,
+was das Spielfeld gezeigt hat, für beide Werte `b`: Der ganze Sand fließt zu einem Punkt. Sie wird
+dein Lemma `coin_const`.
+
+Vergleiche die Säulen bei `true`: `apply bool_ext`, dann `map_true` und die neue Regel
+`pure_true : (pure b) true = bif b then 1 else 0`. Dann muss `b` bekannt sein: Die neue Taktik
+`cases b` teilt in die Fälle `false` und `true`, zwei Ziele, eines nach dem anderen. Für `true` sagt
+die neue Regel `coin_total : (coin p) true + (coin p) false = 1`, dass die Münze die Gesamtmasse
+eins hat. `rw [Bool.cond_true]` schreibt immer nur ein `bif` um.
+
+*Tipp.* `apply bool_ext`, `rw [map_true, pure_true]`, `cases b`, dann
+`rw [Bool.cond_false, Bool.cond_false, Bool.cond_false, zero_add]` und
+`rw [Bool.cond_true, Bool.cond_true, Bool.cond_true, coin_total]`.
 :::
 ::::
 
@@ -199,8 +219,8 @@ wandert zu den natürlichen Zahlen. So wird aus einer Münze eine Zufallszahl.
 
 :::proofen
 `Bool.toNat` counts `true` as $`1` and `false` as $`0`. Both sides move the same coin, with two
-maps that agree. Three new tactics: `congr 1` reduces the goal to the two maps being equal;
-`funext b` to their being equal at every `b`; `cases b` splits into the cases `false` and `true`, two
+maps that agree. Two new tactics: `congr 1` reduces the goal to the two maps being equal;
+`funext b` to their being equal at every `b`; and `cases b` (from level 3) splits into the cases `false` and `true`, two
 goals, one after the other.
 
 *Tip.* `congr 1`, `funext b`, `cases b`, `rfl`, `rfl`.
@@ -208,9 +228,9 @@ goals, one after the other.
 
 :::proofde
 `Bool.toNat` zählt `true` als $`1` und `false` als $`0`. Beide Seiten bewegen dieselbe Münze, mit
-zwei Abbildungen, die übereinstimmen. Drei neue Taktiken: `congr 1` führt das Ziel darauf zurück,
+zwei Abbildungen, die übereinstimmen. Zwei neue Taktiken: `congr 1` führt das Ziel darauf zurück,
 dass die beiden Abbildungen gleich sind; `funext b` darauf, dass sie an jeder Stelle `b` gleich sind;
-`cases b` teilt in die Fälle `false` und `true`, zwei Ziele, eines nach dem anderen.
+und `cases b` (aus Level 3) teilt in die Fälle `false` und `true`, zwei Ziele, eines nach dem anderen.
 
 *Tipp.* `congr 1`, `funext b`, `cases b`, `rfl`, `rfl`.
 :::
