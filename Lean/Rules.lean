@@ -99,14 +99,14 @@ theorem binom_succ (p : I) (n : ℕ) :
 
 /-! The lemmas the player proves; the game unlocks each after its level. -/
 
-/-- World 1, level 2: flipped, the coin has the mass `1 - p` at `true`. -/
+/-- One Coin, level 1: flipped, the coin has the mass `1 - p` at `true`. -/
 theorem coin_not_true (p : I) : (not <$> coin p) true = σ p := by
   rw [map_true]
   rw [Bool.not_true, Bool.not_false]
   rw [Bool.cond_false, Bool.cond_true, zero_add]
   rw [coin_false]
 
-/-- World 1, level 3: a constant move sends all the mass to one point. -/
+/-- One Coin, level 2: a constant move sends all the mass to one point. -/
 theorem coin_const (p : I) (b : Bool) : (fun _ => b) <$> coin p = pure b := by
   apply bool_ext
   rw [map_true, pure_true]
@@ -119,13 +119,13 @@ theorem coin_not (p : I) : not <$> coin p = coin (σ p) := by
   apply bool_ext
   rw [coin_not_true, coin_true]
 
-/-- World 3, level 2: `B(1, p)` is a coin as a number. -/
+/-- Counting, level 2: `B(1, p)` is a coin as a number. -/
 theorem binom_one (p : I) : Bool.toNat <$> coin p = binom p 1 := by
   rw [binom_succ, binom_zero]
   simp only [pure_bind, add_zero]
   rw [map_eq_pure_bind]
 
-/-- World 3, level 3: one throw more, at the end. -/
+/-- Counting, level 3: one throw more, at the end. -/
 theorem binom_succ' (p : I) (n : ℕ) :
     (do let X ← binom p n; let Y ← coin p; pure (X + Y.toNat)) = binom p (n + 1) := by
   induction' n with n ih

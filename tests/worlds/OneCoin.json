@@ -4,10 +4,6 @@
  "kind": "level",
  "boards": [
   [
-   "not",
-   "not"
-  ],
-  [
    "not"
   ],
   [
