@@ -630,9 +630,11 @@
         if (!this.selected.length || !this.root.offsetParent || e.target.closest?.('.pg-card, button, input, a, .pg-tip-overlay')) return
         this.selected = []; this.message = ''; this.render()
       })
+      // Escape chooses none; Delete (or Backspace) deletes what is chosen
       document.addEventListener('keydown', e => {
-        if (e.key !== 'Escape' || !this.selected.length || !this.root.offsetParent || document.querySelector('.pg-tip-overlay')) return
-        this.selected = []; this.message = ''; this.render()
+        if (!this.selected.length || !this.root.offsetParent || document.querySelector('.pg-tip-overlay') || e.target.closest?.('input, textarea')) return
+        if (e.key === 'Escape') { this.selected = []; this.message = ''; this.render() }
+        if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); this.remove() }
       })
       this.render()
     }
@@ -702,6 +704,20 @@
       if (k >= 0) this.selected.splice(k, 1); else this.selected.push(i)
       this.message = ''; this.render()
     }
+    // Deletes the chosen lines and all that is built on them. The coins of the level stay (they
+    // belong to it): for a chosen coin, what is built on it goes.
+    remove() {
+      if (!this.selected.length) return
+      const fixed = this.initial().length, chosen = new Set(this.selected), gone = new Set()
+      this.nodes.forEach((n, j) => {
+        if ((chosen.has(j) && !(n.src && j < fixed)) || n.inputs?.some(k => gone.has(k) || chosen.has(k))) gone.add(j)
+      })
+      this.selected = []
+      if (!gone.size) { this.message = tr('The coins of the level stay; nothing is built on this one yet.'); this.render(); return }
+      const keep = this.nodes.map((_, j) => j).filter(j => !gone.has(j)), at = new Map(keep.map((j, k) => [j, k]))
+      this.nodes = keep.map(j => { const n = this.nodes[j]; return n.inputs ? { ...n, inputs: n.inputs.map(k => at.get(k)) } : n })
+      this.changed()
+    }
     removeLast() { if (!this.canUndo) return; this.nodes.pop(); this.selected = this.selected.filter(j => j < this.nodes.length); this.changed() }
     reset() { this.nodes = this.initial(); this.selected = []; this.changed() }
     undo() { this.removeLast() }
@@ -709,7 +725,7 @@
     status() {
       if (this.checked?.ok) return 'goals accomplished 🎉'
       if (!this.nodes.length) return tr('Lay down a building block.')
-      if (this.selected.length) return tr('{n} chosen: now a function, or Check.', { n: this.selected.length })
+      if (this.selected.length) return tr('{n} chosen: now a function, Check, or Delete.', { n: this.selected.length })
       return tr('Tap lines to choose them, then a function. Check compares a line with the target.')
     }
 
@@ -846,11 +862,15 @@
 
       const tools = el('div', 'pg-tools')
       const check = el('button', 'pg-check', tr('Check')), undo = el('button', 'pg-tool', '↶ ' + tr('Remove the last')), reset = el('button', 'pg-tool', '⟲ ' + tr('Start over'))
-      check.type = undo.type = reset.type = 'button'
+      const del = el('button', 'pg-delete', '🗑 ' + tr('Delete'))
+      check.type = undo.type = reset.type = del.type = 'button'
       undo.disabled = reset.disabled = !this.canUndo
+      del.disabled = !this.selected.length
+      del.title = tr('Deletes the chosen lines, and what is built on them.')
+      del.addEventListener('click', () => this.remove())
       check.addEventListener('click', () => this.check())
       undo.addEventListener('click', () => this.removeLast()); reset.addEventListener('click', () => this.reset())
-      tools.append(check, undo, reset)
+      tools.append(check, del, undo, reset)
 
       const now = this.selected.length === 1 ? this.selected[0] : this.nodes.length - 1
       const info = el('div', 'pg-info' + (this.message ? ' pg-warn' : ''),
@@ -1691,7 +1711,9 @@
     'Tap a move.': 'Tippe einen Zug an.', 'The distribution lives on {a}, the target on {b}.': 'Die Verteilung lebt auf {a}, das Ziel auf {b}.',
     'The right shape, but in {n} moves, please.': 'Die richtige Form, aber bitte in {n} Zügen.', 'Lean is checking …': 'Lean prüft …',
     'At {k}: P = {m}, the target has {t}.': 'Bei {k}: P = {m}, das Ziel hat {t}.', 'Lean disagrees.': 'Lean widerspricht.',
-    'Lay down a building block.': 'Leg einen Baustein hin.', '{n} chosen: now a function, or Check.': '{n} ausgewählt: jetzt eine Funktion, oder Prüfen.',
+    'Lay down a building block.': 'Leg einen Baustein hin.', '{n} chosen: now a function, Check, or Delete.': '{n} ausgewählt: jetzt eine Funktion, Prüfen oder Löschen.',
+    'The coins of the level stay; nothing is built on this one yet.': 'Die Münzen des Levels bleiben; auf dieser ist noch nichts gebaut.', Delete: 'Löschen',
+    'Deletes the chosen lines, and what is built on them.': 'Löscht die ausgewählten Leitungen und was auf ihnen gebaut ist.',
     'Tap lines to choose them, then a function. Check compares a line with the target.': 'Tippe Leitungen an, dann eine Funktion. Prüfen vergleicht eine Leitung mit dem Ziel.',
     'Not at the flag yet.': 'Noch nicht bei der Fahne.', '{n} points; the target has {m}.': '{n} Punkte; das Ziel hat {m}.',
     'On the flag, but in {n} moves, please.': 'Auf der Fahne, aber bitte in {n} Zügen.', 'not on the flag yet.': 'noch nicht auf der Fahne.', 'Not on the flag yet.': 'Noch nicht auf der Fahne.',
