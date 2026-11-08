@@ -13,8 +13,9 @@
 
   // ---------------------------------------------------------------- language
 
+  // English, unless the player chose German with the switch EN | DE (not the browser's language).
   let LANG = 'en'
-  try { LANG = localStorage.getItem('pg:lang') ?? ((navigator.language ?? '').startsWith('de') ? 'de' : 'en') } catch {}
+  try { LANG = localStorage.getItem('pg:lang') ?? 'en' } catch {}
   const DE = {
     Moves: 'Züge', Undo: 'Zurück', 'Start over': 'Neu anfangen', 'Next level ›': 'Nächstes Level ›',
     'Solved!': 'Geschafft!', Target: 'Ziel', 'In Lean, for every p:': 'In Lean, für jedes p:', 'proved': 'bewiesen',
