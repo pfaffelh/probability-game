@@ -11,8 +11,9 @@ htmlSplit := .never
 %%%
 
 :::en
-Now you build a circuit. *New p-coin* lays down a coin, as a line; all coins have the same $`p` and
-are independent of each other. Tap one or several lines and then a function: a column takes the
+Now you build a circuit. The coins of the level lie there from the start, each as a line; all coins
+have the same $`p` and are independent of each other. Tap one or several lines (a tap beside them
+chooses none again), then a function: a column takes the
 lines with a dot as its inputs, and its result runs on as a new line. A line that a column only
 crosses, without a dot, is not used. A coin may go into several functions; then the results depend
 on each other, and the game takes that into account. At the end of each line is its distribution,
@@ -27,9 +28,9 @@ The circuit, read from left to right, is a `do` block in Lean.
 :::
 
 :::de
-Jetzt baust du einen Schaltplan. *Neue p-Münze* legt eine Münze hin, als Leitung; alle Münzen haben
-dasselbe $`p` und sind unabhängig voneinander. Tippe eine oder mehrere Leitungen an und dann eine
-Funktion: Eine Spalte nimmt die Leitungen mit einem Punkt als Eingänge, und ihr Ergebnis läuft als
+Jetzt baust du einen Schaltplan. Die Münzen des Levels liegen von Anfang an da, jede als Leitung;
+alle Münzen haben dasselbe $`p` und sind unabhängig voneinander. Tippe eine oder mehrere Leitungen an
+(ein Tipp daneben hebt die Auswahl wieder auf), dann eine Funktion: Eine Spalte nimmt die Leitungen mit einem Punkt als Eingänge, und ihr Ergebnis läuft als
 neue Leitung weiter. Eine Leitung, die eine Spalte nur kreuzt, ohne Punkt, wird nicht benutzt. Eine
 Münze darf in mehrere Funktionen gehen; dann hängen die Ergebnisse voneinander ab, und das Spiel
 berücksichtigt das. Am Ende jeder Leitung steht ihre Verteilung, die sich ergibt, indem man alle
