@@ -175,3 +175,105 @@ header .pg-langs { align-self: center; margin: 0 0.8em 0 0.5em; flex-shrink: 0; 
 .pg-bool-side { font-size: 13px; fill: #6b5634; font-family: ui-monospace, monospace; }
 /* the edition `show`: the boards alone; the texts of the proofs are not shown */
 :root.pg-show .pg-proof-text { display: none !important; }
+
+/* ---------------------------------------------------------------- the stage (as in the IPM)
+   One level at a time, as high as the screen: the world and the level on top with the dots, the
+   board (or the proof) in the middle, the status line and the tool bar below. Nothing above the
+   board: the texts are under Tips. */
+.pg-stage { display: flex; flex-direction: column; height: calc(100svh - var(--verso-header-height, 3rem) - 12px); margin: 0.5rem 0 0; }
+.pg-stage-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 0.3em 0.8em; padding-bottom: 0.4em; }
+.pg-stage-titles { display: flex; align-items: baseline; gap: 0.6em; min-width: 0; flex: 1 1 14rem; font-family: var(--verso-structure-font-family, sans-serif); }
+.pg-stage-title { font-weight: bold; font-size: 1.15em; white-space: nowrap; }
+.pg-level-title { color: #8a5a16; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pg-stage .pg-dots { justify-content: flex-end; }
+.pg-stage > .pg-level:not([hidden]) { display: flex; flex-direction: column; flex: 1; min-height: 0; padding: 0.5rem 0.8rem; }
+.pg-stage > .pg-level > .pg-text { display: none; }
+.pg-stage .pg-board { flex: 1; min-height: 0; overflow-y: auto; margin: 0; display: flex; gap: 0.8rem; }
+.pg-stage .pg-main { flex: 1; min-width: 0; }
+.pg-stage .pg-palette { flex: none; width: 15rem; display: flex; flex-direction: column; gap: 0.3rem; }
+.pg-stage .pg-palette .pg-moves, .pg-stage .pg-palette .pg-blocks { flex-direction: column; align-items: stretch; display: flex; gap: 0.4rem; }
+.pg-stage .pg-palette .pg-move { text-align: left; }
+.pg-stage .pg-palette .pg-check { margin-top: 0.3rem; }
+.pg-stage .pg-level.pg-view-proof .pg-board { display: none; }
+.pg-stage .pg-level:not(.pg-view-proof) .pg-proof { display: none; }
+.pg-stage .pg-level.pg-view-proof .pg-proof { flex: 1; min-height: 0; overflow-y: auto; margin: 0; border: none; padding: 0; }
+.pg-stage .pg-proof-head { margin-top: 0; }
+.pg-stage .pg-solved .pg-next { display: inline-block; margin: 0.3rem 0 0; }
+.pg-world-text[hidden] { display: none; }
+html.pg-playing main, html.pg-playing .content-wrapper, html.pg-playing section { padding-top: 0; padding-bottom: 0; margin-top: 0; }
+html.pg-playing .prev-next-buttons { display: none !important; }
+@media (min-height: 501px) { html.pg-playing, html.pg-playing body { overflow: hidden; } }
+/* The stage may be wider than Verso's text column. */
+@container main (width >= 900px) { main .pg-stage { width: min(72rem, calc(100cqw - 3rem)); box-sizing: border-box; } }
+@container main (width >= 1212px) { main .pg-stage { margin-left: calc(50% - min(72rem, 100cqw - 3rem) / 2); } }
+
+/* what to do next */
+.pg-status { min-height: 1.4em; margin: 0.35rem 0.2rem 0; font-family: var(--verso-structure-font-family, sans-serif); color: #5c3d0e; }
+.pg-status.pg-status-done { color: #1f6b27; font-weight: bold; }
+/* the Lean panel: what Lean makes of the board */
+.pg-lean-box { margin-top: 0.4rem; border: 1px solid #c9d6ea; border-radius: 8px; background: #f7f9fd; padding: 0.3rem 0.7rem; max-height: 22vh; overflow: auto; }
+.pg-lean-box[hidden] { display: none; }
+.pg-lean-box .pg-lean-state { text-align: left; margin: 0.1rem 0; }
+
+/* the tool bar: all buttons alike; Tips, Proof and Next on the right */
+.pg-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4em; margin-top: 0.35rem; padding-bottom: env(safe-area-inset-bottom); }
+.pg-toolbar .pg-button {
+  font: inherit; font-family: var(--verso-structure-font-family, sans-serif); font-size: 0.95em; color: white; background: #b0782a;
+  border: 1px solid #b0782a; border-radius: 8px; padding: 0.45em 0.9em; min-height: 40px; cursor: pointer;
+}
+.pg-toolbar .pg-button:hover { background: #95631f; }
+.pg-toolbar .pg-button[aria-pressed="true"] { background: #7a4f14; box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3); }
+.pg-toolbar .pg-button:disabled { background: #dcc8a6; border-color: #dcc8a6; cursor: default; }
+.pg-toolbar .pg-button[hidden] { display: none; }
+.pg-toolbar .pg-tips-button { margin-left: auto; }
+.pg-toolbar .pg-ico, .pg-toolbar .pg-short { display: none; }
+.pg-toolbar .pg-next-button { background: #2e8b37; border-color: #2e8b37; }
+.pg-toolbar .pg-next-button:disabled { background: #a9cdb0; border-color: #a9cdb0; }
+.pg-toolbar .pg-glow { animation: pg-pulse 1.2s ease-in-out infinite; font-weight: bold; }
+@keyframes pg-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(46, 139, 55, 0.5); } 50% { box-shadow: 0 0 0 6px rgba(46, 139, 55, 0); } }
+@media (prefers-reduced-motion: reduce) { .pg-toolbar .pg-glow { animation: none; } }
+
+/* phones (and a phone on its side): the moves below the board, the tool bar one row of symbols */
+@media (max-width: 760px), (max-height: 500px) {
+  .pg-stage .pg-board { flex-direction: column; gap: 0.2rem; }
+  .pg-stage .pg-palette { width: auto; }
+  .pg-stage .pg-palette .pg-moves, .pg-stage .pg-palette .pg-blocks { flex-direction: row; flex-wrap: wrap; }
+  .pg-stage .pg-palette .pg-moves-head { display: none; }
+  .pg-stage > .pg-level:not([hidden]) { padding: 0.3rem 0.5rem; }
+  .pg-stage .pg-slider-note { display: none; }
+  .pg-toolbar { flex-wrap: nowrap; gap: 3px; }
+  .pg-toolbar .pg-button { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0.25em 0.1em; font-size: 0.72rem; line-height: 1.1; min-height: 48px; }
+  .pg-toolbar .pg-ico { display: block; font-size: 1.3rem; line-height: 1.1; }
+  .pg-toolbar .pg-short { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+  .pg-toolbar .pg-lbl { display: none; }
+  .pg-toolbar .pg-tips-button { margin-left: 0; }
+  .pg-stage-title { font-size: 1em; }
+}
+@media (max-height: 500px) { .pg-stage { height: auto; min-height: 100svh; } }
+
+/* the tips: a box over the stage, head and "Got it" always in view, the text between them scrolls */
+.pg-tip-overlay { position: fixed; inset: 0; z-index: 60; background: rgba(40, 30, 15, 0.35); display: flex; align-items: center; justify-content: center; padding: 12px; box-sizing: border-box; }
+.pg-tip-card {
+  background: white; border-radius: 12px; padding: 0.8em 1.2em; max-width: 36rem; width: 100%; max-height: min(85vh, calc(100dvh - 24px));
+  display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3); box-sizing: border-box;
+}
+.pg-tip-top { display: flex; align-items: center; gap: 0.5em; flex: none; }
+.pg-tip-head { font-weight: bold; color: #8a5a16; font-family: var(--verso-structure-font-family, sans-serif); flex: 1; }
+.pg-tip-x { flex: none; font: inherit; font-size: 1.1em; width: 44px; height: 44px; margin-right: -0.6em; border: none; border-radius: 22px; background: none; color: #555; cursor: pointer; }
+.pg-tip-x:hover { background: #f6efe2; }
+.pg-tip-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.pg-tip-body .pg-proof-text { display: block; }
+:root:not(.pg-de) .pg-tip-body .pg-lang-de, :root.pg-de .pg-tip-body .pg-lang-en { display: none; }
+.pg-tip-ok {
+  flex: none; display: block; margin: 0.6em 0 0 auto; font: inherit; font-family: var(--verso-structure-font-family, sans-serif); font-weight: bold;
+  color: white; background: #b0782a; border: none; border-radius: 22px; padding: 0.55em 1.4em; min-height: 44px; cursor: pointer;
+}
+.pg-tip-sub { font-weight: bold; margin: 0.8rem 0 0.4rem; font-family: var(--verso-structure-font-family, sans-serif); color: #5c3d0e; border-top: 1px solid #eadfca; padding-top: 0.5rem; }
+.pg-tip-move, .pg-tip-item { display: flex; align-items: center; gap: 0.8rem; border: 1px solid #e3d5bb; border-radius: 8px; background: #fffdf8; padding: 0.35rem 0.6rem; margin: 0.35rem 0; }
+.pg-tip-item { display: block; }
+.pg-tip-move-text { font-family: var(--verso-structure-font-family, sans-serif); }
+.pg-map-picture { flex: none; width: 120px; height: auto; }
+.pg-map-point { font: 13px var(--verso-code-font-family, monospace); fill: #333; }
+.pg-map-sym { flex: none; width: 3rem; text-align: center; font-size: 1.5rem; font-weight: bold; color: #b0782a; }
+:root.pg-show .pg-tip-body .pg-proof-text { display: none !important; }
+@media (min-width: 761px) and (min-height: 501px) { .pg-stage .pg-svg { max-width: 720px; } }
