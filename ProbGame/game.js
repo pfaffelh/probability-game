@@ -18,7 +18,7 @@
   try { LANG = localStorage.getItem('pg:lang') ?? 'en' } catch {}
   const DE = {
     Moves: 'Züge', Undo: 'Zurück', 'Start over': 'Neu anfangen', 'Next level ›': 'Nächstes Level ›',
-    'Solved!': 'Geschafft!', Target: 'Ziel', 'In Lean, for every p:': 'In Lean, für jedes p:', 'proved': 'bewiesen',
+    Target: 'Ziel', 'In Lean, for every p:': 'In Lean, für jedes p:', 'proved': 'bewiesen',
     'Tap a bar to see where its mass came from.': 'Tippe eine Säule an, um zu sehen, woher ihre Masse kommt.',
     'This move needs a coin, not a number.': 'Dieser Zug braucht eine Münze, keine Zahl.',
     'Level {i} of {n}': 'Level {i} von {n}', 'no mass comes here': 'hierher kommt keine Masse',
@@ -374,7 +374,7 @@
     get canUndo() { return this.steps.length > 0 }
     // what to do next, in a line below the board
     status() {
-      if (this.done) return '✓ ' + tr('Solved!')
+      if (this.done) return '🎉'
       if (!this.steps.length) return tr('Tap a move.')
       if (this.count && this.steps.length > this.count) return tr('Too many moves: undo, or start over.')
       const d = this.dist, t = this.target
@@ -531,7 +531,7 @@
       const parts = [task, row, slider, this.info, ...(SHOW ? [] : [ln]), el('div', 'pg-moves-head', tr('Moves')), moves, tools, ...(SHOW ? [] : [lean])]
       if (done) {
         const box = el('div', 'pg-solved')
-        box.append(el('div', 'pg-solved-head', '✓ ' + tr('Solved!') + (this.leanAgrees() ? ` (${tr('confirmed by Lean, for every p')})` : '')))
+        box.append(el('div', 'pg-solved-head', '🎉' + (this.leanAgrees() ? ` (${tr('confirmed by Lean, for every p')})` : '')))
         // what Lean has confirmed: the moves played are the target, for every p (or, without Lean, the
         // statement of the level, proved in Proofs/)
         const statement = this.leanAgrees() ? `${functorForm(this.leanState())} = ${functorForm(this.leanGoal.result)}` : this.leanStatement
@@ -687,7 +687,7 @@
     undo() { this.removeLast() }
     get canUndo() { return this.nodes.length > 0 }
     status() {
-      if (this.checked?.ok) return '✓ ' + tr('Solved!')
+      if (this.checked?.ok) return '🎉'
       if (!this.nodes.length) return tr('Lay down a building block.')
       if (this.selected.length) return tr('{n} chosen: now a function, or Check.', { n: this.selected.length })
       return tr('Tap lines to choose them, then a function. Check compares a line with the target.')
@@ -844,7 +844,7 @@
       const parts = [task, blocks, area, tools, info, slider]
       if (done) {
         const box = el('div', 'pg-solved')
-        box.append(el('div', 'pg-solved-head', '✓ ' + tr('Solved!')))
+        box.append(el('div', 'pg-solved-head', '🎉'))
         if (!SHOW) {
           box.append(el('div', 'pg-solved-lean-head', tr('As a do block in Lean:')))
           box.append(el('pre', 'pg-lean', this.lean(this.checked.node)))
@@ -969,7 +969,7 @@
     reset() { if (this.animating) return; this.steps = []; this.recompute(); this.picked = null; this.updateLean(); this.render() }
     get canUndo() { return this.steps.length > 0 }
     status() {
-      if (this.done) return '✓ ' + tr('Solved!')
+      if (this.done) return '🎉'
       if (!this.steps.length) return tr('Tap a move.')
       if (sameSet(this.pts, this.target)) return tr('Lean is checking …')
       return this.monad === 'Id' ? tr('Not at the flag yet.') : tr('{n} points; the target has {m}.', { n: this.pts.size, m: this.target.size })
@@ -1080,7 +1080,7 @@
       const parts = [task, s, this.info, ...(SHOW ? [] : [ln]), el('div', 'pg-moves-head', tr('Moves')), moves, tools, ...(SHOW ? [] : [el('pre', 'pg-lean', this.leanState())])]
       if (done) {
         const box = el('div', 'pg-solved')
-        box.append(el('div', 'pg-solved-head', '✓ ' + tr('Solved!') + (this.leanAgrees() ? ` (${tr('confirmed by Lean')})` : '')))
+        box.append(el('div', 'pg-solved-head', '🎉' + (this.leanAgrees() ? ` (${tr('confirmed by Lean')})` : '')))
         if (this.leanAgrees()) {
           box.append(el('div', 'pg-solved-lean-head', tr('In Lean:')))
           box.append(el('pre', 'pg-lean', `${this.leanState()} = ${this.leanNow.result.replace(/\s+/g, ' ')}`))
@@ -1181,7 +1181,7 @@
     reset() { if (this.animating) return; this.steps = []; this.updateLean(); this.render() }
     get canUndo() { return this.steps.length > 0 }
     status() {
-      if (this.done) return '✓ ' + tr('Solved!')
+      if (this.done) return '🎉'
       if (!this.steps.length) return tr('Tap a move.')
       if (this.count && this.steps.length > this.count) return tr('Too many moves: undo, or start over.')
       if (this.onTarget) return this.count && this.steps.length !== this.count ? tr('On the flag, but in {n} moves, please.', { n: this.count }) : tr('Lean is checking …')
@@ -1255,7 +1255,7 @@
       const parts = [task, s, this.info, ...(SHOW ? [] : [ln]), el('div', 'pg-moves-head', tr('Moves')), moves, tools, ...(SHOW ? [] : [el('pre', 'pg-lean', this.leanState())])]
       if (done) {
         const box = el('div', 'pg-solved')
-        box.append(el('div', 'pg-solved-head', '✓ ' + tr('Solved!') + (this.leanAgrees() ? ` (${tr('confirmed by Lean')})` : '')))
+        box.append(el('div', 'pg-solved-head', '🎉' + (this.leanAgrees() ? ` (${tr('confirmed by Lean')})` : '')))
         if (this.leanAgrees()) {
           box.append(el('div', 'pg-solved-lean-head', tr('In Lean:')))
           box.append(el('pre', 'pg-lean', `${this.leanState()} = ${this.leanNow.result.replace(/\s+/g, ' ')}`))
