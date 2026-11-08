@@ -31,10 +31,10 @@
     'Task: bring the sand into the shape of the target': 'Aufgabe: Bring den Sand in die Form des Ziels',
     'surely {b}': 'sicher {b}', 'the picture for p =': 'das Bild für p =', '(only an example; the masses hold for every p)': '(nur ein Beispiel; die Massen gelten für jedes p)',
   }
-  // The edition of the site (`ProbGame.edition`, a meta tag in the head of every page): `show` plays
-  // the boards alone, without Lean and without proofs; the other editions have both.
-  const EDITION = document.querySelector('meta[name="pg-edition"]')?.content || 'main'
-  const SHOW = EDITION === 'show'
+  // The edition of the site (`ProbGame.edition`, a meta tag in the head of every page, read in `init`,
+  // when the head is there): `show` plays the boards alone, without Lean and without proofs; the
+  // other editions have both.
+  let SHOW = false
   const tr = (s, vars = {}) => (LANG === 'de' ? DE[s] ?? s : s).replace(/\{(\w+)\}/g, (_, k) => vars[k])
   const applyLang = () => {
     document.documentElement.classList.toggle('pg-de', LANG === 'de')
@@ -99,8 +99,7 @@
   // `/lean` next to the site; else `?backend=http://127.0.0.1:8091` in the address (kept;
   // `?backend=` switches it off). After each move it normalises the state with the rules of the
   // world; a level is solved when the state and the target have the same normal form, for every p.
-  const BACKEND = (() => {
-    if (SHOW) return null
+  let BACKEND = (() => {
     const local = !/^https?:$/.test(location.protocol) || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)
     const served = local ? null : location.origin + '/lean'
     try {
@@ -1636,6 +1635,8 @@
   }
 
   function init() {
+    SHOW = document.querySelector('meta[name="pg-edition"]')?.content === 'show'
+    if (SHOW) BACKEND = null
     applyLang()
     translatePage()
     languageSwitch()
