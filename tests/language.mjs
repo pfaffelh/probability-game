@@ -1,16 +1,17 @@
 // The language switch in the header, on every page: tapping DE shows German texts and headings (kept on
 // reload), EN English again; one language at a time, nothing wider than a phone.
-// Usage: node tests/language.mjs   (BASE=https://lean.mathematik.uni-freiburg.de/ for the server)
+// The pages are the front page and the worlds of its table of contents.
+// Usage: node tests/language.mjs   (BASE=https://lean.mathematik.uni-freiburg.de/main/ for the server)
 import { chromium } from 'playwright-core'
-const base = process.env.BASE ?? 'http://127.0.0.1:8004/'
+const base = (process.env.BASE ?? 'http://127.0.0.1:8004/').replace(/\/?$/, '/')
 const browser = await chromium.launch({ channel: 'chrome' })
 const page = await (await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })).newPage()
 page.on('pageerror', e => console.log('PAGEERROR', e.message))
-const pages = ['', 'True-and-False/', 'World-0___-Walking-on-the-Grid/', 'World-1___-One-Coin/', 'World-2___-Building-with-Coins/', 'World-3___-Counting/']
 let failures = 0
 const check = (ok, what) => { if (!ok) { failures++; console.log('FAIL', what) } }
 await page.goto(base); await page.evaluate(() => localStorage.clear()); await page.reload()
-for (const [lang, other, title] of [['de', 'en', 'Wahrscheinlichkeit|Wahr und falsch|Gitter|Münze|Bauen|Zählen'], ['en', 'de', 'Probability|True and False|Grid|Coin|Building|Counting']]) {
+const pages = ['', ...await page.evaluate(() => [...new Set([...document.querySelectorAll('a[href]')].map(a => /^([^/#?.]+)\/#/.exec(a.getAttribute('href'))?.[1]).filter(Boolean))].map(p => p + '/'))]
+for (const [lang, other, title] of [['de', 'en', 'Wahrscheinlichkeit|Wahr und falsch|Gitter|Münze|ziehen|Bauen|Zählen'], ['en', 'de', 'Probability|True and False|Grid|Coin|Draw|Building|Counting']]) {
   await page.locator('header .pg-langbtn', { hasText: lang.toUpperCase() }).click()
   await page.waitForLoadState('load'); await page.waitForTimeout(300)
   for (const path of pages) {
@@ -32,3 +33,4 @@ for (const [lang, other, title] of [['de', 'en', 'Wahrscheinlichkeit|Wahr und fa
 }
 console.log('failures:', failures)
 await browser.close()
+process.exit(failures ? 1 : 0)

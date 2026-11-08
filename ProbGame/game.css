@@ -173,3 +173,5 @@ header .pg-langs { align-self: center; margin: 0 0.8em 0 0.5em; flex-shrink: 0; 
 .pg-svg.pg-bools { max-width: 300px; }
 .pg-bool-label { font-size: 12px; fill: #6b5634; font-family: system-ui, sans-serif; }
 .pg-bool-side { font-size: 13px; fill: #6b5634; font-family: ui-monospace, monospace; }
+/* the edition `show`: the boards alone; the texts of the proofs are not shown */
+.pg-show .pg-proof-text { display: none; }

@@ -4,7 +4,7 @@ import ProbGame.Level
 open Verso.Genre Manual
 open ProbGame
 
-#doc (Manual) "World 0: Walking on the Grid" =>
+#doc (Manual) "Walking on the Grid" =>
 
 %%%
 htmlSplit := .never
@@ -185,7 +185,7 @@ drei Schritte und achte nach jedem Schritt auf die Farben der Punkte.
 `odd p` says whether `p` lies on a dark field, and `odd <$> s` is the set of the colours of the points
 of `s`. A step changes the colour, whichever way it goes:
 `odd_step : odd <$> step p = pure (!odd p)`. So after a step the colours are those from before,
-flipped by `not`, as the coin in world 1. New rules: `map_bind : f <$> (s >>= g) = s >>= fun a => f <$> g a`,
+flipped by `not`, as the coin in *One Coin*. New rules: `map_bind : f <$> (s >>= g) = s >>= fun a => f <$> g a`,
 `map_map : g <$> (f <$> s) = (fun x => g (f x)) <$> s` and
 `map_eq_pure_bind : f <$> s = s >>= fun x => pure (f x)`. The lemma is called `odd_bind_step`.
 
@@ -197,7 +197,7 @@ flipped by `not`, as the coin in world 1. New rules: `map_bind : f <$> (s >>= g)
 `odd p` sagt, ob `p` auf einem dunklen Feld liegt, und `odd <$> s` ist die Menge der Farben der Punkte
 von `s`. Ein Schritt wechselt die Farbe, in welche Richtung er auch geht:
 `odd_step : odd <$> step p = pure (!odd p)`. Nach einem Schritt sind die Farben also die von vorher,
-mit `not` umgedreht, wie die Münze in Welt 1. Neue Regeln:
+mit `not` umgedreht, wie die Münze in *Eine Münze*. Neue Regeln:
 `map_bind : f <$> (s >>= g) = s >>= fun a => f <$> g a`,
 `map_map : g <$> (f <$> s) = (fun x => g (f x)) <$> s` und
 `map_eq_pure_bind : f <$> s = s >>= fun x => pure (f x)`. Das Lemma heißt `odd_bind_step`.

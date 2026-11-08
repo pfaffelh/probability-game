@@ -4,7 +4,7 @@ import ProbGame.Level
 open Verso.Genre Manual
 open ProbGame
 
-#doc (Manual) "World 1: One Coin" =>
+#doc (Manual) "One Coin" =>
 
 %%%
 htmlSplit := .never

@@ -12,7 +12,7 @@ number := false
 %%%
 
 :::en
-Before chance, and before the grid: Lean's `Bool`, the type with the two values `true` and `false`.
+Before chance: Lean's `Bool`, the type with the two values `true` and `false`.
 A coin lies on the table, surely on one side. A *move* is a map `Bool → Bool`: `not` flips the coin,
 *always true* lays it on `true`, *always false* on `false`. These are the moves of the coins in the
 worlds to come; here the result is sure. Lean computes with them: `!true`, that is `not true`, is
@@ -20,7 +20,7 @@ worlds to come; here the result is sure. Lean computes with them: `!true`, that 
 :::
 
 :::de
-Vor dem Zufall, und vor dem Gitter: `Bool` in Lean, der Typ mit den zwei Werten `true` und `false`.
+Vor dem Zufall: `Bool` in Lean, der Typ mit den zwei Werten `true` und `false`.
 Eine Münze liegt auf dem Tisch, sicher auf einer Seite. Ein *Zug* ist eine Abbildung `Bool → Bool`:
 `not` dreht die Münze um, *immer true* legt sie auf `true`, *immer false* auf `false`. Das sind die
 Züge der Münzen in den Welten danach; hier ist das Ergebnis sicher. Lean rechnet mit ihnen: `!true`,
@@ -127,7 +127,8 @@ know `b`. The tactic `cases b` splits into the cases `false` and `true`, two goa
 other, as the two rows of the board. Each of them is computing. Your result becomes the lemma
 `Bool.not_not`, as it is called in Lean.
 
-*Tip.* `cases b`, `rfl`, `rfl`.
+*Tip.* `cases b`, `rfl`, `rfl`. Or in one line: `cases b <;> rfl`; `t₁ <;> t₂` runs `t₂` on
+every goal that `t₁` leaves.
 :::
 
 :::proofde
@@ -136,7 +137,8 @@ nicht kennt. Die Taktik `cases b` teilt in die Fälle `false` und `true`, zwei Z
 anderen, wie die zwei Zeilen des Spielfelds. Jedes davon ist Rechnen. Dein Ergebnis wird das Lemma
 `Bool.not_not`, wie es in Lean heißt.
 
-*Tipp.* `cases b`, `rfl`, `rfl`.
+*Tipp.* `cases b`, `rfl`, `rfl`. Oder in einer Zeile: `cases b <;> rfl`; `t₁ <;> t₂` führt `t₂`
+auf jedem Ziel aus, das `t₁` übrig lässt.
 :::
 ::::
 

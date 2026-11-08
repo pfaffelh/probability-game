@@ -2,9 +2,11 @@
 # On the server (without root): fetch, build and restart the game. Everything lives in ~/lean:
 #   journal/            the journal (DiscreteMeasure), branch master, with Mathlib from the cache
 #   repl/               leanprover-community/repl, built with the journal's toolchain
-#   probability-game/   this repository; the site is built into _out/html-multi
-#   nginx/              nginx's prefix: `site` links the built site
-#   allowed.txt         the contexts the bridge accepts (WorldBool.lean, World0.lean, World1.lean, Rules.lean)
+#   probability-game/   this repository, branch main (the bridge runs from here)
+#   probability-game-branches/<branch>   worktrees of the other branches (show, monad)
+#   sites/<branch>      the built sites, served at /<branch>/ (server/build-sites.sh)
+#   nginx/              nginx's prefix: `sites` links ~/lean/sites
+#   allowed.txt         the contexts the bridge accepts (Lean/Rules.lean, Lean/World*.lean of all branches)
 # The first time: clone the three repositories into ~/lean (see server/README.md).
 set -euo pipefail
 L=$HOME/lean
@@ -18,9 +20,9 @@ git -C $L/probability-game pull -q --ff-only
 git -C $L/journal pull -q --ff-only
 (cd $L/journal && lake exe cache get >/dev/null && lake build Journal.Notes.DiscreteMeasure.Thinning)
 cp $L/journal/lean-toolchain $L/repl/lean-toolchain && (cd $L/repl && lake build)
-(cd $L/probability-game && lake build && lake exe probgame)
-(cd $L/probability-game && sha256sum Lean/WorldBool.lean Lean/World0.lean Lean/World1.lean Lean/Rules.lean) > $L/allowed.txt
-mkdir -p $L/nginx/tmp && ln -sfn $L/probability-game/_out/html-multi $L/nginx/site
+$L/probability-game/server/build-sites.sh $L/sites show main monad
+cp $L/sites/allowed.txt $L/allowed.txt
+mkdir -p $L/nginx/tmp && ln -sfn $L/sites $L/nginx/sites
 
 mkdir -p ~/.config/systemd/user && cp $L/probability-game/server/systemd/*.service ~/.config/systemd/user/
 systemctl --user daemon-reload

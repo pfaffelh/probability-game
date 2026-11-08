@@ -14,6 +14,7 @@ def config : RenderConfig where
   emitHtmlMulti := .immediately
   -- One page per world.
   htmlDepth := 1
-  extraHead := #[{{<link rel="icon" type="image/svg+xml" href={{favicon}}/>}}]
+  -- the edition of the game, for `game.js` (see `ProbGame.edition`)
+  extraHead := #[{{<link rel="icon" type="image/svg+xml" href={{favicon}}/>}}, {{<meta name="pg-edition" content={{ProbGame.edition}}/>}}]
 
 def main := manualMain (%doc ProbGame) (config := config)

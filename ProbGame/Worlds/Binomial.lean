@@ -4,7 +4,7 @@ import ProbGame.Level
 open Verso.Genre Manual
 open ProbGame
 
-#doc (Manual) "World 3: Counting" =>
+#doc (Manual) "Counting" =>
 
 %%%
 htmlSplit := .never
@@ -12,17 +12,17 @@ htmlSplit := .never
 
 :::en
 Throw $`n` coins and count how often `true` comes up: that is the *binomial distribution*
-$`B(n, p)`, with $`P(k) = \binom{n}{k} p^k (1 - p)^{n - k}`. In Lean it is `binom p n`. In world 2
+$`B(n, p)`, with $`P(k) = \binom{n}{k} p^k (1 - p)^{n - k}`. In Lean it is `binom p n`. In *Building with Coins*
 you built $`B(2, p)` from two coins; from the third level on it is a building block of its own.
 :::
 
 :::de
 Wirf $`n` Münzen und zähle, wie oft `true` kommt: Das ist die *Binomialverteilung* $`B(n, p)`, mit
-$`P(k) = \binom{n}{k} p^k (1 - p)^{n - k}`. In Lean heißt sie `binom p n`. In Welt 2 hast du
+$`P(k) = \binom{n}{k} p^k (1 - p)^{n - k}`. In Lean heißt sie `binom p n`. In *Bauen mit Münzen* hast du
 $`B(2, p)` aus zwei Münzen gebaut; ab dem dritten Level ist sie ein eigener Baustein.
 :::
 
-::::build (target := "nat 0:(1-p)^3 1:3p(1-p)^2 2:3p^2(1-p) 3:p^3") (moves := "toNat, add") (coins := "3") (no := "3.1") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; let z ← coin p; pure (x.toNat + y.toNat + z.toNat)) = binom p 3")
+::::build (target := "nat 0:(1-p)^3 1:3p(1-p)^2 2:3p^2(1-p) 3:p^3") (moves := "toNat, add") (coins := "3") (no := "4.1") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; let z ← coin p; pure (x.toNat + y.toNat + z.toNat)) = binom p 3")
 :::en
 *Three coins.* Count the `true`s among three coins.
 :::
@@ -34,17 +34,17 @@ $`B(2, p)` aus zwei Münzen gebaut; ab dem dritten Level ist sie ein eigener Bau
 :::proofen
 Three throws are `binom p 3`. New: `add_assoc : a + b + c = a + (b + c)`.
 
-*Tip.* As in world 2, level 6, and `add_assoc` in the `simp only`.
+*Tip.* As in *Building with Coins*, level 6, and `add_assoc` in the `simp only`.
 :::
 
 :::proofde
 Drei Würfe sind `binom p 3`. Neu: `add_assoc : a + b + c = a + (b + c)`.
 
-*Tipp.* Wie in Welt 2, Level 6, und `add_assoc` im `simp only`.
+*Tipp.* Wie in *Bauen mit Münzen*, Level 6, und `add_assoc` im `simp only`.
 :::
 ::::
 
-::::build (target := "nat 0:1-p 1:p") (moves := "not, toNat") (coins := "1") (no := "3.2") (proof := "(p : I) : Bool.toNat <$> coin p = binom p 1") (lemma := "binom_one")
+::::build (target := "nat 0:1-p 1:p") (moves := "not, toNat") (coins := "1") (no := "4.2") (proof := "(p : I) : Bool.toNat <$> coin p = binom p 1") (lemma := "binom_one")
 :::en
 *$`B(1, p)`.* One throw, counted: a coin as a number.
 :::
@@ -68,7 +68,7 @@ nächsten Level ist es in deinem Inventar. Neu: `map_eq_pure_bind : f <$> μ = d
 :::
 ::::
 
-::::build (target := "nat 0:(1-p)^3 1:3p(1-p)^2 2:3p^2(1-p) 3:p^3") (moves := "toNat, add") (sources := "coin:1, binom2:1") (no := "3.3") (proof := "(p : I) (n : ℕ) : (do let X ← binom p n; let Y ← coin p; pure (X + Y.toNat)) = binom p (n + 1)") (lemma := "binom_succ'")
+::::build (target := "nat 0:(1-p)^3 1:3p(1-p)^2 2:3p^2(1-p) 3:p^3") (moves := "toNat, add") (sources := "coin:1, binom2:1") (no := "4.3") (proof := "(p : I) (n : ℕ) : (do let X ← binom p n; let Y ← coin p; pure (X + Y.toNat)) = binom p (n + 1)") (lemma := "binom_succ'")
 :::en
 *A new building block.* $`B(2, p)` and one more coin give $`B(3, p)`: one more throw, one more
 chance to count.
@@ -102,30 +102,30 @@ Fall $`n + 1`: `rw [binom_succ p n, binom_succ p (n + 1), ← ih]`, `simp only [
 :::
 ::::
 
-::::build (target := "bool true:2p-p^2 false:(1-p)^2") (moves := "toNat, add, pos") (sources := "binom2:1") (no := "3.4") (proof := "(p : I) : (fun n => decide (1 ≤ n)) <$> binom p 2 = (do let x ← coin p; let y ← coin p; pure (x || y))")
+::::build (target := "bool true:2p-p^2 false:(1-p)^2") (moves := "toNat, add, pos") (sources := "binom2:1") (no := "4.4") (proof := "(p : I) : (fun n => decide (1 ≤ n)) <$> binom p 2 = (do let x ← coin p; let y ← coin p; pure (x || y))")
 :::en
-*At least one `true`*, as in world 2, but this time from $`B(2, p)`: when is a number at least $`1`?
+*At least one `true`*, as in *Building with Coins*, but this time from $`B(2, p)`: when is a number at least $`1`?
 :::
 
 :::de
-*Mindestens einmal `true`*, wie in Welt 2, aber diesmal aus $`B(2, p)`: Wann ist eine Zahl mindestens
+*Mindestens einmal `true`*, wie in *Bauen mit Münzen*, aber diesmal aus $`B(2, p)`: Wann ist eine Zahl mindestens
 $`1`?
 :::
 
 :::proofen
 At least $`1` out of $`B(2, p)` is: at least one of two coins.
 
-*Tip.* As in the boss of world 2: unfold, clean up, go under the throws, four cases.
+*Tip.* As in the boss of *Building with Coins*: unfold, clean up, go under the throws, four cases.
 :::
 
 :::proofde
 Mindestens $`1` aus $`B(2, p)` heißt: mindestens eine von zwei Münzen.
 
-*Tipp.* Wie beim Endgegner von Welt 2: auswickeln, aufräumen, unter die Würfe gehen, vier Fälle.
+*Tipp.* Wie beim Endgegner von *Bauen mit Münzen*: auswickeln, aufräumen, unter die Würfe gehen, vier Fälle.
 :::
 ::::
 
-::::build (target := "nat 0:(1-p)^4 1:4p(1-p)^3 2:6p^2(1-p)^2 3:4p^3(1-p) 4:p^4") (moves := "add, max") (sources := "binom2:2") (no := "3.5") (proof := "(p : I) (n m : ℕ) : (do let X ← binom p n; let Y ← binom p m; pure (X + Y)) = binom p (n + m)") (lemma := "binom_add")
+::::build (target := "nat 0:(1-p)^4 1:4p(1-p)^3 2:6p^2(1-p)^2 3:4p^3(1-p) 4:p^4") (moves := "add, max") (sources := "binom2:2") (no := "4.5") (proof := "(p : I) (n m : ℕ) : (do let X ← binom p n; let Y ← binom p m; pure (X + Y)) = binom p (n + m)") (lemma := "binom_add")
 :::en
 *Boss: $`B(2, p) * B(2, p) = B(4, p)`.* Two independent binomials, no coins. The sum of independent
 random numbers has the *convolution* $`*` of their distributions as its distribution. In Lean,

@@ -3,11 +3,19 @@ import ProbGame.Level
 import ProbGame.Worlds.Bool
 import ProbGame.Worlds.Walk
 import ProbGame.Worlds.OneCoin
+import ProbGame.Worlds.Draw
 import ProbGame.Worlds.TwoCoins
 import ProbGame.Worlds.Binomial
 
 open Verso.Genre Manual
 open ProbGame
+
+/-! This file is the edition of the game: its worlds and its front page. It is the file in which the
+branches differ (see `BRANCHES.md`): `main` (the worlds of chance, with proofs), `monad` (with the
+grid and its monads), `show` (the boards alone, without proofs). -/
+
+/-- The edition: `"show"` plays the boards alone, without Lean and without proofs (see `game.js`). -/
+def ProbGame.edition : String := "main"
 
 #doc (Manual) "The Probability Game" =>
 
@@ -45,6 +53,8 @@ Monadengesetze wie später für Verteilungen.
 {include 1 ProbGame.Worlds.Walk}
 
 {include 1 ProbGame.Worlds.OneCoin}
+
+{include 1 ProbGame.Worlds.Draw}
 
 {include 1 ProbGame.Worlds.TwoCoins}
 

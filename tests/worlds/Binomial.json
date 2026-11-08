@@ -1,0 +1,68 @@
+{
+ "world": "ProbGame/Worlds/Binomial.lean",
+ "page": "Counting",
+ "kind": "build",
+ "boards": [
+  [
+   "c",
+   "c",
+   "c",
+   [
+    0,
+    "toNat"
+   ],
+   [
+    1,
+    "toNat"
+   ],
+   [
+    2,
+    "toNat"
+   ],
+   [
+    3,
+    4,
+    5,
+    "addieren"
+   ]
+  ],
+  [
+   "c",
+   [
+    0,
+    "toNat"
+   ]
+  ],
+  [
+   "b",
+   "c",
+   [
+    1,
+    "toNat"
+   ],
+   [
+    0,
+    2,
+    "addieren"
+   ]
+  ],
+  [
+   "b",
+   [
+    0,
+    "mindestens"
+   ]
+  ],
+  [
+   "b",
+   "b",
+   [
+    0,
+    1,
+    "addieren"
+   ]
+  ]
+ ],
+ "solutions": "SolutionsBinomial.lean",
+ "context": "Rules.lean"
+}

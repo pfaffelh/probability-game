@@ -4,7 +4,7 @@ import ProbGame.Level
 open Verso.Genre Manual
 open ProbGame
 
-#doc (Manual) "World 2: Building with Coins" =>
+#doc (Manual) "Building with Coins" =>
 
 %%%
 htmlSplit := .never
@@ -37,7 +37,7 @@ ein `do`-Block in Lean.
 *Prüfen* vergleicht die ausgewählte Leitung (sonst die neueste) mit dem Ziel, für jedes $`p`.
 :::
 
-::::build (target := "bool true:p^2 false:1-p^2") (moves := "not, and, or") (coins := "2") (no := "2.1") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && y)) = coin (p * p)")
+::::build (target := "bool true:p^2 false:1-p^2") (moves := "not, and, or") (coins := "2") (no := "3.1") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && y)) = coin (p * p)")
 :::en
 *Both `true`.* Two coins, and `true` only when both show `true`.
 :::
@@ -47,21 +47,22 @@ ein `do`-Block in Lean.
 :::
 
 :::proofen
-Your circuit, read from left to right, is a `do` block: `let x ← coin p` throws a coin and calls
-its result `x`, each `←` is a new throw, independent of the others, and `pure` at the end is the
-result. The new rule is independence itself:
+Your circuit, read from left to right, is a `do` block, as in *Draw, then Compute*: `let x ← coin p`
+throws a coin and calls its result `x`, and `pure` at the end is the result. Now there are two
+throws, and each `←` is a new throw, independent of the others. The new rule is independence itself:
 `coin_and : (do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)`.
 :::
 
 :::proofde
-Dein Schaltplan, von links nach rechts gelesen, ist ein `do`-Block: `let x ← coin p` wirft eine
-Münze und nennt ihr Ergebnis `x`, jedes `←` ist ein neuer Wurf, unabhängig von den anderen, und
-`pure` am Ende ist das Ergebnis. Die neue Regel ist die Unabhängigkeit selbst:
+Dein Schaltplan, von links nach rechts gelesen, ist ein `do`-Block, wie in *Erst ziehen, dann
+rechnen*: `let x ← coin p` wirft eine Münze und nennt ihr Ergebnis `x`, und `pure` am Ende ist das
+Ergebnis. Jetzt gibt es zwei Würfe, und jedes `←` ist ein neuer Wurf, unabhängig von den anderen. Die
+neue Regel ist die Unabhängigkeit selbst:
 `coin_and : (do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)`.
 :::
 ::::
 
-::::build (target := "bool true:p(1-p) false:1-p(1-p)") (moves := "not, and, or") (coins := "2") (no := "2.2") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && !y)) = coin (p * σ p)")
+::::build (target := "bool true:p(1-p) false:1-p(1-p)") (moves := "not, and, or") (coins := "2") (no := "3.2") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && !y)) = coin (p * σ p)")
 :::en
 *First `true`, then `false`.*
 :::
@@ -72,11 +73,9 @@ Münze und nennt ihr Ergebnis `x`, jedes `←` ist ein neuer Wurf, unabhängig v
 
 :::proofen
 Work backwards, on the right side: `rw [← coin_and]` uses the rule from right to left, and
-`rw [← coin_not]` turns `coin (σ p)` into `not <$> coin p`. Then a move sits inside the `do` block;
-the new rule `bind_map_left : (do let x ← f <$> μ; g x) = (do let x ← μ; g (f x))` moves it into
-the result. But `rw` cannot rewrite where the names `x`, `y` of a `do` block occur. The new tactic
-`simp only [rules]` can: it rewrites everywhere, as often as it can, and closes the goal when the two
-sides become the same.
+`rw [← coin_not]` turns `coin (σ p)` into `not <$> coin p`. Then a move sits inside the `do` block,
+and `bind_map_left` moves it into the result, as in *Draw, then Compute*; inside a `do` block, with
+`simp only`.
 
 *Tip.* `rw [← coin_and]`, `rw [← coin_not]`, `simp only [bind_map_left]`.
 :::
@@ -84,16 +83,14 @@ sides become the same.
 :::proofde
 Arbeite rückwärts, auf der rechten Seite: `rw [← coin_and]` benutzt die Regel von rechts nach
 links, und `rw [← coin_not]` macht aus `coin (σ p)` ein `not <$> coin p`. Dann steht ein Zug im
-`do`-Block; die neue Regel `bind_map_left : (do let x ← f <$> μ; g x) = (do let x ← μ; g (f x))`
-schiebt ihn ins Ergebnis. Aber `rw` kann nicht dort umschreiben, wo die Namen `x`, `y` eines
-`do`-Blocks vorkommen. Die neue Taktik `simp only [Regeln]` kann es: Sie schreibt überall um, so oft
-es geht, und schließt das Ziel, wenn beide Seiten gleich werden.
+`do`-Block, und `bind_map_left` schiebt ihn ins Ergebnis, wie in *Erst ziehen, dann rechnen*;
+innerhalb eines `do`-Blocks mit `simp only`.
 
 *Tipp.* `rw [← coin_and]`, `rw [← coin_not]`, `simp only [bind_map_left]`.
 :::
 ::::
 
-::::build (target := "bool true:2p-p^2 false:(1-p)^2") (moves := "not, and, or") (coins := "2") (no := "2.3") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x || y)) = coin (σ (σ p * σ p))")
+::::build (target := "bool true:2p-p^2 false:(1-p)^2") (moves := "not, and, or") (coins := "2") (no := "3.3") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x || y)) = coin (σ (σ p * σ p))")
 :::en
 *At least one `true`.* `false` only when both show `false`: $`(1 - p)^2`.
 :::
@@ -122,7 +119,7 @@ dann `simp only [bind_map_left, map_bind, map_pure, or_eq]`.
 :::
 ::::
 
-::::build (target := "pure false") (moves := "not, and, or") (coins := "1") (no := "2.4") (proof := "(p : I) : (do let x ← coin p; pure (x && !x)) = pure false")
+::::build (target := "pure false") (moves := "not, and, or") (coins := "1") (no := "3.4") (proof := "(p : I) : (do let x ← coin p; pure (x && !x)) = pure false")
 :::en
 *Surely `false`, with a single coin.* A coin that goes into two functions is the same coin in both:
 the results depend on each other.
@@ -149,7 +146,7 @@ nichts.
 :::
 ::::
 
-::::build (target := "bool true:2p(1-p) false:p^2+(1-p)^2") (moves := "not, and, or") (coins := "2") (no := "2.5") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure ((x || y) && !(x && y))) = (do let x ← coin p; let y ← coin p; pure (xor x y))")
+::::build (target := "bool true:2p(1-p) false:p^2+(1-p)^2") (moves := "not, and, or") (coins := "2") (no := "3.5") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure ((x || y) && !(x && y))) = (do let x ← coin p; let y ← coin p; pure (xor x y))")
 :::en
 *Exactly one `true`*, without a function for it: at least one, but not both.
 :::
@@ -175,7 +172,7 @@ führt `t₂` auf jedem Ziel aus, das `t₁` übrig lässt.
 :::
 ::::
 
-::::build (target := "nat 0:(1-p)^2 1:2p(1-p) 2:p^2") (moves := "not, and, or, toNat, add") (coins := "2") (no := "2.6") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x.toNat + y.toNat)) = binom p 2")
+::::build (target := "nat 0:(1-p)^2 1:2p(1-p) 2:p^2") (moves := "not, and, or, toNat, add") (coins := "2") (no := "3.6") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x.toNat + y.toNat)) = binom p 2")
 :::en
 *The number of `true`.* From coins to numbers ($`0` and $`1`), and add them: the binomial distribution $`B(2, p)`.
 :::
@@ -188,8 +185,9 @@ führt `t₂` auf jedem Ziel aus, das `t₁` übrig lässt.
 The binomial distribution `binom p n` is defined as the natural numbers in the Natural Number Game:
 by zero and successor. `binom_zero : binom p 0 = pure 0`: no throw, no `true`.
 `binom_succ : binom p (n + 1) = do let X ← coin p; let Y ← binom p n; pure (X.toNat + Y)`: one throw
-more. To clean up `do` blocks: `bind_assoc` (a `do` block in a `do` block is one `do` block),
-`pure_bind : (do let x ← pure a; f x) = f a`, and `add_zero : n + 0 = n`.
+more. To clean up `do` blocks, the rules of *Draw, then Compute*: `bind_assoc` (a `do` block in a
+`do` block is one `do` block) and `pure_bind : (do let x ← pure a; f x) = f a`; new is
+`add_zero : n + 0 = n`.
 
 *Tip.* `rw [binom_succ, binom_succ, binom_zero]`, then `simp only [bind_assoc, pure_bind, add_zero]`.
 :::
@@ -198,14 +196,15 @@ more. To clean up `do` blocks: `bind_assoc` (a `do` block in a `do` block is one
 Die Binomialverteilung `binom p n` ist definiert wie die natürlichen Zahlen im Natural Number Game:
 durch Null und Nachfolger. `binom_zero : binom p 0 = pure 0`: kein Wurf, kein `true`.
 `binom_succ : binom p (n + 1) = do let X ← coin p; let Y ← binom p n; pure (X.toNat + Y)`: ein Wurf
-mehr. Zum Aufräumen von `do`-Blöcken: `bind_assoc` (ein `do`-Block in einem `do`-Block ist ein
-`do`-Block), `pure_bind : (do let x ← pure a; f x) = f a`, und `add_zero : n + 0 = n`.
+mehr. Zum Aufräumen von `do`-Blöcken die Regeln aus *Erst ziehen, dann rechnen*: `bind_assoc` (ein
+`do`-Block in einem `do`-Block ist ein `do`-Block) und `pure_bind : (do let x ← pure a; f x) = f a`;
+neu ist `add_zero : n + 0 = n`.
 
 *Tipp.* `rw [binom_succ, binom_succ, binom_zero]`, dann `simp only [bind_assoc, pure_bind, add_zero]`.
 :::
 ::::
 
-::::build (target := "bool true:3p^2-2p^3 false:1-3p^2+2p^3") (moves := "not, and, or") (coins := "3") (no := "2.7") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; let z ← coin p; pure ((x && y) || (x && z) || (y && z))) = (fun n => decide (2 ≤ n)) <$> binom p 3")
+::::build (target := "bool true:3p^2-2p^3 false:1-3p^2+2p^3") (moves := "not, and, or") (coins := "3") (no := "3.7") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; let z ← coin p; pure ((x && y) || (x && z) || (y && z))) = (fun n => decide (2 ≤ n)) <$> binom p 3")
 :::en
 *Boss: the majority of three.* `true` when at least two of three coins show `true`. Each coin has to
 go into two functions.

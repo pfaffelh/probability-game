@@ -1,0 +1,46 @@
+{
+ "world": "ProbGame/Worlds/Walk.lean",
+ "page": "Walking-on-the-Grid",
+ "kind": "moves",
+ "boards": [
+  [
+   "Norden"
+  ],
+  [
+   "Norden",
+   "Osten"
+  ],
+  [
+   "Osten",
+   "Norden"
+  ],
+  [
+   "Osten",
+   "step"
+  ],
+  [
+   "step",
+   "step"
+  ],
+  [
+   "step",
+   "step",
+   "step"
+  ],
+  [
+   "step",
+   "step",
+   "step",
+   "step"
+  ],
+  [
+   "step",
+   "step",
+   "step",
+   "step",
+   "step"
+  ]
+ ],
+ "solutions": "SolutionsWalk.lean",
+ "context": "WorldWalk.lean"
+}

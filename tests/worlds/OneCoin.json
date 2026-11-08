@@ -1,0 +1,36 @@
+{
+ "world": "ProbGame/Worlds/OneCoin.lean",
+ "page": "One-Coin",
+ "kind": "level",
+ "boards": [
+  [
+   "not",
+   "not"
+  ],
+  [
+   "not"
+  ],
+  [
+   "immer true"
+  ],
+  [
+   "immer true",
+   "not"
+  ],
+  [
+   "toNat"
+  ],
+  [
+   "true: 5"
+  ],
+  [
+   "immer false",
+   "toNat"
+  ],
+  [
+   "not"
+  ]
+ ],
+ "solutions": "SolutionsOneCoin.lean",
+ "context": "Rules.lean"
+}

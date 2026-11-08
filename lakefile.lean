@@ -12,17 +12,13 @@ input_file gameJs where
 input_file gameCss where
   path := "ProbGame/game.css"
 
-input_file world1Rules where
-  path := "Lean/World1.lean"
-
-input_file world0Rules where
-  path := "Lean/World0.lean"
-
-input_file boolRules where
-  path := "Lean/WorldBool.lean"
+-- The Lean contexts of the worlds (`Lean/*.lean`), read when the levels are elaborated.
+input_dir contexts where
+  path := "Lean"
+  text := true
 
 lean_lib ProbGame where
-  needs := #[gameJs, gameCss, boolRules, world0Rules, world1Rules]
+  needs := #[gameJs, gameCss, contexts]
 
 @[default_target]
 lean_exe probgame where
