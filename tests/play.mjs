@@ -33,6 +33,7 @@ for (const [name, vp] of [['desktop', { width: 1200, height: 900 }], ['phone', {
   console.log(`${name}: edition ${edition}, worlds ${pages.join(', ')}`)
   for (const path of pages) {
     const w = data.find(d => d.page === path)
+    if (!w && path === 'Lexicon') continue  // (no levels)
     if (!w) { fail(`${path}: no tests/worlds/*.json for this page`); continue }
     const proofs = proofsOf(w.solutions)
     await page.goto(base + path + '/')

@@ -232,6 +232,24 @@ def boolean : DirectiveExpanderOf BoolConfig
     ``(Verso.Doc.Block.other (Block.bool $(quote cfg.inputs) $(quote cfg.target) $(quote cfg.moves)
         $(quote cfg.count) $(quote cfg.no) $(quote cfg.proof) $(quote cfg.lemma) $(quote context)) #[$blocks,*])
 
+-- The lexicon: every move, building block, tactic and rule of the game, which `game.js` writes
+-- into this block (`::::lexicon` with no content), from the same tables as the tips.
+block_extension Block.lexicon where
+  data := Json.null
+  traverse _ _ _ := pure none
+  extraJs := {JS.mk gameJs}
+  extraCss := {CSS.mk gameCss}
+  toHtml := some fun _ goB _ _ content => do
+    pure <| .tag "div" #[("class", "pg-lexicon")] (← content.mapM goB)
+  toTeX := none
+
+/-- The lexicon of the game, filled by `game.js`. -/
+@[directive]
+def lexicon : DirectiveExpanderOf Unit
+  | (), contents => do
+    let blocks ← contents.mapM elabBlock
+    ``(Verso.Doc.Block.other Block.lexicon #[$blocks,*])
+
 -- Text in one language: `:::en` and `:::de`; `game.js` shows the language chosen.
 block_extension Block.lang (lang : String) where
   data := Json.str lang
