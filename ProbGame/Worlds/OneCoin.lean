@@ -13,33 +13,36 @@ htmlSplit := .never
 :::en
 A coin shows `true` with probability $`p` and `false` with probability $`1 - p`, for any $`p`, as in
 Lean, where a coin is a random `Bool`. Its
-distribution is drawn as two columns of sand. A *move* applies a map $`f` to the outcome: the sand
-of each outcome flows to its image, and where several outcomes have the same image, their sand piles
-up. What you get is the distribution of $`f(X)`, the *image measure* $`P \circ f^{-1}`:
-$`P(f(X) = b) = P(X \in f^{-1}(\{b\}))`. Tap a column to see where its sand came from.
+distribution is drawn as two bars. A distribution is the same as a probability measure: it gives
+each outcome its mass, here $`1 - p` and $`p`, and the masses add up to $`1`. A *move* applies a map
+$`f` to the outcome: the mass of each outcome goes to its image, and where several outcomes have the
+same image, their masses add up. What you get is the distribution of $`f(X)`, the *image measure* $`P \circ f^{-1}`:
+$`P(f(X) = b) = P(X \in f^{-1}(\{b\}))`. Tap a bar to see where its mass came from.
 
-Bring the sand into the shape of the target, drawn on the right (and dashed on the board when it
+Bring the distribution into the shape of the target, drawn on the right (and dashed on the board when it
 lives on the same space). The masses are $`p` and $`1 - p`; the picture shows them for an example
 $`p`, which the slider changes.
 :::
 
 :::de
 Eine Münze zeigt `true` mit Wahrscheinlichkeit $`p` und `false` mit Wahrscheinlichkeit $`1 - p`, für
-ein beliebiges $`p`, wie in Lean, wo eine Münze ein zufälliges `Bool` ist. Ihre Verteilung ist als zwei Säulen aus Sand gezeichnet. Ein *Zug* wendet eine
-Abbildung $`f` auf das Ergebnis an: Der Sand jedes Ergebnisses fließt zu seinem Bild, und wo mehrere
-Ergebnisse dasselbe Bild haben, häuft er sich. Was herauskommt, ist die Verteilung von $`f(X)`, das
+ein beliebiges $`p`, wie in Lean, wo eine Münze ein zufälliges `Bool` ist. Ihre Verteilung ist als zwei Säulen
+gezeichnet. Eine Verteilung ist dasselbe wie ein Wahrscheinlichkeitsmaß: Sie gibt jedem Ergebnis
+seine Masse, hier $`1 - p` und $`p`, und die Massen ergeben zusammen $`1`. Ein *Zug* wendet eine
+Abbildung $`f` auf das Ergebnis an: Die Masse jedes Ergebnisses geht zu seinem Bild, und wo mehrere
+Ergebnisse dasselbe Bild haben, addieren sich ihre Massen. Was herauskommt, ist die Verteilung von $`f(X)`, das
 *Bildmaß* $`P \circ f^{-1}`: $`P(f(X) = b) = P(X \in f^{-1}(\{b\}))`. Tippe eine Säule an, um zu
-sehen, woher ihr Sand kommt.
+sehen, woher ihre Masse kommt.
 
-Bring den Sand in die Form des Ziels, das rechts gezeichnet ist (und gestrichelt auf dem Spielfeld,
+Bring die Verteilung in die Form des Ziels, das rechts gezeichnet ist (und gestrichelt auf dem Spielfeld,
 wenn es auf demselben Raum lebt). Die Massen sind $`p` und $`1 - p`; das Bild zeigt sie für ein
 Beispiel-$`p`, das der Schieberegler ändert.
 :::
 
 ::::level (start := "bernoulli p") (target := "bernoulli p") (moves := "not") (lean := "((bernoulli p h).map not).map not = bernoulli p h") (leanTarget := "coin p") (no := "1.1") (proof := "(p : I) (μ : DiscreteMeasure Bool) [hμ : Prob μ] (h : μ true = p) : μ = coin p")
 :::en
-*Flip it twice.* `not` makes `true` into `false` and `false` into `true`: the two columns swap. Flip
-twice, and the coin is back as it was. The board sees this by comparing the columns with the target.
+*Flip it twice.* `not` makes `true` into `false` and `false` into `true`: the two bars swap. Flip
+twice, and the coin is back as it was. The board sees this by comparing the bars with the target.
 :::
 
 :::de
@@ -49,13 +52,14 @@ dem Ziel vergleicht.
 :::
 
 :::proofen
-*Now the proof.* In Lean the coin is `coin p`, and `f <$> μ` is the image measure of `μ` under `f`:
+*Now the proof.* In Lean a distribution is a measure: `μ : DiscreteMeasure Bool` gives each point
+of `Bool` its mass. The coin is `coin p`, and `f <$> μ` is the image measure of `μ` under `f`:
 the move `f` applied to the distribution `μ`; `σ p` is $`1 - p`, and `p : I` says that $`p` lies in
-the unit interval $`I = [0, 1]`. `μ x` is the mass of `μ` at `x`, the height of its column, and
-`↑p` is the number $`p` as a mass. `Prob μ` says that `μ` is a distribution: its total mass is $`1`.
+the unit interval $`I = [0, 1]`. `μ x` is the mass of `μ` at `x`, the height of its bar, and
+`↑p` is the number $`p` as a mass. `Prob μ` says that `μ` is a probability measure, a distribution: its total mass is $`1`.
 Below is the *goal*, what is to be shown, and above it the hypotheses, here `hμ` and `h`.
 
-On the two points `false` and `true`, the column at `true` decides everything: the rest of the sand lies at
+On the two points `false` and `true`, the bar at `true` decides everything: the rest of the mass lies at
 `false`. This is the first rule of the game,
 `bool_ext μ ν (h : μ true = ν true) : μ = ν`. So every distribution with mass $`p` at `true` is the
 coin `coin p`, as the statement says.
@@ -69,13 +73,14 @@ When both sides of the goal are the same, the goal is closed.
 :::
 
 :::proofde
-*Jetzt der Beweis.* In Lean ist die Münze `coin p`, und `f <$> μ` ist das Bildmaß von `μ` unter
+*Jetzt der Beweis.* In Lean ist eine Verteilung ein Maß: `μ : DiscreteMeasure Bool` gibt jedem
+Punkt von `Bool` seine Masse. Die Münze ist `coin p`, und `f <$> μ` ist das Bildmaß von `μ` unter
 `f`: der Zug `f`, angewandt auf die Verteilung `μ`; `σ p` ist $`1 - p`, und `p : I` sagt, dass $`p`
 im Einheitsintervall $`I = [0, 1]` liegt. `μ x` ist die Masse von `μ` in `x`, die Höhe seiner Säule,
-und `↑p` ist die Zahl $`p` als Masse. `Prob μ` sagt, dass `μ` eine Verteilung ist: Die Gesamtmasse
-ist $`1`. Unten steht das *Ziel*, also das, was zu zeigen ist, und darüber die Annahmen, hier `hμ` und `h`.
+und `↑p` ist die Zahl $`p` als Masse. `Prob μ` sagt, dass `μ` ein Wahrscheinlichkeitsmaß
+ist, eine Verteilung: Die Gesamtmasse ist $`1`. Unten steht das *Ziel*, also das, was zu zeigen ist, und darüber die Annahmen, hier `hμ` und `h`.
 
-Auf den zwei Punkten `false` und `true` entscheidet die Säule bei `true` alles: Der Rest des Sandes liegt bei
+Auf den zwei Punkten `false` und `true` entscheidet die Säule bei `true` alles: Der Rest der Masse liegt bei
 `false`. Das ist die erste Regel des Spiels, `bool_ext μ ν (h : μ true = ν true) : μ = ν`. Also ist
 jede Verteilung mit Masse $`p` bei `true` die Münze `coin p`, wie die Aussage sagt.
 
@@ -91,19 +96,19 @@ Münze. Sind beide Seiten des Ziels gleich, ist das Ziel erledigt.
 
 ::::level (start := "bernoulli p") (target := "bernoulli 1-p") (moves := "not") (lean := "(bernoulli p h).map not true = 1 - p") (leanTarget := "coin (σ p)") (no := "1.2") (proof := "(p : I) : (not <$> coin p) true = σ p") (lemma := "coin_not_true")
 :::en
-*Where does the sand go?* Flip the coin once, and look at the column at `true`: its sand came from
+*Where does the mass go?* Flip the coin once, and look at the bar at `true`: its mass came from
 `false`.
 :::
 
 :::de
-*Wohin fließt der Sand?* Dreh die Münze einmal um und sieh dir die Säule bei `true` an: Ihr Sand kam
-von `false`.
+*Wohin geht die Masse?* Dreh die Münze einmal um und sieh dir die Säule bei `true` an: Ihre Masse
+kam von `false`.
 :::
 
 :::proofen
 The rule of moves:
 `map_true : (f <$> μ) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)`.
-The sand at `true` comes from `true` when `f true` is `true`, and from `false` when `f false` is
+The mass at `true` comes from `true` when `f true` is `true`, and from `false` when `f false` is
 `true`; `bif c then a else b` is `a` when `c` is `true`, and `b` when it is `false`.
 
 What is left is computing, one rule after another: `Bool.not_true : (!true) = false`,
@@ -118,7 +123,7 @@ What is left is computing, one rule after another: `Bool.not_true : (!true) = fa
 :::proofde
 Die Regel der Züge:
 `map_true : (f <$> μ) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)`.
-Der Sand bei `true` kommt von `true`, wenn `f true` gleich `true` ist, und von `false`, wenn
+Die Masse bei `true` kommt von `true`, wenn `f true` gleich `true` ist, und von `false`, wenn
 `f false` gleich `true` ist; `bif c then a else b` ist `a`, wenn `c` gleich `true` ist, und `b`,
 wenn es `false` ist.
 
@@ -134,21 +139,21 @@ Der Rest ist Rechnen, eine Regel nach der anderen: `Bool.not_true : (!true) = fa
 
 ::::level (start := "bernoulli p") (target := "pure true") (moves := "not, heads, tails") (lean := "(bernoulli p h).map (fun _ => true) = pure true") (leanTarget := "DiscreteMeasure.pure true") (no := "1.3") (proof := "(p : I) (b : Bool) : (fun _ => b) <$> coin p = pure b") (lemma := "coin_const")
 :::en
-*Always `true`.* A constant map sends both outcomes to the same point: all the sand flows together.
+*Always `true`.* A constant map sends both outcomes to the same point: all the mass goes together.
 The result is sure, a point mass (Dirac measure).
 :::
 
 :::de
-*Immer `true`.* Eine konstante Abbildung schickt beide Ergebnisse auf denselben Punkt: Der ganze Sand
-fließt zusammen. Das Ergebnis ist sicher, eine Punktmasse (Dirac-Maß).
+*Immer `true`.* Eine konstante Abbildung schickt beide Ergebnisse auf denselben Punkt: Die ganze Masse
+kommt zusammen. Das Ergebnis ist sicher, eine Punktmasse (Dirac-Maß).
 :::
 
 :::proofen
 `pure b` is the point mass at `b`, and `fun _ => b` is the constant map. The statement says what
-the board showed, for both values `b`: all the sand flows to one point. It becomes your lemma
+the board showed, for both values `b`: all the mass goes to one point. It becomes your lemma
 `coin_const`.
 
-Compare the columns at `true`: `apply bool_ext`, then `map_true`, and
+Compare the bars at `true`: `apply bool_ext`, then `map_true`, and
 the new rule `pure_true : (pure b) true = bif b then 1 else 0`. Then `b` has to be known: the new
 tactic `cases b` splits into the cases `false` and `true`, two goals, one after the other. For
 `true`, the new rule `coin_total : (coin p) true + (coin p) false = 1` says that the coin has total
@@ -161,7 +166,7 @@ mass one. `rw [Bool.cond_true]` rewrites one `bif` at a time.
 
 :::proofde
 `pure b` ist die Punktmasse in `b`, und `fun _ => b` ist die konstante Abbildung. Die Aussage sagt,
-was das Spielfeld gezeigt hat, für beide Werte `b`: Der ganze Sand fließt zu einem Punkt. Sie wird
+was das Spielfeld gezeigt hat, für beide Werte `b`: Die ganze Masse geht zu einem Punkt. Sie wird
 dein Lemma `coin_const`.
 
 Vergleiche die Säulen bei `true`: `apply bool_ext`, dann `map_true` und die neue Regel
@@ -281,7 +286,7 @@ Wie in den Leveln 3 und 4, jetzt mit einer Zahl.
 
 ::::level (start := "bernoulli p") (target := "bernoulli 1-p") (moves := "not, heads, tails, toNat") (lean := "(bernoulli p h).map not = bernoulli (1 - p) tsub_le_self") (leanTarget := "coin (σ p)") (no := "1.8") (proof := "(p : I) : not <$> coin p = coin (σ p)") (lemma := "coin_not")
 :::en
-*The boss: flip the coin.* Not just the column at `true`: the whole coin.
+*The boss: flip the coin.* Not just the bar at `true`: the whole coin.
 :::
 
 :::de
@@ -290,7 +295,7 @@ Wie in den Leveln 3 und 4, jetzt mit einer Zahl.
 
 :::proofen
 Flipping turns the coin `p` into the coin $`1 - p`. Two distributions on `Bool` are the same when
-their columns at `true` are (`bool_ext`, level 1), and you know the column at `true` of the flipped
+their bars at `true` are (`bool_ext`, level 1), and you know the bar at `true` of the flipped
 coin (`coin_not_true`, level 2). Your result becomes the lemma `coin_not`, which worlds 2 and 3 use
 all the time.
 

@@ -4,8 +4,8 @@ import VersoManual
 # Levels of the probability game
 
 `::::level (start := "bernoulli p") (target := "bernoulli 1-p") (moves := "not")` embeds a level
-for `game.js`: a distribution is shown as columns of sand over the points of its space, and a move
-applies a map to it, so that the sand flows to the images: the distribution becomes its image
+for `game.js`: a distribution is shown as a bar chart, a bar over each point of its space, and a move
+applies a map to it, so that the mass goes to the images: the distribution becomes its image
 measure (pushforward). The level is solved when the distribution is the target (in exactly
 `count` moves, when it is given).
 

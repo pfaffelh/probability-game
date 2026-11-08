@@ -1,11 +1,11 @@
-// The probability game: distributions as sand, moves as maps, the result as the image measure.
+// The probability game: distributions as bar charts, moves as maps, the result as the image measure.
 //
 // Each `.pg-level` (from `::::level` in ProbGame/Level.lean) has a start distribution, a target and
 // the moves offered. A distribution is a space ('bool', 'nat', 'int') with masses on its points that
 // are polynomials in p (with exact fractions: the same for every p); the picture draws them for an example p,
-// which a slider changes; a move is a map, and applying it pushes the distribution forward: the sand of each
-// point flows to its image (animated), where it piles up with the sand of the other points of the
-// same image. A tapped column shows its preimage. The level is solved when the distribution is the
+// which a slider changes; a move is a map, and applying it pushes the distribution forward: the mass of each
+// point goes to its image (animated), where it adds up with the masses of the other points of the
+// same image. A tapped bar shows its preimage. The level is solved when the distribution is the
 // target; its Lean statement (for every p) is then shown. A world page shows one level at a time,
 // with a dot per level above it; progress is kept in the browser.
 (function () {
@@ -19,17 +19,17 @@
   const DE = {
     Moves: 'Züge', Undo: 'Zurück', 'Start over': 'Neu anfangen', 'Next level ›': 'Nächstes Level ›',
     'Solved!': 'Geschafft!', Target: 'Ziel', 'In Lean, for every p:': 'In Lean, für jedes p:', 'proved': 'bewiesen',
-    'Tap a column to see where its sand came from.': 'Tippe eine Säule an, um zu sehen, woher ihr Sand kommt.',
+    'Tap a bar to see where its mass came from.': 'Tippe eine Säule an, um zu sehen, woher ihre Masse kommt.',
     'This move needs a coin, not a number.': 'Dieser Zug braucht eine Münze, keine Zahl.',
-    'Level {i} of {n}': 'Level {i} von {n}', 'nothing flows here': 'hierher fließt nichts',
-    '{b}: the sand comes from {from}, P = {sum}{m}': '{b}: Der Sand kommt aus {from}, P = {sum}{m}',
+    'Level {i} of {n}': 'Level {i} von {n}', 'no mass comes here': 'hierher kommt keine Masse',
+    '{b}: the mass comes from {from}, P = {sum}{m}': '{b}: Die Masse kommt aus {from}, P = {sum}{m}',
     'not: swap the sides': 'not: Seiten tauschen', 'always true': 'immer true', 'always false': 'immer false', 'do nothing': 'nichts tun',
     'toNat: false = 0, true = 1': 'toNat: false = 0, true = 1', 'true: win {a}, false: {b}': 'true: {a} gewinnen, false: {b}',
     'the start': 'der Anfang', 'Lean:': 'Lean:',
     'confirmed by Lean, for every p': 'von Lean bestätigt, für jedes p', 'Lean is normalising …': 'Lean normalisiert …',
     'Lean disagrees: the target is': 'Lean widerspricht: Das Ziel ist',
     'Lean is not connected: the board checks for every p by itself, without Lean.': 'Lean ist nicht verbunden: Das Spielfeld prüft selbst, für jedes p, aber ohne Lean.',
-    'Task: bring the sand into the shape of the target': 'Aufgabe: Bring den Sand in die Form des Ziels',
+    'Task: bring the distribution into the shape of the target': 'Aufgabe: Bring die Verteilung in die Form des Ziels',
     'surely {b}': 'sicher {b}', 'the picture for p =': 'das Bild für p =', '(only an example; the masses hold for every p)': '(nur ein Beispiel; die Massen gelten für jedes p)',
   }
   // The edition of the site (`ProbGame.edition`, a meta tag in the head of every page, read in `init`,
@@ -295,7 +295,7 @@
     }
     throw new Error(`unknown move ${spec}`)
   }
-  // the image measure: the mass of each point flows to its image
+  // the image measure: the mass of each point goes to its image
   const push = (dist, move) => {
     const mass = new Map()
     for (const [k, m] of dist.mass) { const b = move.f(k); mass.set(b, (mass.get(b) ?? ZERO).add(m)) }
@@ -378,7 +378,7 @@
       if (!this.steps.length) return tr('Tap a move.')
       if (this.count && this.steps.length > this.count) return tr('Too many moves: undo, or start over.')
       const d = this.dist, t = this.target
-      if (d.space !== t.space) return tr('The sand lies on {a}, the target on {b}.', { a: spaceName(d.space), b: spaceName(t.space) })
+      if (d.space !== t.space) return tr('The distribution lives on {a}, the target on {b}.', { a: spaceName(d.space), b: spaceName(t.space) })
       if (sameDist(d, t)) {
         if (this.count && this.steps.length !== this.count) return tr('The right shape, but in {n} moves, please.', { n: this.count })
         return this.leanAgrees() === false ? tr('Lean disagrees.') : tr('Lean is checking …')
@@ -387,7 +387,7 @@
       return tr('At {k}: P = {m}, the target has {t}.', { k: pointName(t.space, k), m: String(d.mass.get(k) ?? ZERO), t: String(t.mass.get(k) ?? ZERO) })
     }
 
-    // solved: the sand is the target, and Lean agrees (if it is connected)
+    // solved: the distribution is the target, and Lean agrees (if it is connected)
     get done() { return this.steps.length > 0 && (!this.count || this.steps.length === this.count) && sameDist(this.dist, this.target) && this.leanAgrees() !== false && (!BACKEND || !this.leanTarget || this.leanAgrees() === true) }
 
     check() {
@@ -400,7 +400,7 @@
 
     flash(text) { this.info.textContent = text; this.info.classList.add('pg-warn'); setTimeout(() => this.info.classList.remove('pg-warn'), 1200) }
 
-    // The sand of each point flows to its image, piling up there (900 ms).
+    // The mass of each point goes to its image, adding up there (900 ms).
     animate(before, after, move, done) {
       const ka = this.keys(before), kb = this.keys(after), xa = layout(ka), xb = layout(kb)
       const g = svg('g', { class: 'pg-flow' })
@@ -412,7 +412,7 @@
         const b = move.f(k), h = m.value(P) * H
         const y0 = BASE - h, y1 = BASE - (stack[b] ?? 0) - h
         stack[b] = (stack[b] ?? 0) + h
-        const r = svg('rect', { class: 'pg-sand', x: xa[k] - BAR / 2, y: y0, width: BAR, height: h, rx: 3 })
+        const r = svg('rect', { class: 'pg-mass', x: xa[k] - BAR / 2, y: y0, width: BAR, height: h, rx: 3 })
         const a = svg('line', { class: 'pg-arrow', x1: xa[k], y1: BASE + 8, x2: xb[b], y2: BASE + 8, 'marker-end': 'url(#pg-head)' })
         g.append(a, r)
         parts.push({ r, x0: xa[k], x1: xb[b], y0, y1 })
@@ -439,7 +439,7 @@
       g.append(svg('line', { x1: 6, x2: w - 6, y1: base, y2: base, class: 'pg-axis' }))
       ks.forEach((k, i) => {
         const m = t.mass.get(k) ?? ZERO, x = x0 + i * gap, hh = m.value(P) * bh
-        if (hh > 0) g.append(svg('rect', { class: 'pg-target-sand', x: x - bw / 2, y: base - hh, width: bw, height: hh, rx: 3 }))
+        if (hh > 0) g.append(svg('rect', { class: 'pg-target-mass', x: x - bw / 2, y: base - hh, width: bw, height: hh, rx: 3 }))
         g.append(svg('text', { x, y: base - hh - 5, 'text-anchor': 'middle', class: 'pg-target-mass' }, m.toString()))
         g.append(svg('text', { x, y: base + 16, 'text-anchor': 'middle', class: 'pg-target-point' }, pointName(t.space, k)))
       })
@@ -468,7 +468,7 @@
         const m = d.mass.get(k) ?? ZERO, h = m.value(P) * H
         const bar = svg('g', { class: 'pg-bar' + (this.picked === k ? ' pg-picked' : '') })
         bar.append(svg('rect', { class: 'pg-hit', x: xs[k] - BAR / 2 - 8, y: 20, width: BAR + 16, height: BASE - 20 }))
-        if (h > 0) bar.append(svg('rect', { class: 'pg-sand', x: xs[k] - BAR / 2, y: BASE - h, width: BAR, height: h, rx: 3 }))
+        if (h > 0) bar.append(svg('rect', { class: 'pg-mass', x: xs[k] - BAR / 2, y: BASE - h, width: BAR, height: h, rx: 3 }))
         bar.append(svg('text', { x: xs[k], y: BASE - h - 8, 'text-anchor': 'middle', class: 'pg-mass' }, m.toString()))
         bar.append(svg('text', { x: xs[k], y: BASE + 24, 'text-anchor': 'middle', class: 'pg-point' }, pointName(d.space, k)))
         bar.addEventListener('click', () => { this.picked = this.picked === k ? null : k; this.render() })
@@ -491,7 +491,7 @@
       undo.addEventListener('click', () => this.undo()); reset.addEventListener('click', () => this.reset())
       tools.append(undo, reset)
 
-      // what a tapped column is made of: its preimage under the last move
+      // what a tapped bar is made of: its preimage under the last move
       this.info = el('div', 'pg-info')
       if (this.picked !== null) {
         const m = d.mass.get(this.picked) ?? ZERO, name = pointName(d.space, this.picked)
@@ -500,10 +500,10 @@
           const pre = axis(last.before.space, [...last.before.mass.keys()]).filter(k => last.before.mass.has(k) && last.move.f(k) === this.picked)
           const from = `{${pre.map(k => pointName(last.before.space, k)).join(', ')}}`
           const sum = pre.length > 1 ? `${pre.map(k => { const q = last.before.mass.get(k); return paren(q) }).join(' + ')} = ` : ''
-          this.info.textContent = pre.length ? tr('{b}: the sand comes from {from}, P = {sum}{m}', { b: name, from, sum, m: m.toString() })
-            : `${name}: ${tr('nothing flows here')}`
+          this.info.textContent = pre.length ? tr('{b}: the mass comes from {from}, P = {sum}{m}', { b: name, from, sum, m: m.toString() })
+            : `${name}: ${tr('no mass comes here')}`
         } else this.info.textContent = `${name}: P = ${m} (${tr('the start')})`
-      } else this.info.textContent = tr('Tap a column to see where its sand came from.')
+      } else this.info.textContent = tr('Tap a bar to see where its mass came from.')
 
       const lean = el('pre', 'pg-lean', functorForm(this.leanState()))
       // what Lean makes of the state: its normal form
@@ -518,7 +518,7 @@
       // the task, in words, and the target as a picture of its own (always, also on another space)
       const task = el('div', 'pg-task')
       const tk = axis(this.target.space, [...this.target.mass.keys()]).filter(k => !(this.target.mass.get(k) ?? ZERO).zero)
-      task.append(el('b', '', tr('Task: bring the sand into the shape of the target') + (this.count ? ' (' + tr('in exactly {n} moves', { n: this.count }) + ')' : '') + ': '),
+      task.append(el('b', '', tr('Task: bring the distribution into the shape of the target') + (this.count ? ' (' + tr('in exactly {n} moves', { n: this.count }) + ')' : '') + ': '),
         tk.length === 1 && (this.target.mass.get(tk[0]) ?? ZERO).eq(ONE) ? tr('surely {b}', { b: pointName(this.target.space, tk[0]) })
           : tk.map(k => `P(${pointName(this.target.space, k)}) = ${this.target.mass.get(k)}`).join(', '))
       const row = el('div', 'pg-row')
@@ -721,7 +721,7 @@
       c.append(svg('line', { x1: x, x2: x + w, y1: base, y2: base, class: 'pg-axis-thin' }))
       ks.forEach((k, j) => {
         const m = d.mass.get(k) ?? ZERO, xx = x0 + j * gap, hh = m.value(P) * bh
-        if (hh > 0) c.append(svg('rect', { class: 'pg-mini-sand', x: xx - bw / 2, y: base - hh, width: bw, height: hh, rx: 2 }))
+        if (hh > 0) c.append(svg('rect', { class: 'pg-mini-mass', x: xx - bw / 2, y: base - hh, width: bw, height: hh, rx: 2 }))
         c.append(svg('text', { x: xx, y: base - hh - 3, 'text-anchor': 'middle', class: 'pg-mini-mass' }, m.toString()))
         c.append(svg('text', { x: xx, y: base + 12, 'text-anchor': 'middle', class: 'pg-mini-point' }, pointName(d.space, k)))
       })
@@ -1313,7 +1313,7 @@
     { name: 'bool_ext', kind: 'rule', at: '1.1', sig: 'bool_ext μ ν (h : μ true = ν true) : μ = ν', en: 'Two distributions on Bool are the same when they have the same mass at true.', de: 'Zwei Verteilungen auf Bool sind gleich, wenn sie bei true dieselbe Masse haben.' },
     { name: 'coin_true', kind: 'rule', at: '1.1', sig: '(coin p) true = ↑p', en: 'The mass of the coin at true.', de: 'Die Masse der Münze bei true.' },
     { name: 'coin_false', kind: 'rule', at: '1.2', sig: '(coin p) false = ↑(σ p)', en: 'The mass of the coin at false.', de: 'Die Masse der Münze bei false.' },
-    { name: 'map_true', kind: 'rule', at: '1.2', sig: '(f <$> μ) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)', en: 'Where the sand of a move goes: to true comes the sand of the points that f sends to true.', de: 'Wohin der Sand eines Zuges fließt: Nach true kommt der Sand der Punkte, die f nach true schickt.' },
+    { name: 'map_true', kind: 'rule', at: '1.2', sig: '(f <$> μ) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)', en: 'Where the mass of a move goes: to true comes the mass of the points that f sends to true.', de: 'Wohin die Masse eines Zuges geht: Nach true kommt die Masse der Punkte, die f nach true schickt.' },
     { name: 'Bool.not_true', kind: 'rule', at: '1.2', wb: 'b.2', sig: '(!true) = false', en: 'Not true is false.', de: 'Nicht true ist false.' },
     { name: 'Bool.not_false', kind: 'rule', at: '1.2', wb: 'b.2', sig: '(!false) = true', en: 'Not false is true.', de: 'Nicht false ist true.' },
     { name: 'Bool.cond_true', kind: 'rule', at: '1.2', sig: '(bif true then a else b) = a', en: 'bif with true: the first.', de: 'bif mit true: das Erste.' },
@@ -1323,7 +1323,7 @@
     { name: 'coin_not', kind: 'lemma', at: '1.8', sig: 'not <$> coin p = coin (σ p)', en: 'Proved by you: the boss of One Coin. Flipping a coin swaps the masses.', de: 'Von dir bewiesen: der Endgegner von „Eine Münze“. Umdrehen tauscht die Massen.' },
     { name: 'coin_total', kind: 'rule', at: '1.3', sig: '(coin p) true + (coin p) false = 1', en: 'The total mass of a coin is one.', de: 'Die Gesamtmasse einer Münze ist eins.' },
     { name: 'pure_true', kind: 'rule', at: '1.3', sig: '(pure b) true = bif b then 1 else 0', en: 'The mass of a point mass at true.', de: 'Die Masse einer Punktmasse bei true.' },
-    { name: 'coin_const', kind: 'lemma', at: '1.3', sig: '(fun _ => b) <$> coin p = pure b', en: 'Proved by you in One Coin, level 3: a constant move sends all the sand to one point.', de: 'Von dir bewiesen in „Eine Münze“, Level 3: Ein konstanter Zug schickt den ganzen Sand an einen Punkt.' },
+    { name: 'coin_const', kind: 'lemma', at: '1.3', sig: '(fun _ => b) <$> coin p = pure b', en: 'Proved by you in One Coin, level 3: a constant move sends all the mass to one point.', de: 'Von dir bewiesen in „Eine Münze“, Level 3: Ein konstanter Zug schickt die ganze Masse an einen Punkt.' },
     { name: 'map_pure', kind: 'rule', at: '1.4', w0: '0.7', sig: 'f <$> pure a = pure (f a)', en0: 'A move on a sure point moves the point.', de0: 'Ein Zug auf einem sicheren Punkt verschiebt den Punkt.', en: 'A move on a point mass moves the point.', de: 'Ein Zug auf einer Punktmasse verschiebt den Punkt.' },
     { name: 'map_map', kind: 'rule', at: '1.6', w0: '0.6', sig: 'g <$> (f <$> μ) = (fun x => g (f x)) <$> μ', sig0: 'g <$> (f <$> s) = (fun x => g (f x)) <$> s', en: 'Two moves are one move.', de: 'Zwei Züge sind ein Zug.' },
     { name: 'coin_and', kind: 'rule', at: '3.1', sig: '(do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)', en: 'Independence: both true with probability p · q.', de: 'Unabhängigkeit: beide true mit Wahrscheinlichkeit p · q.' },
@@ -1667,7 +1667,7 @@
   // when the proof is first opened; the moves and rules new in a level come with it.
   let STAGE = false
   Object.assign(DE, {
-    'Tap a move.': 'Tippe einen Zug an.', 'The sand lies on {a}, the target on {b}.': 'Der Sand liegt auf {a}, das Ziel auf {b}.',
+    'Tap a move.': 'Tippe einen Zug an.', 'The distribution lives on {a}, the target on {b}.': 'Die Verteilung lebt auf {a}, das Ziel auf {b}.',
     'The right shape, but in {n} moves, please.': 'Die richtige Form, aber bitte in {n} Zügen.', 'Lean is checking …': 'Lean prüft …',
     'At {k}: P = {m}, the target has {t}.': 'Bei {k}: P = {m}, das Ziel hat {t}.', 'Lean disagrees.': 'Lean widerspricht.',
     'Lay down a building block.': 'Leg einen Baustein hin.', '{n} chosen: now a function, or Check.': '{n} ausgewählt: jetzt eine Funktion, oder Prüfen.',
@@ -1682,10 +1682,10 @@
   })
   // What the moves and building blocks do, for the tips (by kind of board: level, bool, build, src, walk).
   const MOVE_DOC = {
-    'level:not': ['Swaps the sides: the sand of false goes to true, and the other way round.', 'Tauscht die Seiten: Der Sand von false geht nach true und umgekehrt.'],
-    'level:heads': ['All the sand flows to true: the result is sure.', 'Der ganze Sand fließt nach true: Das Ergebnis ist sicher.'],
-    'level:tails': ['All the sand flows to false: the result is sure.', 'Der ganze Sand fließt nach false: Das Ergebnis ist sicher.'],
-    'level:id': ['Does nothing: the sand stays where it is.', 'Tut nichts: Der Sand bleibt, wo er ist.'],
+    'level:not': ['Swaps the sides: the mass of false goes to true, and the other way round.', 'Tauscht die Seiten: Die Masse von false geht nach true und umgekehrt.'],
+    'level:heads': ['All the mass goes to true: the result is sure.', 'Die ganze Masse geht nach true: Das Ergebnis ist sicher.'],
+    'level:tails': ['All the mass goes to false: the result is sure.', 'Die ganze Masse geht nach false: Das Ergebnis ist sicher.'],
+    'level:id': ['Does nothing: the mass stays where it is.', 'Tut nichts: Die Masse bleibt, wo sie ist.'],
     'level:toNat': ['From sides to numbers: false becomes 0, true becomes 1.', 'Von Seiten zu Zahlen: false wird 0, true wird 1.'],
     'level:payoff': ['A bet: true becomes the gain, false the loss.', 'Eine Wette: true wird zum Gewinn, false zum Verlust.'],
     'bool:not': ['Flips the coin: true becomes false, false becomes true.', 'Dreht die Münze um: true wird false, false wird true.'],

@@ -51,12 +51,12 @@ Die Regel `map_eq_pure_bind : f <$> μ = do let x ← μ; pure (f x)` sagt das f
 
 ::::level (start := "pure true") (target := "pure false") (moves := "not") (lean := "(do let x ← pure true; pure (!x)) = pure false") (leanStart := "DiscreteMeasure.pure true") (leanTarget := "DiscreteMeasure.pure false") (no := "2.2") (proof := ": (do let x ← pure true; pure (!x)) = (pure false : DiscreteMeasure Bool)")
 :::en
-*A sure draw.* The coin lies surely on `true`: all the sand is there, a point mass, `pure true` in
+*A sure draw.* The coin lies surely on `true`: all the mass is there, a point mass, `pure true` in
 Lean. Flip it.
 :::
 
 :::de
-*Ein sicheres Ziehen.* Die Münze liegt sicher auf `true`: Der ganze Sand liegt dort, eine Punktmasse,
+*Ein sicheres Ziehen.* Die Münze liegt sicher auf `true`: Die ganze Masse liegt dort, eine Punktmasse,
 in Lean `pure true`. Dreh sie um.
 :::
 
