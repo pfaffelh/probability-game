@@ -119,13 +119,13 @@ theorem coin_not (p : I) : not <$> coin p = coin (σ p) := by
   apply bool_ext
   rw [coin_not_true, coin_true]
 
-/-- Counting, level 2: `B(1, p)` is a coin as a number. -/
+/-- `B(1, p)` is a coin as a number. -/
 theorem binom_one (p : I) : Bool.toNat <$> coin p = binom p 1 := by
   rw [binom_succ, binom_zero]
   simp only [pure_bind, add_zero]
   rw [map_eq_pure_bind]
 
-/-- Counting, level 3: one throw more, at the end. -/
+/-- Counting, level 2: one throw more, at the end. -/
 theorem binom_succ' (p : I) (n : ℕ) :
     (do let X ← binom p n; let Y ← coin p; pure (X + Y.toNat)) = binom p (n + 1) := by
   induction' n with n ih
