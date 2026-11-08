@@ -578,9 +578,9 @@
   }
   Object.assign(DE, {
     not: 'nicht', and: 'und', or: 'oder', xor: 'genau eins', add: 'addieren',
-    'number of true': 'Anzahl true', 'at least 1': 'mindestens 1', maximum: 'Maximum', 'new p-coin': 'neue p-Münze', Check: 'Prüfen', 'Remove the last': 'Letztes entfernen',
+    'number of true': 'Anzahl true', 'at least 1': 'mindestens 1', maximum: 'Maximum', 'p-coin': 'p-Münze', Functions: 'Funktionen', Check: 'Prüfen', 'Remove the last': 'Letztes entfernen',
     '{n} left': 'noch {n}', 'Building blocks': 'Bausteine',
-    'Lay down a coin with “new p-coin”. Tap lines to choose them (in this order), then a function.': 'Leg mit „neue p-Münze“ eine Münze hin. Tippe Leitungen an, um sie auszuwählen (in dieser Reihenfolge), dann eine Funktion.',
+    'Lay down a coin with “p-coin”. Tap lines to choose them (in this order), then a function.': 'Leg mit „p-Münze“ eine Münze hin. Tippe Leitungen an, um sie auszuwählen (in dieser Reihenfolge), dann eine Funktion.',
     'Choose {n} lines first (tap them).': 'Wähle erst {n} Leitungen aus (antippen).', 'Choose at least {n} lines first (tap them).': 'Wähle erst mindestens {n} Leitungen aus (antippen).',
     'This function needs coins (true/false).': 'Diese Funktion braucht Münzen (true/false).', 'This function needs numbers.': 'Diese Funktion braucht Zahlen.',
     'No more of these in this level.': 'Davon gibt es in diesem Level keine weiteren.', 'There is nothing to check yet.': 'Es gibt noch nichts zu prüfen.',
@@ -594,7 +594,7 @@
   const choose = (n, k) => { let r = 1; for (let i = 0; i < k; i++) r = r * (n - i) / (i + 1); return r }
   const pow = (m, k) => { let r = ONE; for (let i = 0; i < k; i++) r = r.mul(m); return r }
   const source = spec => {
-    if (spec === 'coin') return { space: 'bool', prefix: 'M', lean: 'coin p', label: () => tr('new p-coin'),
+    if (spec === 'coin') return { space: 'bool', prefix: 'M', lean: 'coin p', label: () => tr('p-coin'),
       outcomes: () => [[false, complement(PP)], [true, PP]] }
     const n = Number(/^binom(\d+)$/.exec(spec)?.[1])
     if (n) return { space: 'nat', prefix: 'B', lean: `binom p ${n}`, label: () => `B(${n}, p)`,
@@ -615,13 +615,31 @@
       })
       this.board = root.querySelector('.pg-board')
       this.key = `pg:${location.pathname}:${index}`
-      this.nodes = []      // { src } (a source) or { fun, inputs: [indices] }
-      try { this.nodes = JSON.parse(localStorage.getItem(this.key + ':tree') ?? '[]').map(n => (n.coin ? { src: 'coin' } : n)) } catch {}
+      // { src } (a source) or { fun, inputs: [indices] }: the sources of the level lie there from the
+      // start (as many of each as the level has), the functions come after them
+      this.nodes = this.initial()
+      try {
+        const saved = JSON.parse(localStorage.getItem(this.key + ':tree') ?? 'null')
+        if (saved && JSON.stringify(saved.slice(0, this.nodes.length)) === JSON.stringify(this.nodes)) this.nodes = saved
+      } catch {}
       this.selected = []   // indices, in the order chosen
       this.checked = null  // { node, ok }
       this.message = ''
+      // a tap beside the lines (or Escape) chooses none
+      document.addEventListener('click', e => {
+        if (!this.selected.length || !this.root.offsetParent || e.target.closest?.('.pg-card, button, input, a, .pg-tip-overlay')) return
+        this.selected = []; this.message = ''; this.render()
+      })
+      document.addEventListener('keydown', e => {
+        if (e.key !== 'Escape' || !this.selected.length || !this.root.offsetParent || document.querySelector('.pg-tip-overlay')) return
+        this.selected = []; this.message = ''; this.render()
+      })
       this.render()
     }
+
+    // the sources the level starts with: all of each that has a number (those without one are laid
+    // down with a button, as many as wanted)
+    initial() { return this.sources.flatMap(src => (src.max < Infinity ? Array.from({ length: src.max }, () => ({ src: src.spec })) : [])) }
 
     get solved() { try { return localStorage.getItem(this.key) === '1' } catch { return false } }
     save() { try { localStorage.setItem(this.key + ':tree', JSON.stringify(this.nodes)) } catch {} }
@@ -677,17 +695,17 @@
       const bad = sel.length < F.arity || (!F.more && sel.length > F.arity) ? tr(F.more ? 'Choose at least {n} lines first (tap them).' : 'Choose {n} lines first (tap them).', { n: F.arity })
         : sel.some(j => this.space(j) !== F.from) ? tr(F.from === 'bool' ? 'This function needs coins (true/false).' : 'This function needs numbers.') : null
       if (bad) { this.message = bad; this.render(); return }
-      this.nodes.push({ fun: f, inputs: sel.slice() }); this.selected = [this.nodes.length - 1]; this.changed()
+      this.nodes.push({ fun: f, inputs: sel.slice() }); this.selected = []; this.changed()
     }
     pick(i) {
       const k = this.selected.indexOf(i)
       if (k >= 0) this.selected.splice(k, 1); else this.selected.push(i)
       this.message = ''; this.render()
     }
-    removeLast() { if (!this.nodes.length) return; this.nodes.pop(); this.selected = this.selected.filter(j => j < this.nodes.length); this.changed() }
-    reset() { this.nodes = []; this.selected = []; this.changed() }
+    removeLast() { if (!this.canUndo) return; this.nodes.pop(); this.selected = this.selected.filter(j => j < this.nodes.length); this.changed() }
+    reset() { this.nodes = this.initial(); this.selected = []; this.changed() }
     undo() { this.removeLast() }
-    get canUndo() { return this.nodes.length > 0 }
+    get canUndo() { return this.nodes.length > this.initial().length }
     status() {
       if (this.checked?.ok) return '🎉'
       if (!this.nodes.length) return tr('Lay down a building block.')
@@ -802,9 +820,9 @@
 
       // the building blocks
       const blocks = el('div', 'pg-blocks')
-      blocks.append(el('div', 'pg-moves-head', tr('Building blocks')))
+      blocks.append(el('div', 'pg-moves-head', tr('Functions')))
       for (const src of this.sources) {
-        if (src.max === 0) continue
+        if (src.max < Infinity) continue
         const b = el('button', 'pg-move pg-coin-btn', '+ ' + source(src.spec).label() + (src.max < Infinity ? ` (${tr('{n} left', { n: this.left(src) })})` : ''))
         b.type = 'button'; b.disabled = this.left(src) <= 0
         b.addEventListener('click', () => this.addSource(src))
@@ -820,7 +838,7 @@
 
       // the circuit, and the target beside it
       const site = el('div', 'pg-site')
-      site.append(this.nodes.length ? this.circuit() : el('div', 'pg-site-empty', tr('Lay down a coin with “new p-coin”. Tap lines to choose them (in this order), then a function.')))
+      site.append(this.nodes.length ? this.circuit() : el('div', 'pg-site-empty', tr('Lay down a coin with “p-coin”. Tap lines to choose them (in this order), then a function.')))
       this.targetBox = el('div', 'pg-target-box' + (done ? ' pg-card-ok' : ''))
       this.targetBox.append(this.targetPicture())
       const area = el('div', 'pg-build-area')
@@ -829,7 +847,7 @@
       const tools = el('div', 'pg-tools')
       const check = el('button', 'pg-check', tr('Check')), undo = el('button', 'pg-tool', '↶ ' + tr('Remove the last')), reset = el('button', 'pg-tool', '⟲ ' + tr('Start over'))
       check.type = undo.type = reset.type = 'button'
-      undo.disabled = reset.disabled = !this.nodes.length
+      undo.disabled = reset.disabled = !this.canUndo
       check.addEventListener('click', () => this.check())
       undo.addEventListener('click', () => this.removeLast()); reset.addEventListener('click', () => this.reset())
       tools.append(check, undo, reset)

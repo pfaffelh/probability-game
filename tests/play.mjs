@@ -52,7 +52,6 @@ for (const [name, vp] of [['desktop', { width: 1200, height: 900 }], ['phone', {
       }
       else {
         for (const a of boards[i]) {
-          if (a === 'c' || a === 'b') { await lvl().locator('.pg-coin-btn', { hasText: a === 'c' ? 'Münze' : 'B(2' }).click(); continue }
           for (const c of await lvl().locator('.pg-card-sel').all()) await c.click()
           for (const k of a.slice(0, -1)) await lvl().locator(`.pg-card[data-node="${k}"]`).click()
           await lvl().locator('.pg-move', { hasText: new RegExp(a[a.length - 1]) }).first().click()

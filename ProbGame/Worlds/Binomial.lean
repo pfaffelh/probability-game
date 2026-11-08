@@ -76,7 +76,7 @@ nächsten Level ist es in deinem Inventar. Und `map_eq_pure_bind` aus *Erst zieh
 :::
 ::::
 
-::::build (target := "nat 0:(1-p)^3 1:3p(1-p)^2 2:3p^2(1-p) 3:p^3") (moves := "toNat, add") (sources := "coin:1, binom2:1") (no := "4.3") (proof := "(p : I) (n : ℕ) : (do let X ← binom p n; let Y ← coin p; pure (X + Y.toNat)) = binom p (n + 1)") (lemma := "binom_succ'")
+::::build (target := "nat 0:(1-p)^3 1:3p(1-p)^2 2:3p^2(1-p) 3:p^3") (moves := "toNat, add") (sources := "binom2:1, coin:1") (no := "4.3") (proof := "(p : I) (n : ℕ) : (do let X ← binom p n; let Y ← coin p; pure (X + Y.toNat)) = binom p (n + 1)") (lemma := "binom_succ'")
 :::en
 *A new building block.* $`B(2, p)` and one more coin give $`B(3, p)`: one more throw, one more
 chance to count.
