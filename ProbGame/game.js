@@ -688,7 +688,7 @@
     left(src) { return src.max - this.nodes.filter(n => n.src === src.spec).length }
     addSource(src) {
       if (this.left(src) <= 0) { this.message = tr('No more of these in this level.'); this.render(); return }
-      this.nodes.push({ src: src.spec }); this.selected = [this.nodes.length - 1]; this.changed()
+      this.nodes.push({ src: src.spec }); this.changed()
     }
     apply(f) {
       const F = FUNS[f], sel = this.selected
@@ -1795,7 +1795,15 @@
   // The parts of a board, on the stage: the moves (or building blocks) in a column of their own, the
   // rest beside them; Undo and Start over go to the tool bar, what Lean says to the Lean panel.
   function showBoard(level, parts) {
-    if (!STAGE) { level.board.replaceChildren(...parts); return }
+    // drawn anew after each tap: where the board and its parts were scrolled to stays (no jump)
+    const scrolled = [level.board, ...level.board.querySelectorAll('.pg-main, .pg-site, .pg-palette')]
+      .map(e => [e === level.board ? null : e.classList[0], e.scrollTop, e.scrollLeft])
+    const y = window.scrollY
+    const keep = () => {
+      for (const [c, t, l] of scrolled) { const e = c ? level.board.querySelector('.' + c) : level.board; if (e) { e.scrollTop = t; e.scrollLeft = l } }
+      if (window.scrollY !== y) window.scrollTo(window.scrollX, y)
+    }
+    if (!STAGE) { level.board.replaceChildren(...parts); keep(); return }
     const lean = [], main = [], palette = []
     for (const p of parts) {
       const c = p.classList
@@ -1807,6 +1815,7 @@
     const m = el('div', 'pg-main'), pal = el('div', 'pg-palette')
     m.append(...main); pal.append(...palette)
     level.board.replaceChildren(m, pal)
+    keep()
     level.leanParts = lean
     level.onRendered?.()
   }
@@ -1950,12 +1959,14 @@
     try { localStorage.setItem(levelsKey(location.pathname), JSON.stringify(levels.map(l => !!l.proof))) } catch {}
     const fromHash = Number(/^#level-(\d+)$/.exec(location.hash)?.[1] ?? 0) - 1
     show(fromHash >= 0 ? fromHash : Math.max(0, levels.findIndex(l => !done(l))))
-    // The stage fills the screen below the header; measured again when the window changes.
+    // The stage fills the screen below the header; measured again when the window changes, without
+    // scrolling (on phones the window changes when the address bar comes or goes, while one plays).
     let resizing
     const fit = () => {
-      window.scrollTo(0, 0)
-      stg.style.height = `${Math.max(360, window.innerHeight - stg.getBoundingClientRect().top - 8)}px`
+      const top = stg.getBoundingClientRect().top + window.scrollY
+      stg.style.height = `${Math.max(360, window.innerHeight - top - 8)}px`
     }
+    window.scrollTo(0, 0)
     fit()
     window.addEventListener('resize', () => { clearTimeout(resizing); resizing = setTimeout(fit, 120) })
   }
