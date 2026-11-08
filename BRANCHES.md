@@ -13,7 +13,7 @@ The engine is the same on every branch: `ProbGame/game.js`, `ProbGame/game.css`,
 A branch differs from `main` only in
 
 * `ProbGame.lean`: the edition (`def ProbGame.edition`), the worlds it includes, and the front
-  page;
+  page (each edition ends with the lexicon, `{include 1 ProbGame.Lexicon}`);
 * the files of the worlds it adds (on `monad`).
 
 A world is a set of files with the same name `W`:
