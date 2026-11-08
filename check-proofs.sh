@@ -2,8 +2,8 @@
 # Checks the Lean side of the game against Mathlib and the journal's DiscreteMeasure:
 # * Proofs/*.lean: the statements of the levels with Mathlib's PMF;
 # * Lean/Rules.lean and Lean/World*.lean: the contexts (the rules of the proofs and of the boards);
-# * for each world (tests/worlds/<World>.json), its solutions Lean/Solutions<World>.lean, the proofs of
-#   its levels as a player types them, in its context;
+# * the solutions of the levels (`:::solution` in ProbGame/Worlds/*.lean), as a player types them,
+#   each in the rules of its level;
 # each with `import Journal.Notes.DiscreteMeasure.Thinning` in front, as the bridge loads them.
 # Usage: ./check-proofs.sh [journal]   (default ~/Code/lean/journal)
 set -e
@@ -20,11 +20,28 @@ for f in "$here"/Lean/Rules.lean "$here"/Lean/World*.lean; do
   { echo "import Journal.Notes.DiscreteMeasure.Thinning"; cat "$f"; } > "$tmp/$(basename "$f")"
   lake env lean "$tmp/$(basename "$f")"
 done
-for w in "$here"/tests/worlds/*.json; do
-  set -- $(python3 -I -c 'import json, sys; w = json.load(open(sys.argv[1])); print(w["solutions"], w["context"])' "$w")
-  echo "checking the solutions $1 in $2"
-  { echo "import Journal.Notes.DiscreteMeasure.Thinning"; cat "$here/Lean/$2" "$here/Lean/$1"; } > "$tmp/$1"
-  lake env lean "$tmp/$1"
+# the solutions of the levels (`:::solution`, read by tests/levels.py), each world in the rules of
+# its levels, as a player types them
+python3 -I "$here/tests/levels.py" > "$tmp/levels.json"
+python3 -I - "$tmp" "$here" <<'PY'
+import json, sys
+from pathlib import Path
+tmp, here = Path(sys.argv[1]), Path(sys.argv[2])
+files = {}
+for world, levels in json.loads((tmp / 'levels.json').read_text()).items():
+    for l in levels:
+        if l['proof']:
+            key = (world.split('.')[-1], l['context'])
+            body = '\n'.join('  ' + x for x in l['solution']) or '  sorry'
+            files.setdefault(key, []).append(f"example {l['proof']} := by\n{body}\n")
+for (world, context), exs in files.items():
+    name = f"Solutions{world}-{Path(context).stem}.lean"
+    (tmp / name).write_text('import Journal.Notes.DiscreteMeasure.Thinning\n' + (here / context).read_text() + '\n' + '\n'.join(exs))
+PY
+for f in "$tmp"/Solutions*.lean; do
+  echo "checking the solutions $(basename "$f")"
+  out=$(lake env lean "$f" 2>&1) || { echo "$out"; exit 1; }
+  if echo "$out" | grep -q "declaration uses 'sorry'"; then echo "$out"; echo "a level without a solution"; exit 1; fi
 done
 rm -r "$tmp"
 echo "all checked"

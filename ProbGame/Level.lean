@@ -45,27 +45,78 @@ def readContext (path : String) : DocElabM String := do
   | .ok s => pure s
   | .error e => throwError "the context {path} of the level cannot be read: {e}"
 
-/-- The attributes of the proof of a level: its number (`"2.3"`, which decides what is unlocked),
-its statement (binders and type, for `example`), the name of the lemma it becomes, and the rules. -/
-def proofAttrs (no proof lemma context : String) : Array (String × String) :=
-  if proof.isEmpty then #[] else
-    #[("data-no", no), ("data-proof", proof), ("data-lemma", lemma), ("data-proof-context", context)]
+/-! ## What a level brings, and what it may use
+
+A level names what it brings into the inventory (`(new := "bool_ext, apply")`) and the lemma it
+becomes (`(lemma := "coin_not")`); it has no number. In the traverse pass each level is entered in
+`ProbGame.levels`, in the order of the document, with its group (`chance`, `bool` or `walk`: each
+group has an inventory of its own). When a level is rendered, its inventory is what the levels of its
+group before it brought, and what it brings itself: so a level can be moved or removed alone. -/
+
+/-- The world of a level: the module it is in (`ProbGame.Worlds.OneCoin`), for the tests. -/
+def worldOf : DocElabM String := return (← getMainModule).toString
+
+/-- The names in a list `"a, b, c"`. -/
+def namesIn (s : String) : Array String :=
+  (s.splitOn ",").toArray.map (·.trimAscii.toString) |>.filter (!·.isEmpty)
+
+/-- Enters a level in `ProbGame.levels` (once: the traverse pass runs until nothing changes). -/
+def registerLevel {m : Type → Type} [Monad m] [MonadState Manual.TraverseState m] (id : InternalId) (data : Json) : m Unit := do
+  let levels : Array Json := match (← get).get? `ProbGame.levels with
+    | some (.ok (ls : Array Json)) => ls
+    | _ => #[]
+  unless levels.any (·.getObjValD "id" == toJson id) do
+    let entry := Json.mkObj [("id", toJson id), ("group", data.getObjValD "group"),
+      ("new", data.getObjValD "new"), ("lemma", data.getObjValD "lemma")]
+    modify (·.set `ProbGame.levels (levels.push entry))
+
+/-- The inventory of the level `id` (what the levels of its group before it brought, and what it
+brings itself) and what is new in it, as JSON lists of names. -/
+def inventoryOf (id : InternalId) (st : Manual.TraverseState) : String × String := Id.run do
+  let levels : Array Json := match st.get? `ProbGame.levels with
+    | some (.ok (ls : Array Json)) => ls
+    | _ => #[]
+  let str (l : Json) (k : String) := (l.getObjValAs? String k).toOption.getD ""
+  let some i := levels.findIdx? (·.getObjValD "id" == toJson id) | return ("[]", "[]")
+  let me := levels[i]!
+  let mut inv : Array String := #[]
+  for l in levels.extract 0 i do
+    if str l "group" == str me "group" then
+      inv := inv ++ namesIn (str l "new") ++ namesIn (str l "lemma")
+  let new := namesIn (str me "new")
+  return ((toJson (inv ++ new)).compress, (toJson new).compress)
+
+/-- The attributes of the proof of a level: its statement (binders and type, for `example`), the
+lemma it becomes, the rules (its context), its group, its inventory and what is new in it. -/
+def proofAttrs (id : InternalId) (st : Manual.TraverseState) (data : Json) (context : String) : Array (String × String) :=
+  let get (k : String) := (data.getObjValAs? String k).toOption.getD ""
+  let (inv, new) := inventoryOf id st
+  #[("data-world", get "world"), ("data-group", get "group")] ++
+  if (get "proof").isEmpty then #[] else
+    #[("data-proof", get "proof"), ("data-lemma", get "lemma"), ("data-proof-context", context),
+      ("data-inventory", inv), ("data-new", new)]
+
+/-- The solution of a level: `:::solution` with the proof as a code block, as a player types it. It
+is not shown (not even in the page): `check-proofs.sh` and the tests read it from the source. -/
+@[directive]
+def solution : DirectiveExpanderOf Unit
+  | (), _ => ``(Verso.Doc.Block.concat #[])
 
 -- A level: the distribution at the start, the target, the moves offered, and the Lean statement;
 -- `leanStart` and `leanTarget` are the start and the target as `DiscreteMeasure`s, which Lean
 -- compares after normalising them with the rules of the world (`context`).
-block_extension Block.level (start target moves count lean leanStart leanTarget no proof lemma context proofContext : String) where
+block_extension Block.level (start target moves count lean leanStart leanTarget new proof lemma context proofContext world : String) where
   data := Json.mkObj [("start", start), ("target", target), ("moves", moves), ("count", count), ("lean", lean),
-    ("leanStart", leanStart), ("leanTarget", leanTarget), ("no", no), ("proof", proof), ("lemma", lemma),
-    ("context", context), ("proofContext", proofContext)]
-  traverse _ _ _ := pure none
+    ("leanStart", leanStart), ("leanTarget", leanTarget), ("new", new), ("proof", proof), ("lemma", lemma),
+    ("context", context), ("proofContext", proofContext), ("world", world), ("group", "chance")]
+  traverse id data _ := do registerLevel id data; pure none
   extraJs := {JS.mk gameJs}
   extraCss := {CSS.mk gameCss}
-  toHtml := some fun _ goB _ data content => do
+  toHtml := some fun _ goB id data content => do
     let get (k : String) := (data.getObjValAs? String k).toOption.getD ""
     pure <| .tag "div" (#[("class", "pg-level"), ("data-start", get "start"), ("data-target", get "target"),
         ("data-moves", get "moves"), ("data-count", get "count"), ("data-lean", get "lean"), ("data-lean-start", get "leanStart"),
-        ("data-lean-target", get "leanTarget"), ("data-context", get "context")] ++ proofAttrs (get "no") (get "proof") (get "lemma") (get "proofContext")) <|
+        ("data-lean-target", get "leanTarget"), ("data-context", get "context")] ++ proofAttrs id (← Doc.Html.HtmlT.state) data (get "proofContext")) <|
       .seq #[.tag "div" #[("class", "pg-text")] (← content.mapM goB), .tag "div" #[("class", "pg-board")] .empty]
   toTeX := none
 
@@ -77,17 +128,18 @@ structure LevelConfig where
   lean : String
   leanStart : String
   leanTarget : String
-  no : String
+  new : String
   proof : String
   lemma : String
   context : String
   proofContext : String
+  play : String
 
 instance : FromArgs LevelConfig DocElabM where
   fromArgs := LevelConfig.mk <$> .named `start .string false <*> .named `target .string false <*>
     .named `moves .string false <*> .namedD `count .string "" <*> .namedD `lean .string "" <*> .namedD `leanStart .string "coin p" <*>
-    .namedD `leanTarget .string "" <*> .namedD `no .string "" <*> .namedD `proof .string "" <*> .namedD `lemma .string "" <*>
-    .namedD `context .string "Lean/WorldCoin.lean" <*> .namedD `proofContext .string "Lean/Rules.lean"
+    .namedD `leanTarget .string "" <*> .namedD `new .string "" <*> .namedD `proof .string "" <*> .namedD `lemma .string "" <*>
+    .namedD `context .string "Lean/WorldCoin.lean" <*> .namedD `proofContext .string "Lean/Rules.lean" <*> .namedD `play .string ""
 
 /-- A level of the probability game; see the module documentation. -/
 @[directive]
@@ -96,24 +148,25 @@ def level : DirectiveExpanderOf LevelConfig
     let blocks ← contents.mapM elabBlock
     let context ← readContext cfg.context
     let proofContext ← readContext cfg.proofContext
+    let world ← worldOf
     ``(Verso.Doc.Block.other (Block.level $(quote cfg.start) $(quote cfg.target) $(quote cfg.moves) $(quote cfg.count) $(quote cfg.lean)
-        $(quote cfg.leanStart) $(quote cfg.leanTarget) $(quote cfg.no) $(quote cfg.proof) $(quote cfg.lemma)
-        $(quote context) $(quote proofContext))
+        $(quote cfg.leanStart) $(quote cfg.leanTarget) $(quote cfg.new) $(quote cfg.proof) $(quote cfg.lemma)
+        $(quote context) $(quote proofContext) $(quote world))
         #[$blocks,*])
 
 -- A level of the building site: the target, the functions offered and the number of coins allowed
 -- (`""`: as many as wanted), or else the sources offered with their numbers (`"coin:1, binom2:2"`). The player lays down coins and applies functions to them, into a network
 -- that runs into the target; `game.js` checks it exactly, for every `p`.
-block_extension Block.build (target moves coins sources no proof lemma proofContext : String) where
+block_extension Block.build (target moves coins sources new proof lemma proofContext world : String) where
   data := Json.mkObj [("target", target), ("moves", moves), ("coins", coins), ("sources", sources),
-    ("no", no), ("proof", proof), ("lemma", lemma), ("proofContext", proofContext)]
-  traverse _ _ _ := pure none
+    ("new", new), ("proof", proof), ("lemma", lemma), ("proofContext", proofContext), ("world", world), ("group", "chance")]
+  traverse id data _ := do registerLevel id data; pure none
   extraJs := {JS.mk gameJs}
   extraCss := {CSS.mk gameCss}
-  toHtml := some fun _ goB _ data content => do
+  toHtml := some fun _ goB id data content => do
     let get (k : String) := (data.getObjValAs? String k).toOption.getD ""
     pure <| .tag "div" (#[("class", "pg-level pg-build"), ("data-target", get "target"), ("data-moves", get "moves"),
-        ("data-coins", get "coins"), ("data-sources", get "sources")] ++ proofAttrs (get "no") (get "proof") (get "lemma") (get "proofContext")) <|
+        ("data-coins", get "coins"), ("data-sources", get "sources")] ++ proofAttrs id (← Doc.Html.HtmlT.state) data (get "proofContext")) <|
       .seq #[.tag "div" #[("class", "pg-text")] (← content.mapM goB), .tag "div" #[("class", "pg-board")] .empty]
   toTeX := none
 
@@ -122,16 +175,17 @@ structure BuildConfig where
   moves : String
   coins : String
   sources : String
-  no : String
+  new : String
   proof : String
   lemma : String
   proofContext : String
+  play : String
 
 instance : FromArgs BuildConfig DocElabM where
   fromArgs := BuildConfig.mk <$> .named `target .string false <*> .named `moves .string false <*>
     .namedD `coins .string "" <*> .namedD `sources .string "" <*>
-    .namedD `no .string "" <*> .namedD `proof .string "" <*> .namedD `lemma .string "" <*>
-    .namedD `proofContext .string "Lean/Rules.lean"
+    .namedD `new .string "" <*> .namedD `proof .string "" <*> .namedD `lemma .string "" <*>
+    .namedD `proofContext .string "Lean/Rules.lean" <*> .namedD `play .string ""
 
 /-- A level of the building site: `::::build (target := "bool true:p^2 false:1-p^2") (moves := "and, or, not")
 (coins := "2")`, or with other sources: `(sources := "coin:1, binom2:2")`; the functions are those of
@@ -141,26 +195,27 @@ def build : DirectiveExpanderOf BuildConfig
   | cfg, contents => do
     let blocks ← contents.mapM elabBlock
     let proofContext ← readContext cfg.proofContext
+    let world ← worldOf
     ``(Verso.Doc.Block.other (Block.build $(quote cfg.target) $(quote cfg.moves) $(quote cfg.coins) $(quote cfg.sources)
-        $(quote cfg.no) $(quote cfg.proof) $(quote cfg.lemma) $(quote proofContext)) #[$blocks,*])
+        $(quote cfg.new) $(quote cfg.proof) $(quote cfg.lemma) $(quote proofContext) $(quote world)) #[$blocks,*])
 
 -- A level of world 0, walking on the grid: the figure starts at `start` (`"0,0"`), the target is a
 -- point or a set of points (`"1,1"`, `"2,0 0,0 1,1 1,-1"`), the moves are `north, east, south, west`
 -- and `step` (all four ways), `walls` are fields the figure cannot enter. In the monad `Id` the
 -- figure is at one point; in `Set` it is at all the points it can reach. `colours := "yes"` draws
 -- the grid as a chessboard. Lean normalises the walk after each move, in `Lean/WorldWalk.lean`.
-block_extension Block.walk (monad start target moves walls colours no proof lemma context : String) where
+block_extension Block.walk (monad start target moves walls colours new proof lemma context world : String) where
   data := Json.mkObj [("monad", monad), ("start", start), ("target", target), ("moves", moves), ("walls", walls),
-    ("colours", colours), ("no", no), ("proof", proof), ("lemma", lemma), ("context", context)]
-  traverse _ _ _ := pure none
+    ("colours", colours), ("new", new), ("proof", proof), ("lemma", lemma), ("context", context), ("world", world), ("group", "walk")]
+  traverse id data _ := do registerLevel id data; pure none
   extraJs := {JS.mk gameJs}
   extraCss := {CSS.mk gameCss}
-  toHtml := some fun _ goB _ data content => do
+  toHtml := some fun _ goB id data content => do
     let get (k : String) := (data.getObjValAs? String k).toOption.getD ""
     pure <| .tag "div" (#[("class", "pg-level pg-walk"), ("data-monad", get "monad"), ("data-start", get "start"),
         ("data-target", get "target"), ("data-moves", get "moves"), ("data-walls", get "walls"),
         ("data-colours", get "colours"), ("data-context", get "context")] ++
-        proofAttrs (get "no") (get "proof") (get "lemma") (get "context")) <|
+        proofAttrs id (← Doc.Html.HtmlT.state) data (get "context")) <|
       .seq #[.tag "div" #[("class", "pg-text")] (← content.mapM goB), .tag "div" #[("class", "pg-board")] .empty]
   toTeX := none
 
@@ -171,16 +226,17 @@ structure WalkConfig where
   moves : String
   walls : String
   colours : String
-  no : String
+  new : String
   proof : String
   lemma : String
   context : String
+  play : String
 
 instance : FromArgs WalkConfig DocElabM where
   fromArgs := WalkConfig.mk <$> .namedD `monad .string "Id" <*> .namedD `start .string "0,0" <*>
     .named `target .string false <*> .named `moves .string false <*> .namedD `walls .string "" <*>
-    .namedD `colours .string "" <*> .namedD `no .string "" <*> .namedD `proof .string "" <*> .namedD `lemma .string "" <*>
-    .namedD `context .string "Lean/WorldWalk.lean"
+    .namedD `colours .string "" <*> .namedD `new .string "" <*> .namedD `proof .string "" <*> .namedD `lemma .string "" <*>
+    .namedD `context .string "Lean/WorldWalk.lean" <*> .namedD `play .string ""
 
 /-- A level of world 0: `::::walk (monad := "Set") (target := "1,0 -1,0 0,1 0,-1") (moves := "step")`. -/
 @[directive]
@@ -188,23 +244,24 @@ def walk : DirectiveExpanderOf WalkConfig
   | cfg, contents => do
     let blocks ← contents.mapM elabBlock
     let context ← readContext cfg.context
+    let world ← worldOf
     ``(Verso.Doc.Block.other (Block.walk $(quote cfg.monad) $(quote cfg.start) $(quote cfg.target) $(quote cfg.moves)
-        $(quote cfg.walls) $(quote cfg.colours) $(quote cfg.no) $(quote cfg.proof) $(quote cfg.lemma) $(quote context)) #[$blocks,*])
+        $(quote cfg.walls) $(quote cfg.colours) $(quote cfg.new) $(quote cfg.proof) $(quote cfg.lemma) $(quote context) $(quote world)) #[$blocks,*])
 
 -- A level of the first world: a coin lies surely on one side, for each value of `inputs` ("true",
 -- or "false true" for every `b`), and the moves are maps `Bool → Bool`; the level is solved when
 -- each row lies on its value of `target` (after exactly `count` moves, when it is given).
-block_extension Block.bool (inputs target moves count no proof lemma context : String) where
+block_extension Block.bool (inputs target moves count new proof lemma context world : String) where
   data := Json.mkObj [("inputs", inputs), ("target", target), ("moves", moves), ("count", count),
-    ("no", no), ("proof", proof), ("lemma", lemma), ("context", context)]
-  traverse _ _ _ := pure none
+    ("new", new), ("proof", proof), ("lemma", lemma), ("context", context), ("world", world), ("group", "bool")]
+  traverse id data _ := do registerLevel id data; pure none
   extraJs := {JS.mk gameJs}
   extraCss := {CSS.mk gameCss}
-  toHtml := some fun _ goB _ data content => do
+  toHtml := some fun _ goB id data content => do
     let get (k : String) := (data.getObjValAs? String k).toOption.getD ""
     pure <| .tag "div" (#[("class", "pg-level pg-bool"), ("data-inputs", get "inputs"), ("data-target", get "target"),
         ("data-moves", get "moves"), ("data-count", get "count"), ("data-context", get "context")] ++
-        proofAttrs (get "no") (get "proof") (get "lemma") (get "context")) <|
+        proofAttrs id (← Doc.Html.HtmlT.state) data (get "context")) <|
       .seq #[.tag "div" #[("class", "pg-text")] (← content.mapM goB), .tag "div" #[("class", "pg-board")] .empty]
   toTeX := none
 
@@ -213,15 +270,17 @@ structure BoolConfig where
   target : String
   moves : String
   count : String
-  no : String
+  new : String
   proof : String
   lemma : String
   context : String
+  play : String
 
 instance : FromArgs BoolConfig DocElabM where
   fromArgs := BoolConfig.mk <$> .namedD `inputs .string "true" <*> .named `target .string false <*>
-    .named `moves .string false <*> .namedD `count .string "" <*> .namedD `no .string "" <*>
-    .namedD `proof .string "" <*> .namedD `lemma .string "" <*> .namedD `context .string "Lean/WorldBool.lean"
+    .named `moves .string false <*> .namedD `count .string "" <*> .namedD `new .string "" <*>
+    .namedD `proof .string "" <*> .namedD `lemma .string "" <*> .namedD `context .string "Lean/WorldBool.lean" <*>
+    .namedD `play .string ""
 
 /-- A level of the first world: `::::boolean (inputs := "false true") (target := "true true") (moves := "not, false")`. -/
 @[directive]
@@ -229,8 +288,9 @@ def boolean : DirectiveExpanderOf BoolConfig
   | cfg, contents => do
     let blocks ← contents.mapM elabBlock
     let context ← readContext cfg.context
+    let world ← worldOf
     ``(Verso.Doc.Block.other (Block.bool $(quote cfg.inputs) $(quote cfg.target) $(quote cfg.moves)
-        $(quote cfg.count) $(quote cfg.no) $(quote cfg.proof) $(quote cfg.lemma) $(quote context)) #[$blocks,*])
+        $(quote cfg.count) $(quote cfg.new) $(quote cfg.proof) $(quote cfg.lemma) $(quote context) $(quote world)) #[$blocks,*])
 
 -- The lexicon: every move, building block, tactic and rule of the game, which `game.js` writes
 -- into this block (`::::lexicon` with no content), from the same tables as the tips.
@@ -240,7 +300,13 @@ block_extension Block.lexicon where
   extraJs := {JS.mk gameJs}
   extraCss := {CSS.mk gameCss}
   toHtml := some fun _ goB _ _ content => do
-    pure <| .tag "div" #[("class", "pg-lexicon")] (← content.mapM goB)
+    -- the names that the levels of the game bring, for the lexicon of tactics and rules
+    let levels : Array Json := match (← Doc.Html.HtmlT.state).get? `ProbGame.levels with
+      | some (.ok (ls : Array Json)) => ls
+      | _ => #[]
+    let str (l : Json) (k : String) := (l.getObjValAs? String k).toOption.getD ""
+    let items := levels.foldl (fun acc l => acc ++ namesIn (str l "new") ++ namesIn (str l "lemma")) #[]
+    pure <| .tag "div" #[("class", "pg-lexicon"), ("data-items", (toJson items).compress)] (← content.mapM goB)
   toTeX := none
 
 /-- The lexicon of the game, filled by `game.js`. -/
