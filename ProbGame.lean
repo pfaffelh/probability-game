@@ -34,6 +34,20 @@ the slider only changes the picture. Your progress stays in your browser.
 In [the full game](../main/), every level is then also proved in Lean.
 :::
 
+:::de
+Eine Verteilung, in der Mathematik auch Wahrscheinlichkeitsmaß genannt, ist als Säulendiagramm
+gezeichnet: über jedem Punkt ihres Raums eine Säule, so hoch wie seine Masse. Ein *Zug* wendet eine
+Abbildung auf sie an: Die Masse jedes Punkts geht zu seinem Bild, und wo mehrere Punkte dasselbe Bild
+haben, addieren sich ihre Massen; die neue Verteilung ist das *Bildmaß*. Jedes Level hat ein *Ziel*,
+ebenfalls eine Verteilung, und *Bausteine*: eine Münze, die mit Wahrscheinlichkeit $`p` `true` zeigt,
+später die Binomialverteilung. Du *setzt* sie *zusammen*, mit Zügen und mit Schaltplänen aus mehreren
+Münzen, bis die Verteilung die Form des Ziels hat. Das Spielfeld prüft das exakt, für jedes $`p`
+zugleich (die Massen sind Polynome in $`p`); der Schieberegler ändert nur das Bild. Dein Fortschritt
+bleibt in deinem Browser.
+
+Im [ganzen Spiel](../main/) wird jedes Level danach auch in Lean bewiesen.
+:::
+
 {include 1 ProbGame.Worlds.OneCoin}
 
 {include 1 ProbGame.Worlds.TwoCoins}
