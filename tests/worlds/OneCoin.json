@@ -17,9 +17,6 @@
    "toNat"
   ],
   [
-   "true: 5"
-  ],
-  [
    "immer false",
    "toNat"
   ],
@@ -33,7 +30,7 @@
    "edition": "show",
    "moves": [
     "not",
-    "true: 5"
+    "toNat"
    ]
   }
  ],
