@@ -1,8 +1,6 @@
 import VersoManual
 import ProbGame.Level
-import ProbGame.Worlds.Bool
 import ProbGame.Worlds.OneCoin
-import ProbGame.Worlds.Draw
 import ProbGame.Worlds.TwoCoins
 import ProbGame.Worlds.Binomial
 
@@ -14,7 +12,7 @@ branches differ (see `BRANCHES.md`): `main` (the worlds of chance, with proofs),
 grid and its monads), `show` (the boards alone, without proofs). -/
 
 /-- The edition: `"show"` plays the boards alone, without Lean and without proofs (see `game.js`). -/
-def ProbGame.edition : String := "main"
+def ProbGame.edition : String := "show"
 
 #doc (Manual) "The Probability Game" =>
 
@@ -23,35 +21,31 @@ authors := ["Peter Pfaffelhuber"]
 %%%
 
 :::en
-Distributions as sand: a distribution is drawn as columns of sand over the points of its space, and a
-*move* applies a map to it. The sand flows to the images; the new distribution is the *image measure*
-(pushforward). Every level has two parts, as in the Natural Number Game: first you find the statement
-on the board, then you prove it in Lean, for every probability $`p`, with the tactics and theorems of
-your inventory. Each lemma you prove is unlocked for the levels after it. Lean runs on the server;
-your progress stays in your browser.
-One world comes before chance: `true` and `false`, a coin that lies surely on one side, and the
-maps `Bool → Bool` that move it. Then a coin with probability $`p`, what it is and where its sand
-goes; drawing and computing in `do` blocks; circuits of coins; and counting.
+Distributions as sand. A distribution is drawn as columns of sand over the points of its space. A
+*move* applies a map to it: the sand of each point flows to its image and piles up where several
+points have the same image; the new distribution is the *image measure*. Every level has a *target*,
+drawn as sand, and *building blocks*: a coin that shows `true` with probability $`p`, later the
+binomial distribution. You *compose* them, with moves and with circuits of several coins, until the
+sand has the shape of the target. The board checks it exactly, for every $`p` at once (the masses are
+polynomials in $`p`); the slider only changes the picture. Your progress stays in your browser.
+
+In [the full game](../main/), every level is then also proved in Lean.
 :::
 
 :::de
-Verteilungen als Sand: Eine Verteilung ist als Säulen aus Sand über den Punkten ihres Raums gezeichnet,
-und ein *Zug* wendet eine Abbildung auf sie an. Der Sand fließt zu den Bildern; die neue Verteilung ist
-das *Bildmaß*. Jedes Level hat zwei Teile, wie im Natural Number Game: Zuerst findest du die Aussage
-auf dem Spielfeld, dann beweist du sie in Lean, für jede Wahrscheinlichkeit $`p`, mit den Taktiken und
-Sätzen deines Inventars. Jedes Lemma, das du beweist, wird für die Level danach freigeschaltet. Lean
-läuft auf dem Server; dein Fortschritt bleibt in deinem Browser.
-Eine Welt kommt vor dem Zufall: `true` und `false`, eine Münze, die sicher auf einer Seite liegt,
-und die Abbildungen `Bool → Bool`, die sie bewegen. Dann eine Münze mit Wahrscheinlichkeit $`p`, was
-sie ist und wohin ihr Sand fließt; Ziehen und Rechnen in `do`-Blöcken; Schaltpläne aus Münzen; und
-Zählen.
+Verteilungen als Sand. Eine Verteilung ist als Säulen aus Sand über den Punkten ihres Raums
+gezeichnet. Ein *Zug* wendet eine Abbildung auf sie an: Der Sand jedes Punkts fließt zu seinem Bild
+und häuft sich dort, wo mehrere Punkte dasselbe Bild haben; die neue Verteilung ist das *Bildmaß*.
+Jedes Level hat ein *Ziel*, als Sand gezeichnet, und *Bausteine*: eine Münze, die mit
+Wahrscheinlichkeit $`p` `true` zeigt, später die Binomialverteilung. Du *setzt* sie *zusammen*, mit
+Zügen und mit Schaltplänen aus mehreren Münzen, bis der Sand die Form des Ziels hat. Das Spielfeld
+prüft das exakt, für jedes $`p` zugleich (die Massen sind Polynome in $`p`); der Schieberegler ändert
+nur das Bild. Dein Fortschritt bleibt in deinem Browser.
+
+Im [ganzen Spiel](../main/) wird jedes Level danach auch in Lean bewiesen.
 :::
 
-{include 1 ProbGame.Worlds.Bool}
-
 {include 1 ProbGame.Worlds.OneCoin}
-
-{include 1 ProbGame.Worlds.Draw}
 
 {include 1 ProbGame.Worlds.TwoCoins}
 
