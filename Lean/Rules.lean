@@ -99,14 +99,14 @@ theorem binom_succ (p : I) (n : ℕ) :
 
 /-! The lemmas the player proves; the game unlocks each after its level. -/
 
-/-- One Coin, level 1: flipped, the coin has the mass `1 - p` at `true`. -/
+/-- One Coin, *Where does the mass go?*: flipped, the coin has the mass `1 - p` at `true`. -/
 theorem coin_not_true (p : I) : (not <$> coin p) true = σ p := by
   rw [map_true]
   rw [Bool.not_true, Bool.not_false]
   rw [Bool.cond_false, Bool.cond_true, zero_add]
   rw [coin_false]
 
-/-- One Coin, level 2: a constant move sends all the mass to one point. -/
+/-- One Coin, *Always true*: a constant move sends all the mass to one point. -/
 theorem coin_const (p : I) (b : Bool) : (fun _ => b) <$> coin p = pure b := by
   apply bool_ext
   rw [map_true, pure_true]
@@ -125,7 +125,7 @@ theorem binom_one (p : I) : Bool.toNat <$> coin p = binom p 1 := by
   simp only [pure_bind, add_zero]
   rw [map_eq_pure_bind]
 
-/-- Building with Coins, level 9: one throw more, at the end. -/
+/-- Building with Coins, *A new building block*: one throw more, at the end. -/
 theorem binom_succ' (p : I) (n : ℕ) :
     (do let X ← binom p n; let Y ← coin p; pure (X + Y.toNat)) = binom p (n + 1) := by
   induction' n with n ih
@@ -134,7 +134,7 @@ theorem binom_succ' (p : I) (n : ℕ) :
   · rw [binom_succ p n, binom_succ p (n + 1), ← ih]
     simp only [bind_assoc, pure_bind, add_assoc]
 
-/-- Building with Coins, level 10: the sum of independent binomials. -/
+/-- Building with Coins, *B(2, p) * B(2, p) = B(4, p)*: the sum of independent binomials. -/
 theorem binom_add (p : I) (n m : ℕ) :
     (do let X ← binom p n; let Y ← binom p m; pure (X + Y)) = binom p (n + m) := by
   induction' m with m ih
