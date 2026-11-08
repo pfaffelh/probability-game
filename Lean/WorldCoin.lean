@@ -14,7 +14,7 @@ namespace ProbGame
 /-- Doing nothing. -/
 theorem map_fun_id {α : Type*} (μ : DiscreteMeasure α) : μ.map (fun x => x) = μ := DiscreteMeasure.id_map μ
 
-/-- A constant map sends all the sand to one point: a point mass. -/
+/-- A constant map sends all the mass to one point: a point mass. -/
 theorem coin_map_const {β : Type} (p : unitInterval) (b : β) : (coin p).map (fun _ => b) = pure b := by
   rw [map_eq_map, map_eq_pure_bind]
   exact bind_const_of_hasSum (hasSum_coin p) _

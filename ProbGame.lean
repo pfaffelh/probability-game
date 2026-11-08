@@ -25,9 +25,9 @@ authors := ["Peter Pfaffelhuber"]
 %%%
 
 :::en
-Distributions as sand: a distribution is drawn as columns of sand over the points of its space, and a
-*move* applies a map to it. The sand flows to the images; the new distribution is the *image measure*
-(pushforward). Every level has two parts, as in the Natural Number Game: first you find the statement
+A distribution, in mathematics also called a probability measure, is drawn as a bar chart: over each
+point of its space a bar, as high as the point's mass. A *move* applies a map to it. The mass of each
+point goes to its image; the new distribution is the *image measure* (pushforward). Every level has two parts, as in the Natural Number Game: first you find the statement
 on the board, then you prove it in Lean, for every probability $`p`, with the tactics and theorems of
 your inventory. Each lemma you prove is unlocked for the levels after it. Lean runs on the server;
 your progress stays in your browser.
@@ -37,9 +37,9 @@ go several ways at once; there the same monad laws are at work as later for dist
 :::
 
 :::de
-Verteilungen als Sand: Eine Verteilung ist als Säulen aus Sand über den Punkten ihres Raums gezeichnet,
-und ein *Zug* wendet eine Abbildung auf sie an. Der Sand fließt zu den Bildern; die neue Verteilung ist
-das *Bildmaß*. Jedes Level hat zwei Teile, wie im Natural Number Game: Zuerst findest du die Aussage
+Eine Verteilung, in der Mathematik auch Wahrscheinlichkeitsmaß genannt, ist als Säulendiagramm
+gezeichnet: über jedem Punkt ihres Raums eine Säule, so hoch wie seine Masse. Ein *Zug* wendet eine
+Abbildung auf sie an. Die Masse jedes Punkts geht zu seinem Bild; die neue Verteilung ist das *Bildmaß*. Jedes Level hat zwei Teile, wie im Natural Number Game: Zuerst findest du die Aussage
 auf dem Spielfeld, dann beweist du sie in Lean, für jede Wahrscheinlichkeit $`p`, mit den Taktiken und
 Sätzen deines Inventars. Jedes Lemma, das du beweist, wird für die Level danach freigeschaltet. Lean
 läuft auf dem Server; dein Fortschritt bleibt in deinem Browser.
