@@ -5,16 +5,17 @@ Three editions, one branch each (see [BRANCHES.md](BRANCHES.md)): `main`, the ga
 without Lean and without proofs). Online at `/main/`, `/monad/`, `/show/` of
 https://lean.mathematik.uni-freiburg.de.
 
-Distributions as sand. A distribution is drawn as columns of sand over the points of its space; a
-*move* applies a map to it, the sand of each point flows to its image (animated), and where several
-points have the same image it piles up. The new distribution is the *image measure* (pushforward)
-$P \circ f^{-1}$. Tapping a column shows its preimage.
+Distributions as bar charts. A distribution (a probability measure, in Lean a `DiscreteMeasure`) is
+drawn as a bar over each point of its space, as high as the point's mass; a *move* applies a map to
+it, the mass of each point goes to its image (animated), and where several points have the same image
+the masses add up. The new distribution is the *image measure* (pushforward)
+$P \circ f^{-1}$. Tapping a bar shows its preimage.
 
 Every level has two parts, as in the Natural Number Game: first the **statement**, found on the board
-(the sand fills the target, checked exactly for every $p$, the masses being polynomials in $p$); then
+(the distribution is the target, checked exactly for every $p$, the masses being polynomials in $p$); then
 the **proof** in Lean, one tactic after another, with an inventory of tactics and theorems that
 grows from level to level. A few rules are given (as Peano's axioms in the NNG: `bool_ext` (a
-distribution on `Bool` is fixed by its mass at `true`), `map_true` (where the sand of a move goes),
+distribution on `Bool` is fixed by its mass at `true`), `map_true` (where the mass of a move goes),
 `coin_true`, `coin_false`, `coin_total`, `pure_true`, `coin_and` (independence), the monad laws, the definition of `binom` by
 `binom_zero` and `binom_succ`); the lemmas the player proves (`coin_not_true`, `coin_const`, `coin_not`,
 the boss of world 1, `binom_one`, `binom_succ'`, `binom_add`) are unlocked after their levels. The proofs
@@ -86,7 +87,7 @@ block with its picture, and every tactic and rule, of the worlds of the edition.
   Verso of the IPM); `::::level (start := …) (target := …) (moves := …) (lean := …)` is a level
   (`ProbGame/Level.lean`), with `:::en` and `:::de` texts.
 * `ProbGame/game.js` plays it in the browser: exact fractions, the moves as maps, the pushforward,
-  the animation, the preimage of a tapped column, the Lean expression of the moves played, one
+  the animation, the preimage of a tapped bar, the Lean expression of the moves played, one
   level at a time with a dot per level, progress in the browser, English or German (the switch EN | DE in the header, as in the IPM; texts in `:::en` and `:::de`, headings translated by `game.js`).
 * The Lean statements of the levels are in `Proofs/` and checked against Mathlib with
   `./check-proofs.sh [project with Mathlib]` (default `~/Code/lean/journal`; also checked with
@@ -117,7 +118,7 @@ complement `σ p`, `binom`, `LawfulMonad`). After each move the game asks Lean f
 the state: the moves played as a `DiscreteMeasure`, e.g. `((coin p).map not).map Bool.toNat`,
 simplified with `#simp only [rules]`; the rules of the coins are `Lean/WorldCoin.lean` and lemmas of
 `DiscreteMeasure` (`coin_not'`, `map_pure`). The normal form is shown below the board
-(`map Bool.toNat (coin (σ p))`), and a level is solved when the sand fills the target and Lean gives
+(`map Bool.toNat (coin (σ p))`), and a level is solved when the distribution is the target and Lean gives
 the state and the target the same normal form, so that it holds for every `p`. Different correct
 ways to the target lead to the same normal form; a wrong one does not.
 

@@ -17,7 +17,7 @@ open unitInterval
 
 namespace ProbGame
 
-/-! World 1: what a distribution on `Bool` is, and where the sand of a move goes. -/
+/-! World 1: what a distribution on `Bool` is, and where the mass of a move goes. -/
 
 /-- A number of `I` as a mass, written `↑p`. -/
 @[coe] noncomputable def mass (p : I) : ENNReal := ENNReal.ofReal p
@@ -50,7 +50,7 @@ theorem pure_true (b : Bool) : (pure b : DiscreteMeasure Bool) true = bif b then
   · exact MeasureTheory.DiscreteMeasure.pure_apply_self
 
 /-- Two distributions on `Bool` are the same when they have the same mass at `true`: the rest of
-the sand lies at `false`. -/
+the mass lies at `false`. -/
 theorem bool_ext (μ ν : DiscreteMeasure Bool) [hμ : Prob μ] [hν : Prob ν] (h : μ true = ν true) : μ = ν := by
   have a := hμ.hasSum.tsum_eq; have b := hν.hasSum.tsum_eq
   rw [tsum_fintype, Fintype.sum_bool] at a b
@@ -61,7 +61,7 @@ theorem bool_ext (μ ν : DiscreteMeasure Bool) [hμ : Prob μ] [hν : Prob ν] 
     exact (ENNReal.add_right_inj ht).1 (a.trans b.symm)
   · exact h
 
-/-- Where the sand of a move goes: the mass of `f <$> μ` at `true` is the mass of `μ` at the points
+/-- Where the mass of a move goes: the mass of `f <$> μ` at `true` is the mass of `μ` at the points
 that `f` sends to `true` (`bif c then a else b` is `a` when `c` is `true`, else `b`). -/
 theorem map_true (f : Bool → Bool) (μ : DiscreteMeasure Bool) :
     (f <$> μ) true = (bif f true then μ true else 0) + (bif f false then μ false else 0) := by
@@ -106,7 +106,7 @@ theorem coin_not_true (p : I) : (not <$> coin p) true = σ p := by
   rw [Bool.cond_false, Bool.cond_true, zero_add]
   rw [coin_false]
 
-/-- World 1, level 3: a constant move sends all the sand to one point. -/
+/-- World 1, level 3: a constant move sends all the mass to one point. -/
 theorem coin_const (p : I) (b : Bool) : (fun _ => b) <$> coin p = pure b := by
   apply bool_ext
   rw [map_true, pure_true]

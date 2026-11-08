@@ -1,4 +1,4 @@
-/* The probability game: sand columns, the dashed target, moves as buttons. */
+/* The probability game: distributions as bar charts, the dashed target, moves as buttons. */
 .pg-lang-de { display: none; }
 :root.pg-de .pg-lang-de { display: block; }
 :root.pg-de .pg-lang-en { display: none; }
@@ -27,11 +27,11 @@ header .pg-langs { align-self: center; margin: 0 0.8em 0 0.5em; flex-shrink: 0; 
 .pg-svg.pg-done { background: #eef8ef; border-radius: 10px; }
 .pg-axis { stroke: #8f7a55; stroke-width: 2; }
 .pg-space { font: italic 14px var(--verso-structure-font-family, sans-serif); fill: #8f7a55; }
-.pg-sand { fill: #e2b25c; stroke: #b0782a; stroke-width: 1.5; }
+.pg-mass { fill: #e2b25c; stroke: #b0782a; stroke-width: 1.5; }
 .pg-bar { cursor: pointer; }
 .pg-hit { fill: transparent; }
-.pg-bar:hover .pg-sand { fill: #eac27a; }
-.pg-picked .pg-sand { fill: #f1cf8d; stroke: #8a5a16; stroke-width: 3; }
+.pg-bar:hover .pg-mass { fill: #eac27a; }
+.pg-picked .pg-mass { fill: #f1cf8d; stroke: #8a5a16; stroke-width: 3; }
 .pg-mass { font: bold 16px var(--verso-code-font-family, monospace); fill: #5c3d0e; }
 .pg-point { font: 15px var(--verso-structure-font-family, sans-serif); fill: #333; }
 .pg-target { fill: none; stroke: #2e6fb8; stroke-width: 2.5; stroke-dasharray: 7 5; }
@@ -62,7 +62,7 @@ header .pg-langs { align-self: center; margin: 0 0.8em 0 0.5em; flex-shrink: 0; 
 .pg-row .pg-svg { flex: 1 1 22rem; max-width: 560px; margin: 0; }
 .pg-target-svg { flex: 0 1 auto; max-width: 100%; height: auto; border: 2px dashed #2e6fb8; border-radius: 10px; background: #f5f8fd; }
 .pg-target-title { font: bold 14px var(--verso-structure-font-family, sans-serif); fill: #2e6fb8; }
-.pg-target-sand { fill: #b9cff0; stroke: #2e6fb8; stroke-width: 1.2; }
+.pg-target-mass { fill: #b9cff0; stroke: #2e6fb8; stroke-width: 1.2; }
 .pg-target-mass { font: bold 12px var(--verso-code-font-family, monospace); fill: #1d3f73; }
 .pg-target-point { font: 12px var(--verso-structure-font-family, sans-serif); fill: #333; }
 .pg-slider { display: block; text-align: center; font-size: 0.85em; color: #555; margin: 0.2rem 0; font-family: var(--verso-structure-font-family, sans-serif); }
@@ -96,8 +96,8 @@ header .pg-langs { align-self: center; margin: 0 0.8em 0 0.5em; flex-shrink: 0; 
 .pg-dot-in { stroke: white; stroke-width: 1.5; }
 .pg-dim { opacity: 0.22; }
 .pg-axis-thin { stroke: #8f7a55; stroke-width: 1.2; }
-.pg-mini-sand { fill: #e2b25c; stroke: #b0782a; stroke-width: 1; }
-.pg-mini.pg-ok .pg-mini-sand { fill: #9fd3a6; stroke: #2e8b37; }
+.pg-mini-mass { fill: #e2b25c; stroke: #b0782a; stroke-width: 1; }
+.pg-mini.pg-ok .pg-mini-mass { fill: #9fd3a6; stroke: #2e8b37; }
 .pg-mini-mass { font: bold 10px var(--verso-code-font-family, monospace); fill: #5c3d0e; }
 .pg-mini-point { font: 10px var(--verso-structure-font-family, sans-serif); fill: #333; }
 .pg-arrow-ok { font: bold 16px sans-serif; fill: #2e8b37; }
