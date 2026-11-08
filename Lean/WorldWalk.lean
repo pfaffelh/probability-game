@@ -84,7 +84,7 @@ theorem map_map {m : Type → Type} [Monad m] [LawfulMonad m] {α β γ : Type} 
 
 /-! The lemmas the player proves; the game unlocks each after its level. -/
 
-/-- World 0, level 6: after a step, the colours of all points have changed. -/
+/-- Walking on the Grid, *Colours*: after a step, the colours of all points have changed. -/
 theorem odd_bind_step (μ : Set Pos) : odd <$> (μ >>= step) = not <$> (odd <$> μ) := by
   rw [map_bind]
   simp only [odd_step]

@@ -30,7 +30,7 @@ erreichen kann. In den Welten danach ist es die Monade der Verteilungen, und ein
 Wahrscheinlichkeit in jede Richtung.
 :::
 
-::::walk (target := "0,1") (moves := "north, east, south, west") (no := "0.1") (proof := ": (pure (0, 0) >>= north : Id Pos) = pure (0, 1)")
+::::walk (target := "0,1") (moves := "north, east, south, west") (proof := ": (pure (0, 0) >>= north : Id Pos) = pure (0, 1)") (new := "rw, rfl, pure_bind, north, east, south, west") (play := "north")
 :::en
 *One step.* Bring the figure to the flag. Below the board is the walk so far, as Lean writes it, and
 what Lean makes of it.
@@ -59,9 +59,16 @@ das Ziel damit *um*: Sie ersetzt die linke Seite der Regel durch ihre rechte. Da
 schließt das Ziel. Tippe eine Zeile nach der anderen ein (oder tippe eine Regel im Inventar an) und
 drücke *Ausführen*.
 :::
+:::solution
+```
+rw [pure_bind]
+rw [north]
+rfl
+```
+:::
 ::::
 
-::::walk (target := "1,1") (moves := "north, east, south, west") (no := "0.2") (proof := ": (pure (0, 0) >>= north >>= east : Id Pos) = pure (1, 1)")
+::::walk (target := "1,1") (moves := "north, east, south, west") (proof := ": (pure (0, 0) >>= north >>= east : Id Pos) = pure (1, 1)") (new := "simp only") (play := "north, east")
 :::en
 *Around the corner.* Two steps.
 :::
@@ -79,9 +86,15 @@ with all of them, everywhere and as often as it can. Then `rfl`.
 Mit `rw` braucht das vier Regeln, eine nach der anderen. `simp only [pure_bind, north, east]` schreibt
 mit allen um, überall und so oft es geht. Dann `rfl`.
 :::
+:::solution
+```
+simp only [pure_bind, north, east]
+rfl
+```
+:::
 ::::
 
-::::walk (target := "1,1") (moves := "north, east, south, west") (walls := "0,1") (no := "0.3") (proof := "(x y : ℤ) : (pure (x, y) >>= east >>= north : Id Pos) = pure (x, y) >>= north >>= east")
+::::walk (target := "1,1") (moves := "north, east, south, west") (walls := "0,1") (proof := "(x y : ℤ) : (pure (x, y) >>= east >>= north : Id Pos) = pure (x, y) >>= north >>= east") (play := "east, north")
 :::en
 *The other way.* A wall blocks the way north. Go east first.
 :::
@@ -100,9 +113,14 @@ Osten, dann Norden endet dort, wo Norden, dann Osten endet, von jedem Anfang $`(
 `simp only` schreibt beide Seiten zu `pure (x + 1, y + 1)` um und schließt das Ziel selbst; es gibt
 nichts auszurechnen.
 :::
+:::solution
+```
+simp only [pure_bind, north, east]
+```
+:::
 ::::
 
-::::walk (monad := "Set") (target := "2,0 0,0 1,1 1,-1") (moves := "step, north, east, south, west") (no := "0.4") (proof := ": (pure (0, 0) >>= east >>= step : Set Pos) = {(2, 0), (0, 0), (1, 1), (1, -1)}")
+::::walk (monad := "Set") (target := "2,0 0,0 1,1 1,-1") (moves := "step, north, east, south, west") (proof := ": (pure (0, 0) >>= east >>= step : Set Pos) = {(2, 0), (0, 0), (1, 1), (1, -1)}") (new := "step") (play := "east, step")
 :::en
 *Everywhere at once.* Now a move may go several ways: `step` goes to all four neighbours. The figure
 is now a set of points, all those it can reach. This is the monad `Set`: `pure a` is the set
@@ -131,9 +149,15 @@ Dieselben Regeln wie in `Id`: `pure_bind` gilt in jeder Monade. Neu ist
 
 *Tipp.* `simp only [pure_bind, east, step]`, dann `rfl`.
 :::
+:::solution
+```
+simp only [pure_bind, east, step]
+rfl
+```
+:::
 ::::
 
-::::walk (monad := "Set") (target := "walk 2") (moves := "step, north, east, south, west") (no := "0.5") (proof := ": (0, 0) ∈ (pure (0, 0) >>= step >>= step : Set Pos)")
+::::walk (monad := "Set") (target := "walk 2") (moves := "step, north, east, south, west") (proof := ": (0, 0) ∈ (pure (0, 0) >>= step >>= step : Set Pos)") (new := "apply, constructor, exists, step_east, step_west, mem_bind") (play := "step, step")
 :::en
 *Back home.* Two steps in any direction. The start is among the points again.
 :::
@@ -168,9 +192,19 @@ Form (`0 + 1 = 1` rechnet Lean selbst aus).
 *Tipp.* `rw [mem_bind]`, `exists (1, 0)`, `constructor`, `rw [pure_bind]`, `apply step_east`,
 `apply step_west`.
 :::
+:::solution
+```
+rw [mem_bind]
+exists (1, 0)
+constructor
+rw [pure_bind]
+apply step_east
+apply step_west
+```
+:::
 ::::
 
-::::walk (monad := "Set") (target := "walk 3") (moves := "step, north, east, south, west") (colours := "yes") (no := "0.6") (proof := "(μ : Set Pos) : odd <$> (μ >>= step) = not <$> (odd <$> μ)") (lemma := "odd_bind_step")
+::::walk (monad := "Set") (target := "walk 3") (moves := "step, north, east, south, west") (colours := "yes") (proof := "(μ : Set Pos) : odd <$> (μ >>= step) = not <$> (odd <$> μ)") (lemma := "odd_bind_step") (new := "map_map, map_bind, map_eq_pure_bind, odd_step") (play := "step, step, step")
 :::en
 *Colours.* The grid is now a chessboard: $`(x, y)` is dark when $`x + y` is odd. Walk three steps,
 and watch the colours of the points after each step.
@@ -205,9 +239,16 @@ mit `not` umgedreht, wie die Münze in *Eine Münze*. Neue Regeln:
 *Tipp.* `rw [map_bind]`, dann `simp only [odd_step]` (in `fun a => …` kann `rw` nicht umschreiben),
 dann `rw [map_map, map_eq_pure_bind]`.
 :::
+:::solution
+```
+rw [map_bind]
+simp only [odd_step]
+rw [map_map, map_eq_pure_bind]
+```
+:::
 ::::
 
-::::walk (monad := "Set") (target := "walk 4") (moves := "step, north, east, south, west") (colours := "yes") (no := "0.7") (proof := "(n : ℕ) : odd <$> walk n = pure n.bodd") (lemma := "odd_walk")
+::::walk (monad := "Set") (target := "walk 4") (moves := "step, north, east, south, west") (colours := "yes") (proof := "(n : ℕ) : odd <$> walk n = pure n.bodd") (lemma := "odd_walk") (new := "induction', map_pure, walk_zero, walk_succ, Nat.bodd_succ") (play := "step, step, step, step")
 :::en
 *Boss: one colour.* Four steps. All points have the same colour, and it is the colour of $`4`: light,
 since $`4` is even.
@@ -241,9 +282,17 @@ nach dem anderen: den Fall $`0`, und den Fall $`n + 1`, mit der Annahme `ih` fü
 *Tipp.* Fall $`0`: `rw [walk_zero, map_pure]`, dann `rfl`. Fall $`n + 1`:
 `rw [walk_succ, odd_bind_step, ih, map_pure, Nat.bodd_succ]`.
 :::
+:::solution
+```
+induction' n with n ih
+rw [walk_zero, map_pure]
+rfl
+rw [walk_succ, odd_bind_step, ih, map_pure, Nat.bodd_succ]
+```
+:::
 ::::
 
-::::walk (monad := "Set") (target := "walk 5") (moves := "step, north, east, south, west") (colours := "yes") (no := "0.8") (proof := ": (0, 0) ∉ walk 5")
+::::walk (monad := "Set") (target := "walk 5") (moves := "step, north, east, south, west") (colours := "yes") (proof := ": (0, 0) ∉ walk 5") (new := "cases, intro, have, mem_map") (play := "step, step, step, step, step")
 :::en
 *Never home.* Five steps. The start is not among the points: after an odd number of steps, the
 figure is never at home.
@@ -276,5 +325,13 @@ random walk is at home with probability $`0`.
 Mit Wahrscheinlichkeiten haben `odd_bind_step` und `odd_walk` dieselben Beweise: Sie benutzen nur die
 Monadengesetze und `odd_step`, das auch für die Irrfahrt gilt. Nach einer ungeraden Zahl von
 Schritten ist die Irrfahrt also mit Wahrscheinlichkeit $`0` zu Hause.
+:::
+:::solution
+```
+intro h
+have h2 := mem_map odd h
+rw [odd_walk] at h2
+cases h2
+```
 :::
 ::::
