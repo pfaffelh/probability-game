@@ -376,7 +376,7 @@
     get canUndo() { return this.steps.length > 0 }
     // what to do next, in a line below the board
     status() {
-      if (this.done) return '🎉'
+      if (this.done) return 'goals accomplished 🎉'
       if (!this.steps.length) return tr('Tap a move.')
       if (this.count && this.steps.length > this.count) return tr('Too many moves: undo, or start over.')
       const d = this.dist, t = this.target
@@ -533,7 +533,7 @@
       const parts = [task, row, slider, this.info, ...(SHOW ? [] : [ln]), el('div', 'pg-moves-head', tr('Moves')), moves, tools, ...(SHOW ? [] : [lean])]
       if (done) {
         const box = el('div', 'pg-solved')
-        box.append(el('div', 'pg-solved-head', '🎉' + (this.leanAgrees() ? ` (${tr('confirmed by Lean, for every p')})` : '')))
+        box.append(el('div', 'pg-solved-head', 'goals accomplished 🎉' + (this.leanAgrees() ? ` (${tr('confirmed by Lean, for every p')})` : '')))
         // what Lean has confirmed: the moves played are the target, for every p (or, without Lean, the
         // statement of the level, proved in Proofs/)
         const statement = this.leanAgrees() ? `${functorForm(this.leanState())} = ${functorForm(this.leanGoal.result)}` : this.leanStatement
@@ -707,7 +707,7 @@
     undo() { this.removeLast() }
     get canUndo() { return this.nodes.length > this.initial().length }
     status() {
-      if (this.checked?.ok) return '🎉'
+      if (this.checked?.ok) return 'goals accomplished 🎉'
       if (!this.nodes.length) return tr('Lay down a building block.')
       if (this.selected.length) return tr('{n} chosen: now a function, or Check.', { n: this.selected.length })
       return tr('Tap lines to choose them, then a function. Check compares a line with the target.')
@@ -864,7 +864,7 @@
       const parts = [task, blocks, area, tools, info, slider]
       if (done) {
         const box = el('div', 'pg-solved')
-        box.append(el('div', 'pg-solved-head', '🎉'))
+        box.append(el('div', 'pg-solved-head', 'goals accomplished 🎉'))
         if (!SHOW) {
           box.append(el('div', 'pg-solved-lean-head', tr('As a do block in Lean:')))
           box.append(el('pre', 'pg-lean', this.lean(this.checked.node)))
@@ -989,7 +989,7 @@
     reset() { if (this.animating) return; this.steps = []; this.recompute(); this.picked = null; this.updateLean(); this.render() }
     get canUndo() { return this.steps.length > 0 }
     status() {
-      if (this.done) return '🎉'
+      if (this.done) return 'goals accomplished 🎉'
       if (!this.steps.length) return tr('Tap a move.')
       if (sameSet(this.pts, this.target)) return tr('Lean is checking …')
       return this.monad === 'Id' ? tr('Not at the flag yet.') : tr('{n} points; the target has {m}.', { n: this.pts.size, m: this.target.size })
@@ -1100,7 +1100,7 @@
       const parts = [task, s, this.info, ...(SHOW ? [] : [ln]), el('div', 'pg-moves-head', tr('Moves')), moves, tools, ...(SHOW ? [] : [el('pre', 'pg-lean', this.leanState())])]
       if (done) {
         const box = el('div', 'pg-solved')
-        box.append(el('div', 'pg-solved-head', '🎉' + (this.leanAgrees() ? ` (${tr('confirmed by Lean')})` : '')))
+        box.append(el('div', 'pg-solved-head', 'goals accomplished 🎉' + (this.leanAgrees() ? ` (${tr('confirmed by Lean')})` : '')))
         if (this.leanAgrees()) {
           box.append(el('div', 'pg-solved-lean-head', tr('In Lean:')))
           box.append(el('pre', 'pg-lean', `${this.leanState()} = ${this.leanNow.result.replace(/\s+/g, ' ')}`))
@@ -1201,7 +1201,7 @@
     reset() { if (this.animating) return; this.steps = []; this.updateLean(); this.render() }
     get canUndo() { return this.steps.length > 0 }
     status() {
-      if (this.done) return '🎉'
+      if (this.done) return 'goals accomplished 🎉'
       if (!this.steps.length) return tr('Tap a move.')
       if (this.count && this.steps.length > this.count) return tr('Too many moves: undo, or start over.')
       if (this.onTarget) return this.count && this.steps.length !== this.count ? tr('On the flag, but in {n} moves, please.', { n: this.count }) : tr('Lean is checking …')
@@ -1275,7 +1275,7 @@
       const parts = [task, s, this.info, ...(SHOW ? [] : [ln]), el('div', 'pg-moves-head', tr('Moves')), moves, tools, ...(SHOW ? [] : [el('pre', 'pg-lean', this.leanState())])]
       if (done) {
         const box = el('div', 'pg-solved')
-        box.append(el('div', 'pg-solved-head', '🎉' + (this.leanAgrees() ? ` (${tr('confirmed by Lean')})` : '')))
+        box.append(el('div', 'pg-solved-head', 'goals accomplished 🎉' + (this.leanAgrees() ? ` (${tr('confirmed by Lean')})` : '')))
         if (this.leanAgrees()) {
           box.append(el('div', 'pg-solved-lean-head', tr('In Lean:')))
           box.append(el('pre', 'pg-lean', `${this.leanState()} = ${this.leanNow.result.replace(/\s+/g, ' ')}`))
@@ -1399,7 +1399,7 @@
   ]
   Object.assign(DE, {
     Proof: 'Beweis', 'Run': 'Ausführen', 'Inventory': 'Inventar', Tactics: 'Taktiken', Theorems: 'Sätze',
-    'Proved!': 'Bewiesen!', 'Goal': 'Ziel', 'goal {i} of {n}': 'Ziel {i} von {n}', 'Lean is thinking …': 'Lean denkt …',
+    'Goal': 'Ziel', 'goal {i} of {n}': 'Ziel {i} von {n}', 'Lean is thinking …': 'Lean denkt …',
     'Your lemma {x} is now in your inventory.': 'Dein Lemma {x} ist jetzt in deinem Inventar.',
     'To the proof ›': 'Zum Beweis ›', 'Insert': 'Einsetzen', 'Remove the last line': 'Letzte Zeile entfernen',
     'The proof needs Lean: open the game with ?backend=… (the address of a bridge).': 'Der Beweis braucht Lean: Öffne das Spiel mit ?backend=… (der Adresse einer Bridge).',
@@ -1458,7 +1458,7 @@
     get canUndo() { return !this.busy && this.lines.length > 0 }
     status() {
       if (!BACKEND) return ''
-      if (this.done) return '✓ ' + tr('Proved!')
+      if (this.done) return 'goals accomplished 🎉'
       if (this.busy) return tr('Lean is thinking …')
       if (this.error) return tr('Lean did not take the line: see why above the input.')
       if (!this.lines.length) return tr('Type a tactic, or tap one in the inventory.')
@@ -1592,7 +1592,7 @@
       const hist = el('ol', 'pg-proof-lines')
       this.lines.forEach(l => hist.append(el('li', '', l)))
       const goals = el('div', 'pg-goals')
-      if (this.done) goals.append(el('div', 'pg-proof-done', '✓ ' + tr('Proved!') + (this.lemma ? ' ' + tr('Your lemma {x} is now in your inventory.', { x: this.lemma }) : '')))
+      if (this.done) goals.append(el('div', 'pg-proof-done', 'goals accomplished 🎉' + (this.lemma ? ' ' + tr('Your lemma {x} is now in your inventory.', { x: this.lemma }) : '')))
       else if (this.goals) this.goals.forEach((g, i) => {
         // the goal now; the others folded, one line each
         const box = el(i ? 'details' : 'div', 'pg-goal' + (i ? ' pg-goal-later' : ''))
