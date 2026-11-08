@@ -17,10 +17,13 @@ lines with a dot as its inputs, and its result runs on as a new line. A line tha
 crosses, without a dot, is not used. A coin may go into several functions; then the results depend
 on each other, and the game takes that into account. At the end of each line is its distribution,
 found by going through all outcomes of the coins it comes from: with two coins, `true`–`true` has
-mass $`p^2`, `true`–`false` $`p(1 - p)`, and so on. The circuit, read from left to right, is a
-`do` block in Lean.
+mass $`p^2`, `true`–`false` $`p(1 - p)`, and so on.
 
 *Check* compares the selected line (or else the newest) with the target, for every $`p`.
+:::
+
+:::proofen
+The circuit, read from left to right, is a `do` block in Lean.
 :::
 
 :::de
@@ -31,10 +34,13 @@ neue Leitung weiter. Eine Leitung, die eine Spalte nur kreuzt, ohne Punkt, wird 
 Münze darf in mehrere Funktionen gehen; dann hängen die Ergebnisse voneinander ab, und das Spiel
 berücksichtigt das. Am Ende jeder Leitung steht ihre Verteilung, die sich ergibt, indem man alle
 Ausgänge der Münzen durchgeht, aus denen sie kommt: Bei zwei Münzen hat `true`–`true` die Masse
-$`p^2`, `true`–`false` $`p(1 - p)`, und so weiter. Der Schaltplan, von links nach rechts gelesen, ist
-ein `do`-Block in Lean.
+$`p^2`, `true`–`false` $`p(1 - p)`, und so weiter.
 
 *Prüfen* vergleicht die ausgewählte Leitung (sonst die neueste) mit dem Ziel, für jedes $`p`.
+:::
+
+:::proofde
+Der Schaltplan, von links nach rechts gelesen, ist ein `do`-Block in Lean.
 :::
 
 ::::build (target := "bool true:p^2 false:1-p^2") (moves := "not, and, or") (coins := "2") (no := "3.1") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && y)) = coin (p * p)")

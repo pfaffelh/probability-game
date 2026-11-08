@@ -12,14 +12,22 @@ htmlSplit := .never
 
 :::en
 Throw $`n` coins and count how often `true` comes up: that is the *binomial distribution*
-$`B(n, p)`, with $`P(k) = \binom{n}{k} p^k (1 - p)^{n - k}`. In Lean it is `binom p n`. In *Building with Coins*
-you built $`B(2, p)` from two coins; from the third level on it is a building block of its own.
+$`B(n, p)`, with $`P(k) = \binom{n}{k} p^k (1 - p)^{n - k}`. In *Building with Coins* you built
+$`B(2, p)` from two coins; from the third level on it is a building block of its own.
+:::
+
+:::proofen
+In Lean it is `binom p n`.
 :::
 
 :::de
 Wirf $`n` Münzen und zähle, wie oft `true` kommt: Das ist die *Binomialverteilung* $`B(n, p)`, mit
-$`P(k) = \binom{n}{k} p^k (1 - p)^{n - k}`. In Lean heißt sie `binom p n`. In *Bauen mit Münzen* hast du
-$`B(2, p)` aus zwei Münzen gebaut; ab dem dritten Level ist sie ein eigener Baustein.
+$`P(k) = \binom{n}{k} p^k (1 - p)^{n - k}`. In *Bauen mit Münzen* hast du $`B(2, p)` aus zwei
+Münzen gebaut; ab dem dritten Level ist sie ein eigener Baustein.
+:::
+
+:::proofde
+In Lean heißt sie `binom p n`.
 :::
 
 ::::build (target := "nat 0:(1-p)^3 1:3p(1-p)^2 2:3p^2(1-p) 3:p^3") (moves := "toNat, add") (coins := "3") (no := "4.1") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; let z ← coin p; pure (x.toNat + y.toNat + z.toNat)) = binom p 3")
@@ -55,14 +63,14 @@ Drei Würfe sind `binom p 3`. Neu: `add_assoc : a + b + c = a + (b + c)`.
 
 :::proofen
 One coin as a number is $`B(1, p)`. The lemma you prove here is called `binom_one`; from the
-next level on it is in your inventory. New: `map_eq_pure_bind : f <$> μ = do let x ← μ; pure (f x)`.
+next level on it is in your inventory. And `map_eq_pure_bind` from *Draw, then Compute*.
 
 *Tip.* `rw [binom_succ, binom_zero]`, `simp only [pure_bind, add_zero]`, `rw [map_eq_pure_bind]`.
 :::
 
 :::proofde
 Eine Münze als Zahl ist $`B(1, p)`. Das Lemma, das du hier beweist, heißt `binom_one`; ab dem
-nächsten Level ist es in deinem Inventar. Neu: `map_eq_pure_bind : f <$> μ = do let x ← μ; pure (f x)`.
+nächsten Level ist es in deinem Inventar. Und `map_eq_pure_bind` aus *Erst ziehen, dann rechnen*.
 
 *Tipp.* `rw [binom_succ, binom_zero]`, `simp only [pure_bind, add_zero]`, `rw [map_eq_pure_bind]`.
 :::
@@ -128,21 +136,17 @@ Mindestens $`1` aus $`B(2, p)` heißt: mindestens eine von zwei Münzen.
 ::::build (target := "nat 0:(1-p)^4 1:4p(1-p)^3 2:6p^2(1-p)^2 3:4p^3(1-p) 4:p^4") (moves := "add, max") (sources := "binom2:2") (no := "4.5") (proof := "(p : I) (n m : ℕ) : (do let X ← binom p n; let Y ← binom p m; pure (X + Y)) = binom p (n + m)") (lemma := "binom_add")
 :::en
 *Boss: $`B(2, p) * B(2, p) = B(4, p)`.* Two independent binomials, no coins. The sum of independent
-random numbers has the *convolution* $`*` of their distributions as its distribution. In Lean,
-`(do let X ← binom p 2; let Y ← binom p 2; return X + Y) = binom p 4`, for every $`p`: a case of
-the lemma `binom_add`.
+random numbers has the *convolution* $`*` of their distributions as its distribution.
 :::
 
 :::de
 *Endgegner: $`B(2, p) * B(2, p) = B(4, p)`.* Zwei unabhängige Binomialverteilungen, keine Münzen. Die
-Summe unabhängiger Zufallszahlen hat die *Faltung* $`*` ihrer Verteilungen als Verteilung. In Lean:
-`(do let X ← binom p 2; let Y ← binom p 2; return X + Y) = binom p 4`, für jedes $`p`, ein Fall des
-Lemmas `binom_add`.
+Summe unabhängiger Zufallszahlen hat die *Faltung* $`*` ihrer Verteilungen als Verteilung.
 :::
 
 :::proofen
 *Boss.* On the board it was $`B(2, p) * B(2, p) = B(4, p)`; here it is for all $`n` and $`m`: the
-sum of independent binomials is binomial. New: `bind_pure : (do let x ← μ; pure x) = μ`.
+sum of independent binomials is binomial. Here `bind_pure` from *Draw, then Compute* is needed again.
 
 *Tip.* Induction on `m`. Case $`0`: `rw [binom_zero]`, `simp only [pure_bind, add_zero, bind_pure]`.
 Case $`m + 1`: write `binom p (m + 1)` with `← binom_succ' p m`, then `n + (m + 1)` as
@@ -152,8 +156,8 @@ with `simp only [bind_assoc, pure_bind, add_assoc]`.
 
 :::proofde
 *Endgegner.* Auf dem Spielfeld war es $`B(2, p) * B(2, p) = B(4, p)`; hier gilt es für alle $`n`
-und $`m`: Die Summe unabhängiger Binomialverteilungen ist binomial. Neu:
-`bind_pure : (do let x ← μ; pure x) = μ`.
+und $`m`: Die Summe unabhängiger Binomialverteilungen ist binomial. Hier wird wieder `bind_pure` aus
+*Erst ziehen, dann rechnen* gebraucht.
 
 *Tipp.* Induktion nach `m`. Fall $`0`: `rw [binom_zero]`, `simp only [pure_bind, add_zero, bind_pure]`.
 Fall $`m + 1`: schreibe `binom p (m + 1)` mit `← binom_succ' p m` um, dann `n + (m + 1)` als
