@@ -36,6 +36,8 @@
   // when the head is there): `show` plays the boards alone, without Lean and without proofs; the
   // other editions have both.
   let SHOW = false
+  // a screen large enough for the stage's two columns (as in game.css)
+  const WIDE = window.matchMedia('(min-width: 761px) and (min-height: 501px)')
   // whether a part of a page (a level, …) belongs to this edition: not inside an `:::::only` of another
   const ours = e => { const o = e.closest('.pg-only'); return !o || o.dataset.edition === (SHOW ? 'show' : 'main') }
   const tr = (s, vars = {}) => (LANG === 'de' ? DE[s] ?? s : s).replace(/\{(\w+)\}/g, (_, k) => vars[k])
@@ -586,7 +588,9 @@
     'No more of these in this level.': 'Davon gibt es in diesem Level keine weiteren.', 'There is nothing to check yet.': 'Es gibt noch nichts zu prüfen.',
     'Checked: {x}. It lives on {a}, the target on {b}.': 'Geprüft: {x}. Es lebt auf {a}, das Ziel auf {b}.',
     'Checked: {x}. At {k} it has P = {m}, the target {t}.': 'Geprüft: {x}. Bei {k} hat es P = {m}, das Ziel {t}.',
-    'Checked: {x}, the selected line (or else the newest).': 'Geprüft wird {x}: die ausgewählte Leitung (sonst die neueste).',
+    'Check compares {x} with the target.': 'Prüfen vergleicht {x} mit dem Ziel.',
+    'Check compares one chosen line with the target.': 'Prüfen vergleicht eine ausgewählte Leitung mit dem Ziel.',
+    'Choose exactly one line to check it.': 'Wähle genau eine Leitung aus, um sie zu prüfen.',
     'As a do block in Lean:': 'Als do-Block in Lean:',
     'Task: build the target:': 'Aufgabe: Bau das Ziel:',
   })
@@ -636,6 +640,7 @@
         if (e.key === 'Escape') { this.selected = []; this.message = ''; this.render() }
         if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); this.remove() }
       })
+      WIDE.addEventListener?.('change', () => this.render())
       this.render()
     }
 
@@ -725,13 +730,15 @@
     status() {
       if (this.checked?.ok) return 'goals accomplished 🎉'
       if (!this.nodes.length) return tr('Lay down a building block.')
-      if (this.selected.length) return tr('{n} chosen: now a function, Check, or Delete.', { n: this.selected.length })
-      return tr('Tap lines to choose them, then a function. Check compares a line with the target.')
+      if (this.selected.length === 1) return tr('1 chosen: now a function, Check, or Delete.')
+      if (this.selected.length) return tr('{n} chosen: now a function, or Delete.', { n: this.selected.length })
+      return tr('Tap lines to choose them, then a function. Check compares one chosen line with the target.')
     }
 
     check() {
-      if (!this.nodes.length) { this.message = tr('There is nothing to check yet.'); this.render(); return }
-      const i = this.selected.length === 1 ? this.selected[0] : this.nodes.length - 1
+      // the one line chosen (Check can only be pressed then)
+      if (this.selected.length !== 1) { this.message = tr('Choose exactly one line to check it.'); this.render(); return }
+      const i = this.selected[0]
       const d = this.dist(i), t = this.target, x = this.name(i)
       const ok = sameDist(d, t)
       this.checked = { node: i, ok }
@@ -770,7 +777,12 @@
     // result runs on as a new line. At the end of each line, its distribution. Lines a column only
     // crosses carry no dot (and the column passes over them).
     circuit() {
-      const RH = 64, TOP = 14, LAB = 40, GW = 50, n = this.nodes.length
+      // a result says below its name how it was made (= ¬M1), in the free room left of its box: the
+      // column of names is only as wide as the longest of these needs beyond that room
+      const forms = this.nodes.map((_, i) => this.formula(i))
+      const RH = 64, TOP = 14, GW = 50, n = this.nodes.length
+      const fcols = this.nodes.map((m, i) => (m.src ? -1 : i)).filter(i => i >= 0)
+      const LAB = Math.max(40, ...forms.map((f, i) => (f ? Math.ceil(8 + (f.length + 2) * 6.2 + 16 - fcols.indexOf(i) * GW - GW / 2) : 0)))
       const funs = this.nodes.map((m, i) => (m.src ? -1 : i)).filter(i => i >= 0)
       const col = i => funs.indexOf(i)
       // where a line starts: a result at its column, a coin after the columns made before it
@@ -789,6 +801,7 @@
         const row = svg('g', { class: 'pg-card' + (sel >= 0 ? ' pg-card-sel' : '') + (ok ? ' pg-card-ok' : '') + (bad ? ' pg-card-bad' : '') + dim(i), 'data-node': i })
         row.append(svg('rect', { class: 'pg-row-band', x: 0, y: y(i) - RH / 2 + 2, width: 10, height: RH - 4, rx: 8 }))
         row.append(svg('text', { x: 8, y: y(i) + 5, class: 'pg-row-name', fill: COLORS[i % COLORS.length] }, this.name(i)))
+        if (forms[i]) row.append(svg('text', { x: 8, y: y(i) + 21, class: 'pg-row-formula' }, '= ' + forms[i]))
         if (sel >= 0) {
           row.append(svg('circle', { cx: LAB - 6, cy: y(i) - 14, r: 8, class: 'pg-row-badge' }))
           row.append(svg('text', { x: LAB - 6, y: y(i) - 10.5, 'text-anchor': 'middle', class: 'pg-row-badge-text' }, String(sel + 1)))
@@ -857,8 +870,11 @@
       site.append(this.nodes.length ? this.circuit() : el('div', 'pg-site-empty', tr('Lay down a coin with “p-coin”. Tap lines to choose them (in this order), then a function.')))
       this.targetBox = el('div', 'pg-target-box' + (done ? ' pg-card-ok' : ''))
       this.targetBox.append(this.targetPicture())
+      // on the stage of a large screen the target stands in the column of the functions, so that the
+      // circuit has the whole width; else above it (phones) or beside it
       const area = el('div', 'pg-build-area')
-      area.append(site, this.targetBox)
+      const beside = STAGE && WIDE.matches
+      if (beside) { this.targetBox.classList.add('pg-palette-target'); area.append(site) } else area.append(site, this.targetBox)
 
       const tools = el('div', 'pg-tools')
       const check = el('button', 'pg-check', tr('Check')), undo = el('button', 'pg-tool', '↶ ' + tr('Remove the last')), reset = el('button', 'pg-tool', '⟲ ' + tr('Start over'))
@@ -866,22 +882,24 @@
       check.type = undo.type = reset.type = del.type = 'button'
       undo.disabled = reset.disabled = !this.canUndo
       del.disabled = !this.selected.length
+      check.disabled = this.selected.length !== 1
       del.title = tr('Deletes the chosen lines, and what is built on them.')
       del.addEventListener('click', () => this.remove())
       check.addEventListener('click', () => this.check())
       undo.addEventListener('click', () => this.removeLast()); reset.addEventListener('click', () => this.reset())
       tools.append(check, del, undo, reset)
 
-      const now = this.selected.length === 1 ? this.selected[0] : this.nodes.length - 1
+      const now = this.selected.length === 1 ? this.selected[0] : null
       const info = el('div', 'pg-info' + (this.message ? ' pg-warn' : ''),
-        this.message || (this.nodes.length ? tr('Checked: {x}, the selected line (or else the newest).', { x: this.name(now) + (this.nodes[now].src ? '' : ` = ${this.formula(now)}`) }) : ''))
+        this.message || (now !== null ? tr('Check compares {x} with the target.', { x: this.name(now) + (this.nodes[now].src ? '' : ` = ${this.formula(now)}`) })
+          : tr('Check compares one chosen line with the target.')))
 
       const slider = el('label', 'pg-slider')
       const input = el('input'); input.type = 'range'; input.min = '0.05'; input.max = '0.95'; input.step = '0.05'; input.value = String(P)
       input.addEventListener('input', () => { P = Number(input.value); try { localStorage.setItem('pg:p', input.value) } catch {}; this.render() })
       slider.append(`${tr('the picture for p =')} ${P.toFixed(2)} `, input, el('span', 'pg-slider-note', ' ' + tr('(only an example; the masses hold for every p)')))
 
-      const parts = [task, blocks, area, tools, info, slider]
+      const parts = [...(beside ? [this.targetBox] : []), task, blocks, area, tools, info, slider]
       if (done) {
         const box = el('div', 'pg-solved')
         box.append(el('div', 'pg-solved-head', 'goals accomplished 🎉'))
@@ -1711,10 +1729,11 @@
     'Tap a move.': 'Tippe einen Zug an.', 'The distribution lives on {a}, the target on {b}.': 'Die Verteilung lebt auf {a}, das Ziel auf {b}.',
     'The right shape, but in {n} moves, please.': 'Die richtige Form, aber bitte in {n} Zügen.', 'Lean is checking …': 'Lean prüft …',
     'At {k}: P = {m}, the target has {t}.': 'Bei {k}: P = {m}, das Ziel hat {t}.', 'Lean disagrees.': 'Lean widerspricht.',
-    'Lay down a building block.': 'Leg einen Baustein hin.', '{n} chosen: now a function, Check, or Delete.': '{n} ausgewählt: jetzt eine Funktion, Prüfen oder Löschen.',
+    'Lay down a building block.': 'Leg einen Baustein hin.', '1 chosen: now a function, Check, or Delete.': '1 ausgewählt: jetzt eine Funktion, Prüfen oder Löschen.',
+    '{n} chosen: now a function, or Delete.': '{n} ausgewählt: jetzt eine Funktion, oder Löschen.',
     'The coins of the level stay; nothing is built on this one yet.': 'Die Münzen des Levels bleiben; auf dieser ist noch nichts gebaut.', Delete: 'Löschen',
     'Deletes the chosen lines, and what is built on them.': 'Löscht die ausgewählten Leitungen und was auf ihnen gebaut ist.',
-    'Tap lines to choose them, then a function. Check compares a line with the target.': 'Tippe Leitungen an, dann eine Funktion. Prüfen vergleicht eine Leitung mit dem Ziel.',
+    'Tap lines to choose them, then a function. Check compares one chosen line with the target.': 'Tippe Leitungen an, dann eine Funktion. Prüfen vergleicht eine ausgewählte Leitung mit dem Ziel.',
     'Not at the flag yet.': 'Noch nicht bei der Fahne.', '{n} points; the target has {m}.': '{n} Punkte; das Ziel hat {m}.',
     'On the flag, but in {n} moves, please.': 'Auf der Fahne, aber bitte in {n} Zügen.', 'not on the flag yet.': 'noch nicht auf der Fahne.', 'Not on the flag yet.': 'Noch nicht auf der Fahne.',
     'Lean did not take the line: see why above the input.': 'Lean hat die Zeile nicht genommen: warum, steht über der Eingabe.',
@@ -1830,7 +1849,7 @@
     for (const p of parts) {
       const c = p.classList
       if (c?.contains('pg-lean-state') || (p.tagName === 'PRE' && c?.contains('pg-lean'))) lean.push(p)
-      else if (c?.contains('pg-moves-head') || c?.contains('pg-moves') || c?.contains('pg-blocks')) palette.push(p)
+      else if (c?.contains('pg-moves-head') || c?.contains('pg-moves') || c?.contains('pg-blocks') || c?.contains('pg-palette-target')) palette.push(p)
       else if (c?.contains('pg-tools')) { p.querySelectorAll('.pg-tool').forEach(b => b.remove()); if (p.children.length) palette.push(p) }
       else main.push(p)
     }
