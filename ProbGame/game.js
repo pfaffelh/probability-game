@@ -283,7 +283,9 @@
   // ---------------------------------------------------------------- moves
 
   // A move: a map from one space to another, with its name and its Lean form.
-  function parseMove(spec) {
+  // (each move keeps its spec, `not` or `payoff 5 -2`, as `spec`)
+  function parseMove(spec) { return { ...parseMove0(spec), spec: spec.trim() } }
+  function parseMove0(spec) {
     const w = spec.trim().split(/\s+/)
     switch (w[0]) {
       case 'id': return { from: 'bool', to: 'bool', f: k => k, lean: '(fun x => x)', label: () => tr('do nothing') }
@@ -483,7 +485,7 @@
       const moves = el('div', 'pg-moves')
       for (const m of this.moves) {
         const b = el('button', 'pg-move' + (m.from === d.space ? '' : ' pg-move-off'), m.label())
-        b.type = 'button'
+        b.type = 'button'; b.dataset.move = m.spec
         b.title = `map ${m.lean}`
         b.addEventListener('click', () => this.play(m))
         moves.append(b)
@@ -860,7 +862,7 @@
       for (const f of this.funs) {
         const F = FUNS[f], fits = this.selected.length >= F.arity && (F.more || this.selected.length === F.arity) && this.selected.every(j => this.space(j) === F.from)
         const b = el('button', 'pg-move' + (fits ? '' : ' pg-move-off'), funLabel(f))
-        b.type = 'button'
+        b.type = 'button'; b.dataset.move = f
         b.addEventListener('click', () => this.apply(f))
         blocks.append(b)
       }
@@ -1106,7 +1108,7 @@
       const moves = el('div', 'pg-moves')
       for (const m of this.moves) {
         const b = el('button', 'pg-move' + (this.monad === 'Id' && m === 'step' ? ' pg-move-off' : ''), tr(LABEL0[m]))
-        b.type = 'button'; b.title = m
+        b.type = 'button'; b.title = m; b.dataset.move = m
         b.addEventListener('click', () => this.play(m))
         moves.append(b)
       }
@@ -1286,7 +1288,7 @@
 
       const moves = el('div', 'pg-moves')
       for (const m of this.moves) {
-        const b = el('button', 'pg-move', tr(MOVESB[m].label)); b.type = 'button'; b.title = m
+        const b = el('button', 'pg-move', tr(MOVESB[m].label)); b.type = 'button'; b.title = m; b.dataset.move = m
         b.addEventListener('click', () => this.play(m))
         moves.append(b)
       }
@@ -1337,102 +1339,102 @@
   // else is refused before Lean sees it.
 
   const INVENTORY = [
-    { name: 'rw', kind: 'tactic', at: '1.1', w0: '0.1', wb: 'b.2', insert: 'rw []', sig: 'rw [h]   rw [← h]   rw [h₁, h₂]',
+    { name: 'rw', kind: 'tactic', insert: 'rw []', sig: 'rw [h]   rw [← h]   rw [h₁, h₂]',
       en: 'Rewrites the goal with the equation h: its left side becomes its right side (with ←, the other way round). Closes the goal when it then reads a = a. It does not rewrite where names bound in a do block occur; there, use simp only.',
       de: 'Schreibt das Ziel mit der Gleichung h um: Ihre linke Seite wird zu ihrer rechten (mit ← umgekehrt). Schließt das Ziel, wenn es danach a = a lautet. Es schreibt nicht dort um, wo in einem do-Block gebundene Namen vorkommen; dort hilft simp only.' },
-    { name: 'apply', kind: 'tactic', at: '1.2', w0: '0.5', insert: 'apply ', sig: 'apply h',
+    { name: 'apply', kind: 'tactic', insert: 'apply ', sig: 'apply h',
       en: 'For a goal that is the conclusion of the rule h: leaves what h needs (its hypotheses) as the new goals.',
       de: 'Für ein Ziel, das die Folgerung der Regel h ist: lässt das, was h braucht (ihre Annahmen), als neue Ziele.' },
-    { name: 'rfl', kind: 'tactic', at: '1.3', w0: '0.1', wb: 'b.1', insert: 'rfl', sig: 'rfl',
+    { name: 'rfl', kind: 'tactic', insert: 'rfl', sig: 'rfl',
       en: 'Closes a goal a = b whose sides are the same after computing (!true is false, 1 + 1 is 2).',
       de: 'Schließt ein Ziel a = b, dessen Seiten nach Ausrechnen gleich sind (!true ist false, 1 + 1 ist 2).' },
-    { name: 'congr', kind: 'tactic', at: '1.4', insert: 'congr 1', sig: 'congr 1',
+    { name: 'congr', kind: 'tactic', insert: 'congr 1', sig: 'congr 1',
       en: 'For a goal f a = f b, or μ >>= g = μ >>= h (a do block): reduces it to the parts that differ (a = b, g = h).',
       de: 'Für ein Ziel f a = f b, oder μ >>= g = μ >>= h (ein do-Block): führt es auf die Teile zurück, die sich unterscheiden (a = b, g = h).' },
-    { name: 'funext', kind: 'tactic', at: '1.4', wb: 'b.5', insert: 'funext x', sig: 'funext x',
+    { name: 'funext', kind: 'tactic', insert: 'funext x', sig: 'funext x',
       en: 'For a goal g = h between functions: it suffices that g x = h x for every x.',
       de: 'Für ein Ziel g = h zwischen Funktionen: Es genügt, dass g x = h x für jedes x.' },
-    { name: 'cases', kind: 'tactic', at: '1.2', w0: '0.8', wb: 'b.4', insert: 'cases x', sig: 'cases x   cases h : f x',
+    { name: 'cases', kind: 'tactic', insert: 'cases x', sig: 'cases x   cases h : f x',
       enb: 'Splits into the cases of x: for x : Bool, the goals for false and for true, one after the other. cases h : f x splits into the cases of the value of f x and keeps the case as the hypothesis h.',
       deb: 'Teilt in die Fälle von x: für x : Bool die Ziele für false und für true, eines nach dem anderen. cases h : f x teilt in die Fälle des Werts von f x und behält den Fall als Annahme h.',
       en0: 'Splits a hypothesis h into its cases. For h : false = true there is no case: the goal is done.',
       de0: 'Teilt eine Annahme h in ihre Fälle. Für h : false = true gibt es keinen Fall: Das Ziel ist erledigt.',
       en: 'Splits into the cases of x: for x : Bool, the goals for false and for true, one after the other.',
       de: 'Teilt in die Fälle von x: für x : Bool die Ziele für false und für true, eines nach dem anderen.' },
-    { name: 'simp only', kind: 'tactic', at: '2.4', w0: '0.2', insert: 'simp only []', sig: 'simp only [h₁, h₂, …]',
+    { name: 'simp only', kind: 'tactic', insert: 'simp only []', sig: 'simp only [h₁, h₂, …]',
       en: 'Rewrites with the given rules everywhere, also inside do blocks, as often as it can; closes the goal when both sides become the same.',
       de: 'Schreibt mit den angegebenen Regeln überall um, auch in do-Blöcken, so oft es geht; schließt das Ziel, wenn beide Seiten gleich werden.' },
-    { name: '<;>', kind: 'tactic', at: '3.6', wb: 'b.4', insert: ' <;> ', sig: 't₁ <;> t₂',
+    { name: '<;>', kind: 'tactic', insert: ' <;> ', sig: 't₁ <;> t₂',
       en: 'Runs t₂ on every goal that t₁ leaves: cases x <;> cases y <;> rfl.',
       de: 'Führt t₂ auf jedem Ziel aus, das t₁ übrig lässt: cases x <;> cases y <;> rfl.' },
-    { name: "induction'", kind: 'tactic', at: '3.9', w0: '0.7', insert: "induction' n with n ih", sig: "induction' n with n ih",
+    { name: "induction'", kind: 'tactic', insert: "induction' n with n ih", sig: "induction' n with n ih",
       en: 'Induction on the natural number n: first the goal for 0, then the goal for n + 1, with the hypothesis ih for n.',
       de: 'Induktion nach der natürlichen Zahl n: zuerst das Ziel für 0, dann das Ziel für n + 1, mit der Annahme ih für n.' },
-    { name: 'bool_ext', kind: 'rule', at: '1.2', sig: 'bool_ext μ ν (h : μ true = ν true) : μ = ν', en: 'Two distributions on Bool are the same when they have the same mass at true.', de: 'Zwei Verteilungen auf Bool sind gleich, wenn sie bei true dieselbe Masse haben.' },
-    { name: 'coin_true', kind: 'rule', at: '1.1', sig: '(coin p) true = ↑p', en: 'The mass of the coin at true.', de: 'Die Masse der Münze bei true.' },
-    { name: 'coin_false', kind: 'rule', at: '1.1', sig: '(coin p) false = ↑(σ p)', en: 'The mass of the coin at false.', de: 'Die Masse der Münze bei false.' },
-    { name: 'map_true', kind: 'rule', at: '1.1', sig: '(f <$> μ) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)', en: 'Where the mass of a move goes: to true comes the mass of the points that f sends to true.', de: 'Wohin die Masse eines Zuges geht: Nach true kommt die Masse der Punkte, die f nach true schickt.' },
-    { name: 'Bool.not_true', kind: 'rule', at: '1.1', wb: 'b.2', sig: '(!true) = false', en: 'Not true is false.', de: 'Nicht true ist false.' },
-    { name: 'Bool.not_false', kind: 'rule', at: '1.1', wb: 'b.2', sig: '(!false) = true', en: 'Not false is true.', de: 'Nicht false ist true.' },
-    { name: 'Bool.cond_true', kind: 'rule', at: '1.1', sig: '(bif true then a else b) = a', en: 'bif with true: the first.', de: 'bif mit true: das Erste.' },
-    { name: 'Bool.cond_false', kind: 'rule', at: '1.1', sig: '(bif false then a else b) = b', en: 'bif with false: the second.', de: 'bif mit false: das Zweite.' },
-    { name: 'zero_add', kind: 'rule', at: '1.1', sig: '0 + n = n', en: 'Adding to zero.', de: 'Zu null addieren.' },
-    { name: 'coin_not_true', kind: 'lemma', at: '1.1', sig: '(not <$> coin p) true = ↑(σ p)', en: 'Proved by you in One Coin, level 1.', de: 'Von dir bewiesen in „Eine Münze“, Level 1.' },
-    { name: 'coin_not', kind: 'lemma', at: '1.6', sig: 'not <$> coin p = coin (σ p)', en: 'Proved by you: the boss of One Coin. Flipping a coin swaps the masses.', de: 'Von dir bewiesen: der Endgegner von „Eine Münze“. Umdrehen tauscht die Massen.' },
-    { name: 'coin_total', kind: 'rule', at: '1.2', sig: '(coin p) true + (coin p) false = 1', en: 'The total mass of a coin is one.', de: 'Die Gesamtmasse einer Münze ist eins.' },
-    { name: 'pure_true', kind: 'rule', at: '1.2', sig: '(pure b) true = bif b then 1 else 0', en: 'The mass of a point mass at true.', de: 'Die Masse einer Punktmasse bei true.' },
-    { name: 'coin_const', kind: 'lemma', at: '1.2', sig: '(fun _ => b) <$> coin p = pure b', en: 'Proved by you in One Coin, level 2: a constant move sends all the mass to one point.', de: 'Von dir bewiesen in „Eine Münze“, Level 2: Ein konstanter Zug schickt die ganze Masse an einen Punkt.' },
-    { name: 'map_pure', kind: 'rule', at: '1.3', w0: '0.7', sig: 'f <$> pure a = pure (f a)', en0: 'A move on a sure point moves the point.', de0: 'Ein Zug auf einem sicheren Punkt verschiebt den Punkt.', en: 'A move on a point mass moves the point.', de: 'Ein Zug auf einer Punktmasse verschiebt den Punkt.' },
-    { name: 'map_map', kind: 'rule', w0: '0.6', sig: 'g <$> (f <$> μ) = (fun x => g (f x)) <$> μ', sig0: 'g <$> (f <$> s) = (fun x => g (f x)) <$> s', en: 'Two moves are one move.', de: 'Zwei Züge sind ein Zug.' },
-    { name: 'coin_and', kind: 'rule', at: '3.1', sig: '(do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)', en: 'Independence: both true with probability p · q.', de: 'Unabhängigkeit: beide true mit Wahrscheinlichkeit p · q.' },
-    { name: 'bind_map_left', kind: 'rule', at: '2.5', sig: '(do let x ← f <$> μ; g x) = (do let x ← μ; g (f x))', en: 'A move on a throw goes into the result.', de: 'Ein Zug auf einem Wurf wandert ins Ergebnis.' },
-    { name: 'map_bind', kind: 'rule', at: '3.3', w0: '0.6', sig0: 'f <$> (s >>= g) = s >>= fun a => f <$> g a', en0: 'A move after a walk goes into it.', de0: 'Ein Zug nach einem Weg wandert in ihn hinein.', sig: 'f <$> (do let x ← μ; g x) = (do let x ← μ; f <$> g x)', en: 'A move after a do block goes into it.', de: 'Ein Zug nach einem do-Block wandert in ihn hinein.' },
-    { name: 'or_eq', kind: 'rule', at: '3.3', sig: '(x || y) = !(!x && !y)', en: 'De Morgan.', de: 'De Morgan.' },
-    { name: 'Bool.and_not_self', kind: 'rule', at: '3.4', sig: '(x && !x) = false', en: 'Never both x and not x.', de: 'Nie zugleich x und nicht x.' },
-    { name: 'coin_unused', kind: 'rule', at: '3.4', sig: '(do let _ ← coin p; ν) = ν', en: 'A coin whose result is not used changes nothing.', de: 'Eine Münze, deren Ergebnis nicht benutzt wird, ändert nichts.' },
-    { name: 'Bool.or_not_self', kind: 'rule', at: '3.5', sig: '(x || !x) = true', en: 'Always x or not x.', de: 'Immer x oder nicht x.' },
-    { name: 'binom_zero', kind: 'rule', at: '3.7', sig: 'binom p 0 = pure 0', en: 'The definition of binom: no throw.', de: 'Die Definition von binom: kein Wurf.' },
-    { name: 'binom_succ', kind: 'rule', at: '3.7', sig: 'binom p (n + 1) = do let X ← coin p; let Y ← binom p n; pure (X.toNat + Y)', en: 'The definition of binom: one throw more.', de: 'Die Definition von binom: ein Wurf mehr.' },
-    { name: 'bind_assoc', kind: 'rule', at: '2.4', sig: '(do let y ← (do let x ← μ; f x); g y) = (do let x ← μ; let y ← f x; g y)', en: 'A do block in a do block is one do block.', de: 'Ein do-Block in einem do-Block ist ein do-Block.' },
-    { name: 'pure_bind', kind: 'rule', at: '2.2', w0: '0.1', sig: '(do let x ← pure a; f x) = f a', sig0: 'pure a >>= f = f a',
+    { name: 'bool_ext', kind: 'rule', sig: 'bool_ext μ ν (h : μ true = ν true) : μ = ν', en: 'Two distributions on Bool are the same when they have the same mass at true.', de: 'Zwei Verteilungen auf Bool sind gleich, wenn sie bei true dieselbe Masse haben.' },
+    { name: 'coin_true', kind: 'rule', sig: '(coin p) true = ↑p', en: 'The mass of the coin at true.', de: 'Die Masse der Münze bei true.' },
+    { name: 'coin_false', kind: 'rule', sig: '(coin p) false = ↑(σ p)', en: 'The mass of the coin at false.', de: 'Die Masse der Münze bei false.' },
+    { name: 'map_true', kind: 'rule', sig: '(f <$> μ) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)', en: 'Where the mass of a move goes: to true comes the mass of the points that f sends to true.', de: 'Wohin die Masse eines Zuges geht: Nach true kommt die Masse der Punkte, die f nach true schickt.' },
+    { name: 'Bool.not_true', kind: 'rule', sig: '(!true) = false', en: 'Not true is false.', de: 'Nicht true ist false.' },
+    { name: 'Bool.not_false', kind: 'rule', sig: '(!false) = true', en: 'Not false is true.', de: 'Nicht false ist true.' },
+    { name: 'Bool.cond_true', kind: 'rule', sig: '(bif true then a else b) = a', en: 'bif with true: the first.', de: 'bif mit true: das Erste.' },
+    { name: 'Bool.cond_false', kind: 'rule', sig: '(bif false then a else b) = b', en: 'bif with false: the second.', de: 'bif mit false: das Zweite.' },
+    { name: 'zero_add', kind: 'rule', sig: '0 + n = n', en: 'Adding to zero.', de: 'Zu null addieren.' },
+    { name: 'coin_not_true', kind: 'lemma', sig: '(not <$> coin p) true = ↑(σ p)', en: 'Proved by you in One Coin.', de: 'Von dir bewiesen in „Eine Münze“.' },
+    { name: 'coin_not', kind: 'lemma', sig: 'not <$> coin p = coin (σ p)', en: 'Proved by you: the boss of One Coin. Flipping a coin swaps the masses.', de: 'Von dir bewiesen: der Endgegner von „Eine Münze“. Umdrehen tauscht die Massen.' },
+    { name: 'coin_total', kind: 'rule', sig: '(coin p) true + (coin p) false = 1', en: 'The total mass of a coin is one.', de: 'Die Gesamtmasse einer Münze ist eins.' },
+    { name: 'pure_true', kind: 'rule', sig: '(pure b) true = bif b then 1 else 0', en: 'The mass of a point mass at true.', de: 'Die Masse einer Punktmasse bei true.' },
+    { name: 'coin_const', kind: 'lemma', sig: '(fun _ => b) <$> coin p = pure b', en: 'Proved by you in One Coin: a constant move sends all the mass to one point.', de: 'Von dir bewiesen in „Eine Münze“: Ein konstanter Zug schickt die ganze Masse an einen Punkt.' },
+    { name: 'map_pure', kind: 'rule', sig: 'f <$> pure a = pure (f a)', en0: 'A move on a sure point moves the point.', de0: 'Ein Zug auf einem sicheren Punkt verschiebt den Punkt.', en: 'A move on a point mass moves the point.', de: 'Ein Zug auf einer Punktmasse verschiebt den Punkt.' },
+    { name: 'map_map', kind: 'rule', sig: 'g <$> (f <$> μ) = (fun x => g (f x)) <$> μ', sig0: 'g <$> (f <$> s) = (fun x => g (f x)) <$> s', en: 'Two moves are one move.', de: 'Zwei Züge sind ein Zug.' },
+    { name: 'coin_and', kind: 'rule', sig: '(do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)', en: 'Independence: both true with probability p · q.', de: 'Unabhängigkeit: beide true mit Wahrscheinlichkeit p · q.' },
+    { name: 'bind_map_left', kind: 'rule', sig: '(do let x ← f <$> μ; g x) = (do let x ← μ; g (f x))', en: 'A move on a throw goes into the result.', de: 'Ein Zug auf einem Wurf wandert ins Ergebnis.' },
+    { name: 'map_bind', kind: 'rule', sig0: 'f <$> (s >>= g) = s >>= fun a => f <$> g a', en0: 'A move after a walk goes into it.', de0: 'Ein Zug nach einem Weg wandert in ihn hinein.', sig: 'f <$> (do let x ← μ; g x) = (do let x ← μ; f <$> g x)', en: 'A move after a do block goes into it.', de: 'Ein Zug nach einem do-Block wandert in ihn hinein.' },
+    { name: 'or_eq', kind: 'rule', sig: '(x || y) = !(!x && !y)', en: 'De Morgan.', de: 'De Morgan.' },
+    { name: 'Bool.and_not_self', kind: 'rule', sig: '(x && !x) = false', en: 'Never both x and not x.', de: 'Nie zugleich x und nicht x.' },
+    { name: 'coin_unused', kind: 'rule', sig: '(do let _ ← coin p; ν) = ν', en: 'A coin whose result is not used changes nothing.', de: 'Eine Münze, deren Ergebnis nicht benutzt wird, ändert nichts.' },
+    { name: 'Bool.or_not_self', kind: 'rule', sig: '(x || !x) = true', en: 'Always x or not x.', de: 'Immer x oder nicht x.' },
+    { name: 'binom_zero', kind: 'rule', sig: 'binom p 0 = pure 0', en: 'The definition of binom: no throw.', de: 'Die Definition von binom: kein Wurf.' },
+    { name: 'binom_succ', kind: 'rule', sig: 'binom p (n + 1) = do let X ← coin p; let Y ← binom p n; pure (X.toNat + Y)', en: 'The definition of binom: one throw more.', de: 'Die Definition von binom: ein Wurf mehr.' },
+    { name: 'bind_assoc', kind: 'rule', sig: '(do let y ← (do let x ← μ; f x); g y) = (do let x ← μ; let y ← f x; g y)', en: 'A do block in a do block is one do block.', de: 'Ein do-Block in einem do-Block ist ein do-Block.' },
+    { name: 'pure_bind', kind: 'rule', sig: '(do let x ← pure a; f x) = f a', sig0: 'pure a >>= f = f a',
       en0: 'Starting at a, then f: that is f at a.', de0: 'In a anfangen, dann f: Das ist f bei a.', en: 'Throwing a point mass is no throw.', de: 'Eine Punktmasse zu werfen ist kein Wurf.' },
-    { name: 'add_zero', kind: 'rule', at: '3.7', sig: 'n + 0 = n', en: 'Adding zero.', de: 'Null addieren.' },
-    { name: 'add_assoc', kind: 'rule', at: '3.8', sig: 'a + b + c = a + (b + c)', en: 'Brackets in sums.', de: 'Klammern in Summen.' },
-    { name: 'map_eq_pure_bind', kind: 'rule', at: '2.1', w0: '0.6', sig: 'f <$> μ = do let x ← μ; pure (f x)', sig0: 'f <$> s = s >>= fun x => pure (f x)',
+    { name: 'add_zero', kind: 'rule', sig: 'n + 0 = n', en: 'Adding zero.', de: 'Null addieren.' },
+    { name: 'add_assoc', kind: 'rule', sig: 'a + b + c = a + (b + c)', en: 'Brackets in sums.', de: 'Klammern in Summen.' },
+    { name: 'map_eq_pure_bind', kind: 'rule', sig: 'f <$> μ = do let x ← μ; pure (f x)', sig0: 'f <$> s = s >>= fun x => pure (f x)',
       en0: 'Applying f to every point, as a walk.', de0: 'f auf jeden Punkt anwenden, als Weg.', en: 'A move as a do block.', de: 'Ein Zug als do-Block.' },
-    { name: 'bind_pure', kind: 'rule', at: '2.3', sig: '(μ >>= fun x => pure x) = μ', en: 'A throw whose result is the result.', de: 'Ein Wurf, dessen Ergebnis das Ergebnis ist.' },
-    { name: "binom_succ'", kind: 'lemma', at: '3.9', sig: "(do let X ← binom p n; let Y ← coin p; pure (X + Y.toNat)) = binom p (n + 1)", en: 'Proved by you in Building with Coins, level 9.', de: 'Von dir bewiesen in „Bauen mit Münzen“, Level 9.' },
+    { name: 'bind_pure', kind: 'rule', sig: '(μ >>= fun x => pure x) = μ', en: 'A throw whose result is the result.', de: 'Ein Wurf, dessen Ergebnis das Ergebnis ist.' },
+    { name: "binom_succ'", kind: 'lemma', sig: "(do let X ← binom p n; let Y ← coin p; pure (X + Y.toNat)) = binom p (n + 1)", en: 'Proved by you in Building with Coins.', de: 'Von dir bewiesen in „Bauen mit Münzen“.' },
     // the first world only
-    { name: 'Bool.not_not', kind: 'lemma', wb: 'b.4', at: '1.1', sig: '(!(!b)) = b', en: 'Proved by you in True and False: flipped twice is not flipped.', de: 'Von dir bewiesen in „Wahr und falsch“: Zweimal umgedreht ist nicht umgedreht.' },
-    { name: 'Function.comp_apply', kind: 'rule', wb: 'b.5', sig: '(g ∘ f) x = g (f x)', en: 'First f, then g.', de: 'Erst f, dann g.' },
-    { name: 'id_eq', kind: 'rule', wb: 'b.5', sig: 'id a = a', en: 'id does nothing.', de: 'id tut nichts.' },
+    { name: 'Bool.not_not', kind: 'lemma', sig: '(!(!b)) = b', en: 'Proved by you in True and False: flipped twice is not flipped.', de: 'Von dir bewiesen in „Wahr und falsch“: Zweimal umgedreht ist nicht umgedreht.' },
+    { name: 'Function.comp_apply', kind: 'rule', sig: '(g ∘ f) x = g (f x)', en: 'First f, then g.', de: 'Erst f, dann g.' },
+    { name: 'id_eq', kind: 'rule', sig: 'id a = a', en: 'id does nothing.', de: 'id tut nichts.' },
     // world 0 only
-    { name: 'constructor', kind: 'tactic', w0: '0.5', insert: 'constructor', sig: 'constructor',
+    { name: 'constructor', kind: 'tactic', insert: 'constructor', sig: 'constructor',
       en: 'For a goal A ∧ B: the two goals A and B, one after the other.', de: 'Für ein Ziel A ∧ B: die zwei Ziele A und B, eines nach dem anderen.' },
-    { name: 'exists', kind: 'tactic', w0: '0.5', insert: 'exists ', sig: 'exists a',
+    { name: 'exists', kind: 'tactic', insert: 'exists ', sig: 'exists a',
       en: 'For a goal ∃ x, P x: names the x, and leaves P a.', de: 'Für ein Ziel ∃ x, P x: nennt das x und lässt P a übrig.' },
-    { name: 'intro', kind: 'tactic', w0: '0.8', insert: 'intro h', sig: 'intro h',
+    { name: 'intro', kind: 'tactic', insert: 'intro h', sig: 'intro h',
       en: 'For a goal A → B (and a ∉ s, which is a ∈ s → False): assumes A as h, and leaves B.',
       de: 'Für ein Ziel A → B (und a ∉ s, das ist a ∈ s → False): nimmt A als h an und lässt B übrig.' },
-    { name: 'have', kind: 'tactic', w0: '0.8', insert: 'have h2 := ', sig: 'have h2 := rule args',
+    { name: 'have', kind: 'tactic', insert: 'have h2 := ', sig: 'have h2 := rule args',
       en: 'Adds a new fact h2 to the hypotheses, here a rule applied to its arguments.',
       de: 'Fügt den Annahmen eine neue Tatsache h2 hinzu, hier eine Regel, angewandt auf ihre Argumente.' },
-    { name: 'north', kind: 'rule', w0: '0.1', sig: 'north (x, y) = pure (x, y + 1)', en: 'One step north.', de: 'Ein Schritt nach Norden.' },
-    { name: 'east', kind: 'rule', w0: '0.1', sig: 'east (x, y) = pure (x + 1, y)', en: 'One step east.', de: 'Ein Schritt nach Osten.' },
-    { name: 'south', kind: 'rule', w0: '0.1', sig: 'south (x, y) = pure (x, y - 1)', en: 'One step south.', de: 'Ein Schritt nach Süden.' },
-    { name: 'west', kind: 'rule', w0: '0.1', sig: 'west (x, y) = pure (x - 1, y)', en: 'One step west.', de: 'Ein Schritt nach Westen.' },
-    { name: 'step', kind: 'rule', w0: '0.4', sig: 'step (x, y) = {(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)}', en: 'One step, all four ways.', de: 'Ein Schritt, alle vier Richtungen.' },
-    { name: 'step_east', kind: 'rule', w0: '0.5', sig: '(x + 1, y) ∈ step (x, y)', en: 'East is one of the ways of step.', de: 'Osten ist einer der Wege von step.' },
-    { name: 'step_west', kind: 'rule', w0: '0.5', sig: '(x - 1, y) ∈ step (x, y)', en: 'West is one of the ways of step.', de: 'Westen ist einer der Wege von step.' },
-    { name: 'mem_bind', kind: 'rule', w0: '0.5', sig: 'b ∈ s >>= f ↔ ∃ a ∈ s, b ∈ f a', en: 'Reachable: there is a way.', de: 'Erreichbar: Es gibt einen Weg.' },
-    { name: 'odd_step', kind: 'rule', w0: '0.6', sig: 'odd <$> step p = pure (!odd p)', en: 'A step changes the colour.', de: 'Ein Schritt wechselt die Farbe.' },
-    { name: 'walk_zero', kind: 'rule', w0: '0.7', sig: 'walk 0 = pure (0, 0)', en: 'No step.', de: 'Kein Schritt.' },
-    { name: 'walk_succ', kind: 'rule', w0: '0.7', sig: 'walk (n + 1) = walk n >>= step', en: 'One step more.', de: 'Ein Schritt mehr.' },
-    { name: 'Nat.bodd_succ', kind: 'rule', w0: '0.7', sig: '(n + 1).bodd = !n.bodd', en: 'Odd and even alternate.', de: 'Gerade und ungerade wechseln sich ab.' },
-    { name: 'mem_map', kind: 'rule', w0: '0.8', sig: 'mem_map f (h : a ∈ s) : f a ∈ f <$> s', en: 'What lies in s lies, moved by f, in f <$> s.', de: 'Was in s liegt, liegt, mit f bewegt, in f <$> s.' },
-    { name: 'odd_bind_step', kind: 'lemma', w0: '0.6', sig: 'odd <$> (μ >>= step) = not <$> (odd <$> μ)', en: 'Proved by you in Walking on the Grid, level 6.', de: 'Von dir bewiesen in „Gehen auf dem Gitter“, Level 6.' },
-    { name: 'odd_walk', kind: 'lemma', w0: '0.7', sig: 'odd <$> walk n = pure n.bodd', en: 'Proved by you: the boss of Walking on the Grid.', de: 'Von dir bewiesen: der Endgegner von „Gehen auf dem Gitter“.' },
-    { name: 'binom_add', kind: 'lemma', at: '3.10', sig: '(do let X ← binom p n; let Y ← binom p m; pure (X + Y)) = binom p (n + m)', en: 'Proved by you in Building with Coins, level 10.', de: 'Von dir bewiesen in „Bauen mit Münzen“, Level 10.' },
+    { name: 'north', kind: 'rule', sig: 'north (x, y) = pure (x, y + 1)', en: 'One step north.', de: 'Ein Schritt nach Norden.' },
+    { name: 'east', kind: 'rule', sig: 'east (x, y) = pure (x + 1, y)', en: 'One step east.', de: 'Ein Schritt nach Osten.' },
+    { name: 'south', kind: 'rule', sig: 'south (x, y) = pure (x, y - 1)', en: 'One step south.', de: 'Ein Schritt nach Süden.' },
+    { name: 'west', kind: 'rule', sig: 'west (x, y) = pure (x - 1, y)', en: 'One step west.', de: 'Ein Schritt nach Westen.' },
+    { name: 'step', kind: 'rule', sig: 'step (x, y) = {(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)}', en: 'One step, all four ways.', de: 'Ein Schritt, alle vier Richtungen.' },
+    { name: 'step_east', kind: 'rule', sig: '(x + 1, y) ∈ step (x, y)', en: 'East is one of the ways of step.', de: 'Osten ist einer der Wege von step.' },
+    { name: 'step_west', kind: 'rule', sig: '(x - 1, y) ∈ step (x, y)', en: 'West is one of the ways of step.', de: 'Westen ist einer der Wege von step.' },
+    { name: 'mem_bind', kind: 'rule', sig: 'b ∈ s >>= f ↔ ∃ a ∈ s, b ∈ f a', en: 'Reachable: there is a way.', de: 'Erreichbar: Es gibt einen Weg.' },
+    { name: 'odd_step', kind: 'rule', sig: 'odd <$> step p = pure (!odd p)', en: 'A step changes the colour.', de: 'Ein Schritt wechselt die Farbe.' },
+    { name: 'walk_zero', kind: 'rule', sig: 'walk 0 = pure (0, 0)', en: 'No step.', de: 'Kein Schritt.' },
+    { name: 'walk_succ', kind: 'rule', sig: 'walk (n + 1) = walk n >>= step', en: 'One step more.', de: 'Ein Schritt mehr.' },
+    { name: 'Nat.bodd_succ', kind: 'rule', sig: '(n + 1).bodd = !n.bodd', en: 'Odd and even alternate.', de: 'Gerade und ungerade wechseln sich ab.' },
+    { name: 'mem_map', kind: 'rule', sig: 'mem_map f (h : a ∈ s) : f a ∈ f <$> s', en: 'What lies in s lies, moved by f, in f <$> s.', de: 'Was in s liegt, liegt, mit f bewegt, in f <$> s.' },
+    { name: 'odd_bind_step', kind: 'lemma', sig: 'odd <$> (μ >>= step) = not <$> (odd <$> μ)', en: 'Proved by you in Walking on the Grid.', de: 'Von dir bewiesen in „Gehen auf dem Gitter“.' },
+    { name: 'odd_walk', kind: 'lemma', sig: 'odd <$> walk n = pure n.bodd', en: 'Proved by you: the boss of Walking on the Grid.', de: 'Von dir bewiesen: der Endgegner von „Gehen auf dem Gitter“.' },
+    { name: 'binom_add', kind: 'lemma', sig: '(do let X ← binom p n; let Y ← binom p m; pure (X + Y)) = binom p (n + m)', en: 'Proved by you in Building with Coins.', de: 'Von dir bewiesen in „Bauen mit Münzen“.' },
   ]
   Object.assign(DE, {
     Proof: 'Beweis', 'Run': 'Ausführen', 'Inventory': 'Inventar', Tactics: 'Taktiken', Theorems: 'Sätze',
@@ -1463,13 +1465,15 @@
   ]
   const advice = m => { const a = ADVICE.find(([r]) => r.test(m)); return a ? (LANG === 'de' ? a[2] : a[1]) : '' }
   Object.assign(DE, { 'What Lean says': 'Was Lean sagt' })
-  const atLeast = (a, b) => { const [x, y] = a.split('.'), [u, v] = b.split('.'); return x === u ? Number(y) >= Number(v) : Number(x) > Number(u) }
 
   class Proof {
     constructor(level, onChange) {
       const root = level.root
       this.level = level; this.root = root; this.onChange = onChange
-      this.no = root.dataset.no; this.statement = root.dataset.proof; this.lemma = root.dataset.lemma
+      this.statement = root.dataset.proof; this.lemma = root.dataset.lemma
+      // what this level may use, and what is new in it (ProbGame/Level.lean: from the levels before it)
+      const names = a => { try { return new Set(JSON.parse(root.dataset[a] ?? '[]')) } catch { return new Set() } }
+      this.group = root.dataset.group; this.inventory = names('inventory'); this.newHere = names('new')
       this.context = root.dataset.proofContext ?? ''
       this.key = level.key + ':proof'
       this.lines = []
@@ -1503,11 +1507,11 @@
       return n === 1 ? tr('One goal left.') : tr('{n} goals left.', { n })
     }
     // the inventory at this level: what was introduced up to here; the lemma of this level is not yet
-    available(item) { const at = this.since(item); return !!at && atLeast(this.no, at) && !(item.kind === 'lemma' && at === this.no) }
+    available(item) { return !!item && this.inventory.has(item.name) }
+    isNew(item) { return this.newHere.has(item.name) }
     // where an item comes in: world 0 has an inventory of its own (`w0`), the other worlds share one (`at`)
-    since(item) { return this.world0 ? item.w0 : this.worldB ? item.wb : item.at }
-    get world0() { return this.no.startsWith('0.') }
-    get worldB() { return this.no.startsWith('b.') }
+    get world0() { return this.group === 'walk' }
+    get worldB() { return this.group === 'bool' }
 
     // shown once the board is solved
     update() {
@@ -1674,7 +1678,7 @@
         const group = el('div', 'pg-inv-group')
         group.append(el('span', 'pg-inv-title', title + ':'))
         for (const item of INVENTORY.filter(i => (kind === 'tactic' ? i.kind === 'tactic' : i.kind !== 'tactic') && this.available(i))) {
-          const b = el('button', 'pg-chip' + (item.kind === 'lemma' ? ' pg-chip-lemma' : '') + (this.picked === item.name ? ' pg-chip-on' : '') + (this.since(item) === this.no ? ' pg-chip-new' : ''), item.name)
+          const b = el('button', 'pg-chip' + (item.kind === 'lemma' ? ' pg-chip-lemma' : '') + (this.picked === item.name ? ' pg-chip-on' : '') + (this.isNew(item) ? ' pg-chip-new' : ''), item.name)
           b.type = 'button'
           b.addEventListener('click', () => { this.picked = this.picked === item.name ? null : item.name; this.render() })
           group.append(b)
@@ -1908,7 +1912,7 @@
       const seen = new Set()
       return movesOf(levels[k]).filter(m => !before.has(m[0]) && !seen.has(m[0]) && seen.add(m[0]))
     }
-    const newItems = k => { const p = levels[k].proof; return p ? INVENTORY.filter(i => p.since(i) === p.no && i.kind !== 'lemma') : [] }
+    const newItems = k => { const p = levels[k].proof; return p ? INVENTORY.filter(i => p.isNew(i) && i.kind !== 'lemma') : [] }
     const boardTip = (k, withWorld) => {
       const moves = newMoves(k)
       return [...levelText(k), ...(moves.length ? [el('div', 'pg-tip-sub', tr('New in this level')), ...moves.map(moveCard)] : []),
@@ -2124,7 +2128,10 @@
       ...Object.keys(FUNS).map(f => ['build:' + f, funLabel(f), el('div', 'pg-map-sym', FUNS[f].sym)])])
     if (!SHOW) {
       parts.push(el('h2', '', tr('Tactics and rules')))
-      const shown = INVENTORY.filter(i => (i.at && coin) || (i.wb && bool) || (i.w0 && walk))
+      // what the levels of this edition bring (ProbGame/Level.lean)
+      let items = new Set()
+      try { items = new Set(JSON.parse(box.dataset.items ?? '[]')) } catch {}
+      const shown = INVENTORY.filter(i => items.has(i.name))
       for (const [kind, title] of [['tactic', tr('Tactics')], ['rule', tr('Rules')], ['lemma', tr('Your lemmas')]]) {
         const items = shown.filter(i => i.kind === kind)
         if (!items.length) continue

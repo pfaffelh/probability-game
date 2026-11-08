@@ -26,8 +26,7 @@ lies surely on one side, once or for every `b` (two rows); the moves are the map
 (`not`, always `true`, always `false`), and Lean normalises the value or the map after each move.
 The proofs: `(!true) = false` by `rfl`, rewriting with `Bool.not_true`, `cases b` for `!(!b) = b`
 (the player's `Bool.not_not`), `funext` for `not ∘ not = id`, a hypothesis in `rw`; the boss is
-`f (f (f b)) = f b` for every `f : Bool → Bool`, by `cases h : f false`. Its levels are numbered
-`b.1`, …, with an inventory of their own (`wb` in `game.js`); solutions in `Lean/SolutionsBool.lean`.
+`f (f (f b)) = f b` for every `f : Bool → Bool`, by `cases h : f false`. Its levels (`::::boolean`) have an inventory of their own.
 
 **Walking on the grid** (branch `monad` only, before chance; `::::walk`, `Lean/WorldWalk.lean`): a figure on
 $\mathbb{Z} \times \mathbb{Z}$, the moves `north`, `east`, `south`, `west` as maps `Pos → m Pos`
@@ -98,15 +97,36 @@ block with its picture, and every tactic and rule, of the worlds of the edition.
   `pure`, `do` and `<$>`, proved from the journal, and the lemmas of the player. The bridge loads it
   once (`/start` with the context and `example <statement>`) and checks a proof line by line
   (`/check`).
-* `::::level`/`::::build` take `(no := "2.3") (proof := "(p : I) : …") (lemma := "…")`, and the texts
-  of the proof are `:::proofen`/`:::proofde` (a paragraph that begins with *Tip.* is folded).
-* `INVENTORY` in `game.js` lists the tactics, rules and lemmas with the level that introduces them;
-  a line is refused before Lean sees it when it uses a tactic or theorem that is not in the inventory
-  yet (or anything from Mathlib or the journal by its full name).
-* A world `W` is a set of files: `ProbGame/Worlds/W.lean` (its levels), `Lean/WorldW.lean` (its
-  context, if it has one of its own), `Lean/SolutionsW.lean` (a proof of every level as a player
-  types it), `tests/worlds/W.json` (its page, the moves that solve its boards). `./check-proofs.sh`
-  checks it with Lean, `python3 -I tests/proofs.py` plays it through the bridge.
+* A level is one block, with all that belongs to it, and no number:
+
+  ```
+  ::::level (start := "bernoulli p") (target := "pure true") (moves := "not, heads")
+      (proof := "(p : I) (b : Bool) : (fun _ => b) <$> coin p = pure b") (lemma := "coin_const")
+      (new := "apply, bool_ext") (play := "heads")
+  :::en … ::: :::de … :::            the texts of the board
+  :::proofen … ::: :::proofde … :::  the texts of the proof (a paragraph *Tip.* … is folded)
+  :::solution
+  ```
+  apply bool_ext
+  …
+  ```
+  :::
+  ::::
+  ```
+
+  `new` is what the level brings into the inventory; `lemma` the lemma it becomes (for the levels
+  after it); `play` the moves that solve its board (for `::::build`: steps `M1 M2 and; Z1 not`, the
+  lines by their names); `:::solution` its proof as a player types it. The solution is not in the
+  page; the tests read it from the source (`tests/levels.py`).
+* The inventory of a level is what the levels before it in its group brought (`chance`; `bool` for
+  *True and False*, `walk` for *Walking on the Grid*): Verso's traverse pass collects it
+  (`ProbGame/Level.lean`), so that a level can be moved or removed alone. `INVENTORY` in `game.js`
+  only says what each tactic, rule and lemma is; a line is refused before Lean sees it when it uses
+  a tactic or theorem that is not in the inventory (or anything from Mathlib or the journal by its
+  full name). Texts refer to levels by their names, not by numbers.
+* A world `W` is `ProbGame/Worlds/W.lean` and, if it has rules of its own, `Lean/WorldW.lean`.
+  `./check-proofs.sh` checks every solution with Lean, `python3 -I tests/proofs.py` plays them
+  through the bridge, `node tests/play.mjs` plays the site (`ONLY=<page>` for one world).
 
 ## Lean as the referee
 

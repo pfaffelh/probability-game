@@ -27,7 +27,7 @@ Züge der Münzen in den Welten danach; hier ist das Ergebnis sicher. Lean rechn
 also `not true`, ist `false`.
 :::
 
-::::boolean (inputs := "true") (target := "false") (moves := "not") (no := "b.1") (proof := ": (!true) = false")
+::::boolean (inputs := "true") (target := "false") (moves := "not") (proof := ": (!true) = false") (new := "rfl") (play := "not")
 :::en
 *Flip.* The coin lies on `true`. Flip it onto the flag. Below the board is the move as Lean writes
 it, and what Lean makes of it.
@@ -56,9 +56,14 @@ von Level zu Level wächst.
 Die Taktik `rfl` schließt ein Ziel, dessen beide Seiten nach Ausrechnen gleich sind, und Lean weiß,
 was `not` mit `true` macht. Tippe `rfl` ein (oder tippe es im Inventar an) und drücke *Ausführen*.
 :::
+:::solution
+```
+rfl
+```
+:::
 ::::
 
-::::boolean (inputs := "true") (target := "true") (moves := "not") (no := "b.2") (proof := ": (!(!true)) = true")
+::::boolean (inputs := "true") (target := "true") (moves := "not") (proof := ": (!(!true)) = true") (new := "rw, Bool.not_true, Bool.not_false") (play := "not, not")
 :::en
 *Back again.* Bring the coin back to `true`, with flips only.
 :::
@@ -84,9 +89,14 @@ ersetzt die linke Seite der Regel durch ihre rechte. Dann die Regel
 
 *Tipp.* `rw [Bool.not_true, Bool.not_false]`.
 :::
+:::solution
+```
+rw [Bool.not_true, Bool.not_false]
+```
+:::
 ::::
 
-::::boolean (inputs := "false true") (target := "true true") (moves := "not, false") (no := "b.3") (proof := "(b : Bool) : (!((fun _ => false) b)) = true")
+::::boolean (inputs := "false true") (target := "true true") (moves := "not, false") (proof := "(b : Bool) : (!((fun _ => false) b)) = true") (play := "false, not")
 :::en
 *Always true, without always true.* Now there are two coins: one on `false`, one on `true`. The board
 plays your moves on both at once, for every value `b`. Lay both on `true`. There is no move
@@ -110,9 +120,14 @@ every `b` at once.
 `(fun _ => false) b` gleich `false`, was immer `b` ist, und `!false` ist `true`. Lean rechnet beides
 aus: `rfl` beweist die Aussage für jedes `b` auf einmal.
 :::
+:::solution
+```
+rfl
+```
+:::
 ::::
 
-::::boolean (inputs := "false true") (target := "false true") (moves := "not") (no := "b.4") (proof := "(b : Bool) : (!(!b)) = b") (lemma := "Bool.not_not")
+::::boolean (inputs := "false true") (target := "false true") (moves := "not") (proof := "(b : Bool) : (!(!b)) = b") (lemma := "Bool.not_not") (new := "cases, <;>") (play := "not, not")
 :::en
 *Flipped twice.* Bring both coins back to where they lay.
 :::
@@ -140,9 +155,16 @@ anderen, wie die zwei Zeilen des Spielfelds. Jedes davon ist Rechnen. Dein Ergeb
 *Tipp.* `cases b`, `rfl`, `rfl`. Oder in einer Zeile: `cases b <;> rfl`; `t₁ <;> t₂` führt `t₂`
 auf jedem Ziel aus, das `t₁` übrig lässt.
 :::
+:::solution
+```
+cases b
+rfl
+rfl
+```
+:::
 ::::
 
-::::boolean (inputs := "false true") (target := "false true") (moves := "not, true, false") (count := "2") (no := "b.5") (proof := ": not ∘ not = (id : Bool → Bool)")
+::::boolean (inputs := "false true") (target := "false true") (moves := "not, true, false") (count := "2") (proof := ": not ∘ not = (id : Bool → Bool)") (new := "funext, Function.comp_apply, id_eq") (play := "not, not")
 :::en
 *Two moves, one map.* Bring both coins back again, in two moves, now with all three moves at hand.
 Two moves one after the other are one map: `not ∘ not`, first `not`, then `not`.
@@ -169,9 +191,15 @@ sind. Dann drei Regeln: `Function.comp_apply : (g ∘ f) x = g (f x)`, dein Lemm
 
 *Tipp.* `funext b`, dann `rw [Function.comp_apply, Bool.not_not, id_eq]`.
 :::
+:::solution
+```
+funext b
+rw [Function.comp_apply, Bool.not_not, id_eq]
+```
+:::
 ::::
 
-::::boolean (inputs := "true") (target := "true") (moves := "not, true, false") (count := "2") (no := "b.6") (proof := "(f : Bool → Bool) (h : f true = true) : f (f true) = true")
+::::boolean (inputs := "true") (target := "true") (moves := "not, true, false") (count := "2") (proof := "(f : Bool → Bool) (h : f true = true) : f (f true) = true") (play := "true, true")
 :::en
 *The same move twice.* Two moves, and the coin lies on `true` again. Which moves `f` can you play
 twice for this?
@@ -195,9 +223,14 @@ Ein Zug `f`, der `true` nach `true` schickt, die Annahme `h : f true = true`, tu
 
 *Tipp.* `rw [h, h]`.
 :::
+:::solution
+```
+rw [h, h]
+```
+:::
 ::::
 
-::::boolean (inputs := "false true") (target := "true false") (moves := "not, true, false") (count := "3") (no := "b.7") (proof := "(f : Bool → Bool) (b : Bool) : f (f (f b)) = f b")
+::::boolean (inputs := "false true") (target := "true false") (moves := "not, true, false") (count := "3") (proof := "(f : Bool → Bool) (b : Bool) : f (f (f b)) = f b") (play := "not, not, not")
 :::en
 *The boss: three times is once.* Three moves, and both coins are flipped, as after one flip. In
 fact, for every move `f`, playing it three times is the same as playing it once:
@@ -234,5 +267,20 @@ und `f true` zusammen sind die vier Abbildungen `Bool → Bool`: `id`, `not`, im
 `f false = true`, `cases h2 : f true`, dann `rw [h]` und `rw [h2]`. Dann `b = true`: dasselbe mit
 `true` und `false` vertauscht (`cases h : f true`, `cases h2 : f false`, `rw [h2]`, `rw [h]`,
 `rw [h, h]`).
+:::
+:::solution
+```
+cases b
+cases h : f false
+rw [h, h]
+cases h2 : f true
+rw [h]
+rw [h2]
+cases h : f true
+cases h2 : f false
+rw [h2]
+rw [h]
+rw [h, h]
+```
 :::
 ::::

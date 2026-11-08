@@ -20,16 +20,13 @@ A world is a set of files with the same name `W`:
 
 | File | What |
 |---|---|
-| `ProbGame/Worlds/W.lean` | the levels: boards, texts in English and German, statements |
+| `ProbGame/Worlds/W.lean` | the levels: boards, texts in English and German, statements, what each brings into the inventory, the moves and the proof that solve it |
 | `Lean/WorldW.lean` | its Lean context, if it has one of its own (else `Lean/WorldCoin.lean` for the boards and `Lean/Rules.lean` for the proofs) |
-| `Lean/SolutionsW.lean` | a proof of every level, as a player types it |
-| `tests/worlds/W.json` | its page, the moves that solve its boards, its solutions and context |
 
 A part of a world that suits one edition only, e.g. a level whose board is only interesting with its
 proof, is put into `:::::only (edition := "main")` (or `"show"`); every branch has the world, and
-`game.js` removes the parts of the other edition before it counts the levels. In
-`tests/worlds/W.json` such a board is `{ "edition": "main", "moves": […] }`. (The edition `monad` is
-`main`.)
+`game.js` removes the parts of the other edition before it counts the levels (the tests know it from
+the source). (The edition `monad` is `main`.)
 
 The tests take the worlds from the site they test (its table of contents), so no list of worlds
 needs to be kept anywhere else. In the edition `show`, `game.js` shows no Lean and creates no
@@ -50,10 +47,10 @@ Conflicts can only come up in `ProbGame.lean` (when `main` changes its front pag
 everyone (in the engine, or in a world that `main` has) is brought over with
 `git cherry-pick <commit>` on `main`; for that, such a commit should touch nothing else.
 
-The level numbers (`(no := "2.3")`) decide what the inventory holds (`INVENTORY` in `game.js`):
-`b.n` is *True and False*, `0.n` *Walking on the Grid* (each with an inventory of its own), and
-`1.n` to `4.n` the worlds of chance, which share one. A world added on one branch only gets an
-inventory of its own, so that the numbers of the others stay as they are.
+Levels have no numbers: each says what it brings (`new`), and its inventory is what the levels of its
+group before it brought (see README). *True and False* and *Walking on the Grid* each have an
+inventory of their own; the worlds of chance share one. A level, or a world, can therefore be added,
+moved or removed on one branch without touching anything else.
 
 ## Building and serving
 

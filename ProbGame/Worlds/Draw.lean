@@ -25,7 +25,7 @@ Die Beweise lernen die Regeln der `do`-Blöcke, die *Monadengesetze*; mit ihnen 
 der nächsten Welt zu Beweisen.
 :::
 
-::::level (start := "bernoulli p") (target := "bernoulli 1-p") (moves := "not") (lean := "(do let x ← coin p; pure (!x)) = coin (σ p)") (leanTarget := "coin (σ p)") (no := "2.1") (proof := "(p : I) : (do let x ← coin p; pure (!x)) = not <$> coin p")
+::::level (start := "bernoulli p") (target := "bernoulli 1-p") (moves := "not") (lean := "(do let x ← coin p; pure (!x)) = coin (σ p)") (leanTarget := "coin (σ p)") (proof := "(p : I) : (do let x ← coin p; pure (!x)) = not <$> coin p") (new := "map_eq_pure_bind") (play := "not")
 :::en
 *A move is a draw.* Flip the coin.
 :::
@@ -47,9 +47,14 @@ Die Regel `map_eq_pure_bind : f <$> μ = do let x ← μ; pure (f x)` sagt das f
 
 *Tipp.* `rw [map_eq_pure_bind]`.
 :::
+:::solution
+```
+rw [map_eq_pure_bind]
+```
+:::
 ::::
 
-::::level (start := "pure true") (target := "pure false") (moves := "not") (lean := "(do let x ← pure true; pure (!x)) = pure false") (leanStart := "DiscreteMeasure.pure true") (leanTarget := "DiscreteMeasure.pure false") (no := "2.2") (proof := ": (do let x ← pure true; pure (!x)) = (pure false : DiscreteMeasure Bool)")
+::::level (start := "pure true") (target := "pure false") (moves := "not") (lean := "(do let x ← pure true; pure (!x)) = pure false") (leanStart := "DiscreteMeasure.pure true") (leanTarget := "DiscreteMeasure.pure false") (proof := ": (do let x ← pure true; pure (!x)) = (pure false : DiscreteMeasure Bool)") (new := "pure_bind") (play := "not")
 :::en
 *A sure draw.* The coin lies surely on `true`: all the mass is there, a point mass, `pure true` in
 Lean. Flip it.
@@ -73,9 +78,15 @@ Rechnen.
 
 *Tipp.* `rw [pure_bind]`, dann `rw [Bool.not_true]`.
 :::
+:::solution
+```
+rw [pure_bind]
+rw [Bool.not_true]
+```
+:::
 ::::
 
-::::level (start := "bernoulli p") (target := "bernoulli p") (moves := "id, not") (count := "1") (lean := "(coin p >>= fun x => pure x) = coin p") (leanTarget := "coin p") (no := "2.3") (proof := "(p : I) : (coin p >>= fun x => pure x) = coin p")
+::::level (start := "bernoulli p") (target := "bernoulli p") (moves := "id, not") (count := "1") (lean := "(coin p >>= fun x => pure x) = coin p") (leanTarget := "coin p") (proof := "(p : I) : (coin p >>= fun x => pure x) = coin p") (new := "bind_pure") (play := "id")
 :::en
 *Drawn, and given back.* Leave the coin as it is, with one move.
 :::
@@ -101,9 +112,14 @@ nichts: `bind_pure : (μ >>= fun x => pure x) = μ`. (In einem `do`-Block kürzt
 
 *Tipp.* `rw [bind_pure]`.
 :::
+:::solution
+```
+rw [bind_pure]
+```
+:::
 ::::
 
-::::level (start := "bernoulli p") (target := "bernoulli p") (moves := "not") (lean := "(do let y ← (do let x ← coin p; pure (!x)); pure (!y)) = coin p") (leanTarget := "coin p") (no := "2.4") (proof := "(p : I) : (do let y ← (do let x ← coin p; pure (!x)); pure (!y)) = coin p")
+::::level (start := "bernoulli p") (target := "bernoulli p") (moves := "not") (lean := "(do let y ← (do let x ← coin p; pure (!x)); pure (!y)) = coin p") (leanTarget := "coin p") (proof := "(p : I) : (do let y ← (do let x ← coin p; pure (!x)); pure (!y)) = coin p") (new := "simp only, bind_assoc") (play := "not, not")
 :::en
 *Two moves, one draw.* Flip twice.
 :::
@@ -133,9 +149,16 @@ auch in `do`-Blöcken, so oft es geht, und schließt das Ziel, wenn beide Seiten
 
 *Tipp.* `rw [bind_assoc]`, `simp only [pure_bind, Bool.not_not]`, `rw [bind_pure]`.
 :::
+:::solution
+```
+rw [bind_assoc]
+simp only [pure_bind, Bool.not_not]
+rw [bind_pure]
+```
+:::
 ::::
 
-::::level (start := "bernoulli 1-p") (target := "bernoulli p") (moves := "not") (lean := "(do let x ← not <$> coin p; pure (!x)) = coin p") (leanStart := "(coin p).map not") (leanTarget := "coin p") (no := "2.5") (proof := "(p : I) : (do let x ← not <$> coin p; pure (!x)) = coin p")
+::::level (start := "bernoulli 1-p") (target := "bernoulli p") (moves := "not") (lean := "(do let x ← not <$> coin p; pure (!x)) = coin p") (leanStart := "(coin p).map not") (leanTarget := "coin p") (proof := "(p : I) : (do let x ← not <$> coin p; pure (!x)) = coin p") (new := "bind_map_left") (play := "not")
 :::en
 *Drawn from a flipped coin.* This coin is flipped already: `true` has the mass $`1 - p`. Flip it
 back.
@@ -161,9 +184,16 @@ heraus und in das Rechnen hinein.
 
 *Tipp.* `rw [bind_map_left]`, `simp only [Bool.not_not]`, `rw [bind_pure]`.
 :::
+:::solution
+```
+rw [bind_map_left]
+simp only [Bool.not_not]
+rw [bind_pure]
+```
+:::
 ::::
 
-::::level (start := "bernoulli p") (target := "pure true") (moves := "not, heads") (lean := "(do let _ ← coin p; pure true) = pure true") (leanTarget := "DiscreteMeasure.pure true") (no := "2.6") (proof := "(p : I) (b : Bool) : (do let _ ← coin p; pure b) = pure b")
+::::level (start := "bernoulli p") (target := "pure true") (moves := "not, heads") (lean := "(do let _ ← coin p; pure true) = pure true") (leanTarget := "DiscreteMeasure.pure true") (proof := "(p : I) (b : Bool) : (do let _ ← coin p; pure b) = pure b") (play := "heads")
 :::en
 *A draw that is not used.* Lay the coin surely on `true`.
 :::
@@ -186,9 +216,15 @@ dein `coin_const`.
 
 *Tipp.* `rw [← map_eq_pure_bind]`, dann `rw [coin_const]`.
 :::
+:::solution
+```
+rw [← map_eq_pure_bind]
+rw [coin_const]
+```
+:::
 ::::
 
-::::level (start := "bernoulli p") (target := "bernoulli 1-p") (moves := "not") (count := "3") (lean := "(do let y ← (do let x ← coin p; pure (!x)); let z ← pure (!y); pure (!z)) = not <$> coin p") (leanTarget := "coin (σ p)") (no := "2.7") (proof := "(p : I) : (do let y ← (do let x ← coin p; pure (!x)); let z ← pure (!y); pure (!z)) = not <$> coin p")
+::::level (start := "bernoulli p") (target := "bernoulli 1-p") (moves := "not") (count := "3") (lean := "(do let y ← (do let x ← coin p; pure (!x)); let z ← pure (!y); pure (!z)) = not <$> coin p") (leanTarget := "coin (σ p)") (proof := "(p : I) : (do let y ← (do let x ← coin p; pure (!x)); let z ← pure (!y); pure (!z)) = not <$> coin p") (play := "not, not, not")
 :::en
 *The boss: three flips.* Flip the coin three times.
 :::
@@ -209,5 +245,12 @@ Ein `do`-Block in einem `do`-Block und danach ein sicheres Ziehen: alle Regeln d
 ist der `do`-Block wieder ein Zug.
 
 *Tipp.* `rw [bind_assoc]`, `simp only [pure_bind, Bool.not_not]`, `rw [map_eq_pure_bind]`.
+:::
+:::solution
+```
+rw [bind_assoc]
+simp only [pure_bind, Bool.not_not]
+rw [map_eq_pure_bind]
+```
 :::
 ::::
