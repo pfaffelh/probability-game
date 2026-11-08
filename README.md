@@ -50,16 +50,13 @@ them: `map_eq_pure_bind`, `pure_bind`, `bind_pure`, `bind_assoc` (with `simp onl
 inside `do` blocks), `bind_map_left`, a draw that is not used; boss: three flips (in exactly three
 moves).
 
-**Building with coins** — a circuit: a line per coin and result, a column per function with
-dots on its inputs; a coin may feed several functions. Both `true` ($p^2$); first `true`, then
-`false`; at least one; surely `false` with one coin; exactly one; the number of `true` ($B(2, p)$);
+**Building with coins** — a circuit: a line per coin (or $B(n, p)$) and result, a column per
+function with dots on its inputs; a coin may feed several functions. Both `true` ($p^2$); first
+`true`, then `false`; at least one; surely `false` and surely `true` with one coin; exactly one; the
+number of `true` ($B(2, p)$); three coins ($B(3, p)$); $B(2, p)$ and a coin (`binom_succ'`, by
+induction); $B(2, p) * B(2, p) = B(4, p)$, proved for all $n$, $m$ (`binom_add`, by induction);
 boss: the majority of three. The proofs: `do` blocks, independence (`coin_and`), `simp only` under
-binders, `<;>`, the definition of `binom`.
-
-**Counting** — `B(n, p)` as a building block. Three coins; $B(1, p)$ (`binom_one`);
-$B(2, p)$ and a coin (`binom_succ'`, by induction); at least $1$ out of $B(2, p)$; boss:
-$B(2, p) * B(2, p) = B(4, p)$, proved for all $n$, $m$ (`binom_add`, by induction, with
-`binom_succ'`).
+binders, `<;>`, the definition of `binom`, induction.
 
 ## How it is played
 

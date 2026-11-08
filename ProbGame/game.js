@@ -1365,7 +1365,7 @@
     { name: '<;>', kind: 'tactic', at: '3.6', wb: 'b.4', insert: ' <;> ', sig: 't₁ <;> t₂',
       en: 'Runs t₂ on every goal that t₁ leaves: cases x <;> cases y <;> rfl.',
       de: 'Führt t₂ auf jedem Ziel aus, das t₁ übrig lässt: cases x <;> cases y <;> rfl.' },
-    { name: "induction'", kind: 'tactic', at: '4.2', w0: '0.7', insert: "induction' n with n ih", sig: "induction' n with n ih",
+    { name: "induction'", kind: 'tactic', at: '3.9', w0: '0.7', insert: "induction' n with n ih", sig: "induction' n with n ih",
       en: 'Induction on the natural number n: first the goal for 0, then the goal for n + 1, with the hypothesis ih for n.',
       de: 'Induktion nach der natürlichen Zahl n: zuerst das Ziel für 0, dann das Ziel für n + 1, mit der Annahme ih für n.' },
     { name: 'bool_ext', kind: 'rule', at: '1.2', sig: 'bool_ext μ ν (h : μ true = ν true) : μ = ν', en: 'Two distributions on Bool are the same when they have the same mass at true.', de: 'Zwei Verteilungen auf Bool sind gleich, wenn sie bei true dieselbe Masse haben.' },
@@ -1397,11 +1397,11 @@
     { name: 'pure_bind', kind: 'rule', at: '2.2', w0: '0.1', sig: '(do let x ← pure a; f x) = f a', sig0: 'pure a >>= f = f a',
       en0: 'Starting at a, then f: that is f at a.', de0: 'In a anfangen, dann f: Das ist f bei a.', en: 'Throwing a point mass is no throw.', de: 'Eine Punktmasse zu werfen ist kein Wurf.' },
     { name: 'add_zero', kind: 'rule', at: '3.7', sig: 'n + 0 = n', en: 'Adding zero.', de: 'Null addieren.' },
-    { name: 'add_assoc', kind: 'rule', at: '4.1', sig: 'a + b + c = a + (b + c)', en: 'Brackets in sums.', de: 'Klammern in Summen.' },
+    { name: 'add_assoc', kind: 'rule', at: '3.8', sig: 'a + b + c = a + (b + c)', en: 'Brackets in sums.', de: 'Klammern in Summen.' },
     { name: 'map_eq_pure_bind', kind: 'rule', at: '2.1', w0: '0.6', sig: 'f <$> μ = do let x ← μ; pure (f x)', sig0: 'f <$> s = s >>= fun x => pure (f x)',
       en0: 'Applying f to every point, as a walk.', de0: 'f auf jeden Punkt anwenden, als Weg.', en: 'A move as a do block.', de: 'Ein Zug als do-Block.' },
     { name: 'bind_pure', kind: 'rule', at: '2.3', sig: '(μ >>= fun x => pure x) = μ', en: 'A throw whose result is the result.', de: 'Ein Wurf, dessen Ergebnis das Ergebnis ist.' },
-    { name: "binom_succ'", kind: 'lemma', at: '4.2', sig: "(do let X ← binom p n; let Y ← coin p; pure (X + Y.toNat)) = binom p (n + 1)", en: 'Proved by you in Counting, level 3.', de: 'Von dir bewiesen in „Zählen“, Level 3.' },
+    { name: "binom_succ'", kind: 'lemma', at: '3.9', sig: "(do let X ← binom p n; let Y ← coin p; pure (X + Y.toNat)) = binom p (n + 1)", en: 'Proved by you in Building with Coins, level 9.', de: 'Von dir bewiesen in „Bauen mit Münzen“, Level 9.' },
     // the first world only
     { name: 'Bool.not_not', kind: 'lemma', wb: 'b.4', at: '1.1', sig: '(!(!b)) = b', en: 'Proved by you in True and False: flipped twice is not flipped.', de: 'Von dir bewiesen in „Wahr und falsch“: Zweimal umgedreht ist nicht umgedreht.' },
     { name: 'Function.comp_apply', kind: 'rule', wb: 'b.5', sig: '(g ∘ f) x = g (f x)', en: 'First f, then g.', de: 'Erst f, dann g.' },
@@ -1432,7 +1432,7 @@
     { name: 'mem_map', kind: 'rule', w0: '0.8', sig: 'mem_map f (h : a ∈ s) : f a ∈ f <$> s', en: 'What lies in s lies, moved by f, in f <$> s.', de: 'Was in s liegt, liegt, mit f bewegt, in f <$> s.' },
     { name: 'odd_bind_step', kind: 'lemma', w0: '0.6', sig: 'odd <$> (μ >>= step) = not <$> (odd <$> μ)', en: 'Proved by you in Walking on the Grid, level 6.', de: 'Von dir bewiesen in „Gehen auf dem Gitter“, Level 6.' },
     { name: 'odd_walk', kind: 'lemma', w0: '0.7', sig: 'odd <$> walk n = pure n.bodd', en: 'Proved by you: the boss of Walking on the Grid.', de: 'Von dir bewiesen: der Endgegner von „Gehen auf dem Gitter“.' },
-    { name: 'binom_add', kind: 'lemma', at: '4.3', sig: '(do let X ← binom p n; let Y ← binom p m; pure (X + Y)) = binom p (n + m)', en: 'Proved by you: the boss of Counting.', de: 'Von dir bewiesen: der Endgegner von „Zählen“.' },
+    { name: 'binom_add', kind: 'lemma', at: '3.10', sig: '(do let X ← binom p n; let Y ← binom p m; pure (X + Y)) = binom p (n + m)', en: 'Proved by you in Building with Coins, level 10.', de: 'Von dir bewiesen in „Bauen mit Münzen“, Level 10.' },
   ]
   Object.assign(DE, {
     Proof: 'Beweis', 'Run': 'Ausführen', 'Inventory': 'Inventar', Tactics: 'Taktiken', Theorems: 'Sätze',
