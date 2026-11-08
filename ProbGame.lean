@@ -2,7 +2,6 @@ import VersoManual
 import ProbGame.Level
 import ProbGame.Worlds.OneCoin
 import ProbGame.Worlds.TwoCoins
-import ProbGame.Worlds.Binomial
 import ProbGame.Lexicon
 
 open Verso.Genre Manual
@@ -51,7 +50,5 @@ Im [ganzen Spiel](../main/) wird jedes Level danach auch in Lean bewiesen.
 {include 1 ProbGame.Worlds.OneCoin}
 
 {include 1 ProbGame.Worlds.TwoCoins}
-
-{include 1 ProbGame.Worlds.Binomial}
 
 {include 1 ProbGame.Lexicon}

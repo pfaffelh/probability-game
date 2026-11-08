@@ -2,9 +2,9 @@
 
 | Branch | Edition | What | Online |
 |---|---|---|---|
-| `main` | `main` | The game in development: chance, with what it needs. *True and False* (the tutorial), *One Coin* (what a distribution on `Bool` is: `bool_ext`, `coin_not`), *Draw, then Compute* (`do` blocks and the monad laws for `DiscreteMeasure`), *Building with Coins*, *Counting*. Each level: the board, then the proof. | `/main/` |
+| `main` | `main` | The game in development: chance, with what it needs. *True and False* (the tutorial), *One Coin* (what a distribution on `Bool` is: `bool_ext`, `coin_not`), *Draw, then Compute* (`do` blocks and the monad laws for `DiscreteMeasure`), *Building with Coins* (circuits of coins and `B(n, p)`). Each level: the board, then the proof. | `/main/` |
 | `monad` | `main` | `main` and the other monads: *Walking on the Grid* (`Id`, `Set`). Only here. | `/monad/` |
-| `show` | `show` | The boards alone, without Lean and without proofs: a graphical target, the building blocks (coins, `B(n, p)`), and composing them (moves, circuits). *One Coin*, *Building with Coins*, *Counting*. | `/show/` |
+| `show` | `show` | The boards alone, without Lean and without proofs: a graphical target, the building blocks (coins, `B(n, p)`), and composing them (moves, circuits). *One Coin*, *Building with Coins*. | `/show/` |
 
 ## How the branches differ
 
