@@ -20,7 +20,8 @@ on each other, and the game takes that into account. At the end of each line is 
 found by going through all outcomes of the coins it comes from: with two coins, `true`–`true` has
 mass $`p^2`, `true`–`false` $`p(1 - p)`, and so on.
 
-*Check* compares the selected line (or else the newest) with the target, for every $`p`.
+*Check* compares the selected line (or else the newest) with the target, for every $`p`. *Delete*
+removes the chosen lines and all that is built on them.
 :::
 
 :::proofen
@@ -38,6 +39,7 @@ Ausgänge der Münzen durchgeht, aus denen sie kommt: Bei zwei Münzen hat `true
 $`p^2`, `true`–`false` $`p(1 - p)`, und so weiter.
 
 *Prüfen* vergleicht die ausgewählte Leitung (sonst die neueste) mit dem Ziel, für jedes $`p`.
+*Löschen* entfernt die ausgewählten Leitungen und alles, was auf ihnen gebaut ist.
 :::
 
 :::proofde
