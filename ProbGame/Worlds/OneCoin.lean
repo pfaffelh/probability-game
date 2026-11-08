@@ -284,6 +284,7 @@ Wie in den Leveln 3 und 4, jetzt mit einer Zahl.
 :::
 ::::
 
+:::::only (edition := "main")
 ::::level (start := "bernoulli p") (target := "bernoulli 1-p") (moves := "not, heads, tails, toNat") (lean := "(bernoulli p h).map not = bernoulli (1 - p) tsub_le_self") (leanTarget := "coin (σ p)") (no := "1.8") (proof := "(p : I) : not <$> coin p = coin (σ p)") (lemma := "coin_not")
 :::en
 *The boss: flip the coin.* Not just the bar at `true`: the whole coin.
@@ -311,3 +312,18 @@ Münze kennst du (`coin_not_true`, Level 2). Dein Ergebnis wird das Lemma `coin_
 *Tipp.* `apply bool_ext`, dann `rw` mit deinem Lemma und `coin_true`.
 :::
 ::::
+:::::
+
+:::::only (edition := "show")
+::::level (start := "bernoulli p") (target := "int 5:1-p -2:p") (moves := "not, heads, tails, toNat, payoff 5 -2")
+:::en
+*The boss: a bet on `false`.* You win $`5` when the coin shows `false`, and lose $`2` when it shows
+`true`. Two moves of this world, one after the other.
+:::
+
+:::de
+*Der Endgegner: eine Wette auf `false`.* Du gewinnst $`5`, wenn die Münze `false` zeigt, und
+verlierst $`2`, wenn sie `true` zeigt. Zwei Züge dieser Welt, einer nach dem anderen.
+:::
+::::
+:::::

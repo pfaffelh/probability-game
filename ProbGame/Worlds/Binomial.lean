@@ -42,13 +42,13 @@ In Lean heißt sie `binom p n`.
 :::proofen
 Three throws are `binom p 3`. New: `add_assoc : a + b + c = a + (b + c)`.
 
-*Tip.* As in *Building with Coins*, level 6, and `add_assoc` in the `simp only`.
+*Tip.* As in *Building with Coins*, level 7, and `add_assoc` in the `simp only`.
 :::
 
 :::proofde
 Drei Würfe sind `binom p 3`. Neu: `add_assoc : a + b + c = a + (b + c)`.
 
-*Tipp.* Wie in *Bauen mit Münzen*, Level 6, und `add_assoc` im `simp only`.
+*Tipp.* Wie in *Bauen mit Münzen*, Level 7, und `add_assoc` im `simp only`.
 :::
 ::::
 

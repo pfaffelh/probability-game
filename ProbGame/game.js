@@ -36,6 +36,8 @@
   // when the head is there): `show` plays the boards alone, without Lean and without proofs; the
   // other editions have both.
   let SHOW = false
+  // whether a part of a page (a level, …) belongs to this edition: not inside an `:::::only` of another
+  const ours = e => { const o = e.closest('.pg-only'); return !o || o.dataset.edition === (SHOW ? 'show' : 'main') }
   const tr = (s, vars = {}) => (LANG === 'de' ? DE[s] ?? s : s).replace(/\{(\w+)\}/g, (_, k) => vars[k])
   const applyLang = () => {
     document.documentElement.classList.toggle('pg-de', LANG === 'de')
@@ -1304,7 +1306,7 @@
     { name: 'simp only', kind: 'tactic', at: '2.4', w0: '0.2', insert: 'simp only []', sig: 'simp only [h₁, h₂, …]',
       en: 'Rewrites with the given rules everywhere, also inside do blocks, as often as it can; closes the goal when both sides become the same.',
       de: 'Schreibt mit den angegebenen Regeln überall um, auch in do-Blöcken, so oft es geht; schließt das Ziel, wenn beide Seiten gleich werden.' },
-    { name: '<;>', kind: 'tactic', at: '3.5', wb: 'b.4', insert: ' <;> ', sig: 't₁ <;> t₂',
+    { name: '<;>', kind: 'tactic', at: '3.6', wb: 'b.4', insert: ' <;> ', sig: 't₁ <;> t₂',
       en: 'Runs t₂ on every goal that t₁ leaves: cases x <;> cases y <;> rfl.',
       de: 'Führt t₂ auf jedem Ziel aus, das t₁ übrig lässt: cases x <;> cases y <;> rfl.' },
     { name: "induction'", kind: 'tactic', at: '4.3', w0: '0.7', insert: "induction' n with n ih", sig: "induction' n with n ih",
@@ -1332,12 +1334,13 @@
     { name: 'or_eq', kind: 'rule', at: '3.3', sig: '(x || y) = !(!x && !y)', en: 'De Morgan.', de: 'De Morgan.' },
     { name: 'Bool.and_not_self', kind: 'rule', at: '3.4', sig: '(x && !x) = false', en: 'Never both x and not x.', de: 'Nie zugleich x und nicht x.' },
     { name: 'coin_unused', kind: 'rule', at: '3.4', sig: '(do let _ ← coin p; ν) = ν', en: 'A coin whose result is not used changes nothing.', de: 'Eine Münze, deren Ergebnis nicht benutzt wird, ändert nichts.' },
-    { name: 'binom_zero', kind: 'rule', at: '3.6', sig: 'binom p 0 = pure 0', en: 'The definition of binom: no throw.', de: 'Die Definition von binom: kein Wurf.' },
-    { name: 'binom_succ', kind: 'rule', at: '3.6', sig: 'binom p (n + 1) = do let X ← coin p; let Y ← binom p n; pure (X.toNat + Y)', en: 'The definition of binom: one throw more.', de: 'Die Definition von binom: ein Wurf mehr.' },
+    { name: 'Bool.or_not_self', kind: 'rule', at: '3.5', sig: '(x || !x) = true', en: 'Always x or not x.', de: 'Immer x oder nicht x.' },
+    { name: 'binom_zero', kind: 'rule', at: '3.7', sig: 'binom p 0 = pure 0', en: 'The definition of binom: no throw.', de: 'Die Definition von binom: kein Wurf.' },
+    { name: 'binom_succ', kind: 'rule', at: '3.7', sig: 'binom p (n + 1) = do let X ← coin p; let Y ← binom p n; pure (X.toNat + Y)', en: 'The definition of binom: one throw more.', de: 'Die Definition von binom: ein Wurf mehr.' },
     { name: 'bind_assoc', kind: 'rule', at: '2.4', sig: '(do let y ← (do let x ← μ; f x); g y) = (do let x ← μ; let y ← f x; g y)', en: 'A do block in a do block is one do block.', de: 'Ein do-Block in einem do-Block ist ein do-Block.' },
     { name: 'pure_bind', kind: 'rule', at: '2.2', w0: '0.1', sig: '(do let x ← pure a; f x) = f a', sig0: 'pure a >>= f = f a',
       en0: 'Starting at a, then f: that is f at a.', de0: 'In a anfangen, dann f: Das ist f bei a.', en: 'Throwing a point mass is no throw.', de: 'Eine Punktmasse zu werfen ist kein Wurf.' },
-    { name: 'add_zero', kind: 'rule', at: '3.6', sig: 'n + 0 = n', en: 'Adding zero.', de: 'Null addieren.' },
+    { name: 'add_zero', kind: 'rule', at: '3.7', sig: 'n + 0 = n', en: 'Adding zero.', de: 'Null addieren.' },
     { name: 'add_assoc', kind: 'rule', at: '4.1', sig: 'a + b + c = a + (b + c)', en: 'Brackets in sums.', de: 'Klammern in Summen.' },
     { name: 'map_eq_pure_bind', kind: 'rule', at: '2.1', w0: '0.6', sig: 'f <$> μ = do let x ← μ; pure (f x)', sig0: 'f <$> s = s >>= fun x => pure (f x)',
       en0: 'Applying f to every point, as a walk.', de0: 'f auf jeden Punkt anwenden, als Weg.', en: 'A move as a do block.', de: 'Ein Zug als do-Block.' },
@@ -1962,7 +1965,7 @@
       fetched.add(w.path)
       fetch(w.a.href.replace(/#.*$/, '')).then(r => r.text()).then(html => {
         const doc = new DOMParser().parseFromString(html, 'text/html')
-        const levels = [...doc.querySelectorAll('.pg-level')].map(r => !!r.dataset.proof)
+        const levels = [...doc.querySelectorAll('.pg-level')].filter(ours).map(r => !!r.dataset.proof)
         try { localStorage.setItem(levelsKey(w.path), JSON.stringify(levels)) } catch {}
         worldMap()
       }).catch(() => {})
@@ -2071,6 +2074,8 @@
   function init() {
     SHOW = document.querySelector('meta[name="pg-edition"]')?.content === 'show'
     if (SHOW) BACKEND = null
+    // the parts of other editions go, those of this one stay (`:::::only`, ProbGame/Level.lean)
+    document.querySelectorAll('.pg-only').forEach(d => { if (ours(d)) d.replaceWith(...d.childNodes); else d.remove() })
     applyLang()
     translatePage()
     languageSwitch()

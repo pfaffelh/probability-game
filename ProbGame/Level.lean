@@ -301,4 +301,30 @@ def de : DirectiveExpanderOf Unit
     let blocks ← contents.mapM elabBlock
     ``(Verso.Doc.Block.other (Block.lang "de") #[$blocks,*])
 
+-- What belongs to one edition only (`ProbGame.edition`: `show`, or `main` for the editions with
+-- proofs), e.g. a level: `:::::only (edition := "show")` around it. Every edition has the page;
+-- `game.js` removes the part in the other editions, before it counts the levels.
+block_extension Block.only (edition : String) where
+  data := Json.str edition
+  traverse _ _ _ := pure none
+  extraJs := {JS.mk gameJs}
+  extraCss := {CSS.mk gameCss}
+  toHtml := some fun _ goB _ data content => do
+    let edition := data.getStr?.toOption.getD "main"
+    pure <| .tag "div" #[("class", "pg-only"), ("data-edition", edition)] (← content.mapM goB)
+  toTeX := none
+
+structure OnlyConfig where
+  edition : String
+
+instance : FromArgs OnlyConfig DocElabM where
+  fromArgs := OnlyConfig.mk <$> .named `edition .string false
+
+/-- A part of the page for one edition only: `show`, or `main` (the editions with proofs). -/
+@[directive]
+def only : DirectiveExpanderOf OnlyConfig
+  | cfg, contents => do
+    let blocks ← contents.mapM elabBlock
+    ``(Verso.Doc.Block.other (Block.only $(quote cfg.edition)) #[$blocks,*])
+
 end ProbGame

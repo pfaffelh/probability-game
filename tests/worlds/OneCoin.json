@@ -27,9 +27,19 @@
    "immer false",
    "toNat"
   ],
-  [
-   "not"
-  ]
+  {
+   "edition": "main",
+   "moves": [
+    "not"
+   ]
+  },
+  {
+   "edition": "show",
+   "moves": [
+    "not",
+    "true: 5"
+   ]
+  }
  ],
  "solutions": "SolutionsOneCoin.lean",
  "context": "Rules.lean"
