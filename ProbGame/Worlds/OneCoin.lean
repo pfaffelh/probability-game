@@ -211,32 +211,7 @@ und `cases b` (aus Level 2) teilt in die Fälle `false` und `true`, zwei Ziele, 
 :::
 ::::
 
-::::level (start := "bernoulli p") (target := "int 5:p -2:1-p") (moves := "not, toNat, payoff 5 -2") (lean := "(bernoulli p h).map (fun b => if b then (5 : ℤ) else -2) 5 = p") (leanTarget := "map (fun b => if b = true then (5 : ℤ) else -2) (coin p)") (no := "1.5") (proof := "(p : I) : (fun b => if b then (5 : ℤ) else -2) <$> coin p = (fun n : ℕ => 7 * (n : ℤ) - 2) <$> (Bool.toNat <$> coin p)")
-:::en
-*A bet.* `true` wins 5 euros, `false` loses 2. The image measure is the distribution of your gain.
-:::
-
-:::de
-*Eine Wette.* Bei `true` gewinnst du 5 Euro, bei `false` verlierst du 2. Das Bildmaß ist die Verteilung
-deines Gewinns.
-:::
-
-:::proofen
-The bet is $`7 \cdot (\text{the coin as a number}) - 2`. The new rule
-`map_map : g <$> (f <$> μ) = (fun x => g (f x)) <$> μ`: two moves are one move.
-
-*Tip.* `rw [map_map]`, then as in level 4.
-:::
-
-:::proofde
-Die Wette ist $`7 \cdot (\text{die Münze als Zahl}) - 2`. Die neue Regel
-`map_map : g <$> (f <$> μ) = (fun x => g (f x)) <$> μ`: Zwei Züge sind ein Zug.
-
-*Tipp.* `rw [map_map]`, dann wie in Level 4.
-:::
-::::
-
-::::level (start := "bernoulli p") (target := "nat 0:1") (moves := "not, heads, tails, toNat") (lean := "((bernoulli p h).map (fun _ => false)).map Bool.toNat = pure 0") (leanTarget := "DiscreteMeasure.pure 0") (no := "1.6") (proof := "(p : I) : Bool.toNat <$> ((fun _ => false) <$> coin p) = pure 0")
+::::level (start := "bernoulli p") (target := "nat 0:1") (moves := "not, heads, tails, toNat") (lean := "((bernoulli p h).map (fun _ => false)).map Bool.toNat = pure 0") (leanTarget := "DiscreteMeasure.pure 0") (no := "1.5") (proof := "(p : I) : Bool.toNat <$> ((fun _ => false) <$> coin p) = pure 0")
 :::en
 *Surely zero.* A point mass on the numbers, however you get there.
 :::
@@ -255,7 +230,7 @@ Wie in den Leveln 3 und 4, jetzt mit einer Zahl.
 ::::
 
 :::::only (edition := "main")
-::::level (start := "bernoulli p") (target := "bernoulli 1-p") (moves := "not, heads, tails, toNat") (lean := "(bernoulli p h).map not = bernoulli (1 - p) tsub_le_self") (leanTarget := "coin (σ p)") (no := "1.7") (proof := "(p : I) : not <$> coin p = coin (σ p)") (lemma := "coin_not")
+::::level (start := "bernoulli p") (target := "bernoulli 1-p") (moves := "not, heads, tails, toNat") (lean := "(bernoulli p h).map not = bernoulli (1 - p) tsub_le_self") (leanTarget := "coin (σ p)") (no := "1.6") (proof := "(p : I) : not <$> coin p = coin (σ p)") (lemma := "coin_not")
 :::en
 *The boss: flip the coin.* Not just the bar at `true`: the whole coin.
 :::
@@ -285,15 +260,15 @@ Münze kennst du (`coin_not_true`, Level 1). Dein Ergebnis wird das Lemma `coin_
 :::::
 
 :::::only (edition := "show")
-::::level (start := "bernoulli p") (target := "int 5:1-p -2:p") (moves := "not, heads, tails, toNat, payoff 5 -2")
+::::level (start := "bernoulli p") (target := "nat 1:1-p 0:p") (moves := "not, heads, tails, toNat")
 :::en
-*The boss: a bet on `false`.* You win $`5` when the coin shows `false`, and lose $`2` when it shows
-`true`. Two moves of this world, one after the other.
+*The boss: count the `false`.* $`1` when the coin shows `false`, $`0` when it shows `true`. Two moves
+of this world, one after the other.
 :::
 
 :::de
-*Der Endgegner: eine Wette auf `false`.* Du gewinnst $`5`, wenn die Münze `false` zeigt, und
-verlierst $`2`, wenn sie `true` zeigt. Zwei Züge dieser Welt, einer nach dem anderen.
+*Der Endgegner: Zähl die `false`.* $`1`, wenn die Münze `false` zeigt, $`0`, wenn sie `true` zeigt.
+Zwei Züge dieser Welt, einer nach dem anderen.
 :::
 ::::
 :::::

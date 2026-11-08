@@ -26,13 +26,6 @@ example (p : I) : Bool.toNat <$> coin p = (fun b => if b then 1 else 0) <$> coin
   cases b
   rfl
   rfl
-example (p : I) : (fun b => if b then (5 : ℤ) else -2) <$> coin p = (fun n : ℕ => 7 * (n : ℤ) - 2) <$> (Bool.toNat <$> coin p) := by
-  rw [map_map]
-  congr 1
-  funext b
-  cases b
-  rfl
-  rfl
 example (p : I) : Bool.toNat <$> ((fun _ => false) <$> coin p) = pure 0 := by
   rw [coin_const, map_pure]
   rfl
