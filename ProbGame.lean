@@ -5,6 +5,7 @@ import ProbGame.Worlds.OneCoin
 import ProbGame.Worlds.Draw
 import ProbGame.Worlds.TwoCoins
 import ProbGame.Worlds.Binomial
+import ProbGame.Lexicon
 
 open Verso.Genre Manual
 open ProbGame
@@ -56,3 +57,5 @@ Zählen.
 {include 1 ProbGame.Worlds.TwoCoins}
 
 {include 1 ProbGame.Worlds.Binomial}
+
+{include 1 ProbGame.Lexicon}

@@ -72,7 +72,13 @@ last level: the next world). On phones the tool bar is one row of symbols at the
 no text above the board: a level's text is under *Tips* and appears once, when the level is first
 played (with the text of the world at the first level), together with the moves new in the level,
 drawn as maps; the text of a proof appears when the proof is first opened, with the tactics and
-rules new in it. `tests/stage.mjs` checks the stage on every world in five screen sizes.
+rules new in it. The proof has the inventory in a column beside it (below on phones).
+`tests/stage.mjs` checks the stage on every world in five screen sizes.
+
+In place of the table of contents, a *map of the worlds*: a circle per world with the share of its
+levels done (☰ on phones). The front page has one big button, *Start* or *Continue* (where one left
+off). The *lexicon* (`ProbGame/Lexicon.lean`, filled by `game.js`) shows every move and building
+block with its picture, and every tactic and rule, of the worlds of the edition.
 
 ## How it works
 

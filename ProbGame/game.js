@@ -45,7 +45,7 @@
   const DE_TITLES = {
     'The Probability Game': 'Das Wahrscheinlichkeits\u00ADspiel',  // (a soft hyphen, for phones)
     'One Coin': 'Eine Münze', 'Draw, then Compute': 'Erst ziehen, dann rechnen', 'Building with Coins': 'Bauen mit Münzen',
-    'Counting': 'Zählen', 'Walking on the Grid': 'Gehen auf dem Gitter', 'True and False': 'Wahr und falsch', 'Table of Contents': 'Inhalt', 'Contents': 'Inhalt',
+    'Counting': 'Zählen', 'Walking on the Grid': 'Gehen auf dem Gitter', 'True and False': 'Wahr und falsch', 'Lexicon': 'Lexikon', 'Table of Contents': 'Inhalt', 'Contents': 'Inhalt',
   }
   function translatePage() {
     const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
@@ -1636,6 +1636,14 @@
       parts.push(hist, goals, err)
       if (!this.done) parts.push(row)
       if (!STAGE) parts.push(tools)
+      // on the stage: the proof on the left, the inventory in a column on the right (below on phones)
+      if (STAGE) {
+        const main = el('div', 'pg-proof-main'), side = el('div', 'pg-proof-side')
+        main.append(...parts); side.append(inv)
+        this.box.replaceChildren(main, side)
+        this.level.onRendered?.()
+        return
+      }
       parts.push(inv)
       if (this.done && !STAGE) {
         const next = el('button', 'pg-next', tr('Next level ›')); next.type = 'button'
@@ -1893,12 +1901,16 @@
       next.disabled = last && !nextWorld
       for (const e of next.querySelectorAll('.pg-lbl')) e.textContent = tr(last ? 'Next world ›' : 'Next ›')
       next.classList.toggle('pg-glow', done(l) && !next.disabled)
+      const n = levels.filter(done).length
+      if (n !== doneBefore) { doneBefore = n; worldMap() }
     }
+    let doneBefore = -1
     levels.forEach(l => { l.onRendered = () => { if (l === levels[current]) refresh() } })
     const show = k => {
       current = Math.max(0, Math.min(levels.length - 1, k))
       roots.forEach((r, i) => { r.hidden = i !== current; r.classList.remove('pg-view-proof') })
       history.replaceState(null, '', `${location.pathname}${location.search}#level-${current + 1}`)
+      try { localStorage.setItem(`pg:last:${siteRoot()}`, JSON.stringify({ href: `${location.pathname}#level-${current + 1}`, title: `${worldTitle.textContent} · ${levelName(current) || current + 1}` })) } catch {}
       levels[current].render()
       refresh()
       showBoardTip(current)
@@ -1913,6 +1925,7 @@
       if (ev.key === 'ArrowLeft') show(current - 1)
       if (ev.key === 'ArrowRight') show(current + 1)
     })
+    try { localStorage.setItem(levelsKey(location.pathname), JSON.stringify(levels.map(l => !!l.proof))) } catch {}
     const fromHash = Number(/^#level-(\d+)$/.exec(location.hash)?.[1] ?? 0) - 1
     show(fromHash >= 0 ? fromHash : Math.max(0, levels.findIndex(l => !done(l))))
     // The stage fills the screen below the header; measured again when the window changes.
@@ -1925,6 +1938,135 @@
     window.addEventListener('resize', () => { clearTimeout(resizing); resizing = setTimeout(fit, 120) })
   }
 
+  // ---------------------------------------------------------------- the map of the worlds
+
+  // In place of the table of contents: a circle per world, one below the other, with the share of
+  // its levels done (board solved, and proof proved where there is one), and lines along the way.
+  // How many levels a world has, and which have a proof, is kept when its page is shown, and
+  // fetched from its page once otherwise.
+  Object.assign(DE, { Worlds: 'Welten', 'Lexicon': 'Lexikon', '📖 Lexicon': '📖 Lexikon', '▶ Start': '▶ Start', '▶ Continue': '▶ Weiterspielen',
+    'or start from the beginning': 'oder von vorn beginnen', 'Continue: {w}': 'Weiter: {w}' })
+  const siteRoot = () => new URL('.', document.baseURI).pathname
+  const worldLinks = () => [...document.querySelectorAll('#toc .split-toc.book tr')].map(tr => {
+    const a = tr.querySelector('a'); if (!a) return null
+    return { a, num: tr.querySelector('.num')?.textContent.trim().replace(/\.$/, '') ?? '', path: new URL(a.href).pathname }
+  }).filter(w => w && !/\/Lexicon\/$/.test(w.path))
+  const levelsKey = path => `pg:levels:${path}`
+  const fetched = new Set()
+  function worldMap() {
+    const toc = document.querySelector('#toc'), worlds = worldLinks()
+    if (!toc || !worlds.length) return
+    const info = w => { try { return JSON.parse(localStorage.getItem(levelsKey(w.path))) } catch { return null } }
+    for (const w of worlds) if (!info(w) && !fetched.has(w.path)) {
+      fetched.add(w.path)
+      fetch(w.a.href.replace(/#.*$/, '')).then(r => r.text()).then(html => {
+        const doc = new DOMParser().parseFromString(html, 'text/html')
+        const levels = [...doc.querySelectorAll('.pg-level')].map(r => !!r.dataset.proof)
+        try { localStorage.setItem(levelsKey(w.path), JSON.stringify(levels)) } catch {}
+        worldMap()
+      }).catch(() => {})
+    }
+    const ls = k => { try { return localStorage.getItem(k) } catch { return null } }
+    const count = w => {
+      const levels = info(w)
+      if (!levels) return null
+      return [levels.filter((proof, i) => ls(`pg:${w.path}:${i}`) === '1' && (SHOW || !proof || ls(`pg:${w.path}:${i}:proofd`) === '1')).length, levels.length]
+    }
+    const W2 = 250, dy = 56, x = 30, y0 = 26, H = y0 + (worlds.length - 1) * dy + 30
+    const map = svg('svg', { viewBox: `0 0 ${W2} ${H}`, class: 'pg-map' })
+    for (let i = 1; i < worlds.length; i++) map.append(svg('line', { x1: x, y1: y0 + (i - 1) * dy, x2: x, y2: y0 + i * dy, class: 'pg-map-edge' }))
+    worlds.forEach((w, i) => {
+      const y = y0 + i * dy, r = 18, c = count(w), frac = c && c[1] ? c[0] / c[1] : 0
+      const name = w.a.textContent.trim()
+      const g = svg('a', { href: w.a.getAttribute('href').replace(/#.*$/, ''), class: 'pg-map-world' + (w.path === location.pathname ? ' pg-map-here' : '') + (c && c[0] === c[1] && c[1] ? ' pg-map-done' : '') })
+      g.append(svg('title', {}, c ? `${name}: ${c[0]}/${c[1]}` : name))
+      g.append(svg('circle', { cx: x, cy: y, r, class: 'pg-map-disc' }))
+      if (frac > 0 && frac < 1) {
+        const t = 2 * Math.PI * frac, ex = x + r * Math.sin(t), ey = y - r * Math.cos(t)
+        g.append(svg('path', { d: `M${x},${y - r} A${r},${r} 0 ${frac > 0.5 ? 1 : 0} 1 ${ex},${ey}`, class: 'pg-map-ring' }))
+      }
+      // (the worlds before chance have no number: a sign of their own)
+      const sign = /True-and-False\/$/.test(w.path) ? '⊤' : /Walking-on-the-Grid\/$/.test(w.path) ? '⌗' : '•'
+      g.append(svg('text', { x, y: y + 6, 'text-anchor': 'middle', class: 'pg-map-n' }, w.num || sign))
+      g.append(svg('text', { x: x + r + 8, y: y - 1, class: 'pg-map-name' }, name))
+      g.append(svg('text', { x: x + r + 8, y: y + 13, class: 'pg-map-count' }, c ? `${c[0]}/${c[1]}` : ''))
+      map.append(g)
+    })
+    toc.querySelector('.pg-worlds')?.remove()
+    const box = el('div', 'pg-worlds')
+    box.append(el('div', 'pg-worlds-title', tr('Worlds')), map)
+    const lex = [...document.querySelectorAll('#toc a')].find(a => /\/Lexicon\/$/.test(new URL(a.href).pathname))
+    if (lex) {
+      const t = el('a', 'pg-map-lexicon' + (new URL(lex.href).pathname === location.pathname ? ' pg-map-here' : ''), tr('📖 Lexicon'))
+      t.href = lex.getAttribute('href').replace(/#.*$/, '')
+      box.append(t)
+    }
+    ;(toc.querySelector('.first') ?? toc).prepend(box)
+    toc.classList.add('pg-has-map')
+  }
+
+  // The front page: one button, which starts at the first world or goes on where one left off.
+  function startButton() {
+    if (document.querySelector('.pg-level, .pg-lexicon')) return
+    const first = worldLinks()[0], h1 = document.querySelector('main h1')
+    if (!first || !h1) return
+    let last = null
+    try { last = JSON.parse(localStorage.getItem(`pg:last:${siteRoot()}`)) } catch {}
+    const box = el('div', 'pg-start')
+    const go = el('a', 'pg-start-button', last ? tr('▶ Continue') : tr('▶ Start'))
+    go.href = last?.href ?? first.a.getAttribute('href').replace(/#.*$/, '')
+    box.append(go)
+    if (last) {
+      box.append(el('div', 'pg-start-where', tr('Continue: {w}', { w: last.title })))
+      const again = el('a', 'pg-start-again', tr('or start from the beginning'))
+      again.href = first.a.getAttribute('href').replace(/#.*$/, '')
+      box.append(again)
+    }
+    h1.after(box)
+    document.documentElement.classList.add('pg-front')
+  }
+
+  // ---------------------------------------------------------------- the lexicon
+
+  // Every move and building block (with its picture), and every tactic and rule, of the worlds of
+  // this edition; the same texts as in the tips.
+  Object.assign(DE, {
+    'Moves and building blocks': 'Züge und Bausteine', 'Moves on a coin': 'Züge auf einer Münze', 'Building blocks of the circuits': 'Bausteine der Schaltpläne',
+    'Moves of a sure coin': 'Züge einer sicheren Münze', 'Moves on the grid': 'Züge auf dem Gitter', 'Tactics and rules': 'Taktiken und Regeln',
+    'Rules': 'Regeln', 'Your lemmas': 'Deine Lemmas',
+  })
+  function lexicon() {
+    const box = document.querySelector('.pg-lexicon')
+    if (!box) return
+    const has = slug => [...document.querySelectorAll('#toc a')].some(a => new URL(a.href).pathname.endsWith(`/${slug}/`))
+    const bool = has('True-and-False'), walk = has('Walking-on-the-Grid'), coin = has('One-Coin')
+    const parts = [el('h2', '', tr('Moves and building blocks'))]
+    const group = (title, cards) => { if (cards.length) parts.push(el('h3', '', title), ...cards.map(moveCard)) }
+    if (bool) group(tr('Moves of a sure coin'), Object.keys(MOVESB).map(m => ['bool:' + m, tr(MOVESB[m].label), mapPicture(k => String(MOVESB[m].f(k === 'true')))]))
+    if (walk) group(tr('Moves on the grid'), Object.keys(LABEL0).map(m => ['walk:' + m, tr(LABEL0[m]), null]))
+    if (coin) group(tr('Moves on a coin'), ['id', 'not', 'heads', 'tails', 'toNat', 'payoff 5 -2'].map(spec => {
+      const m = parseMove(spec); return ['level:' + spec.split(' ')[0], m.label(), mapPicture(m.f, m.to)]
+    }))
+    if (coin) group(tr('Building blocks of the circuits'), [['src:coin', source('coin').label(), null], ['src:binom', 'B(n, p)', null],
+      ...Object.keys(FUNS).map(f => ['build:' + f, funLabel(f), el('div', 'pg-map-sym', FUNS[f].sym)])])
+    if (!SHOW) {
+      parts.push(el('h2', '', tr('Tactics and rules')))
+      const shown = INVENTORY.filter(i => (i.at && coin) || (i.wb && bool) || (i.w0 && walk))
+      for (const [kind, title] of [['tactic', tr('Tactics')], ['rule', tr('Rules')], ['lemma', tr('Your lemmas')]]) {
+        const items = shown.filter(i => i.kind === kind)
+        if (!items.length) continue
+        parts.push(el('h3', '', title))
+        for (const it of items) {
+          const card = el('div', 'pg-tip-item')
+          const text = LANG === 'de' ? it.de ?? it.deb ?? it.de0 : it.en ?? it.enb ?? it.en0
+          card.append(el('b', '', it.name + ' '), el('code', 'pg-inv-sig', it.sig ?? it.sig0 ?? ''), el('div', '', text ?? ''))
+          parts.push(card)
+        }
+      }
+    }
+    box.replaceChildren(...parts)
+  }
+
   function init() {
     SHOW = document.querySelector('meta[name="pg-edition"]')?.content === 'show'
     if (SHOW) BACKEND = null
@@ -1932,6 +2074,9 @@
     translatePage()
     languageSwitch()
     stage()
+    lexicon()
+    startButton()
+    worldMap()
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init)
   else init()

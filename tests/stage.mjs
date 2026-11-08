@@ -1,7 +1,7 @@
 // The stage of every world, in five screen sizes: a level's tip comes once, in a box that fits the
 // screen; the page does not scroll (on a screen higher than 500 px) and is not wider than the screen;
 // the tool bar and the status line are in view; Tips opens the tips again, Next goes to the next
-// level (with its own tip), ← back.
+// level (with its own tip), ← back. The lexicon has its moves; the front page its Start button.
 // Usage: node tests/stage.mjs   (BASE=https://lean.mathematik.uni-freiburg.de/main/ for the server)
 import { chromium } from 'playwright-core'
 const base = (process.env.BASE ?? 'http://127.0.0.1:8004/main/').replace(/\/?$/, '/')
@@ -15,10 +15,19 @@ for (const [name, width, height] of sizes) {
   page.on('pageerror', e => { failures++; console.log('PAGEERROR', e.message) })
   await page.goto(base)
   await page.evaluate(() => { localStorage.clear(); localStorage.setItem('pg:lang', 'de') })
+  check(await page.locator('.pg-start-button').isVisible(), `${name}: no Start button on the front page`)
   const pages = await page.evaluate(() => [...new Set([...document.querySelectorAll('a[href]')].map(a => /^([^/#?.]+)\/#/.exec(a.getAttribute('href'))?.[1]).filter(Boolean))])
   for (const path of pages) {
     const at = `${name} ${path}`
     await page.goto(base + path + '/'); await page.waitForTimeout(500)
+    if (!(await page.locator('.pg-level').count())) {
+      // the lexicon: its moves (with pictures), and the map beside it
+      const n = await page.locator('.pg-lexicon .pg-tip-move').count()
+      check(n >= 10, `${at}: the lexicon has ${n} moves`)
+      check(await page.locator('#toc .pg-map').count() === 1, `${at}: no map of the worlds`)
+      console.log(`${at}: ${n} moves`)
+      continue
+    }
     // the tip of the first level, once
     const box = page.locator('.pg-tip-card')
     check(await box.isVisible(), `${at}: no tip at the first level`)
