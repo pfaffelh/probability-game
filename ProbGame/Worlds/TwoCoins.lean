@@ -152,7 +152,30 @@ nichts.
 :::
 ::::
 
-::::build (target := "bool true:2p(1-p) false:p^2+(1-p)^2") (moves := "not, and, or") (coins := "2") (no := "3.5") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure ((x || y) && !(x && y))) = (do let x ← coin p; let y ← coin p; pure (xor x y))")
+::::build (target := "pure true") (moves := "not, and, or") (coins := "1") (no := "3.5") (proof := "(p : I) : (do let x ← coin p; pure (x || !x)) = pure true")
+:::en
+*Surely `true`, with a single coin.* As before, now with `or`: the coin or its flip shows `true`.
+:::
+
+:::de
+*Sicher `true`, mit einer einzigen Münze.* Wie eben, jetzt mit `or`: Die Münze oder ihre Umkehrung
+zeigt `true`.
+:::
+
+:::proofen
+The new rule `Bool.or_not_self : (x || !x) = true`; the rest as in the level before.
+
+*Tip.* `simp only [Bool.or_not_self]`, then `rw [coin_unused]`.
+:::
+
+:::proofde
+Die neue Regel `Bool.or_not_self : (x || !x) = true`; der Rest wie im Level davor.
+
+*Tipp.* `simp only [Bool.or_not_self]`, dann `rw [coin_unused]`.
+:::
+::::
+
+::::build (target := "bool true:2p(1-p) false:p^2+(1-p)^2") (moves := "not, and, or") (coins := "2") (no := "3.6") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure ((x || y) && !(x && y))) = (do let x ← coin p; let y ← coin p; pure (xor x y))")
 :::en
 *Exactly one `true`*, without a function for it: at least one, but not both.
 :::
@@ -178,7 +201,7 @@ führt `t₂` auf jedem Ziel aus, das `t₁` übrig lässt.
 :::
 ::::
 
-::::build (target := "nat 0:(1-p)^2 1:2p(1-p) 2:p^2") (moves := "not, and, or, toNat, add") (coins := "2") (no := "3.6") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x.toNat + y.toNat)) = binom p 2")
+::::build (target := "nat 0:(1-p)^2 1:2p(1-p) 2:p^2") (moves := "not, and, or, toNat, add") (coins := "2") (no := "3.7") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x.toNat + y.toNat)) = binom p 2")
 :::en
 *The number of `true`.* From coins to numbers ($`0` and $`1`), and add them: the binomial distribution $`B(2, p)`.
 :::
@@ -210,7 +233,7 @@ neu ist `add_zero : n + 0 = n`.
 :::
 ::::
 
-::::build (target := "bool true:3p^2-2p^3 false:1-3p^2+2p^3") (moves := "not, and, or") (coins := "3") (no := "3.7") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; let z ← coin p; pure ((x && y) || (x && z) || (y && z))) = (fun n => decide (2 ≤ n)) <$> binom p 3")
+::::build (target := "bool true:3p^2-2p^3 false:1-3p^2+2p^3") (moves := "not, and, or") (coins := "3") (no := "3.8") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; let z ← coin p; pure ((x && y) || (x && z) || (y && z))) = (fun n => decide (2 ≤ n)) <$> binom p 3")
 :::en
 *Boss: the majority of three.* `true` when at least two of three coins show `true`. Each coin has to
 go into two functions.
