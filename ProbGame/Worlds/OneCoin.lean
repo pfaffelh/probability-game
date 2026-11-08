@@ -39,7 +39,7 @@ wenn es auf demselben Raum lebt). Die Massen sind $`p` und $`1 - p`; das Bild ze
 Beispiel-$`p`, das der Schieberegler ändert.
 :::
 
-::::level (start := "bernoulli p") (target := "bernoulli 1-p") (moves := "not") (lean := "(bernoulli p h).map not true = 1 - p") (leanTarget := "coin (σ p)") (no := "1.1") (proof := "(p : I) : (not <$> coin p) true = σ p") (lemma := "coin_not_true")
+::::level (start := "bernoulli p") (target := "bernoulli 1-p") (moves := "not") (lean := "(bernoulli p h).map not true = 1 - p") (leanTarget := "coin (σ p)") (proof := "(p : I) : (not <$> coin p) true = σ p") (lemma := "coin_not_true") (new := "rw, coin_true, coin_false, map_true, Bool.not_true, Bool.not_false, Bool.cond_true, Bool.cond_false, zero_add, Bool.not_not") (play := "not")
 :::en
 *Where does the mass go?* Flip the coin once, and look at the bar at `true`: its mass came from
 `false`.
@@ -95,9 +95,17 @@ Der Rest ist Rechnen, eine Regel nach der anderen: `Bool.not_true : (!true) = fa
 *Tipp.* `rw [map_true]`, `rw [Bool.not_true, Bool.not_false]`,
 `rw [Bool.cond_false, Bool.cond_true, zero_add]`, `rw [coin_false]`.
 :::
+:::solution
+```
+rw [map_true]
+rw [Bool.not_true, Bool.not_false]
+rw [Bool.cond_false, Bool.cond_true, zero_add]
+rw [coin_false]
+```
+:::
 ::::
 
-::::level (start := "bernoulli p") (target := "pure true") (moves := "not, heads") (lean := "(bernoulli p h).map (fun _ => true) = pure true") (leanTarget := "DiscreteMeasure.pure true") (no := "1.2") (proof := "(p : I) (b : Bool) : (fun _ => b) <$> coin p = pure b") (lemma := "coin_const")
+::::level (start := "bernoulli p") (target := "pure true") (moves := "not, heads") (lean := "(bernoulli p h).map (fun _ => true) = pure true") (leanTarget := "DiscreteMeasure.pure true") (proof := "(p : I) (b : Bool) : (fun _ => b) <$> coin p = pure b") (lemma := "coin_const") (new := "apply, cases, bool_ext, coin_total, pure_true") (play := "heads")
 :::en
 *Always `true`.* A constant map sends both outcomes to the same point: all the mass goes together.
 The result is sure, a point mass (Dirac measure).
@@ -149,9 +157,18 @@ eins hat. `rw [Bool.cond_true]` schreibt immer nur ein `bif` um.
 `rw [Bool.cond_false, Bool.cond_false, Bool.cond_false, zero_add]` und
 `rw [Bool.cond_true, Bool.cond_true, Bool.cond_true, coin_total]`.
 :::
+:::solution
+```
+apply bool_ext
+rw [map_true, pure_true]
+cases b
+rw [Bool.cond_false, Bool.cond_false, Bool.cond_false, zero_add]
+rw [Bool.cond_true, Bool.cond_true, Bool.cond_true, coin_total]
+```
+:::
 ::::
 
-::::level (start := "bernoulli p") (target := "pure false") (moves := "not, heads") (lean := "((bernoulli p h).map (fun _ => true)).map not = pure false") (leanTarget := "DiscreteMeasure.pure false") (no := "1.3") (proof := "(p : I) : not <$> ((fun _ => true) <$> coin p) = pure false")
+::::level (start := "bernoulli p") (target := "pure false") (moves := "not, heads") (lean := "((bernoulli p h).map (fun _ => true)).map not = pure false") (leanTarget := "DiscreteMeasure.pure false") (proof := "(p : I) : not <$> ((fun _ => true) <$> coin p) = pure false") (new := "rfl, map_pure") (play := "heads, not")
 :::en
 *Surely `false`, but there is no “always `false`”.* Two moves one after the other: the image measure of
 the image measure is the image measure of the composition, $`(P \circ f^{-1}) \circ g^{-1} = P \circ (g \circ f)^{-1}`.
@@ -179,9 +196,16 @@ nach Ausrechnen gleich sind: `!true` ist `false`.
 *Tipp.* `rw [coin_const]`, dann `rw [map_pure]` (oder beides auf einmal: `rw [coin_const, map_pure]`),
 dann `rfl`.
 :::
+:::solution
+```
+rw [coin_const]
+rw [map_pure]
+rfl
+```
+:::
 ::::
 
-::::level (start := "bernoulli p") (target := "nat 1:p 0:1-p") (moves := "not, toNat") (lean := "(bernoulli p h).map Bool.toNat 1 = p") (leanTarget := "map Bool.toNat (coin p)") (no := "1.4") (proof := "(p : I) : Bool.toNat <$> coin p = (fun b => if b then 1 else 0) <$> coin p")
+::::level (start := "bernoulli p") (target := "nat 1:p 0:1-p") (moves := "not, toNat") (lean := "(bernoulli p h).map Bool.toNat 1 = p") (leanTarget := "map Bool.toNat (coin p)") (proof := "(p : I) : Bool.toNat <$> coin p = (fun b => if b then 1 else 0) <$> coin p") (new := "congr, funext") (play := "toNat")
 :::en
 *From sides to numbers.* `Bool.toNat` counts `true` as $`1` and `false` as $`0`: the distribution
 moves to the natural numbers. This is how a coin becomes a random number.
@@ -195,7 +219,7 @@ wandert zu den natürlichen Zahlen. So wird aus einer Münze eine Zufallszahl.
 :::proofen
 `Bool.toNat` counts `true` as $`1` and `false` as $`0`. Both sides move the same coin, with two
 maps that agree. Two new tactics: `congr 1` reduces the goal to the two maps being equal;
-`funext b` to their being equal at every `b`; and `cases b` (from level 2) splits into the cases `false` and `true`, two
+`funext b` to their being equal at every `b`; and `cases b` (from *Always `true`*) splits into the cases `false` and `true`, two
 goals, one after the other.
 
 *Tip.* `congr 1`, `funext b`, `cases b`, `rfl`, `rfl`.
@@ -205,13 +229,22 @@ goals, one after the other.
 `Bool.toNat` zählt `true` als $`1` und `false` als $`0`. Beide Seiten bewegen dieselbe Münze, mit
 zwei Abbildungen, die übereinstimmen. Zwei neue Taktiken: `congr 1` führt das Ziel darauf zurück,
 dass die beiden Abbildungen gleich sind; `funext b` darauf, dass sie an jeder Stelle `b` gleich sind;
-und `cases b` (aus Level 2) teilt in die Fälle `false` und `true`, zwei Ziele, eines nach dem anderen.
+und `cases b` (aus *Immer `true`*) teilt in die Fälle `false` und `true`, zwei Ziele, eines nach dem anderen.
 
 *Tipp.* `congr 1`, `funext b`, `cases b`, `rfl`, `rfl`.
 :::
+:::solution
+```
+congr 1
+funext b
+cases b
+rfl
+rfl
+```
+:::
 ::::
 
-::::level (start := "bernoulli p") (target := "nat 0:1") (moves := "not, heads, tails, toNat") (lean := "((bernoulli p h).map (fun _ => false)).map Bool.toNat = pure 0") (leanTarget := "DiscreteMeasure.pure 0") (no := "1.5") (proof := "(p : I) : Bool.toNat <$> ((fun _ => false) <$> coin p) = pure 0")
+::::level (start := "bernoulli p") (target := "nat 0:1") (moves := "not, heads, tails, toNat") (lean := "((bernoulli p h).map (fun _ => false)).map Bool.toNat = pure 0") (leanTarget := "DiscreteMeasure.pure 0") (proof := "(p : I) : Bool.toNat <$> ((fun _ => false) <$> coin p) = pure 0") (play := "tails, toNat")
 :::en
 *Surely zero.* A point mass on the numbers, however you get there.
 :::
@@ -221,16 +254,22 @@ und `cases b` (aus Level 2) teilt in die Fälle `false` und `true`, zwei Ziele, 
 :::
 
 :::proofen
-As in levels 3 and 4, now with a number.
+As in *Surely `false`* and *From sides to numbers*, now with a number.
 :::
 
 :::proofde
-Wie in den Leveln 3 und 4, jetzt mit einer Zahl.
+Wie in *Sicher `false`* und *Von Seiten zu Zahlen*, jetzt mit einer Zahl.
+:::
+:::solution
+```
+rw [coin_const, map_pure]
+rfl
+```
 :::
 ::::
 
 :::::only (edition := "main")
-::::level (start := "bernoulli p") (target := "bernoulli 1-p") (moves := "not, heads, tails, toNat") (lean := "(bernoulli p h).map not = bernoulli (1 - p) tsub_le_self") (leanTarget := "coin (σ p)") (no := "1.6") (proof := "(p : I) : not <$> coin p = coin (σ p)") (lemma := "coin_not")
+::::level (start := "bernoulli p") (target := "bernoulli 1-p") (moves := "not, heads, tails, toNat") (lean := "(bernoulli p h).map not = bernoulli (1 - p) tsub_le_self") (leanTarget := "coin (σ p)") (proof := "(p : I) : not <$> coin p = coin (σ p)") (lemma := "coin_not") (play := "not")
 :::en
 *The boss: flip the coin.* Not just the bar at `true`: the whole coin.
 :::
@@ -241,8 +280,8 @@ Wie in den Leveln 3 und 4, jetzt mit einer Zahl.
 
 :::proofen
 Flipping turns the coin `p` into the coin $`1 - p`. Two distributions on `Bool` are the same when
-their bars at `true` are (`bool_ext`, level 2), and you know the bar at `true` of the flipped
-coin (`coin_not_true`, level 1). Your result becomes the lemma `coin_not`, which worlds 2 and 3 use
+their bars at `true` are (`bool_ext`, from *Always `true`*), and you know the bar at `true` of the flipped
+coin (`coin_not_true`, from *Where does the mass go?*). Your result becomes the lemma `coin_not`, which the next worlds use
 all the time.
 
 *Tip.* `apply bool_ext`, then `rw` with your lemma and `coin_true`.
@@ -250,17 +289,23 @@ all the time.
 
 :::proofde
 Umdrehen macht aus der Münze $`p` die Münze $`1 - p`. Zwei Verteilungen auf `Bool` sind gleich, wenn
-ihre Säulen bei `true` gleich sind (`bool_ext`, Level 2), und die Säule bei `true` der umgedrehten
-Münze kennst du (`coin_not_true`, Level 1). Dein Ergebnis wird das Lemma `coin_not`, das die Welten
-2 und 3 ständig benutzen.
+ihre Säulen bei `true` gleich sind (`bool_ext`, aus *Immer `true`*), und die Säule bei `true` der umgedrehten
+Münze kennst du (`coin_not_true`, aus *Wohin geht die Masse?*). Dein Ergebnis wird das Lemma `coin_not`, das die nächsten
+Welten ständig benutzen.
 
 *Tipp.* `apply bool_ext`, dann `rw` mit deinem Lemma und `coin_true`.
+:::
+:::solution
+```
+apply bool_ext
+rw [coin_not_true, coin_true]
+```
 :::
 ::::
 :::::
 
 :::::only (edition := "show")
-::::level (start := "bernoulli p") (target := "nat 1:1-p 0:p") (moves := "not, heads, tails, toNat")
+::::level (start := "bernoulli p") (target := "nat 1:1-p 0:p") (moves := "not, heads, tails, toNat") (play := "not, toNat")
 :::en
 *The boss: count the `false`.* $`1` when the coin shows `false`, $`0` when it shows `true`. Two moves
 of this world, one after the other.

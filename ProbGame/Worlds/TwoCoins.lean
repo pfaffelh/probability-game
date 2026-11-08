@@ -46,7 +46,7 @@ $`p^2`, `true`–`false` $`p(1 - p)`, und so weiter.
 Der Schaltplan, von links nach rechts gelesen, ist ein `do`-Block in Lean.
 :::
 
-::::build (target := "bool true:p^2 false:1-p^2") (moves := "not, and, or") (coins := "2") (no := "3.1") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && y)) = coin (p * p)")
+::::build (target := "bool true:p^2 false:1-p^2") (moves := "not, and, or") (coins := "2") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && y)) = coin (p * p)") (new := "coin_and") (play := "M1 M2 and")
 :::en
 *Both `true`.* Two coins, and `true` only when both show `true`.
 :::
@@ -69,9 +69,14 @@ Ergebnis. Jetzt gibt es zwei Würfe, und jedes `←` ist ein neuer Wurf, unabhä
 neue Regel ist die Unabhängigkeit selbst:
 `coin_and : (do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)`.
 :::
+:::solution
+```
+rw [coin_and]
+```
+:::
 ::::
 
-::::build (target := "bool true:p(1-p) false:1-p(1-p)") (moves := "not, and, or") (coins := "2") (no := "3.2") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && !y)) = coin (p * σ p)")
+::::build (target := "bool true:p(1-p) false:1-p(1-p)") (moves := "not, and, or") (coins := "2") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && !y)) = coin (p * σ p)") (play := "M2 not; M1 Z1 and")
 :::en
 *First `true`, then `false`.*
 :::
@@ -97,9 +102,16 @@ innerhalb eines `do`-Blocks mit `simp only`.
 
 *Tipp.* `rw [← coin_and]`, `rw [← coin_not]`, `simp only [bind_map_left]`.
 :::
+:::solution
+```
+rw [← coin_and]
+rw [← coin_not]
+simp only [bind_map_left]
+```
+:::
 ::::
 
-::::build (target := "bool true:2p-p^2 false:(1-p)^2") (moves := "not, and, or") (coins := "2") (no := "3.3") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x || y)) = coin (σ (σ p * σ p))")
+::::build (target := "bool true:2p-p^2 false:(1-p)^2") (moves := "not, and, or") (coins := "2") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x || y)) = coin (σ (σ p * σ p))") (new := "map_bind, or_eq") (play := "M1 M2 or")
 :::en
 *At least one `true`.* `false` only when both show `false`: $`(1 - p)^2`.
 :::
@@ -126,9 +138,17 @@ wandert in ihn hinein.
 *Tipp.* Auf der rechten Seite, rückwärts: `rw [← coin_not]`, `rw [← coin_and]`, `rw [← coin_not]`;
 dann `simp only [bind_map_left, map_bind, map_pure, or_eq]`.
 :::
+:::solution
+```
+rw [← coin_not]
+rw [← coin_and]
+rw [← coin_not]
+simp only [bind_map_left, map_bind, map_pure, or_eq]
+```
+:::
 ::::
 
-::::build (target := "pure false") (moves := "not, and, or") (coins := "1") (no := "3.4") (proof := "(p : I) : (do let x ← coin p; pure (x && !x)) = pure false")
+::::build (target := "pure false") (moves := "not, and, or") (coins := "1") (proof := "(p : I) : (do let x ← coin p; pure (x && !x)) = pure false") (new := "Bool.and_not_self, coin_unused") (play := "M1 not; M1 Z1 and")
 :::en
 *Surely `false`, with a single coin.* A coin that goes into two functions is the same coin in both:
 the results depend on each other.
@@ -153,9 +173,15 @@ nichts.
 
 *Tipp.* `simp only [Bool.and_not_self]`, dann `rw [coin_unused]`.
 :::
+:::solution
+```
+simp only [Bool.and_not_self]
+rw [coin_unused]
+```
+:::
 ::::
 
-::::build (target := "pure true") (moves := "not, and, or") (coins := "1") (no := "3.5") (proof := "(p : I) : (do let x ← coin p; pure (x || !x)) = pure true")
+::::build (target := "pure true") (moves := "not, and, or") (coins := "1") (proof := "(p : I) : (do let x ← coin p; pure (x || !x)) = pure true") (new := "Bool.or_not_self") (play := "M1 not; M1 Z1 or")
 :::en
 *Surely `true`, with a single coin.* As before, now with `or`: the coin or its flip shows `true`.
 :::
@@ -176,9 +202,15 @@ Die neue Regel `Bool.or_not_self : (x || !x) = true`; der Rest wie im Level davo
 
 *Tipp.* `simp only [Bool.or_not_self]`, dann `rw [coin_unused]`.
 :::
+:::solution
+```
+simp only [Bool.or_not_self]
+rw [coin_unused]
+```
+:::
 ::::
 
-::::build (target := "bool true:2p(1-p) false:p^2+(1-p)^2") (moves := "not, and, or") (coins := "2") (no := "3.6") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure ((x || y) && !(x && y))) = (do let x ← coin p; let y ← coin p; pure (xor x y))")
+::::build (target := "bool true:2p(1-p) false:p^2+(1-p)^2") (moves := "not, and, or") (coins := "2") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure ((x || y) && !(x && y))) = (do let x ← coin p; let y ← coin p; pure (xor x y))") (new := "<;>") (play := "M1 M2 or; M1 M2 and; Z2 not; Z1 Z3 and")
 :::en
 *Exactly one `true`*, without a function for it: at least one, but not both.
 :::
@@ -202,9 +234,18 @@ führt `t₂` auf jedem Ziel aus, das `t₁` übrig lässt.
 
 *Tipp.* `congr 1`, `funext x`, `congr 1`, `funext y`, `cases x <;> cases y <;> rfl`.
 :::
+:::solution
+```
+congr 1
+funext x
+congr 1
+funext y
+cases x <;> cases y <;> rfl
+```
+:::
 ::::
 
-::::build (target := "nat 0:(1-p)^2 1:2p(1-p) 2:p^2") (moves := "not, and, or, toNat, add") (coins := "2") (no := "3.7") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x.toNat + y.toNat)) = binom p 2")
+::::build (target := "nat 0:(1-p)^2 1:2p(1-p) 2:p^2") (moves := "not, and, or, toNat, add") (coins := "2") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x.toNat + y.toNat)) = binom p 2") (new := "binom_zero, binom_succ, add_zero") (play := "M1 toNat; M2 toNat; Z1 Z2 add")
 :::en
 *The number of `true`.* From coins to numbers ($`0` and $`1`), and add them: the binomial distribution $`B(2, p)`.
 :::
@@ -234,9 +275,15 @@ neu ist `add_zero : n + 0 = n`.
 
 *Tipp.* `rw [binom_succ, binom_succ, binom_zero]`, dann `simp only [bind_assoc, pure_bind, add_zero]`.
 :::
+:::solution
+```
+rw [binom_succ, binom_succ, binom_zero]
+simp only [bind_assoc, pure_bind, add_zero]
+```
+:::
 ::::
 
-::::build (target := "nat 0:(1-p)^3 1:3p(1-p)^2 2:3p^2(1-p) 3:p^3") (moves := "toNat, add") (coins := "3") (no := "3.8") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; let z ← coin p; pure (x.toNat + y.toNat + z.toNat)) = binom p 3")
+::::build (target := "nat 0:(1-p)^3 1:3p(1-p)^2 2:3p^2(1-p) 3:p^3") (moves := "toNat, add") (coins := "3") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; let z ← coin p; pure (x.toNat + y.toNat + z.toNat)) = binom p 3") (new := "add_assoc") (play := "M1 toNat; M2 toNat; M3 toNat; Z1 Z2 Z3 add")
 :::en
 *Three coins.* Count the `true`s among three coins. Throw $`n` coins and count how often `true`
 comes up: that is the *binomial distribution* $`B(n, p)`, with
@@ -253,17 +300,23 @@ Ab dem nächsten Level ist $`B(2, p)` ein eigener Baustein.
 :::proofen
 Three throws are `binom p 3`. New: `add_assoc : a + b + c = a + (b + c)`.
 
-*Tip.* As in level 7, and `add_assoc` in the `simp only`.
+*Tip.* As in *The number of `true`*, and `add_assoc` in the `simp only`.
 :::
 
 :::proofde
 Drei Würfe sind `binom p 3`. Neu: `add_assoc : a + b + c = a + (b + c)`.
 
-*Tipp.* Wie in Level 7, und `add_assoc` im `simp only`.
+*Tipp.* Wie in *Die Anzahl `true`*, und `add_assoc` im `simp only`.
+:::
+:::solution
+```
+rw [binom_succ, binom_succ, binom_succ, binom_zero]
+simp only [bind_assoc, pure_bind, add_zero, add_assoc]
+```
 :::
 ::::
 
-::::build (target := "nat 0:(1-p)^3 1:3p(1-p)^2 2:3p^2(1-p) 3:p^3") (moves := "toNat, add") (sources := "binom2:1, coin:1") (no := "3.9") (proof := "(p : I) (n : ℕ) : (do let X ← binom p n; let Y ← coin p; pure (X + Y.toNat)) = binom p (n + 1)") (lemma := "binom_succ'")
+::::build (target := "nat 0:(1-p)^3 1:3p(1-p)^2 2:3p^2(1-p) 3:p^3") (moves := "toNat, add") (sources := "binom2:1, coin:1") (proof := "(p : I) (n : ℕ) : (do let X ← binom p n; let Y ← coin p; pure (X + Y.toNat)) = binom p (n + 1)") (lemma := "binom_succ'") (new := "induction'") (play := "M1 toNat; B1 Z1 add")
 :::en
 *A new building block.* $`B(2, p)` and one more coin give $`B(3, p)`: one more throw, one more
 chance to count.
@@ -295,9 +348,18 @@ Das Lemma heißt `binom_succ'`.
 *Tipp.* Fall $`0`: `rw [binom_zero, binom_succ, binom_zero]`, `simp only [pure_bind, zero_add, add_zero]`.
 Fall $`n + 1`: `rw [binom_succ p n, binom_succ p (n + 1), ← ih]`, `simp only [bind_assoc, pure_bind, add_assoc]`.
 :::
+:::solution
+```
+induction' n with n ih
+rw [binom_zero, binom_succ, binom_zero]
+simp only [pure_bind, zero_add, add_zero]
+rw [binom_succ p n, binom_succ p (n + 1), ← ih]
+simp only [bind_assoc, pure_bind, add_assoc]
+```
+:::
 ::::
 
-::::build (target := "nat 0:(1-p)^4 1:4p(1-p)^3 2:6p^2(1-p)^2 3:4p^3(1-p) 4:p^4") (moves := "add") (sources := "binom2:2") (no := "3.10") (proof := "(p : I) (n m : ℕ) : (do let X ← binom p n; let Y ← binom p m; pure (X + Y)) = binom p (n + m)") (lemma := "binom_add")
+::::build (target := "nat 0:(1-p)^4 1:4p(1-p)^3 2:6p^2(1-p)^2 3:4p^3(1-p) 4:p^4") (moves := "add") (sources := "binom2:2") (proof := "(p : I) (n m : ℕ) : (do let X ← binom p n; let Y ← binom p m; pure (X + Y)) = binom p (n + m)") (lemma := "binom_add") (play := "B1 B2 add")
 :::en
 *$`B(2, p) * B(2, p) = B(4, p)`.* Two independent binomials, no coins. The sum of independent
 random numbers has the *convolution* $`*` of their distributions as its distribution.
@@ -328,9 +390,18 @@ Fall $`m + 1`: schreibe `binom p (m + 1)` mit `← binom_succ' p m` um, dann `n 
 `n + m + 1` (`← add_assoc`) und das wieder mit `← binom_succ' p (n + m)`; jetzt `← ih`, und räume auf
 mit `simp only [bind_assoc, pure_bind, add_assoc]`.
 :::
+:::solution
+```
+induction' m with m ih
+rw [binom_zero]
+simp only [pure_bind, add_zero, bind_pure]
+rw [← binom_succ' p m, ← add_assoc, ← binom_succ' p (n + m), ← ih]
+simp only [bind_assoc, pure_bind, add_assoc]
+```
+:::
 ::::
 
-::::build (target := "bool true:3p^2-2p^3 false:1-3p^2+2p^3") (moves := "not, and, or") (coins := "3") (no := "3.11") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; let z ← coin p; pure ((x && y) || (x && z) || (y && z))) = (fun n => decide (2 ≤ n)) <$> binom p 3")
+::::build (target := "bool true:3p^2-2p^3 false:1-3p^2+2p^3") (moves := "not, and, or") (coins := "3") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; let z ← coin p; pure ((x && y) || (x && z) || (y && z))) = (fun n => decide (2 ≤ n)) <$> binom p 3") (play := "M1 M2 and; M1 M3 and; M2 M3 and; Z1 Z2 Z3 or")
 :::en
 *Boss: the majority of three.* `true` when at least two of three coins show `true`. Each coin has to
 go into two functions.
@@ -357,5 +428,18 @@ and look at all eight cases.
 *Tipp.* Wickle `binom p 3` mit `binom_succ` (dreimal) und `binom_zero` aus; räume auf mit
 `simp only [map_bind, bind_assoc, pure_bind, map_pure, add_zero]`; dann geh unter die drei Würfe und
 sieh dir alle acht Fälle an.
+:::
+:::solution
+```
+rw [binom_succ, binom_succ, binom_succ, binom_zero]
+simp only [map_bind, bind_assoc, pure_bind, map_pure, add_zero]
+congr 1
+funext x
+congr 1
+funext y
+congr 1
+funext z
+cases x <;> cases y <;> cases z <;> rfl
+```
 :::
 ::::
