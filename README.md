@@ -1,5 +1,10 @@
 # The Probability Game
 
+Three editions, one branch each (see [BRANCHES.md](BRANCHES.md)): `main`, the game in development
+(chance, with the proofs), `monad` (`main` and the other monads: the grid), `show` (the boards alone,
+without Lean and without proofs). Online at `/main/`, `/monad/`, `/show/` of
+https://lean.mathematik.uni-freiburg.de.
+
 Distributions as sand. A distribution is drawn as columns of sand over the points of its space; a
 *move* applies a map to it, the sand of each point flows to its image (animated), and where several
 points have the same image it piles up. The new distribution is the *image measure* (pushforward)
@@ -23,28 +28,34 @@ The proofs: `(!true) = false` by `rfl`, rewriting with `Bool.not_true`, `cases b
 `f (f (f b)) = f b` for every `f : Bool → Bool`, by `cases h : f false`. Its levels are numbered
 `b.1`, …, with an inventory of their own (`wb` in `game.js`); solutions in `Lean/SolutionsBool.lean`.
 
-**World 0, walking on the grid** (before chance; `::::walk`, `Lean/World0.lean`): a figure on
+**Walking on the grid** (branch `monad` only, before chance; `::::walk`, `Lean/WorldWalk.lean`): a figure on
 $\mathbb{Z} \times \mathbb{Z}$, the moves `north`, `east`, `south`, `west` as maps `Pos → m Pos`
 into a monad, a walk as the program `pure (0, 0) >>= north >>= east`. First in `Id` (sure moves:
 one step, around the corner, the other way past a wall); then in `Set`, where `step` goes all four
 ways and the figure is the set of the points it can reach (everywhere at once; back home after two
 steps, `mem_bind`; the colours of a chessboard, `odd_bind_step`; boss: after $n$ steps all points
 have the colour of $n$, `odd_walk`, by induction; never home after five steps). Lean normalises the
-walk after each move to `pure (x, y)` or a set of points, which the board reads back. World 0 has
+walk after each move to `pure (x, y)` or a set of points, which the board reads back. The grid has
 an inventory of its own (`w0` in `INVENTORY`); its proofs use only the monad laws and `odd_step`, so
 that they carry over to the random walk.
 
-**World 1, one coin** (`coin p` at the start, sides `false`/`true` as in Lean): `not`; always `true` (a point mass); surely `false`
+**One coin** (`coin p` at the start, sides `false`/`true` as in Lean): `not`; always `true` (a point mass); surely `false`
 without "always `false`" (a composition); `toNat` (to ℕ); the order matters; a bet
 (+5 / −2, to ℤ); the better bet; surely zero. The proofs: `rw`, `rfl`, `congr`, `funext`, `cases`.
 
-**World 2, building with coins** — a circuit: a line per coin and result, a column per function with
+**Draw, then compute** — a move is a draw and a computation, `f <$> μ = do let x ← μ; pure (f x)`; on
+the board of *One coin*, the proofs learn the monad laws for `DiscreteMeasure` before the circuits need
+them: `map_eq_pure_bind`, `pure_bind`, `bind_pure`, `bind_assoc` (with `simp only`, which rewrites
+inside `do` blocks), `bind_map_left`, a draw that is not used; boss: three flips (in exactly three
+moves).
+
+**Building with coins** — a circuit: a line per coin and result, a column per function with
 dots on its inputs; a coin may feed several functions. Both `true` ($p^2$); first `true`, then
 `false`; at least one; surely `false` with one coin; exactly one; the number of `true` ($B(2, p)$);
 boss: the majority of three. The proofs: `do` blocks, independence (`coin_and`), `simp only` under
 binders, `<;>`, the definition of `binom`.
 
-**World 3, counting** — `B(n, p)` as a building block. Three coins; $B(1, p)$ (`binom_one`);
+**Counting** — `B(n, p)` as a building block. Three coins; $B(1, p)$ (`binom_one`);
 $B(2, p)$ and a coin (`binom_succ'`, by induction); at least $1$ out of $B(2, p)$; boss:
 $B(2, p) * B(2, p) = B(4, p)$, proved for all $n$, $m$ (`binom_add`, by induction, with
 `binom_succ'`).
@@ -74,8 +85,9 @@ $B(2, p) * B(2, p) = B(4, p)$, proved for all $n$, $m$ (`binom_add`, by inductio
 * `INVENTORY` in `game.js` lists the tactics, rules and lemmas with the level that introduces them;
   a line is refused before Lean sees it when it uses a tactic or theorem that is not in the inventory
   yet (or anything from Mathlib or the journal by its full name).
-* `Lean/Solutions.lean` (and `Lean/Solutions0.lean` for world 0, whose context is
-  `Lean/World0.lean`) holds a proof of every level as a player types it; `./check-proofs.sh`
+* A world `W` is a set of files: `ProbGame/Worlds/W.lean` (its levels), `Lean/WorldW.lean` (its
+  context, if it has one of its own), `Lean/SolutionsW.lean` (a proof of every level as a player
+  types it), `tests/worlds/W.json` (its page, the moves that solve its boards). `./check-proofs.sh`
   checks it with Lean, `python3 -I tests/proofs.py` plays it through the bridge.
 
 ## Lean as the referee
@@ -83,7 +95,7 @@ $B(2, p) * B(2, p) = B(4, p)$, proved for all $n$, $m$ (`binom_add`, by inductio
 The game is built on the journal's `DiscreteMeasure` (`coin p` with `p : unitInterval`, its
 complement `σ p`, `binom`, `LawfulMonad`). After each move the game asks Lean for the normal form of
 the state: the moves played as a `DiscreteMeasure`, e.g. `((coin p).map not).map Bool.toNat`,
-simplified with `#simp only [rules]`; the rules of world 1 are `Lean/World1.lean` and lemmas of
+simplified with `#simp only [rules]`; the rules of the coins are `Lean/WorldCoin.lean` and lemmas of
 `DiscreteMeasure` (`coin_not'`, `map_pure`). The normal form is shown below the board
 (`map Bool.toNat (coin (σ p))`), and a level is solved when the sand fills the target and Lean gives
 the state and the target the same normal form, so that it holds for every `p`. Different correct
@@ -111,6 +123,14 @@ cd _out/html-multi && python3 -m http.server 8004
 python3 -I tests/proofs.py               # the solutions through the bridge, line by line
 node tests/language.mjs                  # EN and DE on every page
 node tests/play.mjs [desktop|phone]      # every level in Chrome: board, then proof (playwright-core)
+```
+
+The sites of all three branches, each from a worktree of its own, as on the server:
+
+```bash
+server/build-sites.sh ~/pg-sites         # ~/pg-sites/show, main, monad, and allowed.txt for the bridge
+cd ~/pg-sites && python3 -m http.server 8004
+BASE=http://127.0.0.1:8004/show/ node tests/play.mjs     # the tests of a branch: from its worktree
 ```
 
 ## License
