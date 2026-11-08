@@ -56,6 +56,9 @@ for (const [name, vp] of [['desktop', { width: 1200, height: 900 }], ['phone', {
           for (const k of a.slice(0, -1)) await lvl().locator(`.pg-card[data-node="${k}"]`).click()
           await lvl().locator('.pg-move', { hasText: new RegExp(a[a.length - 1]) }).first().click()
         }
+        // check the newest line: chosen alone
+        for (const c of await lvl().locator('.pg-card-sel').all()) await c.click()
+        await lvl().locator('.pg-card').last().click()
         await lvl().locator('.pg-check').first().click()
       }
       await page.waitForTimeout(300)

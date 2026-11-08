@@ -86,6 +86,7 @@ header .pg-langs { align-self: center; margin: 0 0.8em 0 0.5em; flex-shrink: 0; 
 .pg-card-ok .pg-row-band { fill: #e3f3e5; }
 .pg-card-bad .pg-row-band { fill: #f7e0dd; }
 .pg-row-name { font: bold 14px var(--verso-structure-font-family, sans-serif); }
+.pg-row-formula { font: 11px var(--verso-structure-font-family, sans-serif); fill: #7a6a50; }
 .pg-row-badge { fill: #b0782a; }
 .pg-row-badge-text { font: bold 11px var(--verso-structure-font-family, sans-serif); fill: white; }
 .pg-line { stroke-width: 3; }
@@ -111,6 +112,8 @@ header .pg-langs { align-self: center; margin: 0 0.8em 0 0.5em; flex-shrink: 0; 
 }
 .pg-mini, .pg-colm, .pg-arrow-ok, .pg-arrow-bad { pointer-events: none; }
 .pg-build-area .pg-target-box { max-width: 280px; }
+.pg-palette .pg-palette-target { max-width: 100%; margin-bottom: 0.6rem; }
+.pg-palette .pg-palette-target .pg-target-svg { width: 100%; }
 .pg-build-area .pg-target-svg { width: 100%; }
 
 /* the proof */
