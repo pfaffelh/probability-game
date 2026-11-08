@@ -60,6 +60,20 @@ $B(2, p)$ and a coin (`binom_succ'`, by induction); at least $1$ out of $B(2, p)
 $B(2, p) * B(2, p) = B(4, p)$, proved for all $n$, $m$ (`binom_add`, by induction, with
 `binom_succ'`).
 
+## How it is played
+
+A world's page is a *stage* as high as the screen, as in the
+[Incredible Proof Machine](https://github.com/pfaffelh/ipm): one level at a time, nothing to scroll.
+On top the world, the name of the level and a dot per level (← → go to the previous and next
+level); in the middle the board, with the moves (or building blocks) in a column beside it (below
+it on phones), or the proof once the board is solved; below, a line that says what to do next, and
+the tool bar: Undo, Start over, Lean (what Lean makes of the board), Tips, Proof/Board, Next (at the
+last level: the next world). On phones the tool bar is one row of symbols at the bottom. There is
+no text above the board: a level's text is under *Tips* and appears once, when the level is first
+played (with the text of the world at the first level), together with the moves new in the level,
+drawn as maps; the text of a proof appears when the proof is first opened, with the tactics and
+rules new in it. `tests/stage.mjs` checks the stage on every world in five screen sizes.
+
 ## How it works
 
 * The site is a static [Verso](https://github.com/leanprover/verso) document (Lean v4.34.0, the
@@ -123,6 +137,7 @@ cd _out/html-multi && python3 -m http.server 8004
 python3 -I tests/proofs.py               # the solutions through the bridge, line by line
 node tests/language.mjs                  # EN and DE on every page
 node tests/play.mjs [desktop|phone]      # every level in Chrome: board, then proof (playwright-core)
+node tests/stage.mjs                     # the stage: tips, tool bar, nothing to scroll, five screen sizes
 ```
 
 The sites of all three branches, each from a worktree of its own, as on the server:

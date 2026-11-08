@@ -24,7 +24,8 @@ for (const [name, vp] of [['desktop', { width: 1200, height: 900 }], ['phone', {
   page.on('pageerror', e => console.log('PAGEERROR', e.message))
   // the worlds of this edition, from the front page
   await page.goto(base)
-  await page.evaluate(b => { localStorage.clear(); localStorage.setItem('pg:lang', 'de'); if (b) localStorage.setItem('pg:backend', b) }, backend)
+  // (no tips popping up: tests/stage.mjs looks at them)
+  await page.evaluate(b => { localStorage.clear(); localStorage.setItem('pg:lang', 'de'); localStorage.setItem('pg:tips', 'off'); if (b) localStorage.setItem('pg:backend', b) }, backend)
   await page.reload()
   const edition = await page.evaluate(() => document.querySelector('meta[name="pg-edition"]')?.content)
   const pages = await page.evaluate(() => [...new Set([...document.querySelectorAll('a[href]')].map(a => /^([^/#?.]+)\/#/.exec(a.getAttribute('href'))?.[1]).filter(Boolean))])
@@ -82,7 +83,7 @@ for (const [name, vp] of [['desktop', { width: 1200, height: 900 }], ['phone', {
       let proved = await lvl().locator('.pg-proof-done').count()
       // in the first level of each world: start the proof over (the lines go, the input comes back), and prove it again
       if (i === 0 && proved) {
-        await lvl().locator('.pg-proof .pg-tool', { hasText: 'Neu anfangen' }).click()
+        await page.locator('.pg-toolbar .pg-restart').click()
         await page.waitForTimeout(50); await idle()
         const fresh = !(await lvl().locator('.pg-proof-lines li').count()) && !(await lvl().locator('.pg-proof-done').count()) && await input.isVisible() && await lvl().locator('.pg-goal').count() > 0
         if (!fresh) fail(`${name} ${path}: start over is not back at the start`)
@@ -92,7 +93,7 @@ for (const [name, vp] of [['desktop', { width: 1200, height: 900 }], ['phone', {
       }
       if (!board || !proved) fail(`${name} ${path} level ${i + 1}`)
       console.log(`${name} ${path.slice(0, 12)} level ${i + 1}: board ${board ? 'ok' : 'NOT'}, proof ${proved ? 'ok' : 'NOT'} (${proofs[i].length} lines, ${Date.now() - t0} ms)`)
-      if (i < w.boards.length - 1 && proved) await lvl().locator('.pg-proof .pg-next').click()
+      if (i < w.boards.length - 1 && proved) await page.locator('.pg-toolbar .pg-next-button').click()
     }
     console.log(name, path.slice(0, 12), 'dots done:', await page.locator('.pg-dot-done').count(), 'half:', await page.locator('.pg-dot-half').count())
   }
