@@ -370,6 +370,21 @@
     }
     undo() { if (this.animating || !this.steps.length) return; this.dist = this.steps.pop().before; this.picked = null; this.updateLean(); this.render() }
     reset() { if (this.animating) return; this.steps = []; this.dist = this.start; this.picked = null; this.updateLean(); this.render() }
+    get canUndo() { return this.steps.length > 0 }
+    // what to do next, in a line below the board
+    status() {
+      if (this.done) return '✓ ' + tr('Solved!')
+      if (!this.steps.length) return tr('Tap a move.')
+      if (this.count && this.steps.length > this.count) return tr('Too many moves: undo, or start over.')
+      const d = this.dist, t = this.target
+      if (d.space !== t.space) return tr('The sand lies on {a}, the target on {b}.', { a: spaceName(d.space), b: spaceName(t.space) })
+      if (sameDist(d, t)) {
+        if (this.count && this.steps.length !== this.count) return tr('The right shape, but in {n} moves, please.', { n: this.count })
+        return this.leanAgrees() === false ? tr('Lean disagrees.') : tr('Lean is checking …')
+      }
+      const k = axis(t.space, [...d.mass.keys(), ...t.mass.keys()]).find(k => !(d.mass.get(k) ?? ZERO).eq(t.mass.get(k) ?? ZERO))
+      return tr('At {k}: P = {m}, the target has {t}.', { k: pointName(t.space, k), m: String(d.mass.get(k) ?? ZERO), t: String(t.mass.get(k) ?? ZERO) })
+    }
 
     // solved: the sand is the target, and Lean agrees (if it is connected)
     get done() { return this.steps.length > 0 && (!this.count || this.steps.length === this.count) && sameDist(this.dist, this.target) && this.leanAgrees() !== false && (!BACKEND || !this.leanTarget || this.leanAgrees() === true) }
@@ -523,13 +538,13 @@
           box.append(el('div', 'pg-solved-lean-head', tr('In Lean, for every p:')))
           box.append(el('pre', 'pg-lean', statement))
         }
-        const next = el('button', 'pg-next', tr(this.root.dataset.proof && !SHOW ? 'To the proof ↓' : 'Next level ›'))
+        const next = el('button', 'pg-next', tr(this.root.dataset.proof && !SHOW ? 'To the proof ›' : 'Next level ›'))
         next.type = 'button'
         next.addEventListener('click', () => this.onNext?.())
         box.append(next)
         parts.push(box)
       }
-      this.board.replaceChildren(...parts)
+      showBoard(this, parts)
     }
   }
 
@@ -668,6 +683,14 @@
     }
     removeLast() { if (!this.nodes.length) return; this.nodes.pop(); this.selected = this.selected.filter(j => j < this.nodes.length); this.changed() }
     reset() { this.nodes = []; this.selected = []; this.changed() }
+    undo() { this.removeLast() }
+    get canUndo() { return this.nodes.length > 0 }
+    status() {
+      if (this.checked?.ok) return '✓ ' + tr('Solved!')
+      if (!this.nodes.length) return tr('Lay down a building block.')
+      if (this.selected.length) return tr('{n} chosen: now a function, or Check.', { n: this.selected.length })
+      return tr('Tap lines to choose them, then a function. Check compares a line with the target.')
+    }
 
     check() {
       if (!this.nodes.length) { this.message = tr('There is nothing to check yet.'); this.render(); return }
@@ -825,13 +848,13 @@
           box.append(el('div', 'pg-solved-lean-head', tr('As a do block in Lean:')))
           box.append(el('pre', 'pg-lean', this.lean(this.checked.node)))
         }
-        const next = el('button', 'pg-next', tr(this.root.dataset.proof && !SHOW ? 'To the proof ↓' : 'Next level ›'))
+        const next = el('button', 'pg-next', tr(this.root.dataset.proof && !SHOW ? 'To the proof ›' : 'Next level ›'))
         next.type = 'button'
         next.addEventListener('click', () => this.onNext?.())
         box.append(next)
         parts.push(box)
       }
-      this.board.replaceChildren(...parts)
+      showBoard(this, parts)
     }
   }
   Builder.prototype.targetPicture = Level.prototype.targetPicture
@@ -943,6 +966,13 @@
     }
     undo() { if (this.animating || !this.steps.length) return; this.steps.pop(); this.recompute(); this.picked = null; this.updateLean(); this.render() }
     reset() { if (this.animating) return; this.steps = []; this.recompute(); this.picked = null; this.updateLean(); this.render() }
+    get canUndo() { return this.steps.length > 0 }
+    status() {
+      if (this.done) return '✓ ' + tr('Solved!')
+      if (!this.steps.length) return tr('Tap a move.')
+      if (sameSet(this.pts, this.target)) return tr('Lean is checking …')
+      return this.monad === 'Id' ? tr('Not at the flag yet.') : tr('{n} points; the target has {m}.', { n: this.pts.size, m: this.target.size })
+    }
 
     check() {
       if (this.animating || !this.done) return
@@ -1054,13 +1084,13 @@
           box.append(el('div', 'pg-solved-lean-head', tr('In Lean:')))
           box.append(el('pre', 'pg-lean', `${this.leanState()} = ${this.leanNow.result.replace(/\s+/g, ' ')}`))
         }
-        const next = el('button', 'pg-next', tr(this.root.dataset.proof && !SHOW ? 'To the proof ↓' : 'Next level ›'))
+        const next = el('button', 'pg-next', tr(this.root.dataset.proof && !SHOW ? 'To the proof ›' : 'Next level ›'))
         next.type = 'button'
         next.addEventListener('click', () => this.onNext?.())
         box.append(next)
         parts.push(box)
       }
-      this.board.replaceChildren(...parts)
+      showBoard(this, parts)
     }
   }
   Object.assign(DE, {
@@ -1148,6 +1178,14 @@
     }
     undo() { if (this.animating || !this.steps.length) return; this.steps.pop(); this.updateLean(); this.render() }
     reset() { if (this.animating) return; this.steps = []; this.updateLean(); this.render() }
+    get canUndo() { return this.steps.length > 0 }
+    status() {
+      if (this.done) return '✓ ' + tr('Solved!')
+      if (!this.steps.length) return tr('Tap a move.')
+      if (this.count && this.steps.length > this.count) return tr('Too many moves: undo, or start over.')
+      if (this.onTarget) return this.count && this.steps.length !== this.count ? tr('On the flag, but in {n} moves, please.', { n: this.count }) : tr('Lean is checking …')
+      return this.count ? tr('{n} moves so far', { n: this.steps.length }) + ' · ' + tr('not on the flag yet.') : tr('Not on the flag yet.')
+    }
     check() {
       if (this.animating || !this.done) return
       const first = !this.solved
@@ -1221,13 +1259,13 @@
           box.append(el('div', 'pg-solved-lean-head', tr('In Lean:')))
           box.append(el('pre', 'pg-lean', `${this.leanState()} = ${this.leanNow.result.replace(/\s+/g, ' ')}`))
         }
-        const next = el('button', 'pg-next', tr(this.root.dataset.proof && !SHOW ? 'To the proof ↓' : 'Next level ›'))
+        const next = el('button', 'pg-next', tr(this.root.dataset.proof && !SHOW ? 'To the proof ›' : 'Next level ›'))
         next.type = 'button'
         next.addEventListener('click', () => this.onNext?.())
         box.append(next)
         parts.push(box)
       }
-      this.board.replaceChildren(...parts)
+      showBoard(this, parts)
     }
   }
 
@@ -1341,7 +1379,7 @@
     Proof: 'Beweis', 'Run': 'Ausführen', 'Inventory': 'Inventar', Tactics: 'Taktiken', Theorems: 'Sätze',
     'Proved!': 'Bewiesen!', 'Goal': 'Ziel', 'goal {i} of {n}': 'Ziel {i} von {n}', 'Lean is thinking …': 'Lean denkt …',
     'Your lemma {x} is now in your inventory.': 'Dein Lemma {x} ist jetzt in deinem Inventar.',
-    'To the proof ↓': 'Zum Beweis ↓', 'Insert': 'Einsetzen', 'Remove the last line': 'Letzte Zeile entfernen',
+    'To the proof ›': 'Zum Beweis ›', 'Insert': 'Einsetzen', 'Remove the last line': 'Letzte Zeile entfernen',
     'The proof needs Lean: open the game with ?backend=… (the address of a bridge).': 'Der Beweis braucht Lean: Öffne das Spiel mit ?backend=… (der Adresse einer Bridge).',
     'Lean cannot be reached: {e}': 'Lean ist nicht erreichbar: {e}',
     '{x} is not unlocked yet.': '{x} ist noch nicht freigeschaltet.',
@@ -1395,6 +1433,16 @@
     }
 
     get proved() { try { return localStorage.getItem(this.key + 'd') === '1' } catch { return false } }
+    get canUndo() { return !this.busy && this.lines.length > 0 }
+    status() {
+      if (!BACKEND) return ''
+      if (this.done) return '✓ ' + tr('Proved!')
+      if (this.busy) return tr('Lean is thinking …')
+      if (this.error) return tr('Lean did not take the line: see why above the input.')
+      if (!this.lines.length) return tr('Type a tactic, or tap one in the inventory.')
+      const n = this.goals?.length ?? 0
+      return n === 1 ? tr('One goal left.') : tr('{n} goals left.', { n })
+    }
     // the inventory at this level: what was introduced up to here; the lemma of this level is not yet
     available(item) { const at = this.since(item); return !!at && atLeast(this.no, at) && !(item.kind === 'lemma' && at === this.no) }
     // where an item comes in: world 0 has an inventory of its own (`w0`), the other worlds share one (`at`)
@@ -1515,7 +1563,7 @@
       if (this.box.hidden) return
       const head = el('h3', 'pg-proof-head', tr('Proof'))
       const stmt = el('pre', 'pg-proof-statement', `${this.lemma ? `theorem ${this.lemma}` : 'example'} ${this.statement}`)
-      const parts = [head, ...this.texts, stmt]
+      const parts = STAGE ? [head, stmt] : [head, ...this.texts, stmt]
       if (!BACKEND) { parts.push(el('div', 'pg-info pg-warn', tr('The proof needs Lean: open the game with ?backend=… (the address of a bridge).'))); this.box.replaceChildren(...parts); return }
 
       // the lines so far, and the goals now
@@ -1587,51 +1635,294 @@
 
       parts.push(hist, goals, err)
       if (!this.done) parts.push(row)
-      parts.push(tools)
+      if (!STAGE) parts.push(tools)
       parts.push(inv)
-      if (this.done) {
+      if (this.done && !STAGE) {
         const next = el('button', 'pg-next', tr('Next level ›')); next.type = 'button'
         next.addEventListener('click', () => this.level.onNextLevel?.())
         parts.push(next)
       }
       this.box.replaceChildren(...parts)
+      this.level.onRendered?.()
     }
   }
 
   // ---------------------------------------------------------------- the stage
 
+  // A world's page shows one level at a time, on a stage as high as the screen (as in the
+  // Incredible Proof Machine): on top the world, the level and a dot per level (← → also go to the
+  // previous and next level); in the middle the board, or the proof once the board is solved; below,
+  // a line that says what to do next, and the tool bar: Undo, Start over, Lean, Tips, Proof/Board,
+  // Next. No text above the board: the texts are under Tips. A level's text appears once, when the
+  // level is first played (with the text of the world at the first level), and the text of its proof
+  // when the proof is first opened; the moves and rules new in a level come with it.
+  let STAGE = false
+  Object.assign(DE, {
+    'Tap a move.': 'Tippe einen Zug an.', 'The sand lies on {a}, the target on {b}.': 'Der Sand liegt auf {a}, das Ziel auf {b}.',
+    'The right shape, but in {n} moves, please.': 'Die richtige Form, aber bitte in {n} Zügen.', 'Lean is checking …': 'Lean prüft …',
+    'At {k}: P = {m}, the target has {t}.': 'Bei {k}: P = {m}, das Ziel hat {t}.', 'Lean disagrees.': 'Lean widerspricht.',
+    'Lay down a building block.': 'Leg einen Baustein hin.', '{n} chosen: now a function, or Check.': '{n} ausgewählt: jetzt eine Funktion, oder Prüfen.',
+    'Tap lines to choose them, then a function. Check compares a line with the target.': 'Tippe Leitungen an, dann eine Funktion. Prüfen vergleicht eine Leitung mit dem Ziel.',
+    'Not at the flag yet.': 'Noch nicht bei der Fahne.', '{n} points; the target has {m}.': '{n} Punkte; das Ziel hat {m}.',
+    'On the flag, but in {n} moves, please.': 'Auf der Fahne, aber bitte in {n} Zügen.', 'not on the flag yet.': 'noch nicht auf der Fahne.', 'Not on the flag yet.': 'Noch nicht auf der Fahne.',
+    'Lean did not take the line: see why above the input.': 'Lean hat die Zeile nicht genommen: warum, steht über der Eingabe.',
+    'Type a tactic, or tap one in the inventory.': 'Tippe eine Taktik ein, oder tippe eine im Inventar an.', 'One goal left.': 'Noch ein Ziel.', '{n} goals left.': 'Noch {n} Ziele.',
+    'Tips': 'Tipps', 'Tip': 'Tipp', 'Got it': 'Verstanden', 'Close': 'Schließen', 'Restart': 'Neu', 'Next': 'Weiter', 'Next ›': 'Weiter ›',
+    'Next world ›': 'Nächste Welt ›', 'World': 'Welt', 'Board': 'Spielfeld', 'Proof ': 'Beweis', 'This world': 'Diese Welt',
+    'New in this level': 'Neu in diesem Level', 'New in this proof': 'Neu in diesem Beweis', 'Solve the board first.': 'Erst das Spielfeld lösen.',
+  })
+  // What the moves and building blocks do, for the tips (by kind of board: level, bool, build, src, walk).
+  const MOVE_DOC = {
+    'level:not': ['Swaps the sides: the sand of false goes to true, and the other way round.', 'Tauscht die Seiten: Der Sand von false geht nach true und umgekehrt.'],
+    'level:heads': ['All the sand flows to true: the result is sure.', 'Der ganze Sand fließt nach true: Das Ergebnis ist sicher.'],
+    'level:tails': ['All the sand flows to false: the result is sure.', 'Der ganze Sand fließt nach false: Das Ergebnis ist sicher.'],
+    'level:id': ['Does nothing: the sand stays where it is.', 'Tut nichts: Der Sand bleibt, wo er ist.'],
+    'level:toNat': ['From sides to numbers: false becomes 0, true becomes 1.', 'Von Seiten zu Zahlen: false wird 0, true wird 1.'],
+    'level:payoff': ['A bet: true becomes the gain, false the loss.', 'Eine Wette: true wird zum Gewinn, false zum Verlust.'],
+    'bool:not': ['Flips the coin: true becomes false, false becomes true.', 'Dreht die Münze um: true wird false, false wird true.'],
+    'bool:true': ['Lays the coin on true, wherever it lay.', 'Legt die Münze auf true, wo immer sie lag.'],
+    'bool:false': ['Lays the coin on false, wherever it lay.', 'Legt die Münze auf false, wo immer sie lag.'],
+    'src:coin': ['A new coin: true with probability p, independent of all the others.', 'Eine neue Münze: true mit Wahrscheinlichkeit p, unabhängig von allen anderen.'],
+    'src:binom': ['A new binomial distribution B(n, p): how many of n coins show true; independent of all the others.', 'Eine neue Binomialverteilung B(n, p): wie viele von n Münzen true zeigen; unabhängig von allen anderen.'],
+    'build:not': ['One line in: true where it shows false, and the other way round.', 'Eine Leitung hinein: true, wo sie false zeigt, und umgekehrt.'],
+    'build:and': ['Two or more lines in: true when all of them show true.', 'Zwei oder mehr Leitungen hinein: true, wenn alle true zeigen.'],
+    'build:or': ['Two or more lines in: true when at least one shows true.', 'Zwei oder mehr Leitungen hinein: true, wenn mindestens eine true zeigt.'],
+    'build:xor': ['true when an odd number of the lines show true.', 'true, wenn eine ungerade Zahl der Leitungen true zeigt.'],
+    'build:toNat': ['From a coin to a number: false is 0, true is 1.', 'Von einer Münze zu einer Zahl: false ist 0, true ist 1.'],
+    'build:count': ['Counts how many of its lines show true.', 'Zählt, wie viele seiner Leitungen true zeigen.'],
+    'build:add': ['Adds the numbers of its lines.', 'Addiert die Zahlen seiner Leitungen.'],
+    'build:pos': ['true when the number is at least 1.', 'true, wenn die Zahl mindestens 1 ist.'],
+    'build:max': ['The largest of the numbers of its lines.', 'Die größte der Zahlen seiner Leitungen.'],
+    'walk:north': ['One step up.', 'Ein Schritt nach oben.'], 'walk:south': ['One step down.', 'Ein Schritt nach unten.'],
+    'walk:east': ['One step to the right.', 'Ein Schritt nach rechts.'], 'walk:west': ['One step to the left.', 'Ein Schritt nach links.'],
+    'walk:step': ['All four ways at once: in Set the figure is wherever it can be.', 'Alle vier Richtungen zugleich: In Set ist die Figur überall, wo sie sein kann.'],
+  }
+  // A picture of a map Bool → …: the two sides on top, arrows to their images below.
+  function mapPicture(f, to = 'bool') {
+    const from = ['false', 'true'], imgs = axis(to, from.map(f)), W2 = 150, x = (ks, k) => W2 / 2 + (ks.indexOf(k) - (ks.length - 1) / 2) * 62
+    const g = svg('svg', { viewBox: `0 0 ${W2} 74`, class: 'pg-map-picture', width: W2 })
+    const defs = svg('defs'), mk = svg('marker', { id: 'pg-map-head', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse' })
+    mk.append(svg('path', { d: 'M0,0 L10,5 L0,10 z', class: 'pg-arrowhead' })); defs.append(mk); g.append(defs)
+    for (const k of from) {
+      g.append(svg('text', { x: x(from, k), y: 14, 'text-anchor': 'middle', class: 'pg-map-point' }, k))
+      g.append(svg('line', { x1: x(from, k), y1: 20, x2: x(imgs, f(k)), y2: 52, class: 'pg-arrow', 'marker-end': 'url(#pg-map-head)' }))
+    }
+    for (const k of imgs) g.append(svg('text', { x: x(imgs, k), y: 68, 'text-anchor': 'middle', class: 'pg-map-point' }, k))
+    return g
+  }
+  // the moves and building blocks a level offers: [key, label, picture]
+  function movesOf(level) {
+    const r = level.root
+    if (level instanceof Builder) return [
+      ...level.sources.filter(x => x.max !== 0).map(x => [/^binom/.test(x.spec) ? 'src:binom' : 'src:' + x.spec, source(x.spec).label(), null]),
+      ...level.funs.map(f => ['build:' + f, funLabel(f), el('div', 'pg-map-sym', FUNS[f].sym)])]
+    if (level instanceof Grid) return level.moves.map(m => ['walk:' + m, tr(LABEL0[m]), null])
+    if (level instanceof Bools) return level.moves.map(m => ['bool:' + m, tr(MOVESB[m].label), mapPicture(k => String(MOVESB[m].f(k === 'true')))])
+    return r.dataset.moves.split(',').map(x => x.trim()).filter(Boolean).map(spec => {
+      const m = parseMove(spec)
+      return ['level:' + spec.split(/\s+/)[0], m.label(), mapPicture(m.f, m.to)]
+    })
+  }
+  const moveCard = ([key, label, pic]) => {
+    const card = el('div', 'pg-tip-move'), doc = MOVE_DOC[key]
+    if (pic) card.append(pic)
+    const t = el('div', 'pg-tip-move-text')
+    t.append(el('b', '', label), el('div', '', doc ? doc[LANG === 'de' ? 1 : 0] : ''))
+    card.append(t)
+    return card
+  }
+  const itemCard = it => {
+    const card = el('div', 'pg-tip-item')
+    card.append(el('code', 'pg-inv-sig', it.sig ?? it.name), el('div', '', LANG === 'de' ? it.de ?? '' : it.en ?? ''))
+    return card
+  }
+  // A tip in a box over the stage: a head with ✕ and a foot with "Got it" always in view; the text
+  // between them scrolls. It closes with ✕, "Got it", a tap beside it, or Escape.
+  function tipBox(head, nodes, done = () => {}) {
+    if (document.querySelector('.pg-tip-overlay')) return
+    const overlay = el('div', 'pg-tip-overlay'), card = el('div', 'pg-tip-card')
+    const top = el('div', 'pg-tip-top'), x = el('button', 'pg-tip-x', '✕'), body = el('div', 'pg-tip-body'), ok = el('button', 'pg-tip-ok', tr('Got it'))
+    x.type = ok.type = 'button'; x.setAttribute('aria-label', tr('Close'))
+    const close = () => { done(); overlay.remove(); document.removeEventListener('keydown', esc) }
+    const esc = ev => { if (ev.key === 'Escape') close() }
+    x.addEventListener('click', close); ok.addEventListener('click', close)
+    overlay.addEventListener('click', ev => { if (ev.target === overlay) close() })
+    document.addEventListener('keydown', esc)
+    top.append(el('div', 'pg-tip-head', '💡 ' + head), x)
+    body.append(...nodes)
+    card.append(top, body, ok)
+    overlay.append(card)
+    document.body.append(overlay)
+    ok.focus({ preventScroll: true })
+  }
+  // a button of the tool bar: a word on large screens, a symbol over a short word on phones
+  function barButton(cls, icon, label, short = label) {
+    const b = el('button', `pg-button ${cls}`)
+    b.type = 'button'; b.title = label
+    b.append(el('span', 'pg-ico', icon), el('span', 'pg-lbl', label), el('span', 'pg-short', short))
+    return b
+  }
+  // The parts of a board, on the stage: the moves (or building blocks) in a column of their own, the
+  // rest beside them; Undo and Start over go to the tool bar, what Lean says to the Lean panel.
+  function showBoard(level, parts) {
+    if (!STAGE) { level.board.replaceChildren(...parts); return }
+    const lean = [], main = [], palette = []
+    for (const p of parts) {
+      const c = p.classList
+      if (c?.contains('pg-lean-state') || (p.tagName === 'PRE' && c?.contains('pg-lean'))) lean.push(p)
+      else if (c?.contains('pg-moves-head') || c?.contains('pg-moves') || c?.contains('pg-blocks')) palette.push(p)
+      else if (c?.contains('pg-tools')) { p.querySelectorAll('.pg-tool').forEach(b => b.remove()); if (p.children.length) palette.push(p) }
+      else main.push(p)
+    }
+    const m = el('div', 'pg-main'), pal = el('div', 'pg-palette')
+    m.append(...main); pal.append(...palette)
+    level.board.replaceChildren(m, pal)
+    level.leanParts = lean
+    level.onRendered?.()
+  }
+
   function stage() {
     const roots = [...document.querySelectorAll('.pg-level')]
     if (!roots.length) return
-    const top = el('div', 'pg-top'), dots = el('div', 'pg-dots')
-    top.append(dots)
-    roots[0].before(top)
-    let current = 0
+    STAGE = true
     const levels = roots.map((r, i) => new (r.classList.contains('pg-build') ? Builder : r.classList.contains('pg-walk') ? Grid : r.classList.contains('pg-bool') ? Bools : Level)(r, i, () => refresh()))
-    // the proofs, below the boards
     levels.forEach(l => { if (l.root.dataset.proof && !SHOW) l.proof = new Proof(l, () => refresh()) })
-    // a level is done when its board is solved and its statement proved
     const done = l => l.solved && (!l.proof || l.proof.proved)
+
+    // the stage, in place of the heading, the text of the world and the levels
+    const stg = el('div', 'pg-stage'), top = el('div', 'pg-stage-top'), titles = el('div', 'pg-stage-titles'), dots = el('div', 'pg-dots')
+    const h1 = roots[0].parentElement?.querySelector('h1')
+    const worldTitle = el('div', 'pg-stage-title', (h1?.textContent ?? '').replace('🔗', '').trim()), levelTitle = el('div', 'pg-level-title')
+    titles.append(worldTitle, levelTitle)
+    top.append(titles, dots)
+    roots[0].before(stg)
+    // the text of the world: between the heading and the first level
+    const intro = []
+    for (let n = stg.previousSibling; n && n !== h1; n = n.previousSibling) intro.unshift(n)
+    const world = el('div', 'pg-world-text'); world.append(...intro); world.hidden = true
+    const leanBox = el('div', 'pg-lean-box'), status = el('div', 'pg-status'), bar = el('div', 'pg-toolbar')
+    stg.append(top, ...roots, leanBox, status, bar, world)
+    if (h1) h1.hidden = true
+    document.documentElement.classList.add('pg-playing')
+
+    let current = 0
+    const view = () => (levels[current].proof && roots[current].classList.contains('pg-view-proof') ? 'proof' : 'board')
+    const setView = v => {
+      const l = levels[current]
+      roots.forEach(r => r.classList.remove('pg-view-proof'))
+      if (v === 'proof' && l.proof) { roots[current].classList.add('pg-view-proof'); l.proof.update(); showProofTip(current) }
+      refresh()
+      if (v === 'proof' && !document.querySelector('.pg-tip-overlay')) setTimeout(() => l.proof?.input?.focus({ preventScroll: true }), 50)
+    }
+    // the name of a level: the words in italics at the start of its text
+    const levelName = k => {
+      const t = [...roots[k].querySelectorAll(':scope > .pg-text > .pg-lang:not(.pg-proof-text)')].find(e => e.lang === LANG)
+      const em = t?.querySelector('p > :is(em, strong):first-child')
+      return em ? em.textContent.trim().replace(/[.:]$/, '') : ''
+    }
+    const clone = nodes => nodes.map(n => n.cloneNode(true))
+    const levelText = k => clone([...roots[k].querySelectorAll(':scope > .pg-text > .pg-lang:not(.pg-proof-text)')])
+    const worldText = () => clone([...world.childNodes])
+    // the moves new in a level: not offered by a level before it on this page
+    const newMoves = k => {
+      const before = new Set(levels.slice(0, k).flatMap(l => movesOf(l).map(m => m[0])))
+      const seen = new Set()
+      return movesOf(levels[k]).filter(m => !before.has(m[0]) && !seen.has(m[0]) && seen.add(m[0]))
+    }
+    const newItems = k => { const p = levels[k].proof; return p ? INVENTORY.filter(i => p.since(i) === p.no && i.kind !== 'lemma') : [] }
+    const boardTip = (k, withWorld) => {
+      const moves = newMoves(k)
+      return [...levelText(k), ...(moves.length ? [el('div', 'pg-tip-sub', tr('New in this level')), ...moves.map(moveCard)] : []),
+        ...(withWorld && world.childNodes.length ? [el('div', 'pg-tip-sub', tr('This world')), ...worldText()] : [])]
+    }
+    const proofTip = k => {
+      const items = newItems(k)
+      return [...clone(levels[k].proof?.texts ?? []), ...(items.length ? [el('div', 'pg-tip-sub', tr('New in this proof')), ...items.map(itemCard)] : [])]
+    }
+    const tipsOff = () => { try { return localStorage.getItem('pg:tips') === 'off' } catch { return false } }
+    const once = (key, f) => {
+      if (tipsOff()) return
+      try { if (localStorage.getItem(key)) return } catch {}
+      f(() => { try { localStorage.setItem(key, '1') } catch {} })
+    }
+    const showBoardTip = k => once(`${levels[k].key}:tip`, mark => tipBox(tr('Tip'), boardTip(k, k === 0), mark))
+    const showProofTip = k => once(`${levels[k].key}:proof-tip`, mark => tipBox(tr('Tip'), proofTip(k), mark))
+
+    // the tool bar
+    const undo = barButton('pg-undo', '↶', tr('Undo')), restart = barButton('pg-restart', '⟲', tr('Start over'), tr('Restart'))
+    const lean = barButton('pg-lean-button', 'λ', 'Lean'), tips = barButton('pg-tips-button', '💡', tr('Tips'))
+    const toggle = barButton('pg-view-button', '∀', tr('Proof ')), next = barButton('pg-next-button', '›', tr('Next ›'), tr('Next'))
+    const nextWorld = document.querySelector('nav.prev-next-buttons a[rel="next"]')
+    undo.addEventListener('click', () => { const l = levels[current]; if (view() === 'proof') l.proof.back(); else l.undo() })
+    restart.addEventListener('click', () => { const l = levels[current]; if (view() === 'proof') l.proof.restart(); else l.reset() })
+    let leanOpen = false
+    try { leanOpen = localStorage.getItem('pg:lean') === '1' } catch {}
+    lean.addEventListener('click', () => { leanOpen = !leanOpen; try { localStorage.setItem('pg:lean', leanOpen ? '1' : '0') } catch {}; refresh() })
+    tips.addEventListener('click', () => tipBox(tr('Tips'), view() === 'proof' ? proofTip(current) : boardTip(current, true)))
+    toggle.addEventListener('click', () => setView(view() === 'proof' ? 'board' : 'proof'))
+    next.addEventListener('click', () => {
+      if (current < levels.length - 1) show(current + 1)
+      else if (nextWorld) location.href = nextWorld.getAttribute('href').replace(/#.*$/, '')
+    })
+    bar.append(undo, restart, ...(SHOW ? [] : [lean]), tips, ...(SHOW ? [] : [toggle]), next)
+
     const refresh = () => {
-      dots.replaceChildren()
-      levels.forEach((l, k) => {
-        l.proof?.update()
-        const d = el('button', 'pg-dot' + (done(l) ? ' pg-dot-done' : l.solved ? ' pg-dot-half' : '') + (k === current ? ' pg-dot-current' : ''))
+      const l = levels[current], v = view()
+      dots.replaceChildren(...levels.map((x, k) => {
+        const d = el('button', 'pg-dot' + (done(x) ? ' pg-dot-done' : x.solved ? ' pg-dot-half' : '') + (k === current ? ' pg-dot-current' : ''))
         d.type = 'button'
         d.title = tr('Level {i} of {n}', { i: k + 1, n: levels.length })
         d.addEventListener('click', () => show(k))
-        dots.append(d)
-      })
+        return d
+      }))
+      levels.forEach(x => x.proof?.update())
+      levelTitle.textContent = levelName(current)
+      status.textContent = (v === 'proof' ? l.proof.status() : l.status?.()) ?? ''
+      status.classList.toggle('pg-status-done', v === 'proof' ? !!l.proof.done : !!l.solved && /^✓/.test(status.textContent))
+      undo.disabled = restart.disabled = v === 'proof' ? !l.proof.canUndo : !l.canUndo
+      lean.hidden = v === 'proof'
+      lean.setAttribute('aria-pressed', String(leanOpen))
+      leanBox.hidden = !leanOpen || v === 'proof' || !l.leanParts?.length
+      if (!leanBox.hidden) leanBox.replaceChildren(...l.leanParts)
+      toggle.hidden = !l.proof
+      toggle.disabled = !l.solved
+      toggle.title = l.solved ? '' : tr('Solve the board first.')
+      for (const e of toggle.querySelectorAll('.pg-lbl, .pg-short')) e.textContent = tr(v === 'proof' ? 'Board' : 'Proof ')
+      toggle.querySelector('.pg-ico').textContent = v === 'proof' ? '▦' : '∀'
+      const last = current === levels.length - 1
+      next.disabled = last && !nextWorld
+      for (const e of next.querySelectorAll('.pg-lbl')) e.textContent = tr(last ? 'Next world ›' : 'Next ›')
+      next.classList.toggle('pg-glow', done(l) && !next.disabled)
     }
+    levels.forEach(l => { l.onRendered = () => { if (l === levels[current]) refresh() } })
     const show = k => {
       current = Math.max(0, Math.min(levels.length - 1, k))
-      roots.forEach((r, i) => { r.hidden = i !== current })
+      roots.forEach((r, i) => { r.hidden = i !== current; r.classList.remove('pg-view-proof') })
       history.replaceState(null, '', `${location.pathname}${location.search}#level-${current + 1}`)
+      levels[current].render()
       refresh()
+      showBoardTip(current)
     }
-    levels.forEach((l, k) => { l.onNextLevel = () => { show(k + 1); scrollTo({ top: roots[current].getBoundingClientRect().top + scrollY - 80, behavior: 'smooth' }) }; l.onNext = () => (l.proof ? l.proof.focus() : l.onNextLevel()) })
+    levels.forEach((l, k) => {
+      l.onNextLevel = () => show(k + 1)
+      l.onNext = () => (l.proof ? setView('proof') : current < levels.length - 1 ? show(k + 1) : next.click())
+    })
+    // ← and → go to the previous and next level (not while typing)
+    document.addEventListener('keydown', ev => {
+      if (ev.target.closest?.('input, textarea') || ev.altKey || ev.ctrlKey || ev.metaKey || document.querySelector('.pg-tip-overlay')) return
+      if (ev.key === 'ArrowLeft') show(current - 1)
+      if (ev.key === 'ArrowRight') show(current + 1)
+    })
     const fromHash = Number(/^#level-(\d+)$/.exec(location.hash)?.[1] ?? 0) - 1
     show(fromHash >= 0 ? fromHash : Math.max(0, levels.findIndex(l => !done(l))))
+    // The stage fills the screen below the header; measured again when the window changes.
+    let resizing
+    const fit = () => {
+      window.scrollTo(0, 0)
+      stg.style.height = `${Math.max(360, window.innerHeight - stg.getBoundingClientRect().top - 8)}px`
+    }
+    fit()
+    window.addEventListener('resize', () => { clearTimeout(resizing); resizing = setTimeout(fit, 120) })
   }
 
   function init() {
