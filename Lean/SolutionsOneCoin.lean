@@ -5,9 +5,6 @@ Checked with `Lean/Rules.lean` in front (`./check-proofs.sh`); `tests/proofs.py`
 the bridge, as the game does.
 -/
 
-example (p : I) (μ : DiscreteMeasure Bool) [hμ : Prob μ] (h : μ true = p) : μ = coin p := by
-  apply bool_ext
-  rw [h, coin_true]
 example (p : I) : (not <$> coin p) true = σ p := by
   rw [map_true]
   rw [Bool.not_true, Bool.not_false]
