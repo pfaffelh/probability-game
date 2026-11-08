@@ -125,7 +125,7 @@ theorem binom_one (p : I) : Bool.toNat <$> coin p = binom p 1 := by
   simp only [pure_bind, add_zero]
   rw [map_eq_pure_bind]
 
-/-- Counting, level 2: one throw more, at the end. -/
+/-- Building with Coins, level 9: one throw more, at the end. -/
 theorem binom_succ' (p : I) (n : ℕ) :
     (do let X ← binom p n; let Y ← coin p; pure (X + Y.toNat)) = binom p (n + 1) := by
   induction' n with n ih
@@ -134,7 +134,7 @@ theorem binom_succ' (p : I) (n : ℕ) :
   · rw [binom_succ p n, binom_succ p (n + 1), ← ih]
     simp only [bind_assoc, pure_bind, add_assoc]
 
-/-- World 3, the boss: the sum of independent binomials. -/
+/-- Building with Coins, level 10: the sum of independent binomials. -/
 theorem binom_add (p : I) (n m : ℕ) :
     (do let X ← binom p n; let Y ← binom p m; pure (X + Y)) = binom p (n + m) := by
   induction' m with m ih
