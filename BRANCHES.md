@@ -25,6 +25,12 @@ A world is a set of files with the same name `W`:
 | `Lean/SolutionsW.lean` | a proof of every level, as a player types it |
 | `tests/worlds/W.json` | its page, the moves that solve its boards, its solutions and context |
 
+A part of a world that suits one edition only, e.g. a level whose board is only interesting with its
+proof, is put into `:::::only (edition := "main")` (or `"show"`); every branch has the world, and
+`game.js` removes the parts of the other edition before it counts the levels. In
+`tests/worlds/W.json` such a board is `{ "edition": "main", "moves": […] }`. (The edition `monad` is
+`main`.)
+
 The tests take the worlds from the site they test (its table of contents), so no list of worlds
 needs to be kept anywhere else. In the edition `show`, `game.js` shows no Lean and creates no
 proofs, and `:::proofen`/`:::proofde` blocks are hidden everywhere (also on the front page and in the

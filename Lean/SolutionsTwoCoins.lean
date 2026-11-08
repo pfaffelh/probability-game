@@ -19,6 +19,9 @@ example (p : I) : (do let x ← coin p; let y ← coin p; pure (x || y)) = coin 
 example (p : I) : (do let x ← coin p; pure (x && !x)) = pure false := by
   simp only [Bool.and_not_self]
   rw [coin_unused]
+example (p : I) : (do let x ← coin p; pure (x || !x)) = pure true := by
+  simp only [Bool.or_not_self]
+  rw [coin_unused]
 example (p : I) : (do let x ← coin p; let y ← coin p; pure ((x || y) && !(x && y))) = (do let x ← coin p; let y ← coin p; pure (xor x y)) := by
   congr 1
   funext x
