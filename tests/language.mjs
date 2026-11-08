@@ -1,15 +1,17 @@
 // The language switch in the header, on every page: tapping DE shows German texts and headings (kept on
 // reload), EN English again; one language at a time, nothing wider than a phone.
+// Without a choice the game is English, also in a German browser.
 // The pages are the front page and the worlds of its table of contents.
 // Usage: node tests/language.mjs   (BASE=https://lean.mathematik.uni-freiburg.de/main/ for the server)
 import { chromium } from 'playwright-core'
 const base = (process.env.BASE ?? 'http://127.0.0.1:8004/').replace(/\/?$/, '/')
 const browser = await chromium.launch({ channel: 'chrome' })
-const page = await (await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })).newPage()
+const page = await (await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, locale: 'de-DE' })).newPage()
 page.on('pageerror', e => console.log('PAGEERROR', e.message))
 let failures = 0
 const check = (ok, what) => { if (!ok) { failures++; console.log('FAIL', what) } }
 await page.goto(base); await page.evaluate(() => localStorage.clear()); await page.reload()
+check(await page.evaluate(() => document.documentElement.lang) === 'en', 'the default is not English')
 const pages = ['', ...await page.evaluate(() => [...new Set([...document.querySelectorAll('a[href]')].map(a => /^([^/#?.]+)\/#/.exec(a.getAttribute('href'))?.[1]).filter(Boolean))].map(p => p + '/'))]
 for (const [lang, other, title] of [['de', 'en', 'Wahrscheinlichkeit|Wahr und falsch|Gitter|Münze|ziehen|Bauen|Zählen|Lexikon'], ['en', 'de', 'Probability|True and False|Grid|Coin|Draw|Building|Counting|Lexicon']]) {
   await page.locator('header .pg-langbtn', { hasText: lang.toUpperCase() }).click()
