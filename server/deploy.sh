@@ -12,7 +12,11 @@ set -euo pipefail
 L=$HOME/lean
 export PATH=$HOME/bin:$HOME/.elan/bin:$PATH
 
-git -C $L/probability-game pull -q --ff-only
+# bash reads a script while it runs it: after the pull, the rest is done by the new version
+if [ -z "${DEPLOY_PULLED:-}" ]; then
+  git -C $L/probability-game pull -q --ff-only
+  DEPLOY_PULLED=1 exec $L/probability-game/server/deploy.sh "$@"
+fi
 
 # The C files of Verso's Markdown package (MD4Lean) are compiled with `cc` (only compiled: Lean links
 # with its own toolchain); they need the C headers of the system (libc6-dev). Without a C compiler on
