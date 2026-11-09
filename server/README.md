@@ -13,9 +13,9 @@ of Lean REPLs, each in bubblewrap.
 
 ## What the machine needs (once, by its administrators)
 
-* packages `bubblewrap`, `nginx`, `git`, `curl`, `python3` (no C compiler: `deploy.sh` compiles the
-  little C there is with the clang of the Lean toolchain, and unpacks the C headers of glibc and
-  Linux from Ubuntu's packages into `~/lean/sysroot`, without root);
+* packages `bubblewrap`, `nginx`, `git`, `curl`, `python3`, `libc6-dev` (the C headers; a C
+  compiler is not needed: without one, `deploy.sh` compiles the little C there is with the clang of
+  the Lean toolchain);
 * `loginctl enable-linger <user>`, so that the user services run without a login;
 * user namespaces for `bwrap` (on Ubuntu 26.04 the `apparmor` package allows them with its
   profile `bwrap-userns-restrict`);
