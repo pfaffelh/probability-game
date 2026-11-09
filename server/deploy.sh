@@ -7,7 +7,6 @@
 #   sites/<branch>      the built sites, served at /<branch>/ (server/build-sites.sh)
 #   nginx/              nginx's prefix: `sites` links ~/lean/sites
 #   allowed.txt         the contexts the bridge accepts (Lean/Rules.lean, Lean/World*.lean of all branches)
-#   sysroot/            the C headers of glibc and Linux, when the system has none (see below)
 # The first time: clone the three repositories into ~/lean (see server/README.md).
 set -euo pipefail
 L=$HOME/lean
@@ -16,27 +15,18 @@ export PATH=$HOME/bin:$HOME/.elan/bin:$PATH
 git -C $L/probability-game pull -q --ff-only
 
 # The C files of Verso's Markdown package (MD4Lean) are compiled with `cc` (only compiled: Lean links
-# with its own toolchain). Without a C compiler and C headers on the system (no libc6-dev, no root),
-# `cc` is the clang of the Lean toolchain, with clang's headers from the toolchain and those of glibc
-# and Linux unpacked from Ubuntu's packages into ~/lean/sysroot: libc6-dev in the version of the
-# installed glibc (fetched again when glibc is updated) and linux-libc-dev.
-if [ -e /usr/include/stdio.h ] && [ -x /usr/bin/cc ]; then
+# with its own toolchain); they need the C headers of the system (libc6-dev). Without a C compiler on
+# the system, `cc` is the clang of the Lean toolchain, with clang's own headers from the toolchain.
+rm -rf $L/sysroot  # (the C headers were unpacked there while the system had none)
+if [ -x /usr/bin/cc ]; then
   rm -f ~/bin/cc
 else
   T=$(cd $L/probability-game && lean --print-prefix)
-  S=$L/sysroot
-  v=$(dpkg-query -W -f='${Version}' libc6)
-  if [ "$(cat $S/version 2>/dev/null)" != "$v" ]; then
-    rm -rf $S && mkdir -p $S/debs
-    (cd $S/debs && apt-get download -q "libc6-dev=$v" linux-libc-dev >/dev/null)
-    for d in $S/debs/*.deb; do dpkg -x "$d" $S; done
-    echo "$v" > $S/version
-  fi
   mkdir -p ~/bin && rm -f ~/bin/cc
   cat > ~/bin/cc <<EOF
 #!/bin/sh
-# made by server/deploy.sh: the clang of the Lean toolchain, with the C headers of ~/lean/sysroot
-exec $T/bin/clang -isystem $T/include/clang -isystem $S/usr/include/x86_64-linux-gnu -isystem $S/usr/include "\$@"
+# made by server/deploy.sh: the clang of the Lean toolchain, with its headers and those of the system
+exec $T/bin/clang -isystem $T/include/clang "\$@"
 EOF
   chmod +x ~/bin/cc
 fi
