@@ -24,9 +24,10 @@ have no `simp`: it only normalises the board. A level's dot is half green after 
 **True and false** (the first world, before chance; `::::boolean`, `Lean/WorldBool.lean`): a coin
 lies surely on one side, once or for every `b` (two rows); the moves are the maps `Bool → Bool`
 (`not`, always `true`, always `false`), and Lean normalises the value or the map after each move.
-The proofs: `(!true) = false` by `rfl`, rewriting with `Bool.not_true`, `cases b` for `!(!b) = b`
-(the player's `Bool.not_not`), `funext` for `not ∘ not = id`, a hypothesis in `rw`; the boss is
-`f (f (f b)) = f b` for every `f : Bool → Bool`, by `cases h : f false`. Its levels (`::::boolean`) have an inventory of their own.
+The proofs: `(!true) = false` by `rfl`, rewriting with `Bool.not_true`, then `decide`, which does
+the computing in `Bool` (`decide +revert` for `!(!b) = b`, the player's `Bool.not_not`, checks both
+values of `b`; `cases b` by hand), `not ∘ not = id` by `decide`, a hypothesis in `rw`; the boss is
+`f (f (f b)) = f b` for every `f : Bool → Bool`, by `decide +revert`: four maps, eight cases. Its levels (`::::boolean`) have an inventory of their own.
 
 **Walking on the grid** (branch `monad` only, before chance; `::::walk`, `Lean/WorldWalk.lean`): a figure on
 $\mathbb{Z} \times \mathbb{Z}$, the moves `north`, `east`, `south`, `west` as maps `Pos → m Pos`

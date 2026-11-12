@@ -4,7 +4,7 @@
 The context of the first world, for the board and for the proofs (base: `import
 Journal.Notes.DiscreteMeasure.Thinning`, as for the other worlds). Nothing is added: the world plays
 with `Bool` of Lean's core, and its rules are those of the core (`Bool.not_true`, `Bool.not_false`,
-`Bool.not_not`, `Function.comp_apply`, `id_eq`).
+`Bool.not_not`); the rest is computing, by `rfl` and `decide`.
 
 A coin lies on the table, surely on one side. A move is a map `Bool → Bool`: `not`, always `true`
 (`fun _ => true`), always `false` (`fun _ => false`); these are the four maps `Bool → Bool`, with `id`,
