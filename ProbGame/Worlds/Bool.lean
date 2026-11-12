@@ -29,13 +29,13 @@ also `not true`, ist `false`.
 
 ::::boolean (inputs := "true") (target := "false") (moves := "not") (proof := ": (!true) = false") (new := "rfl") (play := "not")
 :::en
-*Flip.* The coin lies on `true`. Flip it onto the flag. Below the board is the move as Lean writes
-it, and what Lean makes of it.
+*Flip.* The coin lies on `true`: all the mass, 1, is at `true`. Turn it over, so that it lies as in
+the target. Below the board is the move as Lean writes it, and what Lean makes of it.
 :::
 
 :::de
-*Umdrehen.* Die Münze liegt auf `true`. Dreh sie auf die Fahne. Unter dem Spielfeld steht der Zug,
-wie Lean ihn schreibt, und was Lean daraus macht.
+*Umdrehen.* Die Münze liegt auf `true`: Die ganze Masse, 1, ist bei `true`. Dreh sie um, sodass sie
+wie im Ziel liegt. Unter dem Spielfeld steht der Zug, wie Lean ihn schreibt, und was Lean daraus macht.
 :::
 
 :::proofen

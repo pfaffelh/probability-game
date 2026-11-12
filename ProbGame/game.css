@@ -177,7 +177,7 @@ header .pg-langs { align-self: center; margin: 0 0.8em 0 0.5em; flex-shrink: 0; 
 
 /* the first world: true and false */
 .pg-svg.pg-bools { max-width: 300px; }
-.pg-bool-label { font-size: 12px; fill: #6b5634; font-family: system-ui, sans-serif; }
+.pg-bool-label { font-size: 16px; fill: #6b5634; font-family: system-ui, sans-serif; }
 .pg-bool-side { font-size: 13px; fill: #6b5634; font-family: ui-monospace, monospace; }
 /* the edition `show`: the boards alone; the texts of the proofs are not shown */
 :root.pg-show .pg-proof-text { display: none !important; }
@@ -330,3 +330,20 @@ html.pg-front .prev-next-buttons { display: none !important; }
 .pg-lexicon h3 { margin: 1rem 0 0.3rem; }
 .pg-lexicon .pg-tip-item b { font-family: var(--verso-code-font-family, monospace); }
 .pg-stage .pg-level.pg-view-proof .pg-proof { max-width: none; width: 100%; box-sizing: border-box; }
+
+/* the coin: true gold, false silver; a token with a number after toNat and the like; ? before a throw */
+.pg-coin-face { stroke-width: 2.5; }
+.pg-coin-true .pg-coin-face { fill: #f2cd62; stroke: #9a6a14; }
+.pg-coin-false .pg-coin-face { fill: #d9d6ce; stroke: #6f6a5e; }
+.pg-coin-num .pg-coin-face { fill: #fff6e2; stroke: #b0782a; }
+.pg-coin-q .pg-coin-face { fill: #f6eedd; stroke: #b0782a; stroke-dasharray: 5 3; }
+.pg-coin-rim { fill: none; stroke: rgba(0, 0, 0, 0.18); stroke-width: 1.5; }
+.pg-coin-text { font-family: var(--verso-code-font-family, monospace); font-weight: bold; fill: #3f2c0c; pointer-events: none; }
+.pg-launch { cursor: pointer; }
+.pg-launch-label { font: 15px var(--verso-code-font-family, monospace); fill: #6b5634; }
+.pg-launch-move { font: bold 16px var(--verso-code-font-family, monospace); fill: #b0782a; }
+.pg-freq { fill: #2e6fb8; opacity: 0.75; }
+.pg-freq-text { font: 15px var(--verso-structure-font-family, sans-serif); fill: #2e6fb8; }
+.pg-throws { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; justify-content: center; margin: 0.15rem 0; font-size: 0.85em; color: #555; font-family: var(--verso-structure-font-family, sans-serif); }
+.pg-throws .pg-tool { font-size: 0.95em; }
+.pg-coin-true .pg-coin-text, .pg-coin-false .pg-coin-text { font-family: Georgia, 'Times New Roman', serif; }

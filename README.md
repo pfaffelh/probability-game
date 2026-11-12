@@ -24,6 +24,9 @@ have no `simp`: it only normalises the board. A level's dot is half green after 
 **True and false** (the first world, before chance; `::::boolean`, `Lean/WorldBool.lean`): a coin
 lies surely on one side, once or for every `b` (two rows); the moves are the maps `Bool → Bool`
 (`not`, always `true`, always `false`), and Lean normalises the value or the map after each move.
+The board is that of the worlds of chance: the axis `false | true`, the target in the same box, and
+all the mass, 1, where the coin lies (`pure b`), the coin (T or F) in its bar, turning over when it
+changes sides.
 The proofs: `(!true) = false` by `rfl`, rewriting with `Bool.not_true`, then `decide`, which does
 the computing in `Bool` (`decide +revert` for `!(!b) = b`, the player's `Bool.not_not`, checks both
 values of `b`; `cases b` by hand), `not ∘ not = id` by `decide`, a hypothesis in `rw`; the boss is
@@ -42,7 +45,9 @@ that they carry over to the random walk.
 
 **One coin** (`coin p` at the start, sides `false`/`true` as in Lean): `not`; always `true` (a point mass); surely `false`
 without "always `false`" (a composition); `toNat` (to ℕ); the order matters; a bet
-(+5 / −2, to ℤ); the better bet; surely zero. The proofs: `rw`, `rfl`, `congr`, `funext`, `cases`.
+(+5 / −2, to ℤ); the better bet; surely zero. The coin can be thrown (*Throw*, *Throw 100 times*), for the
+$p$ of the picture: it turns in the air, lands, goes through the moves played and lands beside the bar
+of where it ends up; the frequencies are thin bars beside the masses (they decide nothing). The proofs: `rw`, `rfl`, `congr`, `funext`, `cases`.
 
 **Draw, then compute** — a move is a draw and a computation, `f <$> μ = do let x ← μ; pure (f x)`; on
 the board of *One coin*, the proofs learn the monad laws for `DiscreteMeasure` before the circuits need
