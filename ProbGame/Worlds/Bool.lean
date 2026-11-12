@@ -127,7 +127,7 @@ rfl
 :::
 ::::
 
-::::boolean (inputs := "false true") (target := "false true") (moves := "not") (proof := "(b : Bool) : (!(!b)) = b") (lemma := "Bool.not_not") (new := "cases, <;>") (play := "not, not")
+::::boolean (inputs := "false true") (target := "false true") (moves := "not") (proof := "(b : Bool) : (!(!b)) = b") (lemma := "Bool.not_not") (new := "cases, decide") (play := "not, not")
 :::en
 *Flipped twice.* Bring both coins back to where they lay.
 :::
@@ -139,32 +139,36 @@ rfl
 :::proofen
 `!(!b) = b` for every `b`. Now `rfl` does not help: Lean cannot compute `!b` as long as it does not
 know `b`. The tactic `cases b` splits into the cases `false` and `true`, two goals, one after the
-other, as the two rows of the board. Each of them is computing. Your result becomes the lemma
-`Bool.not_not`, as it is called in Lean.
+other, as the two rows of the board. Each of them is computing.
 
-*Tip.* `cases b`, `rfl`, `rfl`. Or in one line: `cases b <;> rfl`; `t₁ <;> t₂` runs `t₂` on
-every goal that `t₁` leaves.
+Faster: the tactic `decide` computes a statement about `Bool` and so decides it. `decide +revert`
+first takes the variables into the statement, here `∀ b, (!(!b)) = b`, and checks every case. From
+now on it does the computing in `Bool` for you. Your result becomes the lemma `Bool.not_not`, as it
+is called in Lean.
+
+*Tip.* `decide +revert`. Or by hand: `cases b`, `rfl`, `rfl`.
 :::
 
 :::proofde
 `!(!b) = b` für jedes `b`. Jetzt hilft `rfl` nicht: Lean kann `!b` nicht ausrechnen, solange es `b`
 nicht kennt. Die Taktik `cases b` teilt in die Fälle `false` und `true`, zwei Ziele, eines nach dem
-anderen, wie die zwei Zeilen des Spielfelds. Jedes davon ist Rechnen. Dein Ergebnis wird das Lemma
+anderen, wie die zwei Zeilen des Spielfelds. Jedes davon ist Rechnen.
+
+Schneller: Die Taktik `decide` rechnet eine Aussage über `Bool` aus und entscheidet sie so.
+`decide +revert` nimmt zuerst die Variablen in die Aussage, hier `∀ b, (!(!b)) = b`, und prüft jeden
+Fall. Ab jetzt übernimmt es das Rechnen in `Bool` für dich. Dein Ergebnis wird das Lemma
 `Bool.not_not`, wie es in Lean heißt.
 
-*Tipp.* `cases b`, `rfl`, `rfl`. Oder in einer Zeile: `cases b <;> rfl`; `t₁ <;> t₂` führt `t₂`
-auf jedem Ziel aus, das `t₁` übrig lässt.
+*Tipp.* `decide +revert`. Oder von Hand: `cases b`, `rfl`, `rfl`.
 :::
 :::solution
 ```
-cases b
-rfl
-rfl
+decide +revert
 ```
 :::
 ::::
 
-::::boolean (inputs := "false true") (target := "false true") (moves := "not, true, false") (count := "2") (proof := ": not ∘ not = (id : Bool → Bool)") (new := "funext, Function.comp_apply, id_eq") (play := "not, not")
+::::boolean (inputs := "false true") (target := "false true") (moves := "not, true, false") (count := "2") (proof := ": not ∘ not = (id : Bool → Bool)") (play := "not, not")
 :::en
 *Two moves, one map.* Bring both coins back again, in two moves, now with all three moves at hand.
 Two moves one after the other are one map: `not ∘ not`, first `not`, then `not`.
@@ -176,25 +180,22 @@ Zügen zur Wahl. Zwei Züge nacheinander sind eine Abbildung: `not ∘ not`, ers
 :::
 
 :::proofen
-Now an equation between maps: `not ∘ not` is `id`, the map that does nothing. The tactic `funext b`
-reduces it to the two maps being equal at every `b`. Then three rules:
-`Function.comp_apply : (g ∘ f) x = g (f x)`, your lemma `Bool.not_not`, and `id_eq : id a = a`.
+Now an equation between maps: `not ∘ not` is `id`, the map that does nothing. Two maps
+`Bool → Bool` are the same when they agree at `false` and at `true`, and `decide` checks that too.
 
-*Tip.* `funext b`, then `rw [Function.comp_apply, Bool.not_not, id_eq]`.
+*Tip.* `decide`.
 :::
 
 :::proofde
-Jetzt eine Gleichung zwischen Abbildungen: `not ∘ not` ist `id`, die Abbildung, die nichts tut. Die
-Taktik `funext b` führt sie darauf zurück, dass die beiden Abbildungen an jeder Stelle `b` gleich
-sind. Dann drei Regeln: `Function.comp_apply : (g ∘ f) x = g (f x)`, dein Lemma `Bool.not_not` und
-`id_eq : id a = a`.
+Jetzt eine Gleichung zwischen Abbildungen: `not ∘ not` ist `id`, die Abbildung, die nichts tut. Zwei
+Abbildungen `Bool → Bool` sind gleich, wenn sie bei `false` und bei `true` übereinstimmen, und auch
+das prüft `decide`.
 
-*Tipp.* `funext b`, dann `rw [Function.comp_apply, Bool.not_not, id_eq]`.
+*Tipp.* `decide`.
 :::
 :::solution
 ```
-funext b
-rw [Function.comp_apply, Bool.not_not, id_eq]
+decide
 ```
 :::
 ::::
@@ -244,43 +245,27 @@ Umdrehen. Tatsächlich ist jeder Zug `f`, dreimal gespielt, dasselbe wie einmal:
 :::
 
 :::proofen
-No rule says what `f` does: you have to look. First `cases b`. Then `cases h : f false` splits into
-the cases `f false = false` and `f false = true`, and keeps the case as the hypothesis `h`, which
-`rw [h]` uses. Sometimes you need `f true` as well: `cases h2 : f true`. The cases for `f false` and
-`f true` together are the four maps `Bool → Bool`: `id`, `not`, always `true`, always `false`, the
-moves of the coins in the worlds to come.
+No rule says what `f` does. But there are only four maps `Bool → Bool`: `id`, `not`, always `true`,
+always `false`, the moves of the coins in the worlds to come. With the two values of `b` these are
+eight cases, and `decide +revert` checks them all. From the next world on, this no longer works: a
+coin `coin p` is a different distribution for every number `p` between 0 and 1, infinitely many
+cases. There, the rules do the work.
 
-*Tip.* For `b = false`: `cases h : f false`; when `f false = false`, `rw [h, h]`; when
-`f false = true`, `cases h2 : f true`, then `rw [h]` and `rw [h2]`. Then `b = true`: the same with
-`true` and `false` swapped (`cases h : f true`, `cases h2 : f false`, `rw [h2]`, `rw [h]`,
-`rw [h, h]`).
+*Tip.* `decide +revert`.
 :::
 
 :::proofde
-Keine Regel sagt, was `f` tut: Du musst nachsehen. Zuerst `cases b`. Dann teilt `cases h : f false`
-in die Fälle `f false = false` und `f false = true` und behält den Fall als Annahme `h`, die
-`rw [h]` benutzt. Manchmal brauchst du auch `f true`: `cases h2 : f true`. Die Fälle für `f false`
-und `f true` zusammen sind die vier Abbildungen `Bool → Bool`: `id`, `not`, immer `true`, immer
-`false`, die Züge der Münzen in den Welten danach.
+Keine Regel sagt, was `f` tut. Aber es gibt nur vier Abbildungen `Bool → Bool`: `id`, `not`, immer
+`true`, immer `false`, die Züge der Münzen in den Welten danach. Mit den zwei Werten von `b` sind das
+acht Fälle, und `decide +revert` prüft sie alle. Ab der nächsten Welt geht das nicht mehr: Eine Münze
+`coin p` ist für jede Zahl `p` zwischen 0 und 1 eine andere Verteilung, unendlich viele Fälle. Dort
+machen die Regeln die Arbeit.
 
-*Tipp.* Für `b = false`: `cases h : f false`; wenn `f false = false`, `rw [h, h]`; wenn
-`f false = true`, `cases h2 : f true`, dann `rw [h]` und `rw [h2]`. Dann `b = true`: dasselbe mit
-`true` und `false` vertauscht (`cases h : f true`, `cases h2 : f false`, `rw [h2]`, `rw [h]`,
-`rw [h, h]`).
+*Tipp.* `decide +revert`.
 :::
 :::solution
 ```
-cases b
-cases h : f false
-rw [h, h]
-cases h2 : f true
-rw [h]
-rw [h2]
-cases h : f true
-cases h2 : f false
-rw [h2]
-rw [h]
-rw [h, h]
+decide +revert
 ```
 :::
 ::::

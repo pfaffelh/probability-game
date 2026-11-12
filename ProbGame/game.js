@@ -1354,13 +1354,14 @@
     { name: 'funext', kind: 'tactic', insert: 'funext x', sig: 'funext x',
       en: 'For a goal g = h between functions: it suffices that g x = h x for every x.',
       de: 'Für ein Ziel g = h zwischen Funktionen: Es genügt, dass g x = h x für jedes x.' },
-    { name: 'cases', kind: 'tactic', insert: 'cases x', sig: 'cases x   cases h : f x',
-      enb: 'Splits into the cases of x: for x : Bool, the goals for false and for true, one after the other. cases h : f x splits into the cases of the value of f x and keeps the case as the hypothesis h.',
-      deb: 'Teilt in die Fälle von x: für x : Bool die Ziele für false und für true, eines nach dem anderen. cases h : f x teilt in die Fälle des Werts von f x und behält den Fall als Annahme h.',
+    { name: 'cases', kind: 'tactic', insert: 'cases x', sig: 'cases x',
       en0: 'Splits a hypothesis h into its cases. For h : false = true there is no case: the goal is done.',
       de0: 'Teilt eine Annahme h in ihre Fälle. Für h : false = true gibt es keinen Fall: Das Ziel ist erledigt.',
       en: 'Splits into the cases of x: for x : Bool, the goals for false and for true, one after the other.',
       de: 'Teilt in die Fälle von x: für x : Bool die Ziele für false und für true, eines nach dem anderen.' },
+    { name: 'decide', kind: 'tactic', insert: 'decide', sig: 'decide   decide +revert',
+      en: 'Decides a statement about Bool by computing it: (!true) = false, not ∘ not = id. With +revert it first takes the variables (b, f, h) into the statement, for every value, and checks every case.',
+      de: 'Entscheidet eine Aussage über Bool, indem es sie ausrechnet: (!true) = false, not ∘ not = id. Mit +revert nimmt es zuerst die Variablen (b, f, h) in die Aussage, für jeden Wert, und prüft jeden Fall.' },
     { name: 'simp only', kind: 'tactic', insert: 'simp only []', sig: 'simp only [h₁, h₂, …]',
       en: 'Rewrites with the given rules everywhere, also inside do blocks, as often as it can; closes the goal when both sides become the same.',
       de: 'Schreibt mit den angegebenen Regeln überall um, auch in do-Blöcken, so oft es geht; schließt das Ziel, wenn beide Seiten gleich werden.' },
@@ -1458,6 +1459,8 @@
     [/motive is not type correct/, 'rw cannot rewrite here; try simp only.', 'rw kann hier nicht umschreiben; versuche simp only.'],
     [/simp made no progress/, 'simp only found nothing to rewrite with these rules.', 'simp only hat mit diesen Regeln nichts gefunden, was es umschreiben kann.'],
     [/could not unify the conclusion of `@funext`/, 'funext needs a goal g = h between functions (first congr 1?).', 'funext braucht ein Ziel g = h zwischen Funktionen (vorher congr 1?).'],
+    [/must not contain free variables/, 'decide does not know the variables of the goal; decide +revert takes them into the statement.', 'decide kennt die Variablen des Ziels nicht; decide +revert nimmt sie in die Aussage.'],
+    [/Tactic `decide` proved that the proposition/, 'The statement is false, at least in one case.', 'Die Aussage ist falsch, mindestens in einem Fall.'],
     [/Tactic `rfl` failed/, 'The two sides are not the same, not even after computing.', 'Die beiden Seiten sind nicht gleich, auch nicht nach Ausrechnen.'],
     [/[Nn]o goals/, 'There is no goal left.', 'Es ist kein Ziel mehr übrig.'],
     [/Unknown (identifier|constant)/, 'Lean does not know this name.', 'Diesen Namen kennt Lean nicht.'],
@@ -1567,7 +1570,7 @@
       if (parts.length > 1 && !this.available(INVENTORY.find(i => i.name === '<;>'))) return tr('This tactic is not in your inventory: {x}', { x: '<;>' })
       for (let t of parts) {
         t = t.trim()
-        const tac = /^(rw|simp only|rfl|congr|funext|cases|induction'|exists|intro|have|apply|constructor)(?=\s|\[|$)/.exec(t)?.[1]
+        const tac = /^(rw|simp only|rfl|decide|congr|funext|cases|induction'|exists|intro|have|apply|constructor)(?=\s|\[|$)/.exec(t)?.[1]
         const item = INVENTORY.find(i => i.name === tac)
         if (!item || !this.available(item)) return tr('This tactic is not in your inventory: {x}', { x: t.split(/\s/)[0] || t })
         // the rules: in brackets, or the term of `have h := rule args`
