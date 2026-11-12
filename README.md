@@ -24,9 +24,10 @@ have no `simp`: it only normalises the board. A level's dot is half green after 
 **True and false** (the first world, before chance; `::::boolean`, `Lean/WorldBool.lean`): a coin
 lies surely on one side, once or for every `b` (two rows); the moves are the maps `Bool → Bool`
 (`not`, always `true`, always `false`), and Lean normalises the value or the map after each move.
-The board is that of the worlds of chance: the axis `false | true`, the target in the same box, and
-all the mass, 1, where the coin lies (`pure b`), the coin (T or F) in its bar, turning over when it
-changes sides.
+The board shows the moves played as a map: the inputs above (`b = false`, `b = true`, or the start),
+`Bool` below as the axis of the worlds of chance, an arrow from each input to where its coin (T or F)
+lies; a coin turns over when it changes sides. The target: dashed rings, and the map in the same box
+as in the worlds of chance.
 The proofs: `(!true) = false` by `rfl`, rewriting with `Bool.not_true`, then `decide`, which does
 the computing in `Bool` (`decide +revert` for `!(!b) = b`, the player's `Bool.not_not`, checks both
 values of `b`; `cases b` by hand), `not ∘ not = id` by `decide`, a hypothesis in `rw`; the boss is

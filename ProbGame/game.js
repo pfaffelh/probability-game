@@ -327,7 +327,7 @@
     if (v === undefined) return
     // the faces bear T and F, as heads and tails; a token its number
     const t = String(v), face = { true: 'T', false: 'F' }[t] ?? t, text = g.firstChild.lastChild
-    g.setAttribute('class', 'pg-coin ' + ({ true: 'pg-coin-true', false: 'pg-coin-false', '?': 'pg-coin-q' }[t] ?? 'pg-coin-num'))
+    g.setAttribute('class', 'pg-coin ' + ({ true: 'pg-coin-true', false: 'pg-coin-false', '?': 'pg-coin-q' }[t] ?? 'pg-coin-num') + (g.classList.contains('pg-map-coin') ? ' pg-map-coin' : ''))
     text.textContent = face
     text.setAttribute('font-size', Math.round(Number(g.dataset.r) * (face.length === 1 ? 0.95 : face.length === 2 ? 0.7 : 0.5)))
   }
@@ -368,10 +368,13 @@
     })
     return g
   }
-  // the arrow head of the arrows on the axis
+  // the arrow head of the arrows: an id of its own in each picture (the levels of a page are all in
+  // it, and a marker of a hidden one is not drawn); `defs.dataset.url` refers to it
+  let ARROWS = 0
   function arrowDefs() {
-    const defs = svg('defs')
-    const mk = svg('marker', { id: 'pg-head', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' })
+    const defs = svg('defs'), id = `pg-head-${++ARROWS}`
+    defs.dataset.url = `url(#${id})`
+    const mk = svg('marker', { id, viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' })
     mk.append(svg('path', { d: 'M0,0 L10,5 L0,10 z', class: 'pg-arrowhead' }))
     defs.append(mk)
     return defs
@@ -528,7 +531,7 @@
         const y0 = BASE - h, y1 = BASE - (stack[b] ?? 0) - h
         stack[b] = (stack[b] ?? 0) + h
         const r = svg('rect', { class: 'pg-mass', x: xa[k] - BAR / 2, y: y0, width: BAR, height: h, rx: 3 })
-        const a = svg('line', { class: 'pg-arrow', x1: xa[k], y1: BASE + 8, x2: xb[b], y2: BASE + 8, 'marker-end': 'url(#pg-head)' })
+        const a = svg('line', { class: 'pg-arrow', x1: xa[k], y1: BASE + 8, x2: xb[b], y2: BASE + 8, 'marker-end': this.arrowUrl })
         g.append(a, r)
         parts.push({ r, x0: xa[k], x1: xb[b], y0, y1 })
       }
@@ -552,7 +555,8 @@
       const d = this.dist, keys = this.keys(), xs = layout(keys)
       const done = this.done
       const s = svg('svg', { viewBox: `0 0 ${W} 300`, class: 'pg-svg' + (done ? ' pg-done' : '') })
-      s.append(arrowDefs())
+      const defs = arrowDefs(); this.arrowUrl = defs.dataset.url
+      s.append(defs)
       s.append(svg('line', { x1: 10, x2: W - 10, y1: BASE, y2: BASE, class: 'pg-axis' }))
       s.append(svg('text', { x: W - 12, y: BASE + 42, 'text-anchor': 'end', class: 'pg-space' }, spaceName(d.space)))
       // the target, dashed, where it lives on the same space
@@ -1376,51 +1380,81 @@
     }
     flash(text) { this.info.textContent = text; this.info.classList.add('pg-warn'); setTimeout(() => this.info.classList.remove('pg-warn'), 1200) }
 
-    // a chart per input: the axis, its base line, the height of mass 1, the size of the coin
-    geometry() {
-      const xs = layout(['false', 'true'])
-      return this.rows ? { xs, h: 366, hb: 105, base: i => 145 + 175 * i, r: 22 } : { xs, h: 300, hb: H, base: () => BASE, r: COIN_R }
+    // The moves played are a map: from the inputs above (b = false and b = true, or the start) to
+    // Bool below, an arrow from each input to where its coin lies; coins on the same side lie one
+    // on the other. The target: dashed rings where the coins are to lie (and the map in the box).
+    geometry() { return { xs: layout(['false', 'true']), top: 64, base: BASE, r: 22 } }
+    coinAt(values, i) {
+      const g = this.geometry(), v = values[i], k = values.slice(0, i).filter(w => w === v).length, n = values.filter(w => w === v).length
+      return [g.xs[v] + (k - (n - 1) / 2) * (2 * g.r + 8), g.base - g.r - 8]
     }
-    // the bars slide to their new sides, and a coin that changes sides turns over (700 ms)
+    // the coins move to their new sides, the arrows with them; a coin that changes sides turns over (700 ms)
     animate(before, after, done) {
-      const g = this.geometry(), bars = [...this.svg.querySelectorAll('.pg-sure-bar')]
-      this.svg.querySelectorAll('.pg-zero').forEach(e => e.classList.add('pg-fading'))
-      before.forEach((v, i) => {
-        if (v !== after[i]) this.svg.append(svg('line', { class: 'pg-arrow', x1: g.xs[v], y1: g.base(i) + 8, x2: g.xs[after[i]], y2: g.base(i) + 8, 'marker-end': 'url(#pg-head)' }))
-      })
+      const g = this.geometry()
+      const coins = [...this.svg.querySelectorAll('.pg-map-coin')], arrows = [...this.svg.querySelectorAll('.pg-map-arrow')]
       this.animating = true
       run([{ T: 700, f: t => {
         const e = ease(t)
-        bars.forEach((bar, i) => {
+        this.inputs.forEach((b, i) => {
+          const [x0, y0] = this.coinAt(before, i), [x1, y1] = this.coinAt(after, i), x = x0 + (x1 - x0) * e, y = y0 + (y1 - y0) * e
           const turn = before[i] !== after[i]
-          bar.setAttribute('transform', `translate(${(g.xs[after[i]] - g.xs[before[i]]) * e} 0)`)
-          pose(bar.querySelector('.pg-coin'), g.xs[before[i]], g.base(i) - g.hb + g.r + 8, turn ? Math.cos(Math.PI * e) : 1, turn && e >= 0.5 ? after[i] : before[i])
+          pose(coins[i], x, y, turn ? Math.cos(Math.PI * e) : 1, turn && e >= 0.5 ? after[i] : before[i])
+          arrows[i].setAttribute('x2', x); arrows[i].setAttribute('y2', y - g.r - 4)
         })
       } }], () => { this.animating = false; done() })
+    }
+
+    // the target, small, beside the board: the map, inputs above, Bool below
+    targetMap() {
+      const w = 200, h = 168, top = 50, base = 128, xs = { false: 70, true: 130 }, r = 9
+      const at = i => { const v = this.target[i], k = this.target.slice(0, i).filter(x => x === v).length, n = this.target.filter(x => x === v).length; return [xs[v] + (k - (n - 1) / 2) * (2 * r + 4), base - r - 4] }
+      const g = svg('svg', { viewBox: `0 0 ${w} ${h}`, class: 'pg-target-svg', width: w })
+      g.append(svg('text', { x: 6, y: 16, class: 'pg-target-title' }, tr('Target')))
+      g.append(svg('text', { x: 6, y: top + 4, class: 'pg-target-point' }, this.rows ? 'b' : ''))
+      for (const b of this.inputs) {
+        g.append(svg('circle', { class: 'pg-map-dot pg-target-dot', cx: xs[b], cy: top, r: 4 }))
+        g.append(svg('text', { x: xs[b], y: top - 9, 'text-anchor': 'middle', class: 'pg-target-point' }, String(b)))
+      }
+      g.append(svg('line', { x1: 6, x2: w - 6, y1: base, y2: base, class: 'pg-axis' }))
+      for (const k of [false, true]) g.append(svg('text', { x: xs[k], y: base + 16, 'text-anchor': 'middle', class: 'pg-target-point' }, String(k)))
+      g.append(svg('text', { x: w - 8, y: base + 32, 'text-anchor': 'end', class: 'pg-space' }, 'Bool'))
+      this.inputs.forEach((b, i) => {
+        const [x, y] = at(i)
+        g.append(svg('line', { class: 'pg-map-arrow pg-target-arrow', x1: xs[b], y1: top + 6, x2: x, y2: y - r - 3 }))
+        g.append(svg('circle', { class: 'pg-target-mass', cx: x, cy: y, r }))
+      })
+      return g
     }
 
     render() {
       if (this.animating) return  // (drawn when the animation ends)
       const done = this.done, g = this.geometry(), values = this.values
-      const s = svg('svg', { viewBox: `0 0 ${W} ${g.h}`, class: 'pg-svg pg-sure' + (done ? ' pg-done' : '') })
-      s.append(arrowDefs())
+      const s = svg('svg', { viewBox: `0 0 ${W} 300`, class: 'pg-svg pg-map' + (done ? ' pg-done' : '') })
+      const defs = arrowDefs()
+      s.append(defs)
+      // above: the inputs
+      s.append(svg('text', { class: 'pg-map-side', x: 14, y: g.top + 5 }, this.rows ? 'b' : tr('start')))
+      for (const b of this.inputs) {
+        s.append(svg('circle', { class: 'pg-map-dot', cx: g.xs[b], cy: g.top, r: 6 }))
+        s.append(svg('text', { class: 'pg-point', x: g.xs[b], y: g.top - 16, 'text-anchor': 'middle' }, String(b)))
+      }
+      // below: Bool, with the coins
+      s.append(svg('line', { x1: 10, x2: W - 10, y1: g.base, y2: g.base, class: 'pg-axis' }))
+      s.append(svg('text', { x: W - 12, y: g.base + 42, 'text-anchor': 'end', class: 'pg-space' }, 'Bool'))
+      for (const k of [false, true]) s.append(svg('text', { x: g.xs[k], y: g.base + 24, 'text-anchor': 'middle', class: 'pg-point' }, String(k)))
       this.inputs.forEach((b, i) => {
-        const base = g.base(i), v = values[i], t = this.target[i]
-        s.append(svg('line', { x1: 10, x2: W - 10, y1: base, y2: base, class: 'pg-axis' }))
-        if (this.rows) s.append(svg('text', { class: 'pg-bool-label', x: 10, y: base - g.hb / 2 }, tr('for b = {b}', { b })))
-        // the target, dashed, as on the boards of chance
-        s.append(svg('rect', { class: 'pg-target', x: g.xs[t] - BAR / 2 - 6, y: base - g.hb - 6, width: BAR + 12, height: g.hb + 6, rx: 6 }))
-        s.append(svg('text', { x: g.xs[!v], y: base - 8, 'text-anchor': 'middle', class: 'pg-mass pg-zero' }, '0'))
-        const bar = svg('g', { class: 'pg-sure-bar' })
-        bar.append(svg('rect', { class: 'pg-mass', x: g.xs[v] - BAR / 2, y: base - g.hb, width: BAR, height: g.hb, rx: 3 }),
-          svg('text', { x: g.xs[v], y: base - g.hb - 8, 'text-anchor': 'middle', class: 'pg-mass' }, '1'))
-        const c = coin(v, g.r)
-        pose(c, g.xs[v], base - g.hb + g.r + 8, 1, v)
-        bar.append(c)
-        s.append(bar)
-        for (const k of [false, true]) s.append(svg('text', { x: g.xs[k], y: base + (this.rows ? 20 : 24), 'text-anchor': 'middle', class: 'pg-point' }, String(k)))
+        const [tx, ty] = this.coinAt(this.target, i)
+        s.append(svg('circle', { class: 'pg-target', cx: tx, cy: ty, r: g.r + 6 }))
       })
-      s.append(svg('text', { x: W - 12, y: g.base(this.inputs.length - 1) + (this.rows ? 38 : 42), 'text-anchor': 'end', class: 'pg-space' }, 'Bool'))
+      this.inputs.forEach((b, i) => {
+        const [x, y] = this.coinAt(values, i)
+        s.append(svg('line', { class: 'pg-map-arrow', x1: g.xs[b], y1: g.top + 9, x2: x, y2: y - g.r - 4, 'marker-end': defs.dataset.url }))
+      })
+      this.inputs.forEach((b, i) => {
+        const [x, y] = this.coinAt(values, i), c = coin(values[i], g.r)
+        c.classList.add('pg-map-coin'); pose(c, x, y, 1, values[i])
+        s.append(c)
+      })
       this.svg = s
 
       const moves = el('div', 'pg-moves')
@@ -1449,9 +1483,8 @@
       const task = el('div', 'pg-task')
       task.append(el('b', '', tr(this.rows ? 'Task: lay each coin as in the target.' : 'Task: lay the coin as in the target.') +
         (this.count ? ' (' + tr('in exactly {n} moves', { n: this.count }) + ')' : '')))
-      const sure = v => ({ space: 'bool', mass: new Map([[String(v), ONE]]) })
       const row = el('div', 'pg-row')
-      row.append(s, targetChart(this.target.map((v, i) => ({ label: this.rows ? `b = ${this.inputs[i]}` : null, dist: sure(v) }))))
+      row.append(s, this.targetMap())
       const parts = [task, row, this.info, ...(SHOW ? [] : [ln]), el('div', 'pg-moves-head', tr('Moves')), moves, tools, ...(SHOW ? [] : [el('pre', 'pg-lean', this.leanState())])]
       if (done) {
         const box = el('div', 'pg-solved')

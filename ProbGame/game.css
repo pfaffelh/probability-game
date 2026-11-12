@@ -347,3 +347,11 @@ html.pg-front .prev-next-buttons { display: none !important; }
 .pg-throws { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; justify-content: center; margin: 0.15rem 0; font-size: 0.85em; color: #555; font-family: var(--verso-structure-font-family, sans-serif); }
 .pg-throws .pg-tool { font-size: 0.95em; }
 .pg-coin-true .pg-coin-text, .pg-coin-false .pg-coin-text { font-family: Georgia, 'Times New Roman', serif; }
+
+/* the first world: the moves as a map, inputs above, Bool below */
+.pg-map-dot { fill: #6b5634; }
+.pg-map-side { font: italic 16px var(--verso-code-font-family, monospace); fill: #6b5634; }
+.pg-map-arrow { stroke: #b0782a; stroke-width: 2.5; }
+.pg-target-arrow { stroke: #2e6fb8; stroke-width: 1.8; }
+.pg-target-dot { fill: #2e6fb8; }
+circle.pg-target { stroke-dasharray: 6 4; }
