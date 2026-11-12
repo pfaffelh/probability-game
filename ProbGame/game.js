@@ -308,9 +308,80 @@
     return { space: move.to, mass }
   }
 
+  // ---------------------------------------------------------------- the coin
+
+  // A coin with its two faces, true (gold) and false (silver); after a move such as toNat, a token
+  // with a number. `pose` puts it at (x, y), squashed across to sx while it turns over (a turn: sx from
+  // 1 to -1, the face changing halfway), with the face v, and scaled.
+  const COIN_R = 26
+  function coin(v, r = COIN_R) {
+    const g = svg('g', { class: 'pg-coin' }), body = svg('g')
+    body.append(svg('circle', { class: 'pg-coin-face', r }), svg('circle', { class: 'pg-coin-rim', r: r * 0.8 }),
+      svg('text', { class: 'pg-coin-text', 'text-anchor': 'middle', 'dominant-baseline': 'central' }))
+    g.append(body); g.dataset.r = r; pose(g, 0, 0, 1, v)
+    return g
+  }
+  function pose(g, x, y, sx = 1, v, scale = 1) {
+    g.setAttribute('transform', `translate(${x} ${y}) scale(${scale})`)
+    g.firstChild.setAttribute('transform', `scale(${Math.max(0.03, Math.abs(sx))} 1)`)
+    if (v === undefined) return
+    // the faces bear T and F, as heads and tails; a token its number
+    const t = String(v), face = { true: 'T', false: 'F' }[t] ?? t, text = g.firstChild.lastChild
+    g.setAttribute('class', 'pg-coin ' + ({ true: 'pg-coin-true', false: 'pg-coin-false', '?': 'pg-coin-q' }[t] ?? 'pg-coin-num'))
+    text.textContent = face
+    text.setAttribute('font-size', Math.round(Number(g.dataset.r) * (face.length === 1 ? 0.95 : face.length === 2 ? 0.7 : 0.5)))
+  }
+  const otherSide = v => (v === 'true' ? 'false' : v === 'false' ? 'true' : v)
+  const ease = t => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2)
+  // an animation: its parts one after the other, each { T: ms, f: t => … } with t from 0 to 1
+  function run(parts, done) {
+    const T = matchMedia?.('(prefers-reduced-motion: reduce)').matches ? () => 1 : p => p.T
+    let i = 0, t0 = performance.now()
+    const frame = now => {
+      const t = Math.min(1, (now - t0) / T(parts[i]))
+      parts[i].f(t)
+      if (t >= 1) { i++; t0 = now; if (i === parts.length) { done(); return } }
+      requestAnimationFrame(frame)
+    }
+    if (parts.length) requestAnimationFrame(frame); else done()
+  }
+
+  // The target, small, beside the board: a chart of each distribution (one, or one per row, for b = …).
+  function targetChart(charts) {
+    const t0 = charts[0].dist, ks = axis(t0.space, charts.flatMap(c => [...c.dist.mass.keys()]))
+    const gap = Math.max(46, ...charts.flatMap(c => ks.map(k => String(c.dist.mass.get(k) ?? ZERO).length * 7 + 8)))
+    const w = Math.max(200, gap * ks.length + 16), x0 = w / 2 - (gap * (ks.length - 1)) / 2, bw = Math.min(40, gap - 10)
+    const one = charts.length === 1, bh = one ? 95 : 60, base = j => (one ? 120 : 108 + 118 * j)
+    const g = svg('svg', { viewBox: `0 0 ${w} ${base(charts.length - 1) + 30}`, class: 'pg-target-svg', width: w })
+    g.append(svg('text', { x: 6, y: 16, class: 'pg-target-title' }, tr('Target')))
+    g.append(svg('text', { x: w - 8, y: 16, 'text-anchor': 'end', class: 'pg-space' }, spaceName(t0.space)))
+    charts.forEach((c, j) => {
+      const b = base(j)
+      if (c.label) g.append(svg('text', { x: 6, y: b - bh - 18, class: 'pg-target-point' }, c.label))
+      g.append(svg('line', { x1: 6, x2: w - 6, y1: b, y2: b, class: 'pg-axis' }))
+      ks.forEach((k, i) => {
+        const m = c.dist.mass.get(k) ?? ZERO, x = x0 + i * gap, hh = m.value(P) * bh
+        if (hh > 0) g.append(svg('rect', { class: 'pg-target-mass', x: x - bw / 2, y: b - hh, width: bw, height: hh, rx: 3 }))
+        g.append(svg('text', { x, y: b - hh - 5, 'text-anchor': 'middle', class: 'pg-target-mass' }, m.toString()))
+        g.append(svg('text', { x, y: b + 16, 'text-anchor': 'middle', class: 'pg-target-point' }, pointName(t0.space, k)))
+      })
+    })
+    return g
+  }
+  // the arrow head of the arrows on the axis
+  function arrowDefs() {
+    const defs = svg('defs')
+    const mk = svg('marker', { id: 'pg-head', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' })
+    mk.append(svg('path', { d: 'M0,0 L10,5 L0,10 z', class: 'pg-arrowhead' }))
+    defs.append(mk)
+    return defs
+  }
+
   // ---------------------------------------------------------------- one level
 
   const W = 560, H = 210, BASE = 250, BAR = 74
+  // where the coin is thrown from, left of the axis
+  const LX = 62, LY = 112
   const layout = (keys) => {
     const gap = Math.min(150, (W - 40) / Math.max(1, keys.length))
     const x0 = W / 2 - (gap * (keys.length - 1)) / 2
@@ -335,6 +406,7 @@
       this.leanStart = root.dataset.leanStart || 'coin p'
       this.leanTarget = root.dataset.leanTarget
       this.leanNow = null; this.leanGoal = null
+      this.counts = new Map(); this.thrown = 0  // the throws: where they landed (after the moves played)
       if (this.leanTarget) normalise(this.context, this.leanTarget).then(r => { this.leanGoal = r; this.render() })
       this.updateLean()
       this.render()
@@ -371,13 +443,50 @@
       if (move.from !== this.dist.space) { this.flash(tr('This move needs a coin, not a number.')); return }
       const before = this.dist, after = push(before, move)
       this.steps.push({ move, before })
-      this.picked = null
+      this.picked = null; this.clearThrows()
       this.updateLean()
       this.animate(before, after, move, () => { this.dist = after; this.render(); this.check() })
     }
-    undo() { if (this.animating || !this.steps.length) return; this.dist = this.steps.pop().before; this.picked = null; this.updateLean(); this.render() }
-    reset() { if (this.animating) return; this.steps = []; this.dist = this.start; this.picked = null; this.updateLean(); this.render() }
+    undo() { if (this.animating || !this.steps.length) return; this.dist = this.steps.pop().before; this.picked = null; this.clearThrows(); this.updateLean(); this.render() }
+    reset() { if (this.animating) return; this.steps = []; this.dist = this.start; this.picked = null; this.clearThrows(); this.updateLean(); this.render() }
     get canUndo() { return this.steps.length > 0 }
+
+    // Throwing the coin: a point of the start, drawn with its mass (for the p of the picture), then
+    // the moves played, one after the other; it lands at its image. The throws are counted, and their
+    // frequencies are drawn as thin bars beside the masses (they change nothing in the level).
+    clearThrows() { this.counts = new Map(); this.thrown = 0 }
+    sample(d) {
+      let u = Math.random(), last = null
+      for (const [k, m] of d.mass) { last = k; u -= m.value(P); if (u < 0) return k }
+      return last
+    }
+    throwPath() { const path = [this.sample(this.start)]; for (const s of this.steps) path.push(s.move.f(path[path.length - 1])); return path }
+    land(v, n = 1) { this.counts.set(v, (this.counts.get(v) ?? 0) + n); this.thrown += n }
+    throwMany(n) { if (this.animating) return; for (let j = 0; j < n; j++) this.land(this.throwPath().at(-1)); this.render() }
+    get sureStart() { return this.start.mass.size === 1 ? [...this.start.mass.keys()][0] : null }
+    throwOne() {
+      if (this.animating) return
+      const path = this.throwPath(), c = this.svg?.querySelector('.pg-launch .pg-coin'), say = this.svg?.querySelector('.pg-launch-move')
+      if (!c) { this.land(path.at(-1)); this.render(); return }
+      const xs = layout(this.keys()), v = path.at(-1), parts = []
+      // up, turning over and over, and down on its face
+      const turns = 3
+      parts.push({ T: 900, f: t => { const a = 2 * Math.PI * turns * t; pose(c, LX, LY - 80 * Math.sin(Math.PI * t), Math.cos(a), Math.cos(a) >= 0 ? path[0] : otherSide(path[0])) } })
+      // the moves played: a move that changes the side turns the coin over; toNat and the like make a number of it
+      this.steps.forEach((s, j) => {
+        const a = path[j], b = path[j + 1]
+        parts.push({ T: a === b ? 250 : 420, f: t => {
+          say.textContent = t < 1 ? s.move.spec : ''
+          if (a !== b) pose(c, LX, LY, Math.cos(Math.PI * t), t < 0.5 ? a : b)
+        } })
+      })
+      // into its place: beside the bar of the point where it landed
+      const x1 = xs[v] + BAR / 2 + 15, y1 = BASE - ((this.counts.get(v) ?? 0) + 1) / (this.thrown + 1) * H - 12
+      parts.push({ T: 520, f: t => { const e = ease(t); pose(c, LX + (x1 - LX) * e, LY + (y1 - LY) * e - 50 * Math.sin(Math.PI * e), 1, undefined, 1 - 0.6 * e) } })
+      this.animating = true
+      run(parts, () => { this.animating = false; this.land(v); this.render() })
+    }
+
     // what to do next, in a line below the board
     status() {
       if (this.done) return 'goals accomplished 🎉'
@@ -436,31 +545,14 @@
       requestAnimationFrame(step)
     }
 
-    // the target, small, beside the board
-    targetPicture() {
-      const t = this.target, ks = axis(t.space, [...t.mass.keys()])
-      const gap = Math.max(46, ...ks.map(k => String(t.mass.get(k) ?? ZERO).length * 7 + 8)), w = Math.max(200, gap * ks.length + 16), h = 150, base = 120, bh = 95, x0 = w / 2 - (gap * (ks.length - 1)) / 2, bw = Math.min(40, gap - 10)
-      const g = svg('svg', { viewBox: `0 0 ${w} ${h}`, class: 'pg-target-svg', width: w })
-      g.append(svg('text', { x: 6, y: 16, class: 'pg-target-title' }, tr('Target')))
-      g.append(svg('line', { x1: 6, x2: w - 6, y1: base, y2: base, class: 'pg-axis' }))
-      ks.forEach((k, i) => {
-        const m = t.mass.get(k) ?? ZERO, x = x0 + i * gap, hh = m.value(P) * bh
-        if (hh > 0) g.append(svg('rect', { class: 'pg-target-mass', x: x - bw / 2, y: base - hh, width: bw, height: hh, rx: 3 }))
-        g.append(svg('text', { x, y: base - hh - 5, 'text-anchor': 'middle', class: 'pg-target-mass' }, m.toString()))
-        g.append(svg('text', { x, y: base + 16, 'text-anchor': 'middle', class: 'pg-target-point' }, pointName(t.space, k)))
-      })
-      g.append(svg('text', { x: w - 8, y: 16, 'text-anchor': 'end', class: 'pg-space' }, spaceName(t.space)))
-      return g
-    }
+    targetPicture() { return targetChart([{ dist: this.target }]) }
 
     render() {
+      if (this.animating) return  // (drawn when the animation ends: an answer of Lean must not cut it short)
       const d = this.dist, keys = this.keys(), xs = layout(keys)
       const done = this.done
       const s = svg('svg', { viewBox: `0 0 ${W} 300`, class: 'pg-svg' + (done ? ' pg-done' : '') })
-      const defs = svg('defs')
-      const mk = svg('marker', { id: 'pg-head', viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' })
-      mk.append(svg('path', { d: 'M0,0 L10,5 L0,10 z', class: 'pg-arrowhead' }))
-      defs.append(mk); s.append(defs)
+      s.append(arrowDefs())
       s.append(svg('line', { x1: 10, x2: W - 10, y1: BASE, y2: BASE, class: 'pg-axis' }))
       s.append(svg('text', { x: W - 12, y: BASE + 42, 'text-anchor': 'end', class: 'pg-space' }, spaceName(d.space)))
       // the target, dashed, where it lives on the same space
@@ -479,6 +571,21 @@
         bar.append(svg('text', { x: xs[k], y: BASE + 24, 'text-anchor': 'middle', class: 'pg-point' }, pointName(d.space, k)))
         bar.addEventListener('click', () => { this.picked = this.picked === k ? null : k; this.render() })
         s.append(bar)
+        // how often the throws landed here: a thin bar, and the number below the point
+        if (this.thrown) {
+          const c = this.counts.get(k) ?? 0, fh = c / this.thrown * H
+          if (fh > 0) s.append(svg('rect', { class: 'pg-freq', x: xs[k] + BAR / 2 + 9, y: BASE - fh, width: 12, height: fh, rx: 2 }))
+          s.append(svg('text', { x: xs[k], y: BASE + 44, 'text-anchor': 'middle', class: 'pg-freq-text' }, `${c}×`))
+        }
+      }
+      // the coin to throw, left of the axis (tap it to throw)
+      if (this.start.space === 'bool') {
+        const launch = svg('g', { class: 'pg-launch' }), c = coin(this.sureStart ?? '?')
+        pose(c, LX, LY, 1, this.sureStart ?? '?')
+        launch.append(svg('text', { class: 'pg-launch-move', x: LX, y: LY - 40, 'text-anchor': 'middle' }), c,
+          svg('text', { class: 'pg-launch-label', x: LX, y: LY + COIN_R + 20, 'text-anchor': 'middle' }, this.leanStart))
+        launch.addEventListener('click', () => this.throwOne())
+        s.append(launch)
       }
       this.svg = s
 
@@ -532,9 +639,15 @@
       // the example p of the picture
       const slider = el('label', 'pg-slider')
       const input = el('input'); input.type = 'range'; input.min = '0.05'; input.max = '0.95'; input.step = '0.05'; input.value = String(P)
-      input.addEventListener('input', () => { P = Number(input.value); try { localStorage.setItem('pg:p', input.value) } catch {}; this.render() })
+      input.addEventListener('input', () => { P = Number(input.value); this.clearThrows(); try { localStorage.setItem('pg:p', input.value) } catch {}; this.render() })
       slider.append(`${tr('the picture for p =')} ${P.toFixed(2)} `, input, el('span', 'pg-slider-note', ' ' + tr('(only an example; the masses hold for every p)')))
-      const parts = [task, row, slider, this.info, ...(SHOW ? [] : [ln]), el('div', 'pg-moves-head', tr('Moves')), moves, tools, ...(SHOW ? [] : [lean])]
+      // throwing the coin
+      const throws = el('div', 'pg-throws')
+      const one = el('button', 'pg-tool pg-throw', '🪙 ' + tr('Throw')), many = el('button', 'pg-tool pg-throw', tr('Throw 100 times'))
+      one.type = many.type = 'button'
+      one.addEventListener('click', () => this.throwOne()); many.addEventListener('click', () => this.throwMany(100))
+      throws.append(one, many, el('span', 'pg-throws-note', this.thrown ? tr('{n} throws; the thin bars: how often.', { n: this.thrown }) : tr('Where does the coin land, after your moves?')))
+      const parts = [task, row, slider, throws, this.info, ...(SHOW ? [] : [ln]), el('div', 'pg-moves-head', tr('Moves')), moves, tools, ...(SHOW ? [] : [lean])]
       if (done) {
         const box = el('div', 'pg-solved')
         box.append(el('div', 'pg-solved-head', 'goals accomplished 🎉' + (this.leanAgrees() ? ` (${tr('confirmed by Lean, for every p')})` : '')))
@@ -1162,7 +1275,10 @@
   // ---------------------------------------------------------------- the first world: true and false
 
   // A coin lies surely on one side, once for each input (one row, or two rows: for every b); a move is
-  // a map Bool → Bool. Lean normalises the value or the map after each move (`RULESB`).
+  // a map Bool → Bool. Lean normalises the value or the map after each move (`RULESB`). The board is
+  // that of the worlds of chance: the axis false | true, and all the mass, 1, where the coin lies (a
+  // sure coin is the distribution `pure b`); the coin lies in its bar and turns over when it changes
+  // sides.
   const RULESB = 'id_eq, Bool.not_not, Bool.not_true, Bool.not_false'
   const arg = e => (/^\w+$/.test(e) ? e : `(${e})`)
   const MOVESB = {
@@ -1171,8 +1287,11 @@
     false: { f: () => false, lean: e => `(fun _ => false) ${arg(e)}`, label: 'always false' },
   }
   Object.assign(DE, {
-    'Task: lay the coin on the flag.': 'Aufgabe: Leg die Münze auf die Fahne.',
-    'Task: lay each coin on its flag.': 'Aufgabe: Leg jede Münze auf ihre Fahne.',
+    'Throw': 'Werfen', 'Throw 100 times': '100-mal werfen', '{n} throws; the thin bars: how often.': '{n} Würfe; die schmalen Säulen: wie oft.',
+    'Where does the coin land, after your moves?': 'Wo landet die Münze, nach deinen Zügen?',
+    'Task: lay the coin as in the target.': 'Aufgabe: Leg die Münze so, wie im Ziel.',
+    'Task: lay each coin as in the target.': 'Aufgabe: Leg jede Münze so, wie im Ziel.',
+    'As in the target, but in {n} moves, please.': 'Wie im Ziel, aber bitte in {n} Zügen.', 'not as in the target yet.': 'noch nicht wie im Ziel.', 'Not as in the target yet.': 'Noch nicht wie im Ziel.',
     'in exactly {n} moves': 'in genau {n} Zügen',
     '{n} moves so far': 'bisher {n} Züge',
     'Too many moves: undo, or start over.': 'Zu viele Züge: zurücknehmen oder neu anfangen.',
@@ -1230,12 +1349,13 @@
     }
 
     play(m) {
-      if (this.animating) return
-      if (this.count && this.steps.length >= this.count) { this.flash(tr('Too many moves: undo, or start over.')); return }
+      // a move tapped while the coin turns is played after it
+      if (this.animating) { (this.queue ??= []).push(m); return }
+      if (this.count && this.steps.length >= this.count) { this.queue = []; this.flash(tr('Too many moves: undo, or start over.')); return }
       const before = this.values
       this.steps.push(m)
       this.updateLean()
-      this.animate(before, this.values, () => { this.render(); this.check() })
+      this.animate(before, this.values, () => { this.render(); this.check(); const q = this.queue?.shift(); if (q) this.play(q) })
     }
     undo() { if (this.animating || !this.steps.length) return; this.steps.pop(); this.updateLean(); this.render() }
     reset() { if (this.animating) return; this.steps = []; this.updateLean(); this.render() }
@@ -1244,8 +1364,8 @@
       if (this.done) return 'goals accomplished 🎉'
       if (!this.steps.length) return tr('Tap a move.')
       if (this.count && this.steps.length > this.count) return tr('Too many moves: undo, or start over.')
-      if (this.onTarget) return this.count && this.steps.length !== this.count ? tr('On the flag, but in {n} moves, please.', { n: this.count }) : tr('Lean is checking …')
-      return this.count ? tr('{n} moves so far', { n: this.steps.length }) + ' · ' + tr('not on the flag yet.') : tr('Not on the flag yet.')
+      if (this.onTarget) return this.count && this.steps.length !== this.count ? tr('As in the target, but in {n} moves, please.', { n: this.count }) : tr('Lean is checking …')
+      return this.count ? tr('{n} moves so far', { n: this.steps.length }) + ' · ' + tr('not as in the target yet.') : tr('Not as in the target yet.')
     }
     check() {
       if (this.animating || !this.done) return
@@ -1256,34 +1376,51 @@
     }
     flash(text) { this.info.textContent = text; this.info.classList.add('pg-warn'); setTimeout(() => this.info.classList.remove('pg-warn'), 1200) }
 
-    // a row per input: its label, and the two sides false | true
-    geometry() { const c = 64, lw = this.rows ? 92 : 64; return { c, lw, w: lw + 2 * c, h: this.inputs.length * c, cx: v => lw + (v ? 1.5 : 0.5) * c, cy: i => (i + 0.5) * c } }
-    // the coins slide to their new sides (350 ms)
+    // a chart per input: the axis, its base line, the height of mass 1, the size of the coin
+    geometry() {
+      const xs = layout(['false', 'true'])
+      return this.rows ? { xs, h: 366, hb: 105, base: i => 145 + 175 * i, r: 22 } : { xs, h: 300, hb: H, base: () => BASE, r: COIN_R }
+    }
+    // the bars slide to their new sides, and a coin that changes sides turns over (700 ms)
     animate(before, after, done) {
-      const g = this.geometry()
-      const coins = [...this.svg.querySelectorAll('.pg-figure')]
+      const g = this.geometry(), bars = [...this.svg.querySelectorAll('.pg-sure-bar')]
+      this.svg.querySelectorAll('.pg-zero').forEach(e => e.classList.add('pg-fading'))
+      before.forEach((v, i) => {
+        if (v !== after[i]) this.svg.append(svg('line', { class: 'pg-arrow', x1: g.xs[v], y1: g.base(i) + 8, x2: g.xs[after[i]], y2: g.base(i) + 8, 'marker-end': 'url(#pg-head)' }))
+      })
       this.animating = true
-      const t0 = performance.now(), T = matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 1 : 350
-      const frame = now => {
-        const t = Math.min(1, (now - t0) / T), e = t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2
-        coins.forEach((c, i) => c.setAttribute('cx', g.cx(before[i]) + (g.cx(after[i]) - g.cx(before[i])) * e))
-        if (t < 1) requestAnimationFrame(frame)
-        else { this.animating = false; done() }
-      }
-      requestAnimationFrame(frame)
+      run([{ T: 700, f: t => {
+        const e = ease(t)
+        bars.forEach((bar, i) => {
+          const turn = before[i] !== after[i]
+          bar.setAttribute('transform', `translate(${(g.xs[after[i]] - g.xs[before[i]]) * e} 0)`)
+          pose(bar.querySelector('.pg-coin'), g.xs[before[i]], g.base(i) - g.hb + g.r + 8, turn ? Math.cos(Math.PI * e) : 1, turn && e >= 0.5 ? after[i] : before[i])
+        })
+      } }], () => { this.animating = false; done() })
     }
 
     render() {
+      if (this.animating) return  // (drawn when the animation ends)
       const done = this.done, g = this.geometry(), values = this.values
-      const s = svg('svg', { viewBox: `0 0 ${g.w} ${g.h + 22}`, class: 'pg-svg pg-grid pg-bools' + (done ? ' pg-done' : '') })
+      const s = svg('svg', { viewBox: `0 0 ${W} ${g.h}`, class: 'pg-svg pg-sure' + (done ? ' pg-done' : '') })
+      s.append(arrowDefs())
       this.inputs.forEach((b, i) => {
-        const y = i * g.c
-        s.append(svg('text', { class: 'pg-bool-label', x: 4, y: g.cy(i) + 5 }, this.rows ? tr('for b = {b}', { b }) : tr('start')))
-        for (const v of [false, true]) s.append(svg('rect', { class: 'pg-cell' + (v === b ? ' pg-home' : ''), x: g.lw + (v ? g.c : 0), y, width: g.c, height: g.c }))
-        s.append(svg('text', { class: 'pg-flag', x: g.cx(this.target[i]) + g.c * 0.3, y: g.cy(i) - g.c * 0.16, 'text-anchor': 'middle', 'font-size': g.c * 0.36 }, '⚑'))
-        s.append(svg('circle', { class: 'pg-figure', cx: g.cx(values[i]), cy: g.cy(i), r: g.c * 0.26 }))
+        const base = g.base(i), v = values[i], t = this.target[i]
+        s.append(svg('line', { x1: 10, x2: W - 10, y1: base, y2: base, class: 'pg-axis' }))
+        if (this.rows) s.append(svg('text', { class: 'pg-bool-label', x: 10, y: base - g.hb / 2 }, tr('for b = {b}', { b })))
+        // the target, dashed, as on the boards of chance
+        s.append(svg('rect', { class: 'pg-target', x: g.xs[t] - BAR / 2 - 6, y: base - g.hb - 6, width: BAR + 12, height: g.hb + 6, rx: 6 }))
+        s.append(svg('text', { x: g.xs[!v], y: base - 8, 'text-anchor': 'middle', class: 'pg-mass pg-zero' }, '0'))
+        const bar = svg('g', { class: 'pg-sure-bar' })
+        bar.append(svg('rect', { class: 'pg-mass', x: g.xs[v] - BAR / 2, y: base - g.hb, width: BAR, height: g.hb, rx: 3 }),
+          svg('text', { x: g.xs[v], y: base - g.hb - 8, 'text-anchor': 'middle', class: 'pg-mass' }, '1'))
+        const c = coin(v, g.r)
+        pose(c, g.xs[v], base - g.hb + g.r + 8, 1, v)
+        bar.append(c)
+        s.append(bar)
+        for (const k of [false, true]) s.append(svg('text', { x: g.xs[k], y: base + (this.rows ? 20 : 24), 'text-anchor': 'middle', class: 'pg-point' }, String(k)))
       })
-      for (const v of [false, true]) s.append(svg('text', { class: 'pg-bool-side', x: g.cx(v), y: g.h + 16, 'text-anchor': 'middle' }, String(v)))
+      s.append(svg('text', { x: W - 12, y: g.base(this.inputs.length - 1) + (this.rows ? 38 : 42), 'text-anchor': 'end', class: 'pg-space' }, 'Bool'))
       this.svg = s
 
       const moves = el('div', 'pg-moves')
@@ -1310,9 +1447,12 @@
         if (this.onTarget && this.leanAgrees() === false) ln.append(el('div', 'pg-warn', tr('Lean disagrees.')))
       }
       const task = el('div', 'pg-task')
-      task.append(el('b', '', tr(this.rows ? 'Task: lay each coin on its flag.' : 'Task: lay the coin on the flag.') +
+      task.append(el('b', '', tr(this.rows ? 'Task: lay each coin as in the target.' : 'Task: lay the coin as in the target.') +
         (this.count ? ' (' + tr('in exactly {n} moves', { n: this.count }) + ')' : '')))
-      const parts = [task, s, this.info, ...(SHOW ? [] : [ln]), el('div', 'pg-moves-head', tr('Moves')), moves, tools, ...(SHOW ? [] : [el('pre', 'pg-lean', this.leanState())])]
+      const sure = v => ({ space: 'bool', mass: new Map([[String(v), ONE]]) })
+      const row = el('div', 'pg-row')
+      row.append(s, targetChart(this.target.map((v, i) => ({ label: this.rows ? `b = ${this.inputs[i]}` : null, dist: sure(v) }))))
+      const parts = [task, row, this.info, ...(SHOW ? [] : [ln]), el('div', 'pg-moves-head', tr('Moves')), moves, tools, ...(SHOW ? [] : [el('pre', 'pg-lean', this.leanState())])]
       if (done) {
         const box = el('div', 'pg-solved')
         box.append(el('div', 'pg-solved-head', 'goals accomplished 🎉' + (this.leanAgrees() ? ` (${tr('confirmed by Lean')})` : '')))
@@ -1741,7 +1881,6 @@
     'Deletes the chosen lines, and what is built on them.': 'Löscht die ausgewählten Leitungen und was auf ihnen gebaut ist.',
     'Tap lines to choose them, then a function. Check compares one chosen line with the target.': 'Tippe Leitungen an, dann eine Funktion. Prüfen vergleicht eine ausgewählte Leitung mit dem Ziel.',
     'Not at the flag yet.': 'Noch nicht bei der Fahne.', '{n} points; the target has {m}.': '{n} Punkte; das Ziel hat {m}.',
-    'On the flag, but in {n} moves, please.': 'Auf der Fahne, aber bitte in {n} Zügen.', 'not on the flag yet.': 'noch nicht auf der Fahne.', 'Not on the flag yet.': 'Noch nicht auf der Fahne.',
     'Lean did not take the line: see why above the input.': 'Lean hat die Zeile nicht genommen: warum, steht über der Eingabe.',
     'Type a tactic, or tap one in the inventory.': 'Tippe eine Taktik ein, oder tippe eine im Inventar an.', 'One goal left.': 'Noch ein Ziel.', '{n} goals left.': 'Noch {n} Ziele.',
     'Tips': 'Tipps', 'Tip': 'Tipp', 'Got it': 'Verstanden', 'Close': 'Schließen', 'Restart': 'Neu', 'Next': 'Weiter', 'Next ›': 'Weiter ›',
