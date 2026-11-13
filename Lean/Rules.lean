@@ -56,7 +56,7 @@ theorem mass_total (μ : DiscreteMeasure Bool) [hμ : Prob μ] : μ true + μ fa
   simpa only [MeasureTheory.DiscreteMeasure.weight_eq] using a
 
 /-- A mass of a distribution is finite (at most one). -/
-theorem mass_ne_top (μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b ≠ ⊤ := by
+theorem mass_ne_top {μ : DiscreteMeasure Bool} [Prob μ] {b : Bool} : μ b ≠ ⊤ := by
   cases b
   · exact ne_top_of_le_ne_top ENNReal.one_ne_top ((mass_total μ) ▸ le_add_self)
   · exact ne_top_of_le_ne_top ENNReal.one_ne_top ((mass_total μ) ▸ le_self_add)
@@ -64,13 +64,13 @@ theorem mass_ne_top (μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b ≠ 
 /-- One Coin, *What is not at true*: the rest of the mass lies at `false`. -/
 theorem mass_false (μ : DiscreteMeasure Bool) [Prob μ] : μ false = 1 - μ true := by
   rw [← mass_total μ]
-  rw [ENNReal.add_sub_cancel_left (mass_ne_top μ true)]
+  rw [ENNReal.add_sub_cancel_left mass_ne_top]
 
 /-- One Coin, *What is not at false*. -/
 theorem mass_true (μ : DiscreteMeasure Bool) [Prob μ] : μ true = 1 - μ false := by
   rw [← mass_total μ]
   rw [add_comm]
-  rw [ENNReal.add_sub_cancel_left (mass_ne_top μ false)]
+  rw [ENNReal.add_sub_cancel_left mass_ne_top]
 
 /-- One Coin, *One bar is enough*: two distributions on `Bool` are the same when they have the
 same mass at `true`. -/
@@ -89,7 +89,7 @@ noncomputable def chance (μ : DiscreteMeasure Bool) [Prob μ] : I :=
 /-- `chance μ`, as a mass, is the mass at `true`. -/
 theorem chance_eq (μ : DiscreteMeasure Bool) [Prob μ] : (chance μ : ENNReal) = μ true := by
   show ENNReal.ofReal (μ true).toReal = μ true
-  exact ENNReal.ofReal_toReal (mass_ne_top μ true)
+  exact ENNReal.ofReal_toReal mass_ne_top
 
 /-- Where the mass of a move goes: the mass of `f <$> μ` at `true` is the mass of `μ` at the points
 that `f` sends to `true` (`bif c then a else b` is `a` when `c` is `true`, else `b`). -/
