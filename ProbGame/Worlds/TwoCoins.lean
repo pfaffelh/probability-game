@@ -210,7 +210,7 @@ rw [coin_unused]
 :::
 ::::
 
-::::build (target := "bool true:2p(1-p) false:p^2+(1-p)^2") (moves := "not, and, or") (coins := "2") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure ((x || y) && !(x && y))) = (do let x ← coin p; let y ← coin p; pure (xor x y))") (new := "<;>") (play := "M1 M2 or; M1 M2 and; Z2 not; Z1 Z3 and")
+::::build (target := "bool true:2p(1-p) false:p^2+(1-p)^2") (moves := "not, and, or") (coins := "2") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure ((x || y) && !(x && y))) = (do let x ← coin p; let y ← coin p; pure (xor x y))") (play := "M1 M2 or; M1 M2 and; Z2 not; Z1 Z3 and")
 :::en
 *Exactly one `true`*, without a function for it: at least one, but not both.
 :::
@@ -221,16 +221,14 @@ rw [coin_unused]
 
 :::proofen
 Exactly one `true` is `xor`. Both sides throw the same coins; go under the throws, with `congr 1`
-and `funext x` (and again for `y`), and look at all four cases. New: `t₁ <;> t₂` runs `t₂` on every
-goal that `t₁` leaves.
+and `funext x` (and again for `y`), and look at all four cases, with `<;>` in one line.
 
 *Tip.* `congr 1`, `funext x`, `congr 1`, `funext y`, `cases x <;> cases y <;> rfl`.
 :::
 
 :::proofde
 Genau einmal `true` ist `xor`. Beide Seiten werfen dieselben Münzen; geh unter die Würfe, mit
-`congr 1` und `funext x` (und nochmal für `y`), und sieh dir alle vier Fälle an. Neu: `t₁ <;> t₂`
-führt `t₂` auf jedem Ziel aus, das `t₁` übrig lässt.
+`congr 1` und `funext x` (und nochmal für `y`), und sieh dir alle vier Fälle an, mit `<;>` in einer Zeile.
 
 *Tipp.* `congr 1`, `funext x`, `congr 1`, `funext y`, `cases x <;> cases y <;> rfl`.
 :::

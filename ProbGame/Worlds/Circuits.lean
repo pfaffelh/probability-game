@@ -128,7 +128,7 @@ rfl
 :::
 ::::
 
-::::circuit (inputs := "x") (gates := "not, or") (table := "11") (goal := "true") (proof := "(x : Bool) : (x || !x) = (true)") (play := "a=not; b=or; x>a.0; x>b.0; a>b.1; b>out")
+::::circuit (inputs := "x") (gates := "not, or") (table := "11") (goal := "true") (proof := "(x : Bool) : (x || !x) = (true)") (new := "<;>") (play := "a=not; b=or; x>a.0; x>b.0; a>b.1; b>out")
 :::en
 *Always true, without always true.* An output can feed several inputs: wire `x` twice.
 :::
@@ -139,21 +139,24 @@ rfl
 
 :::proofen
 `||` is defined by cases of its left side: `false || b` reduces to `b`, and `true || b` to `true`.
+So `cases x`, then `rfl` in each case. New: `t₁ <;> t₂` runs `t₂` on every goal that `t₁` leaves, in
+one line: `cases x <;> rfl`. With several inputs: `cases x <;> cases y <;> rfl`, all rows of the
+table at once.
 
-*Tip.* `cases x`, then `rfl` in each case.
+*Tip.* `cases x <;> rfl`.
 :::
 
 :::proofde
 `||` ist durch Fälle seiner linken Seite definiert: `false || b` reduziert zu `b`, und `true || b` zu
-`true`.
+`true`. Also `cases x`, dann `rfl` in jedem Fall. Neu: `t₁ <;> t₂` führt `t₂` auf jedem Ziel aus, das
+`t₁` übrig lässt, in einer Zeile: `cases x <;> rfl`. Mit mehreren Eingängen: `cases x <;> cases y <;> rfl`,
+alle Zeilen der Tabelle auf einmal.
 
-*Tipp.* `cases x`, dann `rfl` in jedem Fall.
+*Tipp.* `cases x <;> rfl`.
 :::
 :::solution
 ```
-cases x
-rfl
-rfl
+cases x <;> rfl
 ```
 :::
 ::::
