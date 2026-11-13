@@ -140,6 +140,65 @@ cases x <;> cases y <;> rfl
 :::
 ::::
 
+::::circuit (inputs := "x y") (gates := "toNat, plus, and, or, not") (coins := "p p") (target := "nat 0:(1-p)^2 1:2p(1-p) 2:p^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x.toNat + y.toNat)) = binom p 2") (play := "a=toNat; b=toNat; c=plus; x>a.0; y>b.0; a>c.0; b>c.1; c>out")
+:::en
+*How many `true`?* Count: `toNat` makes a coin a number (`false` is `0`, `true` is `1`, on a blue
+wire), and `plus` adds numbers. The output is then a number, `0`, `1` or `2`, and its distribution is
+the binomial distribution `B(2, p)`: the row `tt` gives `2`, the rows `ft` and `tf` give `1`.
+:::
+
+:::de
+*Wie viele `true`?* Zähle: `toNat` macht aus einer Münze eine Zahl (`false` ist `0`, `true` ist `1`,
+auf einem blauen Draht), und `plus` addiert Zahlen. Der Ausgang ist dann eine Zahl, `0`, `1` oder `2`,
+und seine Verteilung ist die Binomialverteilung `B(2, p)`: Die Zeile `tt` gibt `2`, die Zeilen `ft` und
+`tf` geben `1`.
+:::
+
+:::proofen
+`binom p n` is defined throw by throw: `binom_zero` and `binom_succ`.
+
+*Tip.* `rw [binom_succ, binom_succ, binom_zero]`, then `simp only [bind_assoc, pure_bind, add_zero]`.
+:::
+
+:::proofde
+`binom p n` ist Wurf für Wurf definiert: `binom_zero` und `binom_succ`.
+
+*Tipp.* `rw [binom_succ, binom_succ, binom_zero]`, dann `simp only [bind_assoc, pure_bind, add_zero]`.
+:::
+:::solution
+```
+rw [binom_succ, binom_succ, binom_zero]
+simp only [bind_assoc, pure_bind, add_zero]
+```
+:::
+::::
+
+::::circuit (inputs := "x y z") (gates := "toNat, plus") (coins := "p p p") (target := "nat 0:(1-p)^3 1:3p(1-p)^2 2:3p^2(1-p) 3:p^3") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; let z ← coin p; pure (x.toNat + y.toNat + z.toNat)) = binom p 3") (play := "a=toNat; b=toNat; c=toNat; d=plus; e=plus; x>a.0; y>b.0; z>c.0; a>d.0; b>d.1; d>e.0; c>e.1; e>out")
+:::en
+*Three coins.* `B(3, p)`: eight rows, and the output counts the `true` in each.
+:::
+
+:::de
+*Drei Münzen.* `B(3, p)`: acht Zeilen, und der Ausgang zählt in jeder die `true`.
+:::
+
+:::proofen
+*Tip.* `rw [binom_succ, binom_succ, binom_succ, binom_zero]`, then
+`simp only [bind_assoc, pure_bind, add_zero, add_assoc]`.
+:::
+
+:::proofde
+*Tipp.* `rw [binom_succ, binom_succ, binom_succ, binom_zero]`, dann
+`simp only [bind_assoc, pure_bind, add_zero, add_assoc]`.
+:::
+:::solution
+```
+rw [binom_succ, binom_succ, binom_succ, binom_zero]
+simp only [bind_assoc, pure_bind, add_zero, add_assoc]
+```
+:::
+::::
+
 ::::circuit (inputs := "x y z") (gates := "and, or") (coins := "p p p") (target := "bool true:3p^2-2p^3 false:1-3p^2+2p^3") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; let z ← coin p; pure ((x && y) || (x && z) || (y && z))) = (fun n => decide (2 ≤ n)) <$> binom p 3") (play := "a=and; b=and; c=and; d=or; e=or; x>a.0; y>a.1; x>b.0; z>b.1; y>c.0; z>c.1; a>d.0; b>d.1; d>e.0; c>e.1; e>out")
 :::en
 *The boss: the majority of three coins.* Your circuit of the boss of *Circuits*, with three coins.

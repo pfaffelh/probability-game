@@ -428,3 +428,12 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 .pg-tf-none { color: #aaa; }
 .pg-truth-note { font-size: 0.82em; color: #777; text-align: center; max-width: 16rem; }
 .pg-truth-sum { font: 0.9em var(--verso-code-font-family, monospace); color: #5c3d0e; text-align: center; max-width: 20rem; }
+.pg-cwire-nat { stroke: #2e6fb8; }
+.pg-cport-nat { stroke: #2e6fb8; }
+.pg-cport-nat[data-kind="out"] { fill: #2e6fb8; }
+.pg-tf-num { background: #fff6e2; border: 2px solid #b0782a; font-family: var(--verso-code-font-family, monospace); }
+.pg-truth-count { font: 0.9em var(--verso-structure-font-family, sans-serif); color: #2e6fb8; }
+.pg-target-svg.pg-out-svg { border: 2px solid #b0782a; background: #fffaf0; }
+.pg-out-svg rect.pg-target-mass { fill: #5c3d0e; stroke: #b0782a; }
+.pg-out-svg text.pg-target-mass { fill: #5c3d0e; }
+.pg-out-svg .pg-target-title { fill: #8a5a16; }

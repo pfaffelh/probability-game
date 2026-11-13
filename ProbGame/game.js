@@ -347,12 +347,12 @@
   }
 
   // The target, small, beside the board: a chart of each distribution (one, or one per row, for b = …).
-  function targetChart(charts, title = tr('Target')) {
+  function targetChart(charts, title = tr('Target'), cls = '') {
     const t0 = charts[0].dist, ks = axis(t0.space, charts.flatMap(c => [...c.dist.mass.keys()]))
     const gap = Math.max(46, ...charts.flatMap(c => ks.map(k => String(c.dist.mass.get(k) ?? ZERO).length * 7 + 8)))
     const w = Math.max(200, gap * ks.length + 16), x0 = w / 2 - (gap * (ks.length - 1)) / 2, bw = Math.min(40, gap - 10)
     const one = charts.length === 1, bh = one ? 95 : 60, base = j => (one ? 120 : 108 + 118 * j)
-    const g = svg('svg', { viewBox: `0 0 ${w} ${base(charts.length - 1) + 30}`, class: 'pg-target-svg', width: w })
+    const g = svg('svg', { viewBox: `0 0 ${w} ${base(charts.length - 1) + 30}`, class: 'pg-target-svg' + (cls ? ' ' + cls : ''), width: w })
     g.append(svg('text', { x: 6, y: 16, class: 'pg-target-title' }, title))
     g.append(svg('text', { x: w - 8, y: 16, 'text-anchor': 'end', class: 'pg-space' }, spaceName(t0.space)))
     charts.forEach((c, j) => {
@@ -1549,9 +1549,16 @@
     or: { n: 2, f: ([a, b]) => a || b, lean: ([a, b]) => `${arg(a)} || ${arg(b)}`, sym: '∨', label: 'or' },
     xor: { n: 2, f: ([a, b]) => a !== b, lean: ([a, b]) => `${arg(a)} ^^ ${arg(b)}`, sym: '⊕', label: 'xor' },
     nand: { n: 2, f: ([a, b]) => !(a && b), lean: ([a, b]) => `!(${arg(a)} && ${arg(b)})`, sym: '⊼', label: 'nand' },
+    // counting: a coin becomes a number, numbers are added (wires of numbers are blue)
+    toNat: { n: 1, ins: ['bool'], out: 'nat', f: ([a]) => (a ? 1 : 0), lean: ([a]) => `${arg(a)}.toNat`, sym: '#', label: 'toNat' },
+    plus: { n: 2, ins: ['nat', 'nat'], out: 'nat', f: ([a, b]) => a + b, lean: ([a, b]) => `${a} + ${b}`, sym: '+', label: 'plus' },
   }
+  // the kind of what a port carries: a coin (bool) or a number (nat); the output takes either
+  const gateIn = (kind, i) => (GATES[kind].ins?.[i] === 'nat' ? 'nat' : 'bool')
+  const gateOut = kind => GATES[kind].out ?? 'bool'
   Object.assign(DE, {
-    'and': 'und', 'or': 'oder', 'xor': 'xor', 'nand': 'nand', 'Output': 'Ausgang', 'yours': 'deine', 'Gates': 'Bausteine',
+    'and': 'und', 'or': 'oder', 'xor': 'xor', 'nand': 'nand', 'plus': 'plus',
+    'A number does not fit into an input for a coin.': 'Eine Zahl passt nicht in einen Eingang für eine Münze.', 'A coin does not fit into an input for a number (first toNat).': 'Eine Münze passt nicht in einen Eingang für eine Zahl (erst toNat).', 'Output': 'Ausgang', 'yours': 'deine', 'Gates': 'Bausteine',
     'Connect the output.': 'Verbinde den Ausgang.', 'An input of a gate is still open.': 'Ein Eingang eines Bausteins ist noch offen.',
     '{k} of {n} rows are right.': '{k} von {n} Zeilen stimmen.', 'Now tap an input (a circle above a block).': 'Tippe jetzt einen Eingang an (ein Kreis oben an einem Baustein).',
     'Now tap an output (a dot below a block).': 'Tippe jetzt einen Ausgang an (ein Punkt unten an einem Baustein).',
@@ -1559,7 +1566,7 @@
     'Task: build a circuit whose output is the target, in every row.': 'Aufgabe: Bau eine Schaltung, deren Ausgang in jeder Zeile das Ziel ist.',
     'Task: build a circuit whose output has the distribution of the target.': 'Aufgabe: Bau eine Schaltung, deren Ausgang die Verteilung des Ziels hat.',
     'Tap a row to see its coins on the board.': 'Tippe eine Zeile an, um ihre Münzen auf dem Spielfeld zu sehen.',
-    'P(row)': 'P(Zeile)', 'a coin: true with probability': 'eine Münze: true mit Wahrscheinlichkeit', 'The mass at true: the sum of P over the rows with output true.': 'Die Masse bei true: die Summe von P über die Zeilen mit Ausgang true.',
+    'P(row)': 'P(Zeile)', 'thrown': 'geworfen', '{n} throws': '{n} Würfe', 'a coin: true with probability': 'eine Münze: true mit Wahrscheinlichkeit', 'The mass of each output: the sum of P over its rows.': 'Die Masse jedes Ausgangs: die Summe von P über seine Zeilen.',
   })
   const CW = 480, CH = 560, GW = 96, GH2 = 54
   class Circuit {
@@ -1577,6 +1584,8 @@
       this.key = `pg:${location.pathname}:${index}`
       this.row = 0; this.sel = null; this.selWire = null; this.selBlock = null
       this.history = []
+      // the throws (with coins): how often each row came; they stay when the circuit changes
+      this.counts = this.rows.map(() => 0); this.thrown = 0
       this.load()
       this.render()
     }
@@ -1603,6 +1612,9 @@
       return kind === 'out' ? { x: g.x, y: g.y + GH2 / 2 } : { x: g.x - GW / 2 + GW * (i + 1) / (n + 1), y: g.y - GH2 / 2 }
     }
     inputsOf(id) { return id === 'out' ? 1 : this.names.includes(id) ? 0 : GATES[this.block(id).kind].n }
+    typeOut(id) { return this.names.includes(id) ? 'bool' : gateOut(this.block(id).kind) }
+    typeIn(id, i) { return id === 'out' || this.names.includes(id) ? null : gateIn(this.block(id).kind, i) }
+    fits(from, to, i) { const t = this.typeIn(to, i); return t === null || t === this.typeOut(from) }
     wireTo(id, i) { return this.wires.find(w => w.to === id && w.i === i) }
     // whether `to` reaches `from` along the wires (a wire from `from` to `to` would close a circle)
     reaches(from, to) {
@@ -1631,6 +1643,10 @@
     clamp(a) { return { x: Math.max(GW / 2 + 6, Math.min(CW - GW / 2 - 6, a.x)), y: Math.max(120, Math.min(CH - 120, a.y)) } }
     connect(from, to, i) {
       if (from === to || this.reaches(from, to)) { this.flash(tr('That would go round in a circle.')); this.sel = null; this.render(); return }
+      if (!this.fits(from, to, i)) {
+        this.flash(tr(this.typeOut(from) === 'nat' ? 'A number does not fit into an input for a coin.' : 'A coin does not fit into an input for a number (first toNat).'))
+        this.sel = null; this.render(); return
+      }
       this.change(() => { this.wires = this.wires.filter(w => !(w.to === to && w.i === i)); this.wires.push({ from, to, i }) })
     }
     tapOut(id) {
@@ -1677,9 +1693,17 @@
     dist() {
       const outs = this.outputs()
       if (outs.some(o => o === null)) return null
-      let t = ZERO, f = ZERO
-      this.rows.forEach((r, k) => { if (outs[k]) t = t.add(this.mass(r)); else f = f.add(this.mass(r)) })
-      return { space: 'bool', mass: new Map([['true', t], ['false', f]]) }
+      const nat = this.typeOut(this.wireTo('out', 0).from) === 'nat', mass = new Map(nat ? [] : [['true', ZERO], ['false', ZERO]])
+      this.rows.forEach((r, k) => { const v = String(outs[k]); mass.set(v, (mass.get(v) ?? ZERO).add(this.mass(r))) })
+      return { space: nat ? 'nat' : 'bool', mass }
+    }
+    // a hundred throws of the coins at the inputs, for the p of the picture
+    throwMany(n) {
+      for (let j = 0; j < n; j++) {
+        const r = this.names.reduce((r, _, k) => 2 * r + (Math.random() < parsePoly(this.coins[k] ?? 'p').value(P) ? 1 : 0), 0)
+        this.counts[r]++
+      }
+      this.thrown += n; this.render()
     }
     get done() {
       const outs = this.outputs()
@@ -1709,8 +1733,10 @@
       const outs = this.outputs()
       if (outs.some(o => o === null)) return tr('An input of a gate is still open.')
       if (this.random) {
-        const d = this.dist(), m = d.mass.get('true'), t = this.target.mass.get('true') ?? ZERO
-        return tr('At {k}: P = {m}, the target has {t}.', { k: 'true', m: String(m), t: String(t) })
+        const d = this.dist(), t = this.target
+        if (d.space !== t.space) return tr('The distribution lives on {a}, the target on {b}.', { a: spaceName(d.space), b: spaceName(t.space) })
+        const k = axis(t.space, [...d.mass.keys(), ...t.mass.keys()]).find(k => !(d.mass.get(k) ?? ZERO).eq(t.mass.get(k) ?? ZERO)) ?? 'true'
+        return tr('At {k}: P = {m}, the target has {t}.', { k, m: String(new Poly((d.mass.get(k) ?? ZERO).c)), t: String(t.mass.get(k) ?? ZERO) })
       }
       const k = outs.filter((o, r) => o === (this.table[r] === '1')).length
       return tr('{k} of {n} rows are right.', { k, n: outs.length })
@@ -1834,7 +1860,7 @@
       this.wires.forEach((w, k) => {
         const a = this.port(w.from, 'out'), b = this.port(w.to, 'in', w.i), d = wirePath(a, b)
         const g = svg('g', { class: 'pg-cwire-g' + (this.selWire === k ? ' pg-cwire-sel' : '') })
-        const hit = svg('path', { class: 'pg-cwire-hit', d }), path = svg('path', { class: 'pg-cwire', d, 'data-from': w.from, 'data-to': w.to, 'data-k': k })
+        const hit = svg('path', { class: 'pg-cwire-hit', d }), path = svg('path', { class: 'pg-cwire' + (this.typeOut(w.from) === 'nat' ? ' pg-cwire-nat' : ''), d, 'data-from': w.from, 'data-to': w.to, 'data-k': k })
         g.append(hit, path)
         g.addEventListener('click', () => { this.selWire = this.selWire === k ? null : k; this.sel = null; this.selBlock = null; this.render() })
         if (this.selWire === k) {
@@ -1849,8 +1875,10 @@
       const portClass = (id, kind, i) => {
         const sel = this.sel, open = kind === 'in' && !this.wireTo(id, i)
         const chosen = sel && sel.kind === kind && sel.id === id && (kind === 'out' || sel.i === i)
-        const cand = sel && sel.kind !== kind && sel.id !== id
-        return 'pg-cport' + (open ? ' pg-cport-open' : '') + (chosen ? ' pg-cport-sel' : '') + (cand && (kind === 'out' || open) ? ' pg-cport-cand' : '')
+        const fit = sel && sel.kind !== kind && (kind === 'in' ? this.fits(sel.id, id, i) : this.fits(id, sel.id, sel.i))
+        const cand = sel && sel.kind !== kind && sel.id !== id && fit
+        const nat = kind === 'out' ? this.typeOut(id) === 'nat' : this.typeIn(id, i) === 'nat'
+        return 'pg-cport' + (nat ? ' pg-cport-nat' : '') + (open ? ' pg-cport-open' : '') + (chosen ? ' pg-cport-sel' : '') + (cand && (kind === 'out' || open) ? ' pg-cport-cand' : '')
       }
       const addPort = (g, id, kind, i = 0) => {
         const q = this.port(id, kind, i)
@@ -1908,15 +1936,17 @@
       const head = el('tr')
       for (const x of this.names) head.append(el('th', '', x))
       if (this.random) head.append(el('th', '', tr('P(row)')))
+      if (this.random && this.thrown) head.append(el('th', '', tr('thrown')))
       if (!this.random) head.append(el('th', 'pg-truth-target', tr('Target')))
       head.append(el('th', '', tr('Output')))
       table.append(head)
-      const chip = v => el('span', 'pg-tf pg-tf-' + (v === null ? 'none' : v), v === null ? '·' : v ? 'T' : 'F')
+      const chip = v => el('span', 'pg-tf pg-tf-' + (v === null ? 'none' : typeof v === 'number' ? 'num' : v), v === null ? '·' : typeof v === 'number' ? String(v) : v ? 'T' : 'F')
       this.rows.forEach((r, k) => {
         const want = this.table[k] === '1', got = outs[k]
         const tr_ = el('tr', (k === this.row ? 'pg-truth-sel ' : '') + (this.random ? (got ? 'pg-truth-true' : '') : got === null ? '' : got === want ? 'pg-truth-ok' : 'pg-truth-bad'))
         for (const v of r) { const td = el('td'); td.append(chip(v)); tr_.append(td) }
         if (this.random) tr_.append(el('td', 'pg-truth-p', String(this.mass(r))))
+        if (this.random && this.thrown) tr_.append(el('td', 'pg-truth-count', `${this.counts[k]}×`))
         if (!this.random) { const td = el('td', 'pg-truth-target'); td.append(chip(want)); tr_.append(td) }
         const td = el('td'); td.append(chip(got)); tr_.append(td)
         tr_.addEventListener('click', () => { this.row = k; this.render() })
@@ -1928,12 +1958,29 @@
         const d = this.dist()
         if (d) {
           // the mass at true: the masses of the rows where the output is true, added up
-          const terms = this.rows.filter((r, k) => outs[k]).map(r => String(this.mass(r)))
-          const sum = new Poly(d.mass.get('true').c)
-          side.append(el('div', 'pg-truth-sum', `P(${tr('Output')} = true) = ${terms.length ? terms.join(' + ') : '0'}${terms.length > 1 ? ' = ' + sum : ''}`))
-          side.append(targetChart([{ dist: d }], tr('Output')))
+          // (for each point of the output: the masses of its rows, added up)
+          for (const k of axis(d.space, [...d.mass.keys()]).filter(k => d.space === 'bool' ? k === 'true' : true)) {
+            const terms = this.rows.filter((r, j) => String(outs[j]) === k).map(r => String(this.mass(r)))
+            side.append(el('div', 'pg-truth-sum', `P(${tr('Output')} = ${k}) = ${terms.length ? terms.join(' + ') : '0'}${terms.length > 1 ? ' = ' + new Poly((d.mass.get(k) ?? ZERO).c) : ''}`))
+          }
+          side.append(targetChart([{ dist: d }], tr('Output'), 'pg-out-svg'))
         }
-        side.append(targetChart([{ dist: this.target }]), el('div', 'pg-truth-note', tr('The mass at true: the sum of P over the rows with output true.')))
+        side.append(targetChart([{ dist: this.target }]), el('div', 'pg-truth-note', tr('The mass of each output: the sum of P over its rows.')))
+        // many throws: how often each row came, and so how often each output
+        const throws = el('div', 'pg-throws'), many = el('button', 'pg-tool pg-throw', '🪙 ' + tr('Throw 100 times'))
+        many.type = 'button'; many.addEventListener('click', () => this.throwMany(100))
+        throws.append(many)
+        if (this.thrown && !outs.some(o => o === null)) {
+          const freq = new Map()
+          this.rows.forEach((r, k) => { const v = String(outs[k]); freq.set(v, (freq.get(v) ?? 0) + this.counts[k]) })
+          throws.append(el('span', 'pg-throws-note', `${tr('{n} throws', { n: this.thrown })}: ` +
+            [...freq].sort((a, b) => (a[0] < b[0] ? -1 : 1)).map(([v, c]) => `${tr('Output')} ${v}: ${c}×`).join(', ')))
+        }
+        const slider = el('label', 'pg-slider'), input = el('input')
+        input.type = 'range'; input.min = '0.05'; input.max = '0.95'; input.step = '0.05'; input.value = String(P)
+        input.addEventListener('input', () => { P = Number(input.value); this.counts = this.rows.map(() => 0); this.thrown = 0; try { localStorage.setItem('pg:p', input.value) } catch {}; this.render() })
+        slider.append(`${tr('the picture for p =')} ${P.toFixed(2)} `, input)
+        side.append(slider, throws)
       }
       const rowEl = el('div', 'pg-row pg-crow')
       rowEl.append(s, side)
@@ -2428,6 +2475,8 @@
     'circuit:or': ['Two inputs: true when at least one is true.', 'Zwei Eingänge: true, wenn mindestens einer true ist.'],
     'circuit:xor': ['Two inputs: true when exactly one is true.', 'Zwei Eingänge: true, wenn genau einer true ist.'],
     'circuit:nand': ['Two inputs: true unless both are true.', 'Zwei Eingänge: true, außer wenn beide true sind.'],
+    'circuit:toNat': ['From a coin to a number: false is 0, true is 1. Numbers run on blue wires.', 'Von einer Münze zu einer Zahl: false ist 0, true ist 1. Zahlen laufen auf blauen Drähten.'],
+    'circuit:plus': ['Two numbers in: their sum.', 'Zwei Zahlen hinein: ihre Summe.'],
     'walk:north': ['One step up.', 'Ein Schritt nach oben.'], 'walk:south': ['One step down.', 'Ein Schritt nach unten.'],
     'walk:east': ['One step to the right.', 'Ein Schritt nach rechts.'], 'walk:west': ['One step to the left.', 'Ein Schritt nach links.'],
     'walk:step': ['All four ways at once: in Set the figure is wherever it can be.', 'Alle vier Richtungen zugleich: In Set ist die Figur überall, wo sie sein kann.'],
