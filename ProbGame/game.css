@@ -562,3 +562,8 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 /* the choice of a tactic (cases: x or y), right at its chip */
 .pg-chip-pop { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.15rem 0.3rem; margin-left: -0.15rem; border: 1.5px solid #2e6fb8; border-radius: 999px; background: #eef4fc; }
 .pg-chip-x { border: none; background: none; color: #6b4a14; cursor: pointer; padding: 0 0.2em; font: inherit; }
+/* an input of a circuit: an empty circle as in the table (its value in the row shown) */
+.pg-cinput-empty circle { fill: white; stroke: #6f6a5e; stroke-width: 1.5; }
+.pg-cinput-empty text { fill: #6f6a5e; }
+.pg-cinput-chip { pointer-events: none; }
+.pg-cinput-stem { stroke: #8a5a16; stroke-width: 2; pointer-events: none; }

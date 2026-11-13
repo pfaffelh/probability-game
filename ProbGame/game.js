@@ -2180,8 +2180,15 @@
       this.names.forEach((x, k) => {
         const a = this.inputAt(k), g = svg('g', { class: 'pg-cinput' })
         if (this.ctl[k]) g.append(svg('text', { class: 'pg-cname', x: a.x + 30, y: a.y + 5 }, this.random ? `${x} ← ${this.leanCoinOf(k)}` : `${x} ∈ ${this.setOf(k)}`))
-        else g.append(svg('text', { class: 'pg-cname', x: a.x, y: a.y - 26, 'text-anchor': 'middle' }, this.random ? `${x} ← ${this.leanCoin(this.coins[k])}` : x))
-        if (shown) { const c = coin(row[k], 20); pose(c, a.x, a.y, 1, row[k]); g.append(c) } else g.append(svg('circle', { class: 'pg-cinput-hit', cx: a.x, cy: a.y, r: 22 }))
+        else g.append(svg('text', { class: 'pg-cname', x: a.x, y: a.y - (this.random ? 26 : 20), 'text-anchor': 'middle' }, this.random ? `${x} ← ${this.leanCoin(this.coins[k])}` : x))
+        // (as in the table below: a circle of the same size with ?, and in the row shown its value, T or F)
+        g.append(svg('circle', { class: 'pg-cinput-hit', cx: a.x, cy: a.y, r: 22 }))
+        const r = this.random ? 12 : this.outBox().rh <= 20 ? 9 : 12, v = shown ? row[k] : null
+        const chip = svg('g', { class: 'pg-gchip pg-cinput-chip ' + (v === null ? 'pg-cinput-empty' : 'pg-gchip-' + v) })
+        chip.append(svg('circle', { cx: a.x, cy: a.y, r }))
+        chip.append(svg('text', { class: r > 9 ? 'pg-gchip-big' : '', x: a.x, y: a.y + (r > 9 ? 4.5 : 3.5), 'text-anchor': 'middle' }, v === null ? '?' : v ? 'T' : 'F'))
+        g.append(chip)
+        g.append(svg('line', { class: 'pg-cinput-stem', x1: a.x, y1: a.y + r, x2: a.x, y2: a.y + 30 }))
         addPort(g, x, 'out')
         if (this.ctl[k]) addPort(g, x, 'in', 0)
         g.addEventListener('click', ev => { if (!ev.target.closest('.pg-cport')) this.tapOut(x) })
