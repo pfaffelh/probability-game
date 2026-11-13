@@ -28,35 +28,68 @@ jede Zeile der Eingänge. Tippe eine Zeile an, und ihre Münzen liegen auf dem S
 deine Schaltung eine Funktion von `x` und `y`, und `decide +revert` prüft jede Zeile.
 :::
 
-::::circuit (inputs := "x") (gates := "not") (table := "10") (goal := "not x") (proof := "(x : Bool) : (!x) = (not x)") (new := "rfl") (play := "a=not; x>a.0; a>out")
+::::circuit (inputs := "x") (gates := "") (table := "01") (goal := "x") (shape := "x") (proof := "(x : Bool) : x = x") (new := "rfl") (play := "x>out")
 :::en
-*A wire and a gate.* Drag `not` onto the board, then wire `x` to it and it to the output.
+*A wire.* The output is to be the input itself. Wire `x` to the output: tap `x`, then the output.
 :::
 
 :::de
-*Ein Draht und ein Baustein.* Zieh `nicht` aufs Spielfeld, dann verdrahte `x` mit ihm und ihn mit dem
-Ausgang.
+*Ein Draht.* Der Ausgang soll der Eingang selbst sein. Verdrahte `x` mit dem Ausgang: Tippe `x` an,
+dann den Ausgang.
 :::
 
 :::proofen
-The statement is your circuit: its output, as a function of `x`, is the target. The tactic `rfl`
-proves an equation `a = b` whose two sides become the same after *reducing*. Reducing is computing
-by the definitions: Lean replaces a name by its definition, and a function defined by cases by the
-case that applies, as soon as it knows the value. `not` is defined by its two cases,
-`not false = true` and `not true = false`, so `!true` reduces to `false`, and `!(!true)` to `!false`
-and then to `true`. Here nothing has to be computed: `!x` is only another way of writing `not x`.
+In Lean the board reads: the output, `x`, is the target, `x`. The tactic `rfl` proves an equation
+whose two sides are the same.
 
 *Tip.* `rfl`.
 :::
 
 :::proofde
-Die Aussage ist deine Schaltung: Ihr Ausgang, als Funktion von `x`, ist das Ziel. Die Taktik `rfl`
-beweist eine Gleichung `a = b`, deren beide Seiten nach dem *Reduzieren* gleich sind. Reduzieren ist
-Rechnen mit den Definitionen: Lean ersetzt einen Namen durch seine Definition, und eine Funktion, die
-durch Fälle definiert ist, durch den Fall, der zutrifft, sobald es den Wert kennt. `not` ist durch
-seine zwei Fälle definiert, `not false = true` und `not true = false`; also reduziert `!true` zu
-`false`, und `!(!true)` zu `!false` und dann zu `true`. Hier muss nichts gerechnet werden: `!x` ist
-nur eine andere Schreibweise für `not x`.
+In Lean liest sich das Spielfeld so: Der Ausgang, `x`, ist das Ziel, `x`. Die Taktik `rfl` beweist
+eine Gleichung, deren beide Seiten gleich sind.
+
+*Tipp.* `rfl`.
+:::
+:::solution
+```
+rfl
+```
+:::
+::::
+
+::::circuit (inputs := "true") (gates := "not") (table := "0") (goal := "false") (shape := "!true") (proof := ": (!true) = false") (play := "a=not; true>a.0; a>out")
+:::en
+*Not true.* The input is `true` itself, the target `false`. Drag `not` onto the board, then wire
+`true` to it and it to the output.
+:::
+
+:::de
+*Nicht true.* Der Eingang ist `true` selbst, das Ziel `false`. Zieh `nicht` aufs Spielfeld, dann
+verdrahte `true` mit ihm und ihn mit dem Ausgang.
+:::
+
+:::proofen
+Now the two sides are not the same as they stand: `!true` on the left, `false` on the right. But
+`rfl` also *reduces*: it computes with the definitions. `not` is defined by its two cases,
+
+`fun | true => false | false => true`
+
+(a function given by cases: `true` goes to `false`, `false` to `true`). Here Lean knows the value,
+`true`, so it takes that case: `!true` reduces to `false`. Then both sides are the same.
+
+*Tip.* `rfl`.
+:::
+
+:::proofde
+Jetzt sind die beiden Seiten nicht so, wie sie dastehen, gleich: links `!true`, rechts `false`. Aber
+`rfl` *reduziert* auch: Es rechnet mit den Definitionen. `not` ist durch seine zwei Fälle definiert,
+
+`fun | true => false | false => true`
+
+(eine Funktion, durch Fälle gegeben: `true` geht nach `false`, `false` nach `true`). Hier kennt Lean
+den Wert, `true`, also nimmt es diesen Fall: `!true` reduziert zu `false`. Danach sind beide Seiten
+gleich.
 
 *Tipp.* `rfl`.
 :::
