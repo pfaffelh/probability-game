@@ -381,7 +381,7 @@ text.pg-who-1 { fill: #138a72; font-weight: bold; }
 
 /* circuits: inputs above, gates dragged onto the board, wires, the output below; the truth table */
 .pg-crow { align-items: flex-start; }
-.pg-svg.pg-csvg { flex: 1 1 24rem; max-width: 480px; touch-action: none; border-radius: 10px; }
+.pg-svg.pg-csvg { flex: 1 1 24rem; max-width: 480px; touch-action: pan-y; border-radius: 10px; }
 .pg-cbg { fill: #fffdf8; stroke: #e3d5bb; stroke-width: 1; }
 .pg-csvg.pg-drop .pg-cbg { fill: #f3ead6; }
 .pg-cwire { fill: none; stroke: #8a5a16; stroke-width: 3; stroke-linecap: round; pointer-events: none; }
