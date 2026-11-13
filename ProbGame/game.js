@@ -1679,7 +1679,7 @@
 
   // A level in Lean only (`::::leanonly`): no board; the stage shows its proof at once.
   class LeanOnly {
-    constructor(root, index) { this.root = root; this.index = index; this.board = root.querySelector('.pg-board'); this.picture = null }
+    constructor(root, index) { this.root = root; this.index = index; this.board = root.querySelector('.pg-board'); this.picture = null; this.key = `pg:${location.pathname}:${index}` }
     get solved() { return true }
     get done() { return !!this.proof?.done }
     get canUndo() { return false }
