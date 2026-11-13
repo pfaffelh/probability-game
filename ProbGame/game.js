@@ -1678,6 +1678,13 @@
   }
 
   // A level in Lean only (`::::leanonly`): no board; the stage shows its proof at once.
+  // The abbreviations of Lean's editors, for the input of a proof: `\l` for ←, `\to` for →, …
+  const ABBREV = { l: '←', leftarrow: '←', '<-': '←', r: '→', to: '→', '->': '→', rightarrow: '→', and: '∧', or: '∨', not: '¬', neg: '¬',
+    ne: '≠', '=n': '≠', le: '≤', ge: '≥', top: '⊤', bot: '⊥', mu: 'μ', nu: 'ν', sigma: 'σ', all: '∀', forall: '∀', ex: '∃', exists: '∃',
+    in: '∈', notin: '∉', circ: '∘', o: '∘', x: '×', times: '×', up: '↑', '_0': '₀', '_1': '₁', '_2': '₂', '_3': '₃', '_4': '₄' }
+  // (`final`: the line is sent, an abbreviation at its end counts too; else only one followed by a space, bracket or comma)
+  const unabbrev = (text, final) => text.replace(final ? /\\([A-Za-z_0-9<>=-]+)(?=[\s\[\](),]|$)/g : /\\([A-Za-z_0-9<>=-]+)(?=[\s\[\](),])/g, (m, k) => ABBREV[k] ?? m)
+
   class LeanOnly {
     constructor(root, index) { this.root = root; this.index = index; this.board = root.querySelector('.pg-board'); this.picture = null; this.key = `pg:${location.pathname}:${index}` }
     get solved() { return true }
@@ -2705,7 +2712,7 @@
     }
 
     async run() {
-      let line = this.input.value.trim()
+      let line = unabbrev(this.input.value, true).trim()
       // (rw [a, b — the bracket closed)
       const open = (line.match(/\[/g) ?? []).length - (line.match(/\]/g) ?? []).length
       if (open > 0) line += ']'.repeat(open)
@@ -2856,7 +2863,12 @@
       this.input = el('input'); this.input.type = 'text'; this.input.spellcheck = false; this.input.autocapitalize = 'off'; this.input.autocomplete = 'off'; this.input.enterKeyHint = 'go'; this.input.setAttribute('autocorrect', 'off')
       this.input.placeholder = this.world0 ? tr('a tactic, e.g. rw [pure_bind]') : this.worldB ? tr('a tactic, e.g. rfl') : tr('a tactic, e.g. rw [coin_true]')
       this.input.value = this.typed ?? ''
-      this.input.addEventListener('input', () => { this.typed = this.input.value })
+      // (the abbreviations of Lean's editors: \l becomes ←, once a space, a bracket or a comma follows)
+      this.input.addEventListener('input', () => {
+        const i = this.input, at = i.selectionStart ?? i.value.length, before = i.value.slice(0, at), now = unabbrev(before, false)
+        if (now !== before) { i.value = now + i.value.slice(at); i.setSelectionRange(now.length, now.length) }
+        this.typed = i.value
+      })
       this.input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); this.run() } })
       const run = el('button', 'pg-check', tr('Run')); run.type = 'button'; run.disabled = this.busy || this.done
       run.addEventListener('click', () => this.run())
