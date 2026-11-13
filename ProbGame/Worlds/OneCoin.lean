@@ -211,7 +211,7 @@ rfl
 :::
 ::::
 
-::::level (start := "bernoulli p") (target := "nat 1:p 0:1-p") (moves := "not, toNat") (lean := "(bernoulli p h).map Bool.toNat 1 = p") (leanTarget := "map Bool.toNat (coin p)") (proof := "(p : I) : Bool.toNat <$> coin p = (fun b => if b then 1 else 0) <$> coin p") (new := "congr, funext") (play := "toNat")
+::::level (start := "bernoulli p") (target := "nat 1:p 0:1-p") (moves := "not, toNat") (lean := "(bernoulli p h).map Bool.toNat 1 = p") (leanTarget := "map Bool.toNat (coin p)") (proof := "(p : I) : Bool.toNat <$> coin p = (fun b => if b then 1 else 0) <$> coin p") (new := "congr, funext, <;>") (play := "toNat")
 :::en
 *From sides to numbers.* `Bool.toNat` counts `true` as $`1` and `false` as $`0`: the distribution
 moves to the natural numbers. This is how a coin becomes a random number.
@@ -226,26 +226,26 @@ wandert zu den natürlichen Zahlen. So wird aus einer Münze eine Zufallszahl.
 `Bool.toNat` counts `true` as $`1` and `false` as $`0`. Both sides move the same coin, with two
 maps that agree. Two new tactics: `congr 1` reduces the goal to the two maps being equal;
 `funext b` to their being equal at every `b`; and `cases b` (from *Always `true`*) splits into the cases `false` and `true`, two
-goals, one after the other.
+goals, one after the other. New: `t₁ <;> t₂` runs `t₂` on every goal that `t₁` leaves, so
+`cases b <;> rfl` does both cases in one line.
 
-*Tip.* `congr 1`, `funext b`, `cases b`, `rfl`, `rfl`.
+*Tip.* `congr 1`, `funext b`, `cases b <;> rfl`.
 :::
 
 :::proofde
 `Bool.toNat` zählt `true` als $`1` und `false` als $`0`. Beide Seiten bewegen dieselbe Münze, mit
 zwei Abbildungen, die übereinstimmen. Zwei neue Taktiken: `congr 1` führt das Ziel darauf zurück,
 dass die beiden Abbildungen gleich sind; `funext b` darauf, dass sie an jeder Stelle `b` gleich sind;
-und `cases b` (aus *Immer `true`*) teilt in die Fälle `false` und `true`, zwei Ziele, eines nach dem anderen.
+und `cases b` (aus *Immer `true`*) teilt in die Fälle `false` und `true`, zwei Ziele, eines nach dem anderen. Neu: `t₁ <;> t₂` führt `t₂` auf jedem Ziel aus, das `t₁` übrig lässt; so erledigt
+`cases b <;> rfl` beide Fälle in einer Zeile.
 
-*Tipp.* `congr 1`, `funext b`, `cases b`, `rfl`, `rfl`.
+*Tipp.* `congr 1`, `funext b`, `cases b <;> rfl`.
 :::
 :::solution
 ```
 congr 1
 funext b
-cases b
-rfl
-rfl
+cases b <;> rfl
 ```
 :::
 ::::
