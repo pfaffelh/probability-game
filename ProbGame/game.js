@@ -2065,6 +2065,7 @@
       const rowEl = el('div', 'pg-row pg-crow')
       if (this.random) rowEl.append(s, side)
       else { const col = el('div', 'pg-cboard-col'); col.append(s, rowBar); rowEl.append(col) }
+      this.fitting = { s, box: this.random ? s : rowEl.firstChild, bar: this.random ? null : rowBar }
 
       const moves = el('div', 'pg-moves')
       for (const kind of this.gates) {
@@ -2102,6 +2103,21 @@
         parts.push(box)
       }
       showBoard(this, parts)
+      this.fit()
+    }
+    // the board as large as fits: its top (the coins) and its bottom (the target) both on the screen,
+    // whatever its size; again when the space changes
+    fit() {
+      const f = this.fitting
+      if (!f?.s.isConnected) return
+      let sc = f.s.parentElement
+      while (sc && !/auto|scroll/.test(getComputedStyle(sc).overflowY)) sc = sc.parentElement
+      if (!sc) return
+      if (!this.fitObs) { this.fitObs = new ResizeObserver(() => this.fit()); this.fitObs.observe(sc) }
+      if (!sc.clientHeight) return
+      const top = f.s.getBoundingClientRect().top - sc.getBoundingClientRect().top + sc.scrollTop
+      const avail = sc.clientHeight - top - (f.bar ? f.bar.offsetHeight + 8 : 0) - 10
+      f.box.style.maxWidth = `${Math.max(180, Math.min(CW, Math.floor(avail * CW / CH)))}px`
     }
   }
   // a wire, from an output (above) to an input (below)
