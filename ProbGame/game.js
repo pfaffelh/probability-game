@@ -1603,7 +1603,9 @@
       const d = root.dataset
       this.names = d.inputs.split(/\s+/).filter(Boolean)
       this.gates = d.gates.split(',').map(g => g.trim()).filter(g => GATES[g])
-      this.table = d.table ?? ''
+      // the target: a value per row, `0`/`1` for false/true, or numbers after `nat` (`nat 0112`)
+      this.natOut = /^nat\s/.test(d.table ?? '')
+      this.table = (d.table ?? '').replace(/^nat\s+/, '').replace(/\s+/g, '')
       this.goal = d.goal ?? ''
       this.coins = (d.coins ?? '').split(/\s+/).filter(Boolean)
       this.random = this.coins.length > 0
@@ -1745,11 +1747,12 @@
       }
       this.thrown += n; this.render()
     }
+    want(k) { return this.natOut ? Number(this.table[k]) : this.table[k] === '1' }
     get done() {
       const outs = this.outputs()
       if (outs.some(o => o === null)) return false
       if (this.random) return sameDist(this.dist(), this.target)
-      return outs.every((o, k) => o === (this.table[k] === '1'))
+      return outs.every((o, k) => o === this.want(k))
     }
     // the circuit as Lean writes it
     leanExpr(id = 'out') {
@@ -1780,7 +1783,7 @@
         const k = axis(t.space, [...d.mass.keys(), ...t.mass.keys()]).find(k => !(d.mass.get(k) ?? ZERO).eq(t.mass.get(k) ?? ZERO)) ?? 'true'
         return tr('At {k}: P = {m}, the target has {t}.', { k, m: String(new Poly((d.mass.get(k) ?? ZERO).c)), t: String(t.mass.get(k) ?? ZERO) })
       }
-      const k = outs.filter((o, r) => o === (this.table[r] === '1')).length
+      const k = outs.filter((o, r) => o === this.want(r)).length
       return tr('{k} of {n} rows are right.', { k, n: outs.length })
     }
     check() {
@@ -1983,17 +1986,17 @@
         if (shown) og.append(svg('rect', { class: 'pg-gused-col', x: cx(this.row) - cw / 2, y: b.top + 6, width: cw, height: b.h - 12, rx: 7 }))
         const label = (y, t, cls = '') => og.append(svg('text', { class: 'pg-tlabel ' + cls, x: x0 + 10, y: y + 4 }, t))
         const chip = (x, y, v, cls = '') => {
-          const c = svg('g', { class: 'pg-gchip pg-gchip-' + (v === null ? 'none' : v) + ' ' + cls })
+          const c = svg('g', { class: 'pg-gchip pg-gchip-' + (v === null ? 'none' : typeof v === 'number' ? 'num' : v) + ' ' + cls })
           c.append(svg('circle', { cx: x, cy: y, r: v === null ? 4 : r }))
-          if (v !== null) c.append(svg('text', { class: r > 9 ? 'pg-gchip-big' : '', x, y: y + (r > 9 ? 4.5 : 3.5), 'text-anchor': 'middle' }, v ? 'T' : 'F'))
+          if (v !== null) c.append(svg('text', { class: r > 9 ? 'pg-gchip-big' : '', x, y: y + (r > 9 ? 4.5 : 3.5), 'text-anchor': 'middle' }, typeof v === 'number' ? String(v) : v ? 'T' : 'F'))
           og.append(c)
         }
         this.names.forEach((nm, i) => { label(yIn(i), nm); this.rows.forEach((r, k) => chip(cx(k), yIn(i), r[i])) })
         og.append(svg('line', { class: 'pg-gsep', x1: x0 + 8, y1: ySep, x2: x0 + b.w - 8, y2: ySep }))
         label(yT, tr('Target'), 'pg-tlabel-target')
-        this.rows.forEach((r, k) => chip(cx(k), yT, this.table[k] === '1'))
+        this.rows.forEach((r, k) => chip(cx(k), yT, this.want(k)))
         label(yO, tr('Output'))
-        this.rows.forEach((r, k) => chip(cx(k), yO, outs[k], outs[k] === null ? '' : outs[k] === (this.table[k] === '1') ? 'pg-gchip-ok' : 'pg-gchip-bad'))
+        this.rows.forEach((r, k) => chip(cx(k), yO, outs[k], outs[k] === null ? '' : outs[k] === this.want(k) ? 'pg-gchip-ok' : 'pg-gchip-bad'))
       }
       addPort(og, 'out', 'in', 0)
       og.addEventListener('click', ev => { if (!ev.target.closest('.pg-cport')) this.tapIn('out', 0) })
@@ -2011,7 +2014,7 @@
       table.append(head)
       const chip = v => el('span', 'pg-tf pg-tf-' + (v === null ? 'none' : typeof v === 'number' ? 'num' : v), v === null ? '·' : typeof v === 'number' ? String(v) : v ? 'T' : 'F')
       this.rows.forEach((r, k) => {
-        const want = this.table[k] === '1', got = outs[k]
+        const want = this.want(k), got = outs[k]
         const tr_ = el('tr', (k === this.row ? 'pg-truth-sel ' : '') + (this.random ? (got ? 'pg-truth-true' : '') : got === null ? '' : got === want ? 'pg-truth-ok' : 'pg-truth-bad'))
         for (const v of r) { const td = el('td'); td.append(chip(v)); tr_.append(td) }
         if (this.random) tr_.append(el('td', 'pg-truth-p', String(this.mass(r))))
