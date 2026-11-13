@@ -395,7 +395,7 @@ text.pg-who-1 { fill: #138a72; font-weight: bold; }
 .pg-clabel { font: bold 14px var(--verso-structure-font-family, sans-serif); fill: #8a5a16; pointer-events: none; }
 .pg-cname { font: bold 15px var(--verso-code-font-family, monospace); fill: #5c3d0e; pointer-events: none; }
 .pg-cinput, .pg-coutput { cursor: pointer; }
-.pg-coutput rect { fill: #f5f8fd; stroke: #2e6fb8; stroke-width: 2; stroke-dasharray: 7 5; }
+.pg-coutput rect:not(.pg-gused-col), .pg-coutput .pg-cbox { fill: #f5f8fd; stroke: #2e6fb8; stroke-width: 2; stroke-dasharray: 7 5; }
 .pg-cport { fill: white; stroke: #8a5a16; stroke-width: 2; cursor: pointer; }
 .pg-cport[data-kind="out"] { fill: #8a5a16; }
 .pg-cport-open { fill: #fbe9e5; stroke: #b03a2e; }
@@ -485,3 +485,15 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 .pg-rowbtn { font: inherit; font-size: 0.9em; color: white; background: #b0782a; border: none; border-radius: 8px; padding: 0.3em 0.7em; min-height: 34px; cursor: pointer; }
 .pg-rowbtn:hover { background: #95631f; }
 .pg-rowbar-text { font-size: 0.9em; color: #5c3d0e; min-width: 6.5em; text-align: center; }
+
+/* the target in the output box */
+.pg-tlabel { font: bold 13px var(--verso-code-font-family, monospace); fill: #5c3d0e; pointer-events: none; }
+.pg-tlabel-target { fill: #2e6fb8; }
+.pg-gchip-none circle { fill: #d8c7a4; stroke: none; }
+.pg-gchip-ok circle { stroke: #2e8b37; stroke-width: 2.5; }
+.pg-gchip-bad circle { stroke: #b03a2e; stroke-width: 2.5; }
+.pg-cinput-hit { fill: transparent; }
+.pg-coutput .pg-gchip { pointer-events: none; }
+.pg-gchip text.pg-gchip-big { font-size: 14px; }
+.pg-tlabel { font-size: 15px; }
+.pg-coutput line, .pg-coutput text { pointer-events: none; }
