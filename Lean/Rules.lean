@@ -49,17 +49,47 @@ theorem pure_true (b : Bool) : (pure b : DiscreteMeasure Bool) true = bif b then
   · exact MeasureTheory.DiscreteMeasure.pure_apply_nonself (by decide)
   · exact MeasureTheory.DiscreteMeasure.pure_apply_self
 
-/-- Two distributions on `Bool` are the same when they have the same mass at `true`: the rest of
-the mass lies at `false`. -/
-theorem bool_ext (μ ν : DiscreteMeasure Bool) [hμ : Prob μ] [hν : Prob ν] (h : μ true = ν true) : μ = ν := by
-  have a := hμ.hasSum.tsum_eq; have b := hν.hasSum.tsum_eq
-  rw [tsum_fintype, Fintype.sum_bool] at a b
-  simp only [MeasureTheory.DiscreteMeasure.weight_eq] at a b
-  have ht : μ true ≠ ⊤ := ne_top_of_le_ne_top ENNReal.one_ne_top (a ▸ le_self_add)
-  ext x; cases x
-  · rw [h] at a ht
-    exact (ENNReal.add_right_inj ht).1 (a.trans b.symm)
+/-- The total mass of a distribution on `Bool` is one. -/
+theorem mass_total (μ : DiscreteMeasure Bool) [hμ : Prob μ] : μ true + μ false = 1 := by
+  have a := hμ.hasSum.tsum_eq
+  rw [tsum_fintype, Fintype.sum_bool] at a
+  simpa only [MeasureTheory.DiscreteMeasure.weight_eq] using a
+
+/-- A mass of a distribution is finite (at most one). -/
+theorem mass_ne_top (μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b ≠ ⊤ := by
+  cases b
+  · exact ne_top_of_le_ne_top ENNReal.one_ne_top ((mass_total μ) ▸ le_add_self)
+  · exact ne_top_of_le_ne_top ENNReal.one_ne_top ((mass_total μ) ▸ le_self_add)
+
+/-- One Coin, *What is not at true*: the rest of the mass lies at `false`. -/
+theorem mass_false (μ : DiscreteMeasure Bool) [Prob μ] : μ false = 1 - μ true := by
+  rw [← mass_total μ]
+  rw [ENNReal.add_sub_cancel_left (mass_ne_top μ true)]
+
+/-- One Coin, *What is not at false*. -/
+theorem mass_true (μ : DiscreteMeasure Bool) [Prob μ] : μ true = 1 - μ false := by
+  rw [← mass_total μ]
+  rw [add_comm]
+  rw [ENNReal.add_sub_cancel_left (mass_ne_top μ false)]
+
+/-- One Coin, *One bar is enough*: two distributions on `Bool` are the same when they have the
+same mass at `true`. -/
+theorem bool_ext (μ ν : DiscreteMeasure Bool) [Prob μ] [Prob ν] (h : μ true = ν true) : μ = ν := by
+  ext x
+  cases x
+  · rw [mass_false, mass_false, h]
   · exact h
+
+/-- The mass at `true`, as a number in `[0, 1]` (for `coin`). -/
+noncomputable def chance (μ : DiscreteMeasure Bool) [Prob μ] : I :=
+  ⟨(μ true).toReal, ENNReal.toReal_nonneg, by
+    have h : μ true ≤ 1 := (mass_total μ) ▸ le_self_add
+    simpa using ENNReal.toReal_mono ENNReal.one_ne_top h⟩
+
+/-- `chance μ`, as a mass, is the mass at `true`. -/
+theorem chance_eq (μ : DiscreteMeasure Bool) [Prob μ] : (chance μ : ENNReal) = μ true := by
+  show ENNReal.ofReal (μ true).toReal = μ true
+  exact ENNReal.ofReal_toReal (mass_ne_top μ true)
 
 /-- Where the mass of a move goes: the mass of `f <$> μ` at `true` is the mass of `μ` at the points
 that `f` sends to `true` (`bif c then a else b` is `a` when `c` is `true`, else `b`). -/
@@ -113,6 +143,11 @@ theorem coin_const (p : I) (b : Bool) : (fun _ => b) <$> coin p = pure b := by
   cases b
   rw [Bool.cond_false, Bool.cond_false, Bool.cond_false, zero_add]
   rw [Bool.cond_true, Bool.cond_true, Bool.cond_true, coin_total]
+
+/-- One Coin, *Every distribution is a coin*. -/
+theorem eq_coin (μ : DiscreteMeasure Bool) [Prob μ] : μ = coin (chance μ) := by
+  apply bool_ext
+  rw [coin_true, chance_eq]
 
 /-- World 1, the boss: flipping a coin swaps the masses `p` and `1 - p`. -/
 theorem coin_not (p : I) : not <$> coin p = coin (σ p) := by

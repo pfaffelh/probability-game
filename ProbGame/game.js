@@ -1677,6 +1677,18 @@
     return g
   }
 
+  // A level in Lean only (`::::leanonly`): no board; the stage shows its proof at once.
+  class LeanOnly {
+    constructor(root, index) { this.root = root; this.index = index; this.board = root.querySelector('.pg-board'); this.picture = null }
+    get solved() { return true }
+    get done() { return !!this.proof?.done }
+    get canUndo() { return false }
+    status() { return '' }
+    render() {}
+    undo() {}
+    reset() {}
+  }
+
   class Circuit {
     constructor(root, index, onSolved) {
       this.root = root; this.index = index; this.onSolved = onSolved
@@ -2438,10 +2450,25 @@
     { name: '<;>', kind: 'tactic', insert: ' <;> ', sig: 't₁ <;> t₂',
       en: 'Runs t₂ on every goal that t₁ leaves: cases x <;> cases y <;> rfl.',
       de: 'Führt t₂ auf jedem Ziel aus, das t₁ übrig lässt: cases x <;> cases y <;> rfl.' },
+    { name: 'ext', kind: 'tactic', insert: 'ext x', sig: 'ext x',
+      en: 'For a goal μ = ν between distributions: it suffices that they have the same mass μ x = ν x at every point x.',
+      de: 'Für ein Ziel μ = ν zwischen Verteilungen: Es genügt, dass sie an jedem Punkt x dieselbe Masse μ x = ν x haben.' },
+    { name: 'exact', kind: 'tactic', insert: 'exact ', sig: 'exact h',
+      en: 'Closes the goal with h, when h says exactly what the goal says.',
+      de: 'Schließt das Ziel mit h, wenn h genau das sagt, was das Ziel sagt.' },
     { name: "induction'", kind: 'tactic', insert: "induction' n with n ih", sig: "induction' n with n ih",
       en: 'Induction on the natural number n: first the goal for 0, then the goal for n + 1, with the hypothesis ih for n.',
       de: 'Induktion nach der natürlichen Zahl n: zuerst das Ziel für 0, dann das Ziel für n + 1, mit der Annahme ih für n.' },
-    { name: 'bool_ext', kind: 'rule', sig: 'bool_ext μ ν (h : μ true = ν true) : μ = ν', en: 'Two distributions on Bool are the same when they have the same mass at true.', de: 'Zwei Verteilungen auf Bool sind gleich, wenn sie bei true dieselbe Masse haben.' },
+    { name: 'mass_total', kind: 'rule', sig: 'mass_total μ : μ true + μ false = 1', en: 'A distribution on Bool has total mass one.', de: 'Eine Verteilung auf Bool hat die Gesamtmasse eins.' },
+    { name: 'mass_ne_top', kind: 'rule', sig: 'mass_ne_top μ b : μ b ≠ ⊤', en: 'A mass of a distribution is finite (masses are numbers in [0, ∞], and ⊤ is ∞).', de: 'Eine Masse einer Verteilung ist endlich (Massen sind Zahlen in [0, ∞], und ⊤ ist ∞).' },
+    { name: 'ENNReal.add_sub_cancel_left', kind: 'rule', sig: 'ENNReal.add_sub_cancel_left (h : a ≠ ⊤) : a + b - a = b', en: 'Adding a and taking it away again: for a finite a.', de: 'a dazu und wieder weg: für ein endliches a.' },
+    { name: 'add_comm', kind: 'rule', sig: 'a + b = b + a', en: 'The order of a sum does not matter.', de: 'Die Reihenfolge einer Summe ist egal.' },
+    { name: 'mass_false', kind: 'lemma', sig: 'mass_false μ : μ false = 1 - μ true', en: 'Proved by you in One Coin: what is not at true is at false.', de: 'Von dir bewiesen in „Eine Münze“: Was nicht bei true liegt, liegt bei false.' },
+    { name: 'mass_true', kind: 'lemma', sig: 'mass_true μ : μ true = 1 - μ false', en: 'Proved by you in One Coin.', de: 'Von dir bewiesen in „Eine Münze“.' },
+    { name: 'bool_ext', kind: 'lemma', sig: 'bool_ext μ ν (h : μ true = ν true) : μ = ν', en: 'Proved by you in One Coin: two distributions on Bool are the same when they have the same mass at true.', de: 'Von dir bewiesen in „Eine Münze“: Zwei Verteilungen auf Bool sind gleich, wenn sie bei true dieselbe Masse haben.' },
+    { name: 'chance', kind: 'rule', sig: 'chance μ : I', en: 'The mass of μ at true, as a number in [0, 1] (what coin takes).', de: 'Die Masse von μ bei true, als Zahl in [0, 1] (was coin nimmt).' },
+    { name: 'chance_eq', kind: 'rule', sig: '↑(chance μ) = μ true', en: 'chance μ, as a mass, is the mass at true.', de: 'chance μ, als Masse, ist die Masse bei true.' },
+    { name: 'eq_coin', kind: 'lemma', sig: 'eq_coin μ : μ = coin (chance μ)', en: 'Proved by you in One Coin: every distribution on Bool is a coin.', de: 'Von dir bewiesen in „Eine Münze“: Jede Verteilung auf Bool ist eine Münze.' },
     { name: 'coin_true', kind: 'rule', sig: '(coin p) true = ↑p', en: 'The mass of the coin at true.', de: 'Die Masse der Münze bei true.' },
     { name: 'coin_false', kind: 'rule', sig: '(coin p) false = ↑(σ p)', en: 'The mass of the coin at false.', de: 'Die Masse der Münze bei false.' },
     { name: 'map_true', kind: 'rule', sig: '(f <$> μ) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)', en: 'Where the mass of a move goes: to true comes the mass of the points that f sends to true.', de: 'Wohin die Masse eines Zuges geht: Nach true kommt die Masse der Punkte, die f nach true schickt.' },
@@ -2647,11 +2674,11 @@
       if (parts.length > 1 && !this.available(INVENTORY.find(i => i.name === '<;>'))) return tr('This tactic is not in your inventory: {x}', { x: '<;>' })
       for (let t of parts) {
         t = t.trim()
-        const tac = /^(rw|simp only|rfl|decide|congr|funext|cases|induction'|exists|intro|have|apply|constructor)(?=\s|\[|$)/.exec(t)?.[1]
+        const tac = /^(rw|simp only|rfl|decide|congr|funext|ext|cases|induction'|exists|intro|have|apply|exact|constructor)(?=\s|\[|$)/.exec(t)?.[1]
         const item = INVENTORY.find(i => i.name === tac)
         if (!item || !this.available(item)) return tr('This tactic is not in your inventory: {x}', { x: t.split(/\s/)[0] || t })
         // the rules: in brackets, or the term of `have h := rule args`
-        const inside = tac === 'have' ? /:=(.*)$/.exec(t)?.[1]?.trim().split(/\s+/)[0] : tac === 'apply' ? t.slice(5).trim().split(/\s+/)[0] : /\[(.*)\]/.exec(t)?.[1]
+        const inside = tac === 'have' ? /:=(.*)$/.exec(t)?.[1]?.trim().split(/\s+/)[0] : tac === 'apply' || tac === 'exact' ? t.slice(5).trim().split(/\s+/)[0] : /\[(.*)\]/.exec(t)?.[1]
         if ((tac === 'rw' || tac === 'simp only') && inside === undefined) return tr('This tactic is not in your inventory: {x}', { x: t })
         // each rule: its name is in the inventory (or a hypothesis of the goal, as ih), and so are the
         // names in its arguments
@@ -2735,6 +2762,8 @@
         }
         case 'decide': return ask(this.vars().length ? ['decide +revert', 'decide'] : ['decide'], o => o === 'decide' ? tr('plain') : '+revert')
         case 'funext': return this.put(`funext ${this.fresh('x', 'y', 'z', 'b')}`)
+        case 'ext': return this.put(`ext ${this.fresh('x', 'b', 'y')}`)
+        case 'exact': return this.put('exact ')
         case 'intro': return this.put(`intro ${this.fresh('h', 'h2', 'h3')}`)
         case 'have': return this.put(`have ${this.fresh('h2', 'h3', 'h4')} := `)
         case 'rw': return this.put('rw [')
@@ -2748,7 +2777,7 @@
       const v = this.input?.value ?? ''
       this.choice = null
       if (/\[[^\]]*$/.test(v)) { this.input.value = this.typed = (/\[\s*$/.test(v) ? v.replace(/\s*$/, '') : v.replace(/\s*$/, '') + ', ') + it.name; this.render(); this.input.focus({ preventScroll: true }); return }
-      if (/^apply\s*$/.test(v)) return this.put(`apply ${it.name}`)
+      if (/^(apply|exact)\s*$/.test(v)) return this.put(`${v.trim()} ${it.name}`)
       // (rw [a] there: b goes into its brackets, rw [a, b])
       if (/\[[^\]]*\S[^\]]*\]\s*$/.test(v)) { this.input.value = this.typed = v.replace(/\s*\]\s*$/, `, ${it.name}]`); this.render(); this.input.focus({ preventScroll: true }); return }
       if (/:=\s*$/.test(v) || /^exists\s*$/.test(v)) { this.input.value = this.typed = v.replace(/\s*$/, ' ') + it.name + ' '; this.render(); this.input.focus({ preventScroll: true }); return }
@@ -3042,7 +3071,7 @@
     if (!roots.length) return
     STAGE = true
     // (a level whose saved state no longer fits it, after the level changed: started afresh, its state forgotten)
-    const make = (r, i) => new (r.classList.contains('pg-build') ? Builder : r.classList.contains('pg-walk') ? Grid : r.classList.contains('pg-bool') ? Bools : r.classList.contains('pg-circuit') ? Circuit : Level)(r, i, () => refresh())
+    const make = (r, i) => new (r.classList.contains('pg-build') ? Builder : r.classList.contains('pg-walk') ? Grid : r.classList.contains('pg-bool') ? Bools : r.classList.contains('pg-circuit') ? Circuit : r.classList.contains('pg-leanonly') ? LeanOnly : Level)(r, i, () => refresh())
     const levels = roots.map((r, i) => {
       try { return make(r, i) } catch (e) {
         console.warn('level', i + 1, 'started afresh:', e)
@@ -3190,7 +3219,7 @@
       lean.setAttribute('aria-pressed', String(leanOpen))
       leanBox.hidden = !leanOpen || v === 'proof' || !l.leanParts?.length
       if (!leanBox.hidden) leanBox.replaceChildren(...l.leanParts)
-      tabs.hidden = !l.proof
+      tabs.hidden = !l.proof || l instanceof LeanOnly
       tabBoard.textContent = `▦ ${tr('Board')}${l.solved ? ' ✓' : ''}`
       tabLean.textContent = `∀ Lean${l.proof?.proved ? ' ✓' : ''}`
       tabBoard.classList.toggle('pg-tab-on', v === 'board'); tabLean.classList.toggle('pg-tab-on', v === 'proof')
@@ -3212,6 +3241,7 @@
       history.replaceState(null, '', `${location.pathname}${location.search}#level-${current + 1}`)
       try { localStorage.setItem(`pg:last:${siteRoot()}`, JSON.stringify({ href: `${location.pathname}#level-${current + 1}`, title: `${worldTitle.textContent} · ${levelName(current) || current + 1}` })) } catch {}
       levels[current].render()
+      if (levels[current] instanceof LeanOnly) { showBoardTip(current); setView('proof'); return }
       refresh()
       showBoardTip(current)
     }
@@ -3222,7 +3252,7 @@
     document.addEventListener('keydown', ev => {
       if (ev.target.closest?.('input, textarea') || ev.altKey || ev.ctrlKey || ev.metaKey || document.querySelector('.pg-tip-overlay')) return
       // → as Next (the Lean proof first); ← back: from the proof to its board, else the level before
-      if (ev.key === 'ArrowLeft') { if (view() === 'proof') setView('board'); else show(current - 1) }
+      if (ev.key === 'ArrowLeft') { if (view() === 'proof' && !(levels[current] instanceof LeanOnly)) setView('board'); else show(current - 1) }
       if (ev.key === 'ArrowRight' && !next.disabled) goNext()
     })
     try { localStorage.setItem(levelsKey(location.pathname), JSON.stringify(levels.map(l => !!l.proof))) } catch {}
@@ -3377,6 +3407,8 @@
     if (SHOW) BACKEND = null
     // the parts of other editions go, those of this one stay (`:::::only`, ProbGame/Level.lean)
     document.querySelectorAll('.pg-only').forEach(d => { if (ours(d)) d.replaceWith(...d.childNodes); else d.remove() })
+    // (the edition without Lean has no levels in Lean only)
+    if (SHOW) document.querySelectorAll('.pg-leanonly').forEach(d => d.remove())
     applyLang()
     translatePage()
     languageSwitch()
