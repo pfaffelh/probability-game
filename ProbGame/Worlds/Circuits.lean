@@ -152,7 +152,7 @@ rfl
 :::
 ::::
 
-::::circuit (inputs := "x") (gates := "not, or") (table := "11") (goal := "true") (proof := "(x : Bool) : (x || !x) = (fun | false => true | true => true) x") (new := "<;>") (play := "a=not; b=or; x>a.0; x>b.0; a>b.1; b>out")
+::::circuit (inputs := "x") (gates := "not, or") (table := "11") (goal := "true") (proof := "(x : Bool) : (x || !x) = (bif x then true else true)") (new := "<;>") (play := "a=not; b=or; x>a.0; x>b.0; a>b.1; b>out")
 :::en
 *Always true, without always true.* An output can feed several inputs: wire `x` twice.
 :::
@@ -163,8 +163,8 @@ rfl
 
 :::proofen
 How to read the statement: on the left your circuit, `x || !x`; on the right the target, the table
-written as a function by cases: `fun | false => true | true => true` sends `false` to `true` and
-`true` to `true` (Lean shows it as `match x with …`). `||` is defined by cases of its left side:
+written as a decision: `bif x then true else true` is `true` when `x` is `true`, else `true` (`bif`
+is *if* for a `Bool`; it reduces as soon as `x` is known). `||` is defined by cases of its left side:
 `false || b` reduces to `b`, and `true || b` to `true`. So `cases x`, then `rfl` in each case. New:
 `t₁ <;> t₂` runs `t₂` on every goal that `t₁` leaves, in one line: `cases x <;> rfl`.
 
@@ -172,9 +172,9 @@ written as a function by cases: `fun | false => true | true => true` sends `fals
 :::
 
 :::proofde
-So liest man die Aussage: links deine Schaltung, `x || !x`; rechts das Ziel, die Tafel als Funktion,
-durch Fälle geschrieben: `fun | false => true | true => true` schickt `false` nach `true` und `true`
-nach `true` (Lean zeigt sie als `match x with …`). `||` ist durch Fälle seiner linken Seite definiert:
+So liest man die Aussage: links deine Schaltung, `x || !x`; rechts das Ziel, die Tafel als
+Entscheidung geschrieben: `bif x then true else true` ist `true`, wenn `x` `true` ist, sonst `true`
+(`bif` ist *wenn* für ein `Bool`; es reduziert, sobald `x` bekannt ist). `||` ist durch Fälle seiner linken Seite definiert:
 `false || b` reduziert zu `b`, und `true || b` zu `true`. Also `cases x`, dann `rfl` in jedem Fall. Neu:
 `t₁ <;> t₂` führt `t₂` auf jedem Ziel aus, das `t₁` übrig lässt, in einer Zeile: `cases x <;> rfl`.
 
@@ -187,7 +187,7 @@ cases x <;> rfl
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "and, or") (table := "0001") (goal := "x && y") (proof := "(x y : Bool) : (x && y) = (fun | false, false => false | false, true => false | true, false => false | true, true => true) x y") (play := "a=and; x>a.0; y>a.1; a>out")
+::::circuit (inputs := "x y") (gates := "and, or") (table := "0001") (goal := "x && y") (proof := "(x y : Bool) : (x && y) = (bif x then (bif y then true else false) else (bif y then false else false))") (play := "a=and; x>a.0; y>a.1; a>out")
 :::en
 *Both.* The output is `true` only when both inputs are. Four rows now: one for each pair of values.
 :::
@@ -198,16 +198,16 @@ Paar von Werten.
 :::
 
 :::proofen
-The table on the right has four rows now, one for each pair of values: `fun | false, false => false
-| …` is a function of two arguments, given by cases. `cases x` makes two goals; in each, `cases y`
+The table on the right has four rows now, one for each pair of values: first `x` decides, then `y`,
+`bif x then (bif y then true else false) else (bif y then false else false)`. `cases x` makes two goals; in each, `cases y`
 makes two more: four goals, the four rows. With `<;>` in one line: `cases x <;> cases y <;> rfl`.
 
 *Tip.* `cases x <;> cases y <;> rfl`.
 :::
 
 :::proofde
-Die Tafel rechts hat jetzt vier Zeilen, eine für jedes Paar von Werten: `fun | false, false => false
-| …` ist eine Funktion von zwei Argumenten, durch Fälle gegeben. `cases x` macht zwei Ziele; in jedem
+Die Tafel rechts hat jetzt vier Zeilen, eine für jedes Paar von Werten: erst entscheidet `x`, dann
+`y`, `bif x then (bif y then true else false) else (bif y then false else false)`. `cases x` macht zwei Ziele; in jedem
 macht `cases y` zwei weitere: vier Ziele, die vier Zeilen. Mit `<;>` in einer Zeile:
 `cases x <;> cases y <;> rfl`.
 
@@ -220,7 +220,7 @@ cases x <;> cases y <;> rfl
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "and, not") (table := "0111") (goal := "x || y") (proof := "(x y : Bool) : (!(!x && !y)) = (fun | false, false => false | false, true => true | true, false => true | true, true => true) x y") (new := "decide") (play := "a=not; b=not; c=and; d=not; x>a.0; y>b.0; a>c.0; b>c.1; c>d.0; d>out")
+::::circuit (inputs := "x y") (gates := "and, not") (table := "0111") (goal := "x || y") (proof := "(x y : Bool) : (!(!x && !y)) = (bif x then (bif y then true else true) else (bif y then true else false))") (new := "decide") (play := "a=not; b=not; c=and; d=not; x>a.0; y>b.0; a>c.0; b>c.1; c>d.0; d>out")
 :::en
 *Or, without or.* At least one `true`, with `and` and `not` only. (Not both `false`.)
 :::
@@ -253,7 +253,7 @@ decide +revert
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "and, or, not") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : ((x || y) && !(x && y)) = (fun | false, false => false | false, true => true | true, false => true | true, true => false) x y") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out")
+::::circuit (inputs := "x y") (gates := "and, or, not") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : ((x || y) && !(x && y)) = (bif x then (bif y then false else true) else (bif y then true else false))") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out")
 :::en
 *Exactly one.* `true` when exactly one input is `true`: at least one, but not both. In Lean this is
 `xor`, written `x ^^ y`.
@@ -278,7 +278,7 @@ decide +revert
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "and, or, not, xor") (table := "1001") (goal := "x == y") (proof := "(x y : Bool) : (!(x ^^ y)) = (fun | false, false => true | false, true => false | true, false => false | true, true => true) x y") (play := "a=xor; b=not; x>a.0; y>a.1; a>b.0; b>out")
+::::circuit (inputs := "x y") (gates := "and, or, not, xor") (table := "1001") (goal := "x == y") (proof := "(x y : Bool) : (!(x ^^ y)) = (bif x then (bif y then true else false) else (bif y then false else true))") (play := "a=xor; b=not; x>a.0; y>a.1; a>b.0; b>out")
 :::en
 *The same.* `true` when both inputs are the same: both `true`, or both `false`. New: what you built
 in the last level is now a gate of its own, `xor`.
@@ -303,7 +303,7 @@ decide +revert
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "bind") (table := "0001") (goal := "x && y") (proof := "(x y : Bool) : (if x then y else false) = (fun | false, false => false | false, true => false | true, false => false | true, true => true) x y") (play := "a=bind; a.T=id; a.F=false; x>a.0; y>a.1; a>out")
+::::circuit (inputs := "x y") (gates := "bind") (table := "0001") (goal := "x && y") (proof := "(x y : Bool) : (if x then y else false) = (bif x then (bif y then true else false) else (bif y then false else false))") (play := "a=bind; a.T=id; a.F=false; x>a.0; y>a.1; a>out")
 :::en
 *A gate of your own.* There are four maps `Bool → Bool`: `id`, `not`, always `T`, always `F`. New
 gate: `bind`. It has two fields, `T` and `F`, and you put a map into each (drag it in, or tap the
@@ -339,7 +339,7 @@ decide +revert
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "bind") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : (if x then !y else y) = (fun | false, false => false | false, true => true | true, false => true | true, true => false) x y") (play := "a=bind; a.T=not; a.F=id; x>a.0; y>a.1; a>out")
+::::circuit (inputs := "x y") (gates := "bind") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : (if x then !y else y) = (bif x then (bif y then false else true) else (bif y then true else false))") (play := "a=bind; a.T=not; a.F=id; x>a.0; y>a.1; a>out")
 :::en
 *xor, built yourself.* `true` when exactly one input is. With `bind`: for `x = true` one map of `y`,
 for `x = false` another. Four maps for each field: sixteen gates with two inputs, all of them.
@@ -365,7 +365,7 @@ decide +revert
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "bind") (table := "1101") (goal := "!x || y") (proof := "(x y : Bool) : (if x then y else true) = (fun | false, false => true | false, true => true | true, false => false | true, true => true) x y") (play := "a=bind; a.T=id; a.F=true; x>a.0; y>a.1; a>out")
+::::circuit (inputs := "x y") (gates := "bind") (table := "1101") (goal := "!x || y") (proof := "(x y : Bool) : (if x then y else true) = (bif x then (bif y then true else false) else (bif y then true else true))") (play := "a=bind; a.T=id; a.F=true; x>a.0; y>a.1; a>out")
 :::en
 *If x, then y.* The implication: `false` only when `x` is `true` and `y` is `false`. In Lean
 `!x || y`.
@@ -463,7 +463,7 @@ decide +revert
 :::
 ::::
 
-::::circuit (inputs := "x") (gates := "toNat, not") (table := "nat 10") (goal := "1 - x.toNat") (proof := "(x : Bool) : ((!x).toNat) = (fun | false => 1 | true => 0) x") (play := "a=not; b=toNat; x>a.0; a>b.0; b>out")
+::::circuit (inputs := "x") (gates := "toNat, not") (table := "nat 10") (goal := "1 - x.toNat") (proof := "(x : Bool) : ((!x).toNat) = (bif x then 0 else 1)") (play := "a=not; b=toNat; x>a.0; a>b.0; b>out")
 :::en
 *A number.* New gate: `toNat` makes a coin a number, `false` is `0` and `true` is `1`. Its output is
 blue: a wire of numbers. The target is now a number in every row: `1` when `x` is `false`, `0` when
@@ -490,7 +490,7 @@ decide +revert
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "toNat, plus, and, or, not") (table := "nat 0112") (goal := "x.toNat + y.toNat") (proof := "(x y : Bool) : (x.toNat + y.toNat) = (fun | false, false => 0 | false, true => 1 | true, false => 1 | true, true => 2) x y") (play := "a=toNat; b=toNat; c=plus; x>a.0; y>b.0; a>c.0; b>c.1; c>out")
+::::circuit (inputs := "x y") (gates := "toNat, plus, and, or, not") (table := "nat 0112") (goal := "x.toNat + y.toNat") (proof := "(x y : Bool) : (x.toNat + y.toNat) = (bif x then (bif y then 2 else 1) else (bif y then 1 else 0))") (play := "a=toNat; b=toNat; c=plus; x>a.0; y>b.0; a>c.0; b>c.1; c>out")
 :::en
 *Count.* New gate: `plus` adds two numbers. The target counts how many of `x`, `y` are `true`:
 `0`, `1` or `2`. A coin does not fit into `plus`: first `toNat`.
@@ -515,7 +515,7 @@ decide +revert
 :::
 ::::
 
-::::circuit (inputs := "x y z") (gates := "and, or") (table := "00010111") (goal := "decide (2 ≤ x.toNat + y.toNat + z.toNat)") (proof := "(x y z : Bool) : ((x && y) || (x && z) || (y && z)) = (fun | false, false, false => false | false, false, true => false | false, true, false => false | false, true, true => true | true, false, false => false | true, false, true => true | true, true, false => true | true, true, true => true) x y z") (play := "a=and; b=and; c=and; d=or; e=or; x>a.0; y>a.1; x>b.0; z>b.1; y>c.0; z>c.1; a>d.0; b>d.1; d>e.0; c>e.1; e>out")
+::::circuit (inputs := "x y z") (gates := "and, or") (table := "00010111") (goal := "decide (2 ≤ x.toNat + y.toNat + z.toNat)") (proof := "(x y z : Bool) : ((x && y) || (x && z) || (y && z)) = (bif x then (bif y then (bif z then true else true) else (bif z then true else false)) else (bif y then (bif z then true else false) else (bif z then false else false)))") (play := "a=and; b=and; c=and; d=or; e=or; x>a.0; y>a.1; x>b.0; z>b.1; y>c.0; z>c.1; a>d.0; b>d.1; d>e.0; c>e.1; e>out")
 :::en
 *The boss: the majority of three.* `true` when at least two of the three inputs are. Eight rows.
 In Lean the target counts: `x.toNat` is `1` for `true` and `0` for `false`.

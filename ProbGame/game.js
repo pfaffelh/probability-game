@@ -1564,6 +1564,9 @@
     // an unknown map f: one field for one of the four maps, the same in every f on the board
     f: { n: 1, h: 84, slots: 1, shared: true, sym: 'f', label: 'f',
       f: ([v], gate) => { const m = gate?.maps?.[0]; return m ? MAPS[m].f(v) : null }, lean: ([v]) => `f ${arg(v)}` },
+    // the constant maps (the moves heads and tails of a coin): whatever comes in, the same comes out
+    alwaysT: { n: 1, f: () => true, lean: () => 'true', sym: 'T', label: 'always T' },
+    alwaysF: { n: 1, f: () => false, lean: () => 'false', sym: 'F', label: 'always F' },
     nand: { n: 2, f: ([a, b]) => !(a && b), lean: ([a, b]) => `!(${arg(a)} && ${arg(b)})`, sym: '⊼', label: 'nand' },
     // counting: a coin becomes a number, numbers are added (wires of numbers are blue)
     toNat: { n: 1, ins: ['bool'], out: 'nat', f: ([a]) => (a ? 1 : 0), lean: ([a]) => `${arg(a)}.toNat`, sym: '#', label: 'toNat' },
@@ -2017,17 +2020,21 @@
       if (!this.random) return `fun ${this.names.join(' ')} => ${e}`
       return `do ${this.names.map((x, k) => `let ${x} ← ${this.leanCoinOf(k)}`).join('; ')}; pure (${e})`
     }
-    // the target table as a function by cases, `fun | false => true | true => false` (null with a row
-    // that does not count)
+    // the target table as a decision by cases, input after input: `bif x then (bif y then true else
+    // false) else …` (null with a row that does not count). (Not `fun | … => …`: its auxiliary
+    // definition is unknown to the proof states of the REPL.)
     tableFn() {
       const ws = this.rows.map((r, k) => this.want(k))
       if (ws.some(w => w === null)) return null
-      return `(fun ${this.rows.map((r, k) => `| ${r.map(String).join(', ')} => ${String(ws[k])}`).join(' ')})`
+      const n = this.names.length
+      const tree = (k, row) => k === n ? String(ws[this.rows.findIndex(r => r.every((v, j) => v === row[j]))])
+        : `(bif ${this.names[k]} then ${tree(k + 1, [...row, true])} else ${tree(k + 1, [...row, false])})`
+      return tree(0, [])
     }
-    // the statement of a circuit: it is the target table, `(x && y) = (fun | … ) x y`
+    // the statement of a circuit: it is the target table, `(x && y) = (bif x then … else …)`
     statement() {
       const t = this.tableFn(), xs = this.names.join(' ')
-      return t ? `(${xs} : Bool) : (${this.leanExpr()}) = ${t} ${xs}` : `(${xs} : Bool) : (${this.leanExpr()}) = (${this.goal})`
+      return `(${xs} : Bool) : (${this.leanExpr()}) = ${t ?? `(${this.goal})`}`
     }
     status() {
       if (this.done) return 'goals accomplished 🎉'
@@ -3043,6 +3050,10 @@
     'circuit:xor': ['Two inputs: true when exactly one is true.', 'Zwei Eingänge: true, wenn genau einer true ist.'],
     'circuit:nand': ['Two inputs: true unless both are true.', 'Zwei Eingänge: true, außer wenn beide true sind.'],
     'circuit:toNat': ['From a coin to a number: false is 0, true is 1. Numbers run on blue wires.', 'Von einer Münze zu einer Zahl: false ist 0, true ist 1. Zahlen laufen auf blauen Drähten.'],
+    'circuit:alwaysT': ['One input, and whatever it is: true. All the mass goes to true; the result is sure.', 'Ein Eingang, und was auch immer er ist: true. Die ganze Masse geht nach true; das Ergebnis ist sicher.'],
+    'circuit:alwaysF': ['One input, and whatever it is: false. All the mass goes to false.', 'Ein Eingang, und was auch immer er ist: false. Die ganze Masse geht nach false.'],
+    'circuit:bind': ['Two fields for maps Bool → Bool. The input on the left side chooses the field (T or F); the input on top goes through the map in that field.', 'Zwei Felder für Abbildungen Bool → Bool. Der Eingang an der linken Seite wählt das Feld (T oder F); der Eingang oben geht durch die Abbildung in diesem Feld.'],
+    'circuit:f': ['An unknown map: one field for a map, the same in every f on the board.', 'Eine unbekannte Abbildung: ein Feld für eine Abbildung, dieselbe in jedem f auf dem Spielfeld.'],
     'circuit:plus': ['Two numbers in: their sum.', 'Zwei Zahlen hinein: ihre Summe.'],
     'walk:north': ['One step up.', 'Ein Schritt nach oben.'], 'walk:south': ['One step down.', 'Ein Schritt nach unten.'],
     'walk:east': ['One step to the right.', 'Ein Schritt nach rechts.'], 'walk:west': ['One step to the left.', 'Ein Schritt nach links.'],
@@ -3454,11 +3465,9 @@
     const group = (title, cards) => { if (cards.length) parts.push(el('h3', '', title), ...cards.map(moveCard)) }
     if (bool) group(tr('Moves of a sure coin'), Object.keys(MOVESB).map(m => ['bool:' + m, tr(MOVESB[m].label), mapPicture(k => String(MOVESB[m].f(k === 'true')))]))
     if (walk) group(tr('Moves on the grid'), Object.keys(LABEL0).map(m => ['walk:' + m, tr(LABEL0[m]), null]))
-    if (coin) group(tr('Moves on a coin'), ['id', 'not', 'heads', 'tails', 'toNat', 'payoff 5 -2'].map(spec => {
-      const m = parseMove(spec); return ['level:' + spec.split(' ')[0], m.label(), mapPicture(m.f, m.to)]
-    }))
-    if (coin) group(tr('Building blocks of the circuits'), [['src:coin', source('coin').label(), null], ['src:binom', 'B(n, p)', null],
-      ...Object.keys(FUNS).map(f => ['build:' + f, funLabel(f), el('div', 'pg-map-sym', FUNS[f].sym)])])
+    // the gates of the circuits (all worlds of coins and circuits are played as circuits)
+    group(tr('Building blocks of the circuits'), ['not', 'and', 'or', 'xor', 'alwaysT', 'alwaysF', 'toNat', 'plus', 'bind', 'f']
+      .filter(g => GATES[g]).map(g => ['circuit:' + g, tr(GATES[g].label), gateIcon(g)]))
     if (!SHOW) {
       parts.push(el('h2', '', tr('Tactics and rules')))
       // what the levels of this edition bring (ProbGame/Level.lean)

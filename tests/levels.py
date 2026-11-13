@@ -9,11 +9,11 @@ import json, re, sys
 from pathlib import Path
 
 here = Path(__file__).resolve().parent.parent
-HEAD = re.compile(r'^::::(level|build|boolean|walk|circuit) ')
+HEAD = re.compile(r'^::::(level|build|boolean|walk|circuit|leanonly) ')
 # the rules the proofs of a kind of level are checked in, when the level names none
 CONTEXT = {'level': ('proofContext', 'Lean/Rules.lean'), 'build': ('proofContext', 'Lean/Rules.lean'),
            'boolean': ('context', 'Lean/WorldBool.lean'), 'walk': ('context', 'Lean/WorldWalk.lean'),
-           'circuit': ('context', 'Lean/WorldBool.lean')}
+           'circuit': ('context', 'Lean/WorldBool.lean'), 'leanonly': ('context', 'Lean/Rules.lean')}
 
 
 def attr(line, k):
@@ -39,7 +39,7 @@ def levels_of(path):
                 k = body.index(':::solution') + 2          # after the opening ```
                 solution = body[k:body.index('```', k)]
             key, default = CONTEXT[kind]
-            out.append({'kind': kind, 'edition': edition, 'play': attr(l, 'play') or '',
+            out.append({'kind': kind, 'edition': edition, 'play': attr(l, 'play') or '', 'start': attr(l, 'start') or '',
                         'proof': attr(l, 'proof'), 'lemma': attr(l, 'lemma'), 'solution': solution,
                         'context': attr(l, key) or default})
             i = end
