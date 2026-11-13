@@ -26,6 +26,8 @@ for b in "${branches[@]}"; do
   fi
   echo "== $b ($dir, $(git -C "$dir" log -1 --format='%h %s' | cut -c1-60))"
   (cd "$dir" && lake build > "$sites/build-$b.log" 2>&1) || { grep -E '^error' "$sites/build-$b.log" | head -20; exit 1; }
+  # (Verso does not empty its output: without this, pages of worlds that are gone would stay online)
+  rm -rf "$dir/_out/html-multi"
   (cd "$dir" && lake exe probgame > /dev/null)
   rm -rf "$sites/$b.new" && cp -r "$dir/_out/html-multi" "$sites/$b.new"
   rm -rf "$sites/$b.old" && { [ -d "$sites/$b" ] && mv "$sites/$b" "$sites/$b.old" || true; } && mv "$sites/$b.new" "$sites/$b" && rm -rf "$sites/$b.old"
