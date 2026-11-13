@@ -2011,7 +2011,18 @@
       if (!this.random) return `fun ${this.names.join(' ')} => ${e}`
       return `do ${this.names.map((x, k) => `let ${x} ← ${this.leanCoinOf(k)}`).join('; ')}; pure (${e})`
     }
-    statement() { return `(${this.names.join(' ')} : Bool) : (${this.leanExpr()}) = (${this.goal})` }
+    // the target table as a function by cases, `fun | false => true | true => false` (null with a row
+    // that does not count)
+    tableFn() {
+      const ws = this.rows.map((r, k) => this.want(k))
+      if (ws.some(w => w === null)) return null
+      return `(fun ${this.rows.map((r, k) => `| ${r.map(String).join(', ')} => ${String(ws[k])}`).join(' ')})`
+    }
+    // the statement of a circuit: it is the target table, `(x && y) = (fun | … ) x y`
+    statement() {
+      const t = this.tableFn(), xs = this.names.join(' ')
+      return t ? `(${xs} : Bool) : (${this.leanExpr()}) = ${t} ${xs}` : `(${xs} : Bool) : (${this.leanExpr()}) = (${this.goal})`
+    }
     status() {
       if (this.done) return 'goals accomplished 🎉'
       if (this.sel?.kind === 'out') return tr('Now tap where it goes: a gate, or Output.')
@@ -2886,16 +2897,39 @@
       // (what each one does: in the lexicon)
       const lex = [...document.querySelectorAll('#toc a')].find(a => /\/Lexicon\/$/.test(new URL(a.href, location.href).pathname))
       if (lex) { const a = el('a', 'pg-inv-lex', tr('📖 Lexicon')); a.href = lex.href; a.target = '_blank'; ihead.append(' ', a) }
+      // (the statements of all items, for every screen: there is no hover on a phone)
+      let sigs = false
+      try { sigs = localStorage.getItem('pg:sigs') === 'on' } catch {}
+      const st = el('button', 'pg-inv-sigs' + (sigs ? ' pg-on' : ''), tr(sigs ? 'Hide statements' : 'Show statements')); st.type = 'button'
+      st.addEventListener('click', () => { try { localStorage.setItem('pg:sigs', sigs ? 'off' : 'on') } catch {}; this.render() })
+      ihead.append(' ', st)
       inv.append(ihead)
+      const sigOf = item => (this.world0 && item.sig0) || item.sig || ''
+      const textOf = item => this.world0 && item.en0 ? (LANG === 'de' ? item.de0 : item.en0) : this.worldB && item.enb ? (LANG === 'de' ? item.deb : item.enb) : (LANG === 'de' ? item.de : item.en)
       for (const [kind, title] of [['tactic', tr('Tactics')], ['rule', tr('Theorems')]]) {
         const group = el('div', 'pg-inv-group')
         group.append(el('span', 'pg-inv-title', title + ':'))
         for (const item of INVENTORY.filter(i => (kind === 'tactic' ? i.kind === 'tactic' : i.kind !== 'tactic') && this.available(i))) {
-          const b = el('button', 'pg-chip' + (item.kind === 'lemma' ? ' pg-chip-lemma' : '') + (this.isNew(item) ? ' pg-chip-new' : ''), item.name)
-          b.type = 'button'; b.title = (this.world0 && item.sig0) || item.sig || ''
-          b.disabled = this.busy || this.done
-          b.addEventListener('click', () => { if (!this.busy && !this.done) (item.kind === 'tactic' ? this.tapTactic(item) : this.tapRule(item)) })
-          group.append(b)
+          const b = el('button', 'pg-chip' + (item.kind === 'lemma' ? ' pg-chip-lemma' : '') + (this.isNew(item) ? ' pg-chip-new' : '') + (this.busy || this.done ? ' pg-chip-off' : '') + (this.peek === item.name ? ' pg-chip-on' : ''), item.name)
+          b.type = 'button'; b.title = sigOf(item)
+          // a long press shows what it says (a phone has no hover); a tap puts it into the input
+          let timer = null
+          const stop = () => { clearTimeout(timer); timer = null }
+          b.addEventListener('pointerdown', () => { stop(); timer = setTimeout(() => { timer = null; this.pressed = true; this.peek = this.peek === item.name ? null : item.name; this.render() }, 450) })
+          for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) b.addEventListener(ev, stop)
+          b.addEventListener('contextmenu', e => e.preventDefault())
+          b.addEventListener('click', () => {
+            if (this.pressed) { this.pressed = false; return }
+            if (!this.busy && !this.done) (item.kind === 'tactic' ? this.tapTactic(item) : this.tapRule(item))
+          })
+          if (sigs) { const r = el('div', 'pg-inv-row'); r.append(b, el('code', 'pg-inv-sig', sigOf(item))); group.append(r) } else group.append(b)
+          if (this.peek === item.name) {
+            const pk = el('div', 'pg-chip-peek')
+            pk.append(el('code', 'pg-inv-sig', sigOf(item)), el('div', '', textOf(item) ?? ''))
+            const x = el('button', 'pg-chip-x', '✕'); x.type = 'button'; x.addEventListener('click', () => { this.peek = null; this.render() })
+            pk.append(x)
+            group.append(pk)
+          }
           // its choice, right at it: x or y
           if (this.choice?.from === item.name && !this.done) {
             const pop = el('span', 'pg-chip-pop')
@@ -2958,7 +2992,7 @@
     'Lean did not take the line: see why above the input.': 'Lean hat die Zeile nicht genommen: warum, steht über der Eingabe.',
     'Type a tactic, or tap one in the inventory.': 'Tippe eine Taktik ein, oder tippe eine im Inventar an.', 'One goal left.': 'Noch ein Ziel.', '{n} goals left.': 'Noch {n} Ziele.',
     'Tips': 'Tipps', 'Tip': 'Tipp', 'Got it': 'Verstanden', 'Close': 'Schließen', 'Restart': 'Neu', 'Next': 'Weiter', 'Next ›': 'Weiter ›',
-    'Next world ›': 'Nächste Welt ›', 'Which?': 'Welche?', 'Tap {x}, then the Output.': 'Tippe {x} an, dann den Ausgang.', 'No variable in this goal to split with cases.': 'In diesem Ziel gibt es keine Variable, die cases aufteilen könnte.', 'No natural number in this goal for induction.': 'In diesem Ziel gibt es keine natürliche Zahl für eine Induktion.', plain: 'ohne', 'This wire belongs to the level; it stays.': 'Diese Leitung gehört zum Level; sie bleibt.', '{x} is wired by the level; it stays so.': '{x} ist vom Level verdrahtet; das bleibt so.', 'World': 'Welt', 'Board': 'Spielfeld', 'Proof ': 'Beweis', 'This world': 'Diese Welt',
+    'Next world ›': 'Nächste Welt ›', 'Which?': 'Welche?', 'Show statements': 'Aussagen zeigen', 'Hide statements': 'Aussagen verbergen', 'Tap {x}, then the Output.': 'Tippe {x} an, dann den Ausgang.', 'No variable in this goal to split with cases.': 'In diesem Ziel gibt es keine Variable, die cases aufteilen könnte.', 'No natural number in this goal for induction.': 'In diesem Ziel gibt es keine natürliche Zahl für eine Induktion.', plain: 'ohne', 'This wire belongs to the level; it stays.': 'Diese Leitung gehört zum Level; sie bleibt.', '{x} is wired by the level; it stays so.': '{x} ist vom Level verdrahtet; das bleibt so.', 'World': 'Welt', 'Board': 'Spielfeld', 'Proof ': 'Beweis', 'This world': 'Diese Welt',
     'New in this level': 'Neu in diesem Level', 'New in this proof': 'Neu in diesem Beweis', 'Solve the board first.': 'Erst das Spielfeld lösen.',
   })
   // What the moves and building blocks do, for the tips (by kind of board: level, bool, build, src, walk).
