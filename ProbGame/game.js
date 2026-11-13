@@ -1556,9 +1556,12 @@
     if: { n: 3, ports: ['c', 'T', 'F'], f: ([c, a, b]) => (c ? a : b), lean: ([c, a, b]) => `if ${c} then ${a} else ${b}`, sym: 'if', label: 'if' },
     // a gate built of two maps Bool → Bool: `c` chooses the map (the one for true or the one for
     // false), and `v` goes through it: `if c then f v else g v`; the maps are put into its two fields
-    bind: { n: 2, ports: ['c', 'v'], h: 100, slots: true, sym: 'bind', label: 'bind',
+    bind: { n: 2, ports: ['c', 'v'], h: 100, slots: 2, sym: 'bind', label: 'bind',
       f: ([c, v], gate) => { const m = gate?.maps?.[c ? 0 : 1]; return m ? MAPS[m].f(v) : null },
       lean: ([c, v], gate) => `if ${c} then ${gate?.maps?.[0] ? MAPS[gate.maps[0]].lean(v) : '?'} else ${gate?.maps?.[1] ? MAPS[gate.maps[1]].lean(v) : '?'}` },
+    // an unknown map f: one field for one of the four maps, the same in every f on the board
+    f: { n: 1, h: 84, slots: 1, shared: true, sym: 'f', label: 'f',
+      f: ([v], gate) => { const m = gate?.maps?.[0]; return m ? MAPS[m].f(v) : null }, lean: ([v]) => `f ${arg(v)}` },
     nand: { n: 2, f: ([a, b]) => !(a && b), lean: ([a, b]) => `!(${arg(a)} && ${arg(b)})`, sym: '⊼', label: 'nand' },
     // counting: a coin becomes a number, numbers are added (wires of numbers are blue)
     toNat: { n: 1, ins: ['bool'], out: 'nat', f: ([a]) => (a ? 1 : 0), lean: ([a]) => `${arg(a)}.toNat`, sym: '#', label: 'toNat' },
@@ -1592,7 +1595,11 @@
     'Now tap an output (a dot below a block).': 'Tippe jetzt einen Ausgang an (ein Punkt unten an einem Baustein).',
     'That would go round in a circle.': 'Das ginge im Kreis.', 'always T': 'immer T', 'always F': 'immer F',
     'Fill bind: a map into the field true, one into false (drag it in, or tap the field).': 'Füll bind: eine Abbildung ins Feld true, eine ins Feld false (hineinziehen, oder das Feld antippen).',
-    'Drop the map into a field of bind (true or false).': 'Leg die Abbildung in ein Feld von bind (true oder false).', 'First take a bind; its fields take the maps.': 'Nimm erst ein bind; seine Felder nehmen die Abbildungen.', 'value': 'Wert',
+    'Drop the map into a field of bind (true or false).': 'Leg die Abbildung in ein Feld von bind (true oder false).',
+    'First take an f; its field takes the map.': 'Nimm erst ein f; sein Feld nimmt die Abbildung.', 'Choose f: drag a map into f, or tap its field.': 'Wähle f: zieh eine Abbildung in f, oder tippe sein Feld an.',
+    'Your circuit is {a}; build {b}.': 'Deine Schaltung ist {a}; bau {b}.', 'right for this f. Now the next map in f.': 'richtig für dieses f. Jetzt die nächste Abbildung in f.',
+    'right, but this f does not count here. Choose another map in f.': 'richtig, aber dieses f zählt hier nicht. Wähle eine andere Abbildung in f.',
+    'not right for this f. Choose another map in f.': 'nicht richtig für dieses f. Wähle eine andere Abbildung in f.', 'First take a bind; its fields take the maps.': 'Nimm erst ein bind; seine Felder nehmen die Abbildungen.', 'value': 'Wert',
     'The coin {y} can only depend on the coins thrown before it.': 'Die Münze {y} kann nur von Münzen abhängen, die vor ihr geworfen werden.',
     'Wire the coin {y}: which coin it is depends on a wire into it, from a coin above or a gate.': 'Verdrahte die Münze {y}: welche Münze es ist, hängt von einem Draht in sie hinein ab, von einer Münze oben oder einem Baustein.',
     'previous row': 'vorige Zeile', 'next row': 'nächste Zeile', 'row {k} of {n}': 'Zeile {k} von {n}', 'hide': 'ausblenden',
@@ -1622,7 +1629,7 @@
     const G = GATES[kind], H = gateH(kind), s = svg('svg', { viewBox: `${-GW / 2 - 3} ${-H / 2 - 11} ${GW + 6} ${H + 20}`, class: 'pg-gate-icon' + (G.slots ? ' pg-gate-icon-tall' : '') })
     const g = svg('g', { class: 'pg-cblock' })
     g.append(svg('rect', { x: -GW / 2, y: -H / 2, width: GW, height: H, rx: 12 }))
-    if (G.slots) g.append(bindInside(null, 0, 0))
+    if (G.slots) g.append(bindInside(null, 0, 0, kind))
     else { const pic = gatePicture(kind); pic.setAttribute('transform', 'translate(-14,-2)'); g.append(pic) }
     for (let i = 0; i < G.n; i++) g.append(svg('circle', { class: 'pg-cport' + (gateIn(kind, i) === 'nat' ? ' pg-cport-nat' : ''), cx: -GW / 2 + GW * (i + 1) / (G.n + 1), cy: -H / 2, r: 9 }))
     G.ports?.forEach((t, i) => g.append(svg('text', { class: 'pg-cportname', x: -GW / 2 + GW * (i + 1) / (G.n + 1), y: -H / 2 + 21, 'text-anchor': 'middle' }, t)))
@@ -1630,7 +1637,14 @@
     s.append(g); return s
   }
   // the inside of bind (centre x, y): its two fields, `true` and `false`, each with its map (or empty)
-  function bindInside(maps, x, y) {
+  function bindInside(maps, x, y, kind = 'bind') {
+    if (kind === 'f') {
+      const g = svg('g'), H = GATES.f.h, x0 = x - 24, y0 = y - H / 2 + 14, m = maps?.[0] ?? null
+      g.append(svg('rect', { class: 'pg-cslot' + (m ? ' pg-cslot-full' : ''), x: x0, y: y0, width: 48, height: 32, rx: 6, 'data-slot': 0 }))
+      g.append(mapGlyph(m, x0, y0, 48, 32))
+      g.append(svg('text', { class: 'pg-csym pg-csym-f', x, y: y + H / 2 - 12, 'text-anchor': 'middle' }, 'f'))
+      return g
+    }
     const g = svg('g'), H = GATES.bind.h
     ;['true', 'false'].forEach((t, i) => {
       const x0 = x + (i ? 4 : -52), y0 = y - H / 2 + 38, m = maps?.[i] ?? null
@@ -1663,6 +1677,9 @@
       this.natOut = /^nat\s/.test(d.table ?? '')
       this.table = (d.table ?? '').replace(/^nat\s+/, '').replace(/\s+/g, '')
       this.goal = d.goal ?? ''
+      // (an unknown map f: the circuit must be `shape`; with `every`, it is checked for each of these maps)
+      this.shape = d.shape ?? ''
+      this.every = (d.every ?? '').split(/[\s,]+/).filter(m => MAPS[m])
       this.coins = (d.coins ?? '').split(/\s+/).filter(Boolean)
       this.random = this.coins.length > 0
       // a coin thrown after others, which coin depending on a wire (bind): `q|r` is
@@ -1683,15 +1700,22 @@
 
     // ---- the circuit: the fixed blocks (inputs, output) and the gates and wires of the player
     // what lies beside the board: the gates, and with bind the four maps for its fields
-    get paletteKinds() { return this.gates.includes('bind') ? [...this.gates, ...MAP_ORDER.map(m => 'map:' + m)] : this.gates }
+    get paletteKinds() { return this.gates.some(k => GATES[k].slots) ? [...this.gates, ...MAP_ORDER.map(m => 'map:' + m)] : this.gates }
+    // the map in f (the same in every f)
+    get fmap() { return this.gatesOn.find(g => GATES[g.kind].shared)?.maps?.[0] ?? null }
+    setMap(id, i, m) {
+      const g = this.block(id)
+      for (const h of GATES[g.kind].shared ? this.gatesOn.filter(h => h.kind === g.kind) : [g]) { h.maps = [...(h.maps ?? [null, null])]; h.maps[i] = m }
+    }
     load() {
       let saved = null
       try { saved = JSON.parse(localStorage.getItem(this.key + ':circuit') ?? 'null') } catch {}
       this.gatesOn = saved?.gates ?? []   // { id, kind, x, y }
       this.wires = saved?.wires ?? []     // { from: id, to: id, i }
       this.seq = saved?.seq ?? 1
+      this.seen = saved?.seen ?? []       // (with every) the maps f for which the circuit was right
     }
-    save() { try { localStorage.setItem(this.key + ':circuit', JSON.stringify({ gates: this.gatesOn, wires: this.wires, seq: this.seq })) } catch {} }
+    save() { try { localStorage.setItem(this.key + ':circuit', JSON.stringify({ gates: this.gatesOn, wires: this.wires, seq: this.seq, seen: this.seen })) } catch {} }
     inputAt(k) { return this.ctl?.[k] ? { x: 110, y: 170 } : { x: CW * (k + 1) / (this.names.length + 1), y: 48 } }
     get outAt() { return { x: CW / 2, y: CH - 46 } }
     // the output box: with a truth table as target, the target drawn in it (a column per row)
@@ -1753,7 +1777,7 @@
         at = spots.find(s => !this.gatesOn.some(g => Math.abs(g.x - s.x) < GW && Math.abs(g.y - s.y) < (gateH(g.kind) + gateH(kind)) / 2 + 20)) ?? { x: CW / 2, y: CH / 2 }
       }
       const c = this.clamp(at, kind)
-      this.change(() => { this.gatesOn.push({ id: `g${this.seq++}`, kind, x: c.x, y: c.y, ...(GATES[kind].slots ? { maps: [null, null] } : {}) }) })
+      this.change(() => { this.gatesOn.push({ id: `g${this.seq++}`, kind, x: c.x, y: c.y, ...(GATES[kind].slots ? { maps: GATES[kind].shared ? [this.fmap] : [null, null] } : {}) }) })
     }
     // a map into a field of bind: where it is dropped (the field on that side), or a tap: the first empty field
     putMap(m, at) {
@@ -1761,16 +1785,17 @@
       let gate = null, i = 0
       if (at) {
         gate = binds.find(g => Math.abs(at.x - g.x) <= GW / 2 + 10 && Math.abs(at.y - g.y) <= gateH(g.kind) / 2 + 10)
-        i = gate && at.x > gate.x ? 1 : 0
+        i = gate && GATES[gate.kind].slots > 1 && at.x > gate.x ? 1 : 0
       } else {
-        gate = [...binds].reverse().find(g => !g.maps?.[0] || !g.maps?.[1]); if (gate) i = gate.maps?.[0] ? 1 : 0
+        gate = [...binds].reverse().find(g => [...Array(GATES[g.kind].slots).keys()].some(i => !g.maps?.[i])); if (gate) i = gate.maps?.[0] ? 1 : 0
       }
-      if (!gate) { this.flash(tr(binds.length ? 'Drop the map into a field of bind (true or false).' : 'First take a bind; its fields take the maps.')); return }
-      this.change(() => { const g = this.block(gate.id); g.maps = [...(g.maps ?? [null, null])]; g.maps[i] = m })
+      if (!gate && binds.some(g => GATES[g.kind].shared)) gate = binds.find(g => GATES[g.kind].shared)
+      if (!gate) { this.flash(tr(binds.length ? 'Drop the map into a field of bind (true or false).' : this.gates.includes('f') ? 'First take an f; its field takes the map.' : 'First take a bind; its fields take the maps.')); return }
+      this.change(() => this.setMap(gate.id, i, m))
     }
     // a tap on a field: the next of the four maps
     cycleSlot(id, i) {
-      this.change(() => { const g = this.block(id); g.maps = [...(g.maps ?? [null, null])]; g.maps[i] = MAP_ORDER[(MAP_ORDER.indexOf(g.maps[i]) + 1) % 4] })
+      this.change(() => { const g = this.block(id); this.setMap(id, i, MAP_ORDER[(MAP_ORDER.indexOf(g.maps?.[i] ?? null) + 1) % 4]) })
     }
     clamp(a, kind) { const H = kind ? gateH(kind) : GH2; return { x: Math.max(GW / 2 + 6, Math.min(CW - GW / 2 - 6, a.x)), y: Math.max(90 + H / 2, Math.min(this.outBox().top - H / 2 - 30, a.y)) } }
     connect(from, to, i) {
@@ -1857,7 +1882,11 @@
       }
       this.thrown += n; this.render()
     }
-    want(k) { const c = this.table[k]; return c === '-' ? null : this.natOut ? Number(c) : c === '1' }
+    want(k) {
+      // (`f`: the target is f itself, for the map now in f)
+      if (this.table === 'f') { const m = this.fmap; return m ? MAPS[m].f(this.rows[k][0]) : null }
+      const c = this.table[k]; return c === '-' ? null : this.natOut ? Number(c) : c === '1'
+    }
     // (without coins) whether a row is there: a dependent input takes only the values its wire allows
     // (null while a dependent input is not wired)
     present(row) {
@@ -1876,11 +1905,24 @@
       const there = this.present(this.rows[k]), want = this.want(k)
       if (there === null) return false
       if (!there) return want === null
-      return want !== null && outs[k] === want
+      // (without dependent inputs `-` is a row that does not count)
+      if (want === null) return !this.binds && this.table !== 'f'
+      return outs[k] === want
     }
-    get done() {
+    // the circuit as it has to be (with f), every field filled, and right in every row
+    get right() {
       const outs = this.outputs()
       if (outs.some(o => o === null)) return false
+      if (this.gatesOn.some(g => GATES[g.kind].slots && [...Array(GATES[g.kind].slots).keys()].some(i => !g.maps?.[i]))) return false
+      if (this.shape && this.leanExpr().replace(/\s+/g, ' ') !== this.shape) return false
+      return outs.every((o, k) => this.rowOk(k, outs))
+    }
+    get done() {
+      if (this.every.length) return this.every.every(m => this.seen.includes(m)) && !!this.shape && this.leanExpr().replace(/\s+/g, ' ') === this.shape
+      const outs = this.outputs()
+      if (outs.some(o => o === null)) return false
+      if (this.gatesOn.some(g => GATES[g.kind].slots && [...Array(GATES[g.kind].slots).keys()].some(i => !g.maps?.[i]))) return false
+      if (this.shape && this.leanExpr().replace(/\s+/g, ' ') !== this.shape) return false
       if (this.random) { const d = this.dist(); return !!d && sameDist(d, this.target) }
       return outs.every((o, k) => this.rowOk(k, outs))
     }
@@ -1916,12 +1958,17 @@
       if (loose) return tr('Wire the coin {y}: which coin it is depends on a wire into it, from a coin above or a gate.', { y: loose })
       if (!this.gatesOn.length && !this.wires.length) return tr(STAGE && matchMedia('(max-width: 760px), (max-height: 500px)').matches ? 'Take a gate with ＋ Gate.' : 'Drag a gate onto the board, or tap it.')
       const open = this.gatesOn.find(g => [...Array(GATES[g.kind].n).keys()].some(i => !this.wireTo(g.id, i)))
-      const empty = this.gatesOn.find(g => GATES[g.kind].slots && !(g.maps?.[0] && g.maps?.[1]))
-      if (empty && !open) return tr('Fill bind: a map into the field true, one into false (drag it in, or tap the field).')
+      const empty = this.gatesOn.find(g => GATES[g.kind].slots && [...Array(GATES[g.kind].slots).keys()].some(i => !g.maps?.[i]))
+      if (empty && !open) return tr(empty.kind === 'f' ? 'Choose f: drag a map into f, or tap its field.' : 'Fill bind: a map into the field true, one into false (drag it in, or tap the field).')
       if (open) return tr('Wire {g}: tap a coin above (or a gate), then {g}. Wires run from a dot ● down to a circle ○.', { g: tr(GATES[open.kind].label) })
       if (!this.wireTo('out', 0)) return tr('Wire the Output: tap the last gate, then Output.')
       const outs = this.outputs()
       if (outs.some(o => o === null)) return tr('An input of a gate is still open.')
+      if (this.shape && this.leanExpr().replace(/\s+/g, ' ') !== this.shape) return tr('Your circuit is {a}; build {b}.', { a: this.leanExpr(), b: this.shape })
+      if (this.every.length) {
+        const ticks = this.every.map(m => `${tr(MAPS[m].label)} ${this.seen.includes(m) ? '✓' : '·'}`).join('  ')
+        return `f: ${ticks} — ` + tr(this.right && this.every.includes(this.fmap) ? 'right for this f. Now the next map in f.' : this.right ? 'right, but this f does not count here. Choose another map in f.' : 'not right for this f. Choose another map in f.')
+      }
       if (this.random) {
         const d = this.dist(), t = this.target
         if (!d) return tr('An input of a gate is still open.')
@@ -1933,6 +1980,8 @@
       return tr('{k} of {n} rows are right.', { k, n: outs.length })
     }
     check() {
+      // (with every: a map f for which the circuit is right is ticked off)
+      if (this.every.length && !this.random && this.right && this.every.includes(this.fmap) && !this.seen.includes(this.fmap)) { this.seen = [...this.seen, this.fmap]; this.save(); this.render() }
       if (!this.done) return
       const first = !this.solved
       try { localStorage.setItem(this.key, '1') } catch {}
@@ -2102,7 +2151,7 @@
         const G = GATES[gate.kind], g = svg('g', { class: 'pg-cblock' + (this.selBlock === gate.id ? ' pg-cblock-sel' : ''), 'data-id': gate.id, 'data-kind': gate.kind })
         const H = gateH(gate.kind)
         g.append(svg('rect', { x: gate.x - GW / 2, y: gate.y - H / 2, width: GW, height: H, rx: 12 }))
-        if (G.slots) g.append(bindInside(gate.maps, gate.x, gate.y))
+        if (G.slots) g.append(bindInside(gate.maps, gate.x, gate.y, gate.kind))
         else { const pic = gatePicture(gate.kind); pic.setAttribute('transform', `translate(${gate.x - 14},${gate.y - 2})`); g.append(pic) }
         G.ports?.forEach((t, i) => { const q = this.port(gate.id, 'in', i); g.append(svg('text', { class: 'pg-cportname', x: q.x, y: q.y + 21, 'text-anchor': 'middle' }, t)) })
         for (let i = 0; i < G.n; i++) addPort(g, gate.id, 'in', i)
@@ -2262,12 +2311,12 @@
       const parts = [task, rowEl, this.info, ...(SHOW ? [] : [ln]), el('div', 'pg-moves-head', tr('Gates')), moves, tools]
       if (done) {
         // the proof is about the circuit built (without coins)
-        if (!this.random && this.proof) this.proof.setStatement(this.statement())
+        if (!this.random && this.proof && !this.shape) this.proof.setStatement(this.statement())
         const box = el('div', 'pg-solved')
         box.append(el('div', 'pg-solved-head', 'goals accomplished 🎉'))
         if (!SHOW) {
           box.append(el('div', 'pg-solved-lean-head', tr(this.random ? 'In Lean, for every p:' : 'In Lean:')))
-          box.append(el('pre', 'pg-lean', this.random ? `${this.leanState()}\n  -- ${tr('a coin: true with probability')} ${new Poly(this.target.mass.get('true')?.c ?? [])}` : `${this.statement()}`))
+          box.append(el('pre', 'pg-lean', this.random ? `${this.leanState()}\n  -- ${tr('a coin: true with probability')} ${new Poly(this.target.mass.get('true')?.c ?? [])}` : this.shape ? this.root.dataset.proof : `${this.statement()}`))
         }
         const next = el('button', 'pg-next', tr('Next ›'))
         next.type = 'button'
@@ -2312,8 +2361,8 @@
       en: 'For a goal that is the conclusion of the rule h: leaves what h needs (its hypotheses) as the new goals.',
       de: 'Für ein Ziel, das die Folgerung der Regel h ist: lässt das, was h braucht (ihre Annahmen), als neue Ziele.' },
     { name: 'rfl', kind: 'tactic', insert: 'rfl', sig: 'rfl',
-      en: 'Closes a goal a = b whose sides are the same after computing (!true is false, 1 + 1 is 2).',
-      de: 'Schließt ein Ziel a = b, dessen Seiten nach Ausrechnen gleich sind (!true ist false, 1 + 1 ist 2).' },
+      en: 'Closes a goal a = b whose two sides become the same after reducing: Lean unfolds definitions and computes a definition by cases once it knows the value (!true reduces to false, true && b to b, if true then a else b to a, 1 + 1 to 2). With an unknown x, !x does not reduce: (!(!x)) = x is not rfl; after cases x it is.',
+      de: 'Schließt ein Ziel a = b, dessen beide Seiten nach dem Reduzieren gleich sind: Lean setzt Definitionen ein und rechnet eine Definition durch Fälle aus, sobald es den Wert kennt (!true reduziert zu false, true && b zu b, if true then a else b zu a, 1 + 1 zu 2). Mit einem unbekannten x reduziert !x nicht: (!(!x)) = x ist nicht rfl; nach cases x schon.' },
     { name: 'congr', kind: 'tactic', insert: 'congr 1', sig: 'congr 1',
       en: 'For a goal f a = f b, or μ >>= g = μ >>= h (a do block): reduces it to the parts that differ (a = b, g = h).',
       de: 'Für ein Ziel f a = f b, oder μ >>= g = μ >>= h (ein do-Block): führt es auf die Teile zurück, die sich unterscheiden (a = b, g = h).' },
@@ -2372,7 +2421,7 @@
     { name: 'bind_pure', kind: 'rule', sig: '(μ >>= fun x => pure x) = μ', en: 'A throw whose result is the result.', de: 'Ein Wurf, dessen Ergebnis das Ergebnis ist.' },
     { name: "binom_succ'", kind: 'lemma', sig: "(do let X ← binom p n; let Y ← coin p; pure (X + Y.toNat)) = binom p (n + 1)", en: 'Proved by you in Building with Coins.', de: 'Von dir bewiesen in „Bauen mit Münzen“.' },
     // the first world only
-    { name: 'Bool.not_not', kind: 'lemma', sig: '(!(!b)) = b', en: 'Proved by you in True and False: flipped twice is not flipped.', de: 'Von dir bewiesen in „Wahr und falsch“: Zweimal umgedreht ist nicht umgedreht.' },
+    { name: 'Bool.not_not', kind: 'lemma', sig: '(!(!b)) = b', en: 'Proved by you in Circuits: flipped twice is not flipped.', de: 'Von dir bewiesen in „Schaltungen“: Zweimal umgedreht ist nicht umgedreht.' },
     { name: 'Function.comp_apply', kind: 'rule', sig: '(g ∘ f) x = g (f x)', en: 'First f, then g.', de: 'Erst f, dann g.' },
     { name: 'id_eq', kind: 'rule', sig: 'id a = a', en: 'id does nothing.', de: 'id tut nichts.' },
     // world 0 only
@@ -2612,6 +2661,7 @@
         const c = pic.cloneNode(true)
         c.removeAttribute('style'); c.querySelectorAll('[style*="max-width"]').forEach(e => { e.style.maxWidth = '' })
         c.querySelectorAll('button, input, label.pg-slider, .pg-throws').forEach(e => e.remove())
+        for (const e of [c, ...c.querySelectorAll('*')]) for (const at of ['data-block', 'data-slot', 'data-id', 'data-kind', 'data-i', 'id']) e.removeAttribute(at)
         c.inert = true
         const fig = el('div', 'pg-proof-sol-pic'); fig.append(c)
         sol.append(sum, fig)

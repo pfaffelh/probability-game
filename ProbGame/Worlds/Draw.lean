@@ -134,7 +134,7 @@ Two moves are a `do` block inside a `do` block. `bind_assoc` makes them one:
 needed after `let x ← coin p`, where the name `x` of the `do` block occurs, and there `rw` cannot
 rewrite. The new tactic `simp only [rules]` can: it rewrites with the rules everywhere, also inside
 `do` blocks, as often as it can, and closes the goal when the two sides become the same. Your
-`Bool.not_not` from *True and False* is in the inventory.
+`Bool.not_not` from *Circuits* is in the inventory.
 
 *Tip.* `rw [bind_assoc]`, `simp only [pure_bind, Bool.not_not]`, `rw [bind_pure]`.
 :::
@@ -145,7 +145,7 @@ Zwei Züge sind ein `do`-Block in einem `do`-Block. `bind_assoc` macht einen dar
 nach `let x ← coin p` gebraucht, wo der Name `x` des `do`-Blocks vorkommt, und dort kann `rw` nicht
 umschreiben. Die neue Taktik `simp only [Regeln]` kann es: Sie schreibt mit den Regeln überall um,
 auch in `do`-Blöcken, so oft es geht, und schließt das Ziel, wenn beide Seiten gleich werden. Dein
-`Bool.not_not` aus *Wahr und falsch* ist im Inventar.
+`Bool.not_not` aus *Schaltungen* ist im Inventar.
 
 *Tipp.* `rw [bind_assoc]`, `simp only [pure_bind, Bool.not_not]`, `rw [bind_pure]`.
 :::

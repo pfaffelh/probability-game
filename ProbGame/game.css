@@ -546,3 +546,4 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 /* a half solved: green, as the dots */
 .pg-tab.pg-tab-done { background: #e3f3e5; color: #1f6b27; }
 .pg-tab.pg-tab-done.pg-tab-on { background: #2e8b37; color: white; }
+.pg-csym-f { font-style: italic; font-size: 20px; }

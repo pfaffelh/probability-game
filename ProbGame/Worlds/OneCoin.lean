@@ -23,8 +23,7 @@ Bring the distribution into the shape of the target, drawn on the right (and das
 lives on the same space). The masses are $`p` and $`1 - p`; the picture shows them for an example
 $`p`, which the slider changes.
 
-In *True and False* the coin lay surely on one side: all the mass, $`1`, was there. Now it is thrown.
-*Throw 100 times* throws it a hundred times, for the $`p` of the picture, and plays your moves on
+The coin is thrown. *Throw 100 times* throws it a hundred times, for the $`p` of the picture, and plays your moves on
 what it shows; the frequencies, the thin bars beside the masses, come close to the masses.
 :::
 
@@ -42,8 +41,7 @@ Bring die Verteilung in die Form des Ziels, das rechts gezeichnet ist (und gestr
 wenn es auf demselben Raum lebt). Die Massen sind $`p` und $`1 - p`; das Bild zeigt sie für ein
 Beispiel-$`p`, das der Schieberegler ändert.
 
-In *Wahr und falsch* lag die Münze sicher auf einer Seite: Die ganze Masse, $`1`, war dort. Jetzt wird
-sie geworfen. *100-mal werfen* wirft sie hundertmal, für das $`p` des Bilds, und spielt deine Züge auf
+Die Münze wird geworfen. *100-mal werfen* wirft sie hundertmal, für das $`p` des Bilds, und spielt deine Züge auf
 dem, was sie zeigt; die Häufigkeiten, die schmalen Säulen neben den Massen, kommen den Massen nahe.
 :::
 
