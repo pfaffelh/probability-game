@@ -536,7 +536,7 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 .pg-tab.pg-tab-on { background: #f0d9ac; font-weight: bold; color: #3d2a0b; }
 .pg-tab:disabled { color: #b8a88a; cursor: not-allowed; }
 /* the board's solution beside the proof: a picture, folded on phones */
-.pg-proof-sol { margin: 0.3rem 0 0.5rem; border: 1px solid #e6d6b8; border-radius: 8px; background: #fffaf0; }
+.pg-proof-sol { margin: 0.8rem 0 0.3rem; border: 1px solid #e6d6b8; border-radius: 8px; background: #fffaf0; }
 .pg-proof-sol > summary { cursor: pointer; font-family: var(--verso-structure-font-family, sans-serif); padding: 0.3em 0.6em; color: #6b4a14; }
 .pg-proof-sol-pic { padding: 0 0.5rem 0.5rem; overflow: auto; pointer-events: none; }
 .pg-proof-sol-pic > * { max-width: 100% !important; margin: 0 auto; }

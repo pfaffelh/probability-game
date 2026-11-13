@@ -2654,8 +2654,9 @@
       const parts = STAGE ? [head, stmt] : [head, ...this.texts, stmt]
       // on the stage: the board's solution beside the proof (a picture, not to play with)
       const pic = STAGE && this.level.picture
+      let sol = null
       if (pic) {
-        const sol = el('details', 'pg-proof-sol'), sum = el('summary', '', '▦ ' + tr('Your solution on the board'))
+        sol = el('details', 'pg-proof-sol'); const sum = el('summary', '', '▦ ' + tr('Your solution on the board'))
         sol.open = SOL_OPEN ?? !matchMedia('(max-width: 700px)').matches
         sol.addEventListener('toggle', () => { SOL_OPEN = sol.open })
         const c = pic.cloneNode(true)
@@ -2665,10 +2666,10 @@
         c.inert = true
         const fig = el('div', 'pg-proof-sol-pic'); fig.append(c)
         sol.append(sum, fig)
-        parts.splice(1, 0, sol)
       }
       if (!BACKEND) {
         parts.push(el('div', 'pg-info pg-warn', tr('The proof needs Lean: open the game with ?backend=… (the address of a bridge).')))
+        if (sol) parts.push(sol)
         if (STAGE) { const main = el('div', 'pg-proof-main'); main.append(...parts); this.box.replaceChildren(main) } else this.box.replaceChildren(...parts)
         return
       }
@@ -2748,6 +2749,8 @@
       parts.push(hist, goals, err)
       if (!this.done) parts.push(row)
       if (!STAGE) parts.push(tools)
+      // the board's solution below what to do (the statement, the goals, the input)
+      if (sol) parts.push(sol)
       // on the stage: the proof on the left, the inventory in a column on the right (below on phones)
       if (STAGE) {
         const main = el('div', 'pg-proof-main'), side = el('div', 'pg-proof-side')
