@@ -247,18 +247,22 @@ decide +revert
 ::::circuit (inputs := "x y") (gates := "bind") (table := "0001") (goal := "x && y") (proof := "(x y : Bool) : (if x then y else false) = (x && y)") (play := "a=bind; a.T=id; a.F=false; x>a.0; y>a.1; a>out")
 :::en
 *A gate of your own.* There are four maps `Bool → Bool`: `id`, `not`, always `T`, always `F`. New
-gate: `bind`. It has two fields, `true` and `false`, and you put a map into each (drag it in, or tap
-the field until it is the one you want). Its input `c` chooses the field: when `c` is `true`, the
-value `v` goes through the map in `true`; otherwise through the map in `false`. Build `and`: when `x`
-is `true`, `y` itself; when `x` is `false`, always `F`.
+gate: `bind`. It has two fields, `T` above and `F` below, and you put a map into each (drag it in,
+or tap the field until it is the one you want). What happens depends on one value only, the one at
+the left input: it goes into one of the two fields, `T` or `F`. The value at the right input goes
+into both fields; the field chosen applies its map to it. In Lean:
+`c >>= fun b => if b then f v else g v`. Build `and`: when `x` is `true`, `y` itself; when `x` is
+`false`, always `F`. (Show the values row by row: the field not used fades.)
 :::
 
 :::de
 *Ein eigener Baustein.* Es gibt vier Abbildungen `Bool → Bool`: `id`, `not`, immer `T`, immer `F`.
-Neuer Baustein: `bind`. Er hat zwei Felder, `true` und `false`, und in jedes legst du eine Abbildung
-(hineinziehen, oder das Feld antippen, bis es die richtige ist). Sein Eingang `c` wählt das Feld: Ist
-`c` `true`, geht der Wert `v` durch die Abbildung in `true`, sonst durch die in `false`. Bau `and`:
-ist `x` `true`, `y` selbst; ist `x` `false`, immer `F`.
+Neuer Baustein: `bind`. Er hat zwei Felder, `T` oben und `F` unten, und in jedes legst du eine
+Abbildung (hineinziehen, oder das Feld antippen, bis es die richtige ist). Was passiert, hängt nur von
+einem Wert ab, dem am linken Eingang: Er geht in eines der beiden Felder, `T` oder `F`. Der Wert am
+rechten Eingang geht in beide Felder; das gewählte Feld wendet seine Abbildung darauf an. In Lean:
+`c >>= fun b => if b then f v else g v`. Bau `and`: ist `x` `true`, `y` selbst; ist `x` `false`, immer
+`F`. (Zeig die Werte Zeile für Zeile: Das Feld, das nicht benutzt wird, verblasst.)
 :::
 
 :::proofen
@@ -326,18 +330,18 @@ decide +revert
 :::
 ::::
 
-::::circuit (inputs := "x") (gates := "f") (table := "-1") (shape := "f (f x)") (every := "id true") (proof := "(f : Bool → Bool) (h : f true = true) : f (f true) = true") (new := "rw") (play := "a=f; b=f; a.0=id; x>a.0; a>b.0; b>out")
+::::circuit (inputs := "true") (gates := "f") (table := "1") (shape := "f (f true)") (every := "id true") (proof := "(f : Bool → Bool) (h : f true = true) : f (f true) = true") (new := "rw") (play := "a=f; b=f; a.0=id; true>a.0; a>b.0; b>out")
 :::en
 *The same map twice.* New gate: `f`, an unknown map. It has one field for one of the four maps, and
-every `f` on the board has the same one. Build `f (f x)`. Only the row `x = true` counts: there the
-output is to be `true` again. In Lean `f` is any map with `f true = true`. Which of the four are
+every `f` on the board has the same one. The input is `true` itself. Build `f (f true)`: the output is
+to be `true` again. In Lean `f` is any map with `f true = true`. Which of the four are
 these? Try each of them in `f`: the board ticks off the ones that count.
 :::
 
 :::de
 *Zweimal dieselbe Abbildung.* Neuer Baustein: `f`, eine unbekannte Abbildung. Er hat ein Feld für
-eine der vier Abbildungen, und jedes `f` auf dem Spielfeld hat dieselbe. Bau `f (f x)`. Nur die Zeile
-`x = true` zählt: Dort soll der Ausgang wieder `true` sein. In Lean ist `f` irgendeine Abbildung mit
+eine der vier Abbildungen, und jedes `f` auf dem Spielfeld hat dieselbe. Der Eingang ist `true` selbst.
+Bau `f (f true)`: Der Ausgang soll wieder `true` sein. In Lean ist `f` irgendeine Abbildung mit
 `f true = true`. Welche der vier sind das? Probier jede in `f` aus: Das Spielfeld hakt die ab, die
 zählen.
 :::
