@@ -1775,7 +1775,8 @@
         const up = e => {
           item.removeEventListener('pointermove', move); item.removeEventListener('pointerup', up); item.removeEventListener('pointercancel', up)
           clearTimeout(hold); dragging = false; item.classList.remove('pg-held'); this.svg.classList.remove('pg-drop')
-          item.dataset.handled = Date.now()
+          // (the click that the browser sends after it may hit the new button of the side: it is ignored)
+          this.paletteUp = Date.now()
           if (!ghost) { if (e.type === 'pointerup') this.addGate(kind); return }
           ghost.remove()
           if (e.type === 'pointerup' && this.overBoard(e)) this.addGate(kind, this.toSvg(e))
@@ -1783,7 +1784,7 @@
         item.addEventListener('pointermove', move); item.addEventListener('pointerup', up); item.addEventListener('pointercancel', up)
       })
       // (a click without pointer events, e.g. from the keyboard)
-      item.addEventListener('click', () => { if (Date.now() - Number(item.dataset.handled ?? 0) > 600) this.addGate(kind) })
+      item.addEventListener('click', () => { if (Date.now() - (this.paletteUp ?? 0) > 800) this.addGate(kind) })
     }
     // a gate on the board: dragged to move it, or onto the bin to remove it; a tap chooses it
     makeGateDraggable(g, gate) {
