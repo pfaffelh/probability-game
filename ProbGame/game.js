@@ -1562,13 +1562,53 @@
     'Connect the output.': 'Verbinde den Ausgang.', 'An input of a gate is still open.': 'Ein Eingang eines Bausteins ist noch offen.',
     '{k} of {n} rows are right.': '{k} von {n} Zeilen stimmen.', 'Now tap an input (a circle above a block).': 'Tippe jetzt einen Eingang an (ein Kreis oben an einem Baustein).',
     'Now tap an output (a dot below a block).': 'Tippe jetzt einen Ausgang an (ein Punkt unten an einem Baustein).',
-    'That would go round in a circle.': 'Das ginge im Kreis.', 'Drag gates onto the board, or tap them.': 'Zieh Bausteine aufs Spielfeld, oder tippe sie an.',
+    'That would go round in a circle.': 'Das ginge im Kreis.',
+    'Now tap where it goes: a gate, or Output.': 'Tippe jetzt an, wohin es geht: einen Baustein oder den Ausgang.',
+    'Now tap where it comes from: a coin above, or a gate.': 'Tippe jetzt an, woher es kommt: eine Münze oben oder einen Baustein.',
+    'Take a gate with ＋ Gate.': 'Nimm einen Baustein mit ＋ Baustein.', 'Drag a gate onto the board, or tap it.': 'Zieh einen Baustein aufs Spielfeld, oder tippe ihn an.',
+    'Wire {g}: tap a coin above (or a gate), then {g}. Wires run from a dot ● down to a circle ○.': 'Verdrahte {g}: tippe eine Münze oben (oder einen Baustein) an, dann {g}. Drähte laufen von einem Punkt ● nach unten zu einem Kreis ○.',
+    'Wire the Output: tap the last gate, then Output.': 'Verdrahte den Ausgang: tippe den letzten Baustein an, dann den Ausgang.', 'Drag gates onto the board, or tap them.': 'Zieh Bausteine aufs Spielfeld, oder tippe sie an.',
     'Task: build a circuit whose output is the target, in every row.': 'Aufgabe: Bau eine Schaltung, deren Ausgang in jeder Zeile das Ziel ist.',
     'Task: build a circuit whose output has the distribution of the target.': 'Aufgabe: Bau eine Schaltung, deren Ausgang die Verteilung des Ziels hat.',
     'Tap a row to see its coins on the board.': 'Tippe eine Zeile an, um ihre Münzen auf dem Spielfeld zu sehen.',
     'P(row)': 'P(Zeile)', 'thrown': 'geworfen', '{n} throws': '{n} Würfe', 'a coin: true with probability': 'eine Münze: true mit Wahrscheinlichkeit', 'The mass of each output: the sum of P over its rows.': 'Die Masse jedes Ausgangs: die Summe von P über seine Zeilen.',
   })
-  const CW = 480, CH = 560, GW = 96, GH2 = 54
+  const CW = 480, CH = 560, GW = 140, GH2 = 84
+  // The picture of a gate: the map it is. One input: its two values above, the two images below,
+  // a line from each value to its image (not: crossed). Two inputs: a column for each pair of
+  // values (in the order of the truth table), the image below. `ins` (the values coming in, in the
+  // row shown) marks the line or column that is used.
+  const gateIcon = kind => {
+    const s = svg('svg', { viewBox: '-72 -36 88 76', class: 'pg-gate-icon' }); s.append(gatePicture(kind)); return s
+  }
+  function gatePicture(kind, ins = null) {
+    const G = GATES[kind], g = svg('g', { class: 'pg-gpic' })
+    const chip = (x, y, v, r = 8) => {
+      const c = svg('g', { class: 'pg-gchip pg-gchip-' + (typeof v === 'number' ? 'num' : v) })
+      c.append(svg('circle', { cx: x, cy: y, r }), svg('text', { x, y: y + 3.5, 'text-anchor': 'middle' }, typeof v === 'number' ? String(v) : v ? 'T' : 'F'))
+      return c
+    }
+    const used = ins && ins.every(v => v !== null && v !== undefined)
+    if (kind === 'plus') { g.append(svg('text', { class: 'pg-gplus', x: -26, y: 9, 'text-anchor': 'middle' }, 'a + b')); return g }
+    if (G.n === 1) {
+      const xs = [-50, -14]
+      for (const a of [false, true]) {
+        const b = G.f([a]), xb = typeof b === 'number' ? xs[b] : xs[+b]
+        g.append(svg('line', { class: 'pg-gline' + (used && ins[0] === a ? ' pg-gused' : ''), x1: xs[+a], y1: -14, x2: xb, y2: 16 }))
+      }
+      for (const a of [false, true]) g.append(chip(xs[+a], -22, a, 10))
+      for (const a of [false, true]) { const b = G.f([a]); g.append(chip(typeof b === 'number' ? xs[b] : xs[+b], 24, b, 10)) }
+      return g
+    }
+    const pairs = [[false, false], [false, true], [true, false], [true, true]]
+    pairs.forEach(([a, b], k) => {
+      const x = -58 + k * 22
+      if (used && ins[0] === a && ins[1] === b) g.append(svg('rect', { class: 'pg-gused-col', x: x - 11, y: -32, width: 22, height: 70, rx: 7 }))
+      g.append(chip(x, -21, a, 9), chip(x, -1, b, 9), chip(x, 26, G.f([a, b]), 10))
+    })
+    g.append(svg('line', { class: 'pg-gsep', x1: -70, y1: 12, x2: 12, y2: 12 }))
+    return g
+  }
   class Circuit {
     constructor(root, index, onSolved) {
       this.root = root; this.index = index; this.onSolved = onSolved
@@ -1609,7 +1649,7 @@
       if (k >= 0) { const a = this.inputAt(k); return { x: a.x, y: a.y + 30 } }
       if (id === 'out') { const a = this.outAt; return { x: a.x, y: a.y - 30 } }
       const g = this.block(id), n = GATES[g.kind].n
-      return kind === 'out' ? { x: g.x, y: g.y + GH2 / 2 } : { x: g.x - GW / 2 + GW * (i + 1) / (n + 1), y: g.y - GH2 / 2 }
+      return kind === 'out' ? { x: g.x + GW / 2 - 26, y: g.y + GH2 / 2 } : { x: g.x - GW / 2 + GW * (i + 1) / (n + 1), y: g.y - GH2 / 2 }
     }
     inputsOf(id) { return id === 'out' ? 1 : this.names.includes(id) ? 0 : GATES[this.block(id).kind].n }
     typeOut(id) { return this.names.includes(id) ? 'bool' : gateOut(this.block(id).kind) }
@@ -1634,7 +1674,7 @@
     addGate(kind, at) {
       if (!at) {
         const spots = []
-        for (const y of [150, 240, 330, 420]) for (const x of [CW / 2, CW / 2 - 130, CW / 2 + 130]) spots.push({ x, y })
+        for (const y of [170, 285, 400]) for (const x of [CW / 2, CW / 2 - 150, CW / 2 + 150]) spots.push({ x, y })
         at = spots.find(s => !this.gatesOn.some(g => Math.abs(g.x - s.x) < GW && Math.abs(g.y - s.y) < GH2 + 20)) ?? { x: CW / 2, y: CH / 2 }
       }
       const c = this.clamp(at)
@@ -1663,9 +1703,13 @@
     }
     // a tapped gate: completes a chosen port with its own (its first free input), else offers ✕
     tapGate(id) {
+      // a second tap on it: ✕ (to remove it)
+      if (this.sel?.kind === 'out' && this.sel.id === id) { this.sel = null; this.selBlock = id; this.selWire = null; return this.render() }
       if (this.sel?.kind === 'out') { const n = this.inputsOf(id); const i = [...Array(n).keys()].find(i => !this.wireTo(id, i)) ?? 0; if (n) return this.connect(this.sel.id, id, i) }
       if (this.sel?.kind === 'in') return this.connect(id, this.sel.id, this.sel.i)
-      this.selBlock = this.selBlock === id ? null : id; this.selWire = null; this.sel = null
+      if (this.selBlock === id) { this.selBlock = null; return this.render() }
+      // a first tap chooses its output, for a wire from it
+      this.sel = { kind: 'out', id }; this.selBlock = null; this.selWire = null
       this.render()
     }
 
@@ -1726,10 +1770,12 @@
     statement() { return `(${this.names.join(' ')} : Bool) : (${this.leanExpr()}) = (${this.goal})` }
     status() {
       if (this.done) return 'goals accomplished 🎉'
-      if (this.sel?.kind === 'out') return tr('Now tap an input (a circle above a block).')
-      if (this.sel?.kind === 'in') return tr('Now tap an output (a dot below a block).')
-      if (!this.gatesOn.length && !this.wires.length) return tr('Drag gates onto the board, or tap them.')
-      if (!this.wireTo('out', 0)) return tr('Connect the output.')
+      if (this.sel?.kind === 'out') return tr('Now tap where it goes: a gate, or Output.')
+      if (this.sel?.kind === 'in') return tr('Now tap where it comes from: a coin above, or a gate.')
+      if (!this.gatesOn.length && !this.wires.length) return tr(STAGE && matchMedia('(max-width: 760px), (max-height: 500px)').matches ? 'Take a gate with ＋ Gate.' : 'Drag a gate onto the board, or tap it.')
+      const open = this.gatesOn.find(g => [...Array(GATES[g.kind].n).keys()].some(i => !this.wireTo(g.id, i)))
+      if (open) return tr('Wire {g}: tap a coin above (or a gate), then {g}. Wires run from a dot ● down to a circle ○.', { g: tr(GATES[open.kind].label) })
+      if (!this.wireTo('out', 0)) return tr('Wire the Output: tap the last gate, then Output.')
       const outs = this.outputs()
       if (outs.some(o => o === null)) return tr('An input of a gate is still open.')
       if (this.random) {
@@ -1768,7 +1814,7 @@
         const move = e => {
           if (!dragging) return
           if (!ghost && Math.hypot(e.clientX - start.x, e.clientY - start.y) < 6) return
-          if (!ghost) { ghost = el('div', 'pg-ghost', `${GATES[kind].sym} ${tr(GATES[kind].label)}`); document.body.append(ghost); item.closest('.pg-popover')?.classList.add('pg-pop-dragging') }
+          if (!ghost) { ghost = el('div', 'pg-ghost'); ghost.append(gateIcon(kind), el('span', '', tr(GATES[kind].label))); document.body.append(ghost); item.closest('.pg-popover')?.classList.add('pg-pop-dragging') }
           ghost.style.left = `${e.clientX - 40}px`; ghost.style.top = `${e.clientY - 18}px`
           this.svg.classList.toggle('pg-drop', this.overBoard(e))
         }
@@ -1901,13 +1947,14 @@
       for (const gate of this.gatesOn) {
         const G = GATES[gate.kind], g = svg('g', { class: 'pg-cblock' + (this.selBlock === gate.id ? ' pg-cblock-sel' : ''), 'data-id': gate.id, 'data-kind': gate.kind })
         g.append(svg('rect', { x: gate.x - GW / 2, y: gate.y - GH2 / 2, width: GW, height: GH2, rx: 12 }))
-        g.append(svg('text', { class: 'pg-csym', x: gate.x - 14, y: gate.y + 4, 'text-anchor': 'middle' }, G.sym))
-        g.append(svg('text', { class: 'pg-clabel', x: gate.x - 14, y: gate.y + 20, 'text-anchor': 'middle' }, tr(G.label)))
+        const ins = [...Array(G.n).keys()].map(i => { const w = this.wireTo(gate.id, i); return w ? vals[w.from] : null })
+        const pic = gatePicture(gate.kind, ins); pic.setAttribute('transform', `translate(${gate.x},${gate.y})`); g.append(pic)
+        g.append(svg('text', { class: 'pg-clabel', x: gate.x + GW / 2 - 26, y: gate.y - 18, 'text-anchor': 'middle' }, tr(G.label)))
         for (let i = 0; i < G.n; i++) addPort(g, gate.id, 'in', i)
         addPort(g, gate.id, 'out')
         // the coin at its output, in the row shown
         const v = vals[gate.id]
-        if (v !== null && v !== undefined) { const c = coin(v, 13); pose(c, gate.x + GW / 2 - 20, gate.y, 1, v); c.classList.add('pg-cval'); g.append(c) }
+        if (v !== null && v !== undefined) { const c = coin(v, 13); pose(c, gate.x + GW / 2 - 26, gate.y + 14, 1, v); c.classList.add('pg-cval'); g.append(c) }
         if (this.selBlock === gate.id) {
           const x = svg('g', { class: 'pg-cx' })
           x.append(svg('circle', { cx: gate.x + GW / 2 + 4, cy: gate.y - GH2 / 2 - 4, r: 13 }), svg('text', { x: gate.x + GW / 2 + 4, y: gate.y - GH2 / 2 + 1, 'text-anchor': 'middle' }, '✕'))
@@ -1989,7 +2036,8 @@
 
       const moves = el('div', 'pg-moves')
       for (const kind of this.gates) {
-        const b = el('button', 'pg-move pg-gate-item', `${GATES[kind].sym} ${tr(GATES[kind].label)}`)
+        const b = el('button', 'pg-move pg-gate-item')
+        b.append(gateIcon(kind), el('span', 'pg-gate-name', tr(GATES[kind].label)))
         b.type = 'button'; b.dataset.move = kind
         this.makePaletteDraggable(b, kind)
         moves.append(b)
@@ -2660,7 +2708,8 @@
       close.type = 'button'; close.addEventListener('click', closePop)
       head.append(el('span', 'pg-pop-title', tr('Add a gate')), close)
       for (const kind of l.gates) {
-        const b = el('button', 'pg-move pg-gate-item', `${GATES[kind].sym} ${tr(GATES[kind].label)}`)
+        const b = el('button', 'pg-move pg-gate-item')
+        b.append(gateIcon(kind), el('span', 'pg-gate-name', tr(GATES[kind].label)))
         b.type = 'button'; b.dataset.move = kind
         l.makePaletteDraggable(b, kind)
         list.append(b)
