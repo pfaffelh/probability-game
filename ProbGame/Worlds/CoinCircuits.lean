@@ -199,6 +199,24 @@ simp only [bind_assoc, pure_bind, add_zero, add_assoc]
 :::
 ::::
 
+::::circuit (inputs := "x y") (gates := "toNat, plus, not") (coins := "p p|0") (target := "nat 0:1-p 1:p(1-p) 2:p^2") (context := "Lean/Rules.lean") (play := "y<x; a=toNat; b=toNat; c=plus; x>a.0; y>b.0; a>c.0; b>c.1; c>out")
+:::en
+*Again after true.* Throw `x`. Only when it is `true` is `y` thrown; otherwise `y` is `false`
+(`pure false`). Which coin `y` is depends on a wire: wire `x` into the circle above `y`. Then count
+the `true`s. In Lean this is a bind: `let y ← if x then coin p else pure false`, the next coin
+chosen by what came before. In the table, P(row) is a product of the probability of `x` and that of
+`y` *given* `x`.
+:::
+
+:::de
+*Nochmal nach true.* Wirf `x`. Nur wenn es `true` ist, wird `y` geworfen; sonst ist `y` `false`
+(`pure false`). Welche Münze `y` ist, hängt von einem Draht ab: verdrahte `x` mit dem Kreis über `y`.
+Dann zähle die `true`. In Lean ist das ein bind: `let y ← if x then coin p else pure false`, die
+nächste Münze, gewählt nach dem, was vorher kam. In der Tafel ist P(Zeile) ein Produkt aus der
+Wahrscheinlichkeit von `x` und der von `y`, *gegeben* `x`.
+:::
+::::
+
 ::::circuit (inputs := "x y z") (gates := "and, or") (coins := "p p p") (target := "bool true:3p^2-2p^3 false:1-3p^2+2p^3") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; let z ← coin p; pure ((x && y) || (x && z) || (y && z))) = (fun n => decide (2 ≤ n)) <$> binom p 3") (play := "a=and; b=and; c=and; d=or; e=or; x>a.0; y>a.1; x>b.0; z>b.1; y>c.0; z>c.1; a>d.0; b>d.1; d>e.0; c>e.1; e>out")
 :::en
 *The boss: the majority of three coins.* Your circuit of the boss of *Circuits*, with three coins.
