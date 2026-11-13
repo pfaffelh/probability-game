@@ -1563,6 +1563,8 @@
     '{k} of {n} rows are right.': '{k} von {n} Zeilen stimmen.', 'Now tap an input (a circle above a block).': 'Tippe jetzt einen Eingang an (ein Kreis oben an einem Baustein).',
     'Now tap an output (a dot below a block).': 'Tippe jetzt einen Ausgang an (ein Punkt unten an einem Baustein).',
     'That would go round in a circle.': 'Das ginge im Kreis.',
+    'previous row': 'vorige Zeile', 'next row': 'nächste Zeile', 'row {k} of {n}': 'Zeile {k} von {n}', 'hide': 'ausblenden',
+    'Show the values row by row': 'Werte Zeile für Zeile zeigen', 'Or tap a row of the table.': 'Oder tippe eine Zeile der Tafel an.',
     'Now tap where it goes: a gate, or Output.': 'Tippe jetzt an, wohin es geht: einen Baustein oder den Ausgang.',
     'Now tap where it comes from: a coin above, or a gate.': 'Tippe jetzt an, woher es kommt: eine Münze oben oder einen Baustein.',
     'Take a gate with ＋ Gate.': 'Nimm einen Baustein mit ＋ Baustein.', 'Drag a gate onto the board, or tap it.': 'Zieh einen Baustein aufs Spielfeld, oder tippe ihn an.',
@@ -1624,7 +1626,7 @@
       this.target = this.random ? parseDist(d.target) : null
       this.board = root.querySelector('.pg-board')
       this.key = `pg:${location.pathname}:${index}`
-      this.row = 0; this.sel = null; this.selWire = null; this.selBlock = null
+      this.row = null; this.sel = null; this.selWire = null; this.selBlock = null
       this.history = []
       // the throws (with coins): how often each row came; they stay when the circuit changes
       this.counts = this.rows.map(() => 0); this.thrown = 0
@@ -1907,7 +1909,7 @@
 
     // ---- drawing
     render() {
-      const done = this.done, row = this.rows[this.row] ?? this.rows[0], vals = this.values(row)
+      const done = this.done, shown = this.row !== null, row = this.rows[this.row ?? 0], vals = shown ? this.values(row) : {}
       const s = svg('svg', { viewBox: `0 0 ${CW} ${CH}`, class: 'pg-svg pg-csvg' + (done ? ' pg-done' : '') })
       this.svg = s
       const bg = svg('rect', { class: 'pg-cbg', x: 0, y: 0, width: CW, height: CH })
@@ -1947,7 +1949,7 @@
       this.names.forEach((x, k) => {
         const a = this.inputAt(k), g = svg('g', { class: 'pg-cinput' })
         g.append(svg('text', { class: 'pg-cname', x: a.x, y: a.y - 26, 'text-anchor': 'middle' }, this.random ? `${x} ← ${this.leanCoin(this.coins[k])}` : x))
-        const c = coin(row[k], 20); pose(c, a.x, a.y, 1, row[k]); g.append(c)
+        const v = shown ? row[k] : '?', c = coin(v, 20); pose(c, a.x, a.y, 1, v); g.append(c)
         addPort(g, x, 'out')
         g.addEventListener('click', ev => { if (!ev.target.closest('.pg-cport')) this.tapOut(x) })
         s.append(g)
@@ -2003,11 +2005,20 @@
         if (this.random && this.thrown) tr_.append(el('td', 'pg-truth-count', `${this.counts[k]}×`))
         if (!this.random) { const td = el('td', 'pg-truth-target'); td.append(chip(want)); tr_.append(td) }
         const td = el('td'); td.append(chip(got)); tr_.append(td)
-        tr_.addEventListener('click', () => { this.row = k; this.render() })
+        tr_.addEventListener('click', () => { this.row = this.row === k ? null : k; this.render() })
         table.append(tr_)
       })
       const side = el('div', 'pg-cside')
-      side.append(table, el('div', 'pg-truth-note', tr('Tap a row to see its coins on the board.')))
+      // the values on the board: none at first; row by row, and hidden again
+      const rowBar = el('div', 'pg-rowbar'), n = this.rows.length
+      const btn = (label, f, title = '') => { const b = el('button', 'pg-rowbtn', label); b.type = 'button'; b.title = title; b.addEventListener('click', f); return b }
+      if (shown) rowBar.append(
+        btn('◂', () => { this.row = (this.row + n - 1) % n; this.render() }, tr('previous row')),
+        el('span', 'pg-rowbar-text', tr('row {k} of {n}', { k: this.row + 1, n })),
+        btn('▸', () => { this.row = (this.row + 1) % n; this.render() }, tr('next row')),
+        btn(tr('hide'), () => { this.row = null; this.render() }))
+      else rowBar.append(btn(tr('Show the values row by row'), () => { this.row = 0; this.render() }))
+      side.append(table, rowBar, el('div', 'pg-truth-note', tr(shown ? 'Tap a row to see its coins on the board.' : 'Or tap a row of the table.')))
       if (this.random) {
         const d = this.dist()
         if (d) {
