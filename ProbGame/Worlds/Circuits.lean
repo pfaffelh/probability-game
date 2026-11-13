@@ -182,6 +182,35 @@ decide +revert
 :::
 ::::
 
+::::circuit (inputs := "x y") (gates := "if, not") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : (if x then !y else y) = (x ^^ y)") (play := "a=if; b=not; x>a.0; y>b.0; b>a.1; y>a.2; a>out")
+:::en
+*A gate of your own.* New gate: `if`. Its first input `c` chooses: when `c` is `true`, the output is
+what comes into `T`; when `c` is `false`, what comes into `F`. So you build a gate of your own: for
+`x = true` one map of `y`, for `x = false` another. Build `xor` this way: for `true` the map `not`,
+for `false` nothing at all (`y` itself).
+:::
+
+:::de
+*Ein eigener Baustein.* Neuer Baustein: `if`. Sein erster Eingang `c` wählt: Ist `c` `true`, ist der
+Ausgang das, was in `T` hineingeht; ist `c` `false`, das, was in `F` hineingeht. So baust du dir
+einen eigenen Baustein: für `x = true` eine Abbildung von `y`, für `x = false` eine andere. Bau so
+`xor`: für `true` die Abbildung `not`, für `false` gar nichts (`y` selbst).
+:::
+
+:::proofen
+*Tip.* `decide +revert`.
+:::
+
+:::proofde
+*Tipp.* `decide +revert`.
+:::
+:::solution
+```
+decide +revert
+```
+:::
+::::
+
 ::::circuit (inputs := "x") (gates := "toNat, not") (table := "nat 10") (goal := "1 - x.toNat") (proof := "(x : Bool) : ((!x).toNat) = (1 - x.toNat)") (play := "a=not; b=toNat; x>a.0; a>b.0; b>out")
 :::en
 *A number.* New gate: `toNat` makes a coin a number, `false` is `0` and `true` is `1`. Its output is
