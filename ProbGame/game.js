@@ -1577,42 +1577,22 @@
   })
   // the bin: one for the page, shown while a gate is dragged
   const trashCan = () => document.querySelector('body > .pg-bin') ?? document.body.appendChild(el('div', 'pg-bin', '🗑'))
-  const CW = 480, CH = 620, GW = 140, GH2 = 84
+  const CW = 480, CH = 620, GW = 112, GH2 = 60
   // The picture of a gate: the map it is. One input: its two values above, the two images below,
   // a line from each value to its image (not: crossed). Two inputs: a column for each pair of
   // values (in the order of the truth table), the image below. `ins` (the values coming in, in the
   // row shown) marks the line or column that is used.
   const gateIcon = kind => {
-    const s = svg('svg', { viewBox: '-72 -36 88 76', class: 'pg-gate-icon' }); s.append(gatePicture(kind)); return s
+    const s = svg('svg', { viewBox: '-24 -22 48 50', class: 'pg-gate-icon' }); s.append(gatePicture(kind)); return s
   }
-  function gatePicture(kind, ins = null) {
+  // the picture of a gate: its sign, its name below
+  function gatePicture(kind) {
     const G = GATES[kind], g = svg('g', { class: 'pg-gpic' })
-    const chip = (x, y, v, r = 8) => {
-      const c = svg('g', { class: 'pg-gchip pg-gchip-' + (typeof v === 'number' ? 'num' : v) })
-      c.append(svg('circle', { cx: x, cy: y, r }), svg('text', { x, y: y + 3.5, 'text-anchor': 'middle' }, typeof v === 'number' ? String(v) : v ? 'T' : 'F'))
-      return c
-    }
-    const used = ins && ins.every(v => v !== null && v !== undefined)
-    if (kind === 'plus') { g.append(svg('text', { class: 'pg-gplus', x: -26, y: 9, 'text-anchor': 'middle' }, 'a + b')); return g }
-    if (G.n === 1) {
-      const xs = [-50, -14]
-      for (const a of [false, true]) {
-        const b = G.f([a]), xb = typeof b === 'number' ? xs[b] : xs[+b]
-        g.append(svg('line', { class: 'pg-gline' + (used && ins[0] === a ? ' pg-gused' : ''), x1: xs[+a], y1: -14, x2: xb, y2: 16 }))
-      }
-      for (const a of [false, true]) g.append(chip(xs[+a], -22, a, 10))
-      for (const a of [false, true]) { const b = G.f([a]); g.append(chip(typeof b === 'number' ? xs[b] : xs[+b], 24, b, 10)) }
-      return g
-    }
-    const pairs = [[false, false], [false, true], [true, false], [true, true]]
-    pairs.forEach(([a, b], k) => {
-      const x = -58 + k * 22
-      if (used && ins[0] === a && ins[1] === b) g.append(svg('rect', { class: 'pg-gused-col', x: x - 11, y: -32, width: 22, height: 70, rx: 7 }))
-      g.append(chip(x, -21, a, 9), chip(x, -1, b, 9), chip(x, 26, G.f([a, b]), 10))
-    })
-    g.append(svg('line', { class: 'pg-gsep', x1: -70, y1: 12, x2: 12, y2: 12 }))
+    g.append(svg('text', { class: 'pg-csym', x: 0, y: 4, 'text-anchor': 'middle' }, G.sym))
+    g.append(svg('text', { class: 'pg-clabel', x: 0, y: 22, 'text-anchor': 'middle' }, tr(G.label)))
     return g
   }
+
   class Circuit {
     constructor(root, index, onSolved) {
       this.root = root; this.index = index; this.onSolved = onSolved
@@ -1661,7 +1641,7 @@
       if (k >= 0) { const a = this.inputAt(k); return { x: a.x, y: a.y + 30 } }
       if (id === 'out') { const b = this.outBox(); return { x: b.x, y: b.top } }
       const g = this.block(id), n = GATES[g.kind].n
-      return kind === 'out' ? { x: g.x + GW / 2 - 26, y: g.y + GH2 / 2 } : { x: g.x - GW / 2 + GW * (i + 1) / (n + 1), y: g.y - GH2 / 2 }
+      return kind === 'out' ? { x: g.x, y: g.y + GH2 / 2 } : { x: g.x - GW / 2 + GW * (i + 1) / (n + 1), y: g.y - GH2 / 2 }
     }
     inputsOf(id) { return id === 'out' ? 1 : this.names.includes(id) ? 0 : GATES[this.block(id).kind].n }
     typeOut(id) { return this.names.includes(id) ? 'bool' : gateOut(this.block(id).kind) }
@@ -1686,7 +1666,7 @@
     addGate(kind, at) {
       if (!at) {
         const spots = []
-        for (const y of [170, 285, 400]) for (const x of [CW / 2, CW / 2 - 150, CW / 2 + 150]) spots.push({ x, y })
+        for (const y of [160, 260, 360]) for (const x of [CW / 2, CW / 2 - 135, CW / 2 + 135]) spots.push({ x, y })
         at = spots.find(s => !this.gatesOn.some(g => Math.abs(g.x - s.x) < GW && Math.abs(g.y - s.y) < GH2 + 20)) ?? { x: CW / 2, y: CH / 2 }
       }
       const c = this.clamp(at)
@@ -1826,7 +1806,7 @@
         const move = e => {
           if (!dragging) return
           if (!ghost && Math.hypot(e.clientX - start.x, e.clientY - start.y) < 6) return
-          if (!ghost) { ghost = el('div', 'pg-ghost'); ghost.append(gateIcon(kind), el('span', '', tr(GATES[kind].label))); document.body.append(ghost); item.closest('.pg-popover')?.classList.add('pg-pop-dragging') }
+          if (!ghost) { ghost = el('div', 'pg-ghost'); ghost.append(el('span', 'pg-gate-sym', GATES[kind].sym), el('span', '', tr(GATES[kind].label))); document.body.append(ghost); item.closest('.pg-popover')?.classList.add('pg-pop-dragging') }
           ghost.style.left = `${e.clientX - 40}px`; ghost.style.top = `${e.clientY - 18}px`
           this.svg.classList.toggle('pg-drop', this.overBoard(e))
         }
@@ -1966,14 +1946,12 @@
       for (const gate of this.gatesOn) {
         const G = GATES[gate.kind], g = svg('g', { class: 'pg-cblock' + (this.selBlock === gate.id ? ' pg-cblock-sel' : ''), 'data-id': gate.id, 'data-kind': gate.kind })
         g.append(svg('rect', { x: gate.x - GW / 2, y: gate.y - GH2 / 2, width: GW, height: GH2, rx: 12 }))
-        const ins = [...Array(G.n).keys()].map(i => { const w = this.wireTo(gate.id, i); return w ? vals[w.from] : null })
-        const pic = gatePicture(gate.kind, ins); pic.setAttribute('transform', `translate(${gate.x},${gate.y})`); g.append(pic)
-        g.append(svg('text', { class: 'pg-clabel', x: gate.x + GW / 2 - 26, y: gate.y - 18, 'text-anchor': 'middle' }, tr(G.label)))
+        const pic = gatePicture(gate.kind); pic.setAttribute('transform', `translate(${gate.x - 14},${gate.y - 2})`); g.append(pic)
         for (let i = 0; i < G.n; i++) addPort(g, gate.id, 'in', i)
         addPort(g, gate.id, 'out')
         // the coin at its output, in the row shown
         const v = vals[gate.id]
-        if (v !== null && v !== undefined) { const c = coin(v, 13); pose(c, gate.x + GW / 2 - 26, gate.y + 14, 1, v); c.classList.add('pg-cval'); g.append(c) }
+        if (v !== null && v !== undefined) { const c = coin(v, 13); pose(c, gate.x + GW / 2 - 24, gate.y, 1, v); c.classList.add('pg-cval'); g.append(c) }
         if (this.selBlock === gate.id) {
           const x = svg('g', { class: 'pg-cx' })
           x.append(svg('circle', { cx: gate.x + GW / 2 + 4, cy: gate.y - GH2 / 2 - 4, r: 13 }), svg('text', { x: gate.x + GW / 2 + 4, y: gate.y - GH2 / 2 + 1, 'text-anchor': 'middle' }, '✕'))
@@ -2087,7 +2065,7 @@
       const moves = el('div', 'pg-moves')
       for (const kind of this.gates) {
         const b = el('button', 'pg-move pg-gate-item')
-        b.append(gateIcon(kind), el('span', 'pg-gate-name', tr(GATES[kind].label)))
+        b.append(el('span', 'pg-gate-sym', GATES[kind].sym), el('span', 'pg-gate-name', tr(GATES[kind].label)))
         b.type = 'button'; b.dataset.move = kind
         this.makePaletteDraggable(b, kind)
         moves.append(b)
@@ -2759,7 +2737,7 @@
       head.append(el('span', 'pg-pop-title', tr('Add a gate')), close)
       for (const kind of l.gates) {
         const b = el('button', 'pg-move pg-gate-item')
-        b.append(gateIcon(kind), el('span', 'pg-gate-name', tr(GATES[kind].label)))
+        b.append(el('span', 'pg-gate-sym', GATES[kind].sym), el('span', 'pg-gate-name', tr(GATES[kind].label)))
         b.type = 'button'; b.dataset.move = kind
         l.makePaletteDraggable(b, kind)
         list.append(b)
