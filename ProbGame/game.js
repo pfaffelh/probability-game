@@ -1577,7 +1577,7 @@
   })
   // the bin: one for the page, shown while a gate is dragged
   const trashCan = () => document.querySelector('body > .pg-bin') ?? document.body.appendChild(el('div', 'pg-bin', '🗑'))
-  const CW = 480, CH = 560, GW = 140, GH2 = 84
+  const CW = 480, CH = 620, GW = 140, GH2 = 84
   // The picture of a gate: the map it is. One input: its two values above, the two images below,
   // a line from each value to its image (not: crossed). Two inputs: a column for each pair of
   // values (in the order of the truth table), the image below. `ins` (the values coming in, in the
@@ -1646,12 +1646,20 @@
     save() { try { localStorage.setItem(this.key + ':circuit', JSON.stringify({ gates: this.gatesOn, wires: this.wires, seq: this.seq })) } catch {} }
     inputAt(k) { return { x: CW * (k + 1) / (this.names.length + 1), y: 48 } }
     get outAt() { return { x: CW / 2, y: CH - 46 } }
+    // the output box: with a truth table as target, the target drawn in it (a column per row)
+    outBox() {
+      if (this.random) { const a = this.outAt; return { x: a.x, top: a.y - 30, w: 140, h: 60 } }
+      // (few rows: bigger coins)
+      const n = this.names.length, cols = 2 ** n, cw = cols <= 4 ? 32 : 22, rh = cols <= 4 ? 28 : 20
+      const h = 14 + n * rh + 10 + 2 * (rh + 4) + 6, w = 84 + cols * cw + 12
+      return { x: CW / 2, top: CH - 12 - h, w, h, cw, rh }
+    }
     block(id) { return this.gatesOn.find(g => g.id === id) }
     // where a port is: outputs below a block, inputs above it
     port(id, kind, i = 0) {
       const k = this.names.indexOf(id)
       if (k >= 0) { const a = this.inputAt(k); return { x: a.x, y: a.y + 30 } }
-      if (id === 'out') { const a = this.outAt; return { x: a.x, y: a.y - 30 } }
+      if (id === 'out') { const b = this.outBox(); return { x: b.x, y: b.top } }
       const g = this.block(id), n = GATES[g.kind].n
       return kind === 'out' ? { x: g.x + GW / 2 - 26, y: g.y + GH2 / 2 } : { x: g.x - GW / 2 + GW * (i + 1) / (n + 1), y: g.y - GH2 / 2 }
     }
@@ -1684,7 +1692,7 @@
       const c = this.clamp(at)
       this.change(() => { this.gatesOn.push({ id: `g${this.seq++}`, kind, x: c.x, y: c.y }) })
     }
-    clamp(a) { return { x: Math.max(GW / 2 + 6, Math.min(CW - GW / 2 - 6, a.x)), y: Math.max(120, Math.min(CH - 120, a.y)) } }
+    clamp(a) { return { x: Math.max(GW / 2 + 6, Math.min(CW - GW / 2 - 6, a.x)), y: Math.max(120, Math.min(this.outBox().top - GH2 / 2 - 30, a.y)) } }
     connect(from, to, i) {
       if (from === to || this.reaches(from, to)) { this.flash(tr('That would go round in a circle.')); this.sel = null; this.render(); return }
       if (!this.fits(from, to, i)) {
@@ -1949,7 +1957,7 @@
       this.names.forEach((x, k) => {
         const a = this.inputAt(k), g = svg('g', { class: 'pg-cinput' })
         g.append(svg('text', { class: 'pg-cname', x: a.x, y: a.y - 26, 'text-anchor': 'middle' }, this.random ? `${x} ← ${this.leanCoin(this.coins[k])}` : x))
-        const v = shown ? row[k] : '?', c = coin(v, 20); pose(c, a.x, a.y, 1, v); g.append(c)
+        if (shown) { const c = coin(row[k], 20); pose(c, a.x, a.y, 1, row[k]); g.append(c) } else g.append(svg('circle', { class: 'pg-cinput-hit', cx: a.x, cy: a.y, r: 22 }))
         addPort(g, x, 'out')
         g.addEventListener('click', ev => { if (!ev.target.closest('.pg-cport')) this.tapOut(x) })
         s.append(g)
@@ -1978,10 +1986,33 @@
       }
       // the output
       const o = this.outAt, og = svg('g', { class: 'pg-coutput' })
-      og.append(svg('rect', { x: o.x - 70, y: o.y - 30, width: 140, height: 60, rx: 14 }))
-      og.append(svg('text', { class: 'pg-cname', x: o.x - 52, y: o.y + 5 }, tr('Output')))
-      const ov = vals.out
-      const oc = coin(ov ?? '?', 18); pose(oc, o.x + 38, o.y, 1, ov ?? '?'); og.append(oc)
+      if (this.random) {
+        og.append(svg('rect', { x: o.x - 70, y: o.y - 30, width: 140, height: 60, rx: 14 }))
+        og.append(svg('text', { class: 'pg-cname', x: o.x - 52, y: o.y + 5 }, tr('Output')))
+        const ov = vals.out
+        const oc = coin(ov ?? '?', 18); pose(oc, o.x + 38, o.y, 1, ov ?? '?'); og.append(oc)
+      } else {
+        // the target, as a map: a column for each row (the values of the inputs above the line),
+        // the target below, and what the circuit gives
+        const b = this.outBox(), x0 = b.x - b.w / 2, outs = this.outputs(), n = this.names.length
+        og.append(svg('rect', { class: 'pg-cbox', x: x0, y: b.top, width: b.w, height: b.h, rx: 14 }))
+        const { cw, rh } = b, r = rh <= 20 ? 9 : 12
+        const cx = k => x0 + 84 + cw / 2 + k * cw, yIn = i => b.top + 14 + rh / 2 + i * rh, ySep = b.top + 14 + n * rh + 5, yT = ySep + rh / 2 + 8, yO = yT + rh + 4
+        if (shown) og.append(svg('rect', { class: 'pg-gused-col', x: cx(this.row) - cw / 2, y: b.top + 6, width: cw, height: b.h - 12, rx: 7 }))
+        const label = (y, t, cls = '') => og.append(svg('text', { class: 'pg-tlabel ' + cls, x: x0 + 10, y: y + 4 }, t))
+        const chip = (x, y, v, cls = '') => {
+          const c = svg('g', { class: 'pg-gchip pg-gchip-' + (v === null ? 'none' : v) + ' ' + cls })
+          c.append(svg('circle', { cx: x, cy: y, r: v === null ? 4 : r }))
+          if (v !== null) c.append(svg('text', { class: r > 9 ? 'pg-gchip-big' : '', x, y: y + (r > 9 ? 4.5 : 3.5), 'text-anchor': 'middle' }, v ? 'T' : 'F'))
+          og.append(c)
+        }
+        this.names.forEach((nm, i) => { label(yIn(i), nm); this.rows.forEach((r, k) => chip(cx(k), yIn(i), r[i])) })
+        og.append(svg('line', { class: 'pg-gsep', x1: x0 + 8, y1: ySep, x2: x0 + b.w - 8, y2: ySep }))
+        label(yT, tr('Target'), 'pg-tlabel-target')
+        this.rows.forEach((r, k) => chip(cx(k), yT, this.table[k] === '1'))
+        label(yO, tr('Output'))
+        this.rows.forEach((r, k) => chip(cx(k), yO, outs[k], outs[k] === null ? '' : outs[k] === (this.table[k] === '1') ? 'pg-gchip-ok' : 'pg-gchip-bad'))
+      }
       addPort(og, 'out', 'in', 0)
       og.addEventListener('click', ev => { if (!ev.target.closest('.pg-cport')) this.tapIn('out', 0) })
       s.append(og)
