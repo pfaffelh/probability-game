@@ -1769,8 +1769,9 @@
         const t = this.target, keys = axis(t.space, [...t.mass.keys()])
         const longest = Math.max(...keys.map(k => String(t.mass.get(k) ?? ZERO).length), 3)
         const cols = keys.length, cw = Math.max(46, Math.min(Math.floor((CW - 104) / cols), longest * 8 + 14)), rh = 24
-        const h = 12 + 3 * rh + 8, w = 84 + cols * cw + 12
-        return { x: CW / 2, top: CH - 12 - h, w, h, cw, rh, keys }
+        // (above the masses a small histogram: the target dashed, the output filled, for the p of the picture)
+        const hist = 64, h = 12 + hist + 3 * rh + 8, w = 84 + cols * cw + 12
+        return { x: CW / 2, top: CH - 12 - h, w, h, cw, rh, keys, hist }
       }
       // (few rows: bigger coins)
       const n = this.names.length, cols = this.rows.length, cw = cols <= 4 ? 32 : 22, rh = cols <= 4 ? 28 : 20
@@ -2236,12 +2237,21 @@
       if (this.random) {
         const b = this.outBox(), x0 = b.x - b.w / 2, t = this.target, d = this.dist(), { cw, rh } = b
         og.append(svg('rect', { class: 'pg-cbox', x: x0, y: b.top, width: b.w, height: b.h, rx: 14 }))
-        const cx = k => x0 + 84 + cw / 2 + k * cw, y = i => b.top + 12 + rh / 2 + i * rh + 4
+        const cx = k => x0 + 84 + cw / 2 + k * cw, y = i => b.top + 12 + b.hist + rh / 2 + i * rh + 4
         const text = (x, yy, s, cls, anchor = 'middle') => og.append(svg('text', { class: cls, x, y: yy, 'text-anchor': anchor }, s))
+        // the histogram
+        const base = b.top + 8 + b.hist, hh = b.hist - 6, bw = Math.min(26, cw - 14)
+        og.append(svg('line', { class: 'pg-chist-axis', x1: x0 + 80, y1: base, x2: x0 + b.w - 8, y2: base }))
+        const val = m => { try { const v = m?.value(P); return Number.isFinite(v) ? Math.max(0, Math.min(1, v)) : null } catch { return null } }
+        b.keys.forEach((k, j) => {
+          const tv = val(new Poly((t.mass.get(k) ?? ZERO).c)), dmk = d && d.space === t.space ? (d.mass.get(k) ?? ZERO) : null, dv = dmk ? val(new Poly(dmk.c)) : null
+          if (dv !== null) og.append(svg('rect', { class: 'pg-chist-out', x: cx(j) - bw / 2, y: base - dv * hh, width: bw, height: dv * hh }))
+          if (tv !== null) og.append(svg('rect', { class: 'pg-chist-target', x: cx(j) - bw / 2, y: base - tv * hh, width: bw, height: tv * hh }))
+        })
         text(x0 + 10, y(0), tr('value'), 'pg-tlabel', 'start')
         text(x0 + 10, y(1), tr('Target'), 'pg-tlabel pg-tlabel-target', 'start')
         text(x0 + 10, y(2), tr('Output'), 'pg-tlabel', 'start')
-        og.append(svg('line', { class: 'pg-gsep', x1: x0 + 8, y1: b.top + 12 + rh + 2, x2: x0 + b.w - 8, y2: b.top + 12 + rh + 2 }))
+        og.append(svg('line', { class: 'pg-gsep', x1: x0 + 8, y1: b.top + 12 + b.hist + rh + 2, x2: x0 + b.w - 8, y2: b.top + 12 + b.hist + rh + 2 }))
         b.keys.forEach((k, j) => {
           const tm = t.mass.get(k) ?? ZERO
           text(cx(j), y(0), String(k), 'pg-tmass')
