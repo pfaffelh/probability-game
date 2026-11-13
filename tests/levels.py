@@ -9,10 +9,11 @@ import json, re, sys
 from pathlib import Path
 
 here = Path(__file__).resolve().parent.parent
-HEAD = re.compile(r'^::::(level|build|boolean|walk) ')
+HEAD = re.compile(r'^::::(level|build|boolean|walk|circuit) ')
 # the rules the proofs of a kind of level are checked in, when the level names none
 CONTEXT = {'level': ('proofContext', 'Lean/Rules.lean'), 'build': ('proofContext', 'Lean/Rules.lean'),
-           'boolean': ('context', 'Lean/WorldBool.lean'), 'walk': ('context', 'Lean/WorldWalk.lean')}
+           'boolean': ('context', 'Lean/WorldBool.lean'), 'walk': ('context', 'Lean/WorldWalk.lean'),
+           'circuit': ('context', 'Lean/WorldBool.lean')}
 
 
 def attr(line, k):

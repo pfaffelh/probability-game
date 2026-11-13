@@ -45,6 +45,19 @@ for (const [name, vp] of [['desktop', { width: 1200, height: 900 }], ['phone', {
       if (!moves.length) fail(`${path} level ${i + 1}: no (play := …) in its source`)
       const move = m => lvl().locator(`.pg-move[data-move="${m}"]`).first().click()
       if (L.kind === 'level') for (const m of moves) { await move(m); await page.waitForTimeout(1050) }
+      else if (L.kind === 'circuit') {
+        // "a=and; x>a.0; a>out": the gates from the side (tapped: they are g1, g2, … in this order),
+        // then each wire: its output, then its input
+        const ids = {}
+        let n = 0
+        for (const st of L.play.split(';').map(s => s.trim()).filter(Boolean)) {
+          if (st.includes('=')) { const [name, kind] = st.split('='); await move(kind); ids[name] = `g${++n}`; continue }
+          const [a, b] = st.split('>'), [d, k] = b.split('.')
+          await lvl().locator(`.pg-cport[data-block="${ids[a] ?? a}"][data-kind="out"]`).click()
+          await lvl().locator(`.pg-cport[data-block="${ids[d] ?? d}"][data-kind="in"][data-i="${k ?? 0}"]`).click()
+        }
+        await lvl().locator('.pg-solved').waitFor({ timeout: 20000 }).catch(() => {})
+      }
       else if (L.kind !== 'build') {
         for (const m of moves) { await move(m); await page.waitForTimeout(450) }
         if (withProofs) await lvl().locator('.pg-solved').waitFor({ timeout: 60000 }).catch(() => {})

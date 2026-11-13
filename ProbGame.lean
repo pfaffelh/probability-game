@@ -4,6 +4,8 @@ import ProbGame.Worlds.Bool
 import ProbGame.Worlds.OneCoin
 import ProbGame.Worlds.Draw
 import ProbGame.Worlds.TwoCoins
+import ProbGame.Worlds.Circuits
+import ProbGame.Worlds.CoinCircuits
 import ProbGame.Lexicon
 
 open Verso.Genre Manual
@@ -49,10 +51,14 @@ Zählen.
 
 {include 1 ProbGame.Worlds.Bool}
 
+{include 1 ProbGame.Worlds.Circuits}
+
 {include 1 ProbGame.Worlds.OneCoin}
 
 {include 1 ProbGame.Worlds.Draw}
 
 {include 1 ProbGame.Worlds.TwoCoins}
+
+{include 1 ProbGame.Worlds.CoinCircuits}
 
 {include 1 ProbGame.Lexicon}
