@@ -182,19 +182,72 @@ decide +revert
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "if, not") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : (if x then !y else y) = (x ^^ y)") (play := "a=if; b=not; x>a.0; y>b.0; b>a.1; y>a.2; a>out")
+::::circuit (inputs := "x y") (gates := "bind") (table := "0001") (goal := "x && y") (proof := "(x y : Bool) : (if x then y else false) = (x && y)") (play := "a=bind; a.T=id; a.F=false; x>a.0; y>a.1; a>out")
 :::en
-*A gate of your own.* New gate: `if`. Its first input `c` chooses: when `c` is `true`, the output is
-what comes into `T`; when `c` is `false`, what comes into `F`. So you build a gate of your own: for
-`x = true` one map of `y`, for `x = false` another. Build `xor` this way: for `true` the map `not`,
-for `false` nothing at all (`y` itself).
+*A gate of your own.* There are four maps `Bool → Bool`: `id`, `not`, always `T`, always `F`. New
+gate: `bind`. It has two fields, `true` and `false`, and you put a map into each (drag it in, or tap
+the field until it is the one you want). Its input `c` chooses the field: when `c` is `true`, the
+value `v` goes through the map in `true`; otherwise through the map in `false`. Build `and`: when `x`
+is `true`, `y` itself; when `x` is `false`, always `F`.
 :::
 
 :::de
-*Ein eigener Baustein.* Neuer Baustein: `if`. Sein erster Eingang `c` wählt: Ist `c` `true`, ist der
-Ausgang das, was in `T` hineingeht; ist `c` `false`, das, was in `F` hineingeht. So baust du dir
-einen eigenen Baustein: für `x = true` eine Abbildung von `y`, für `x = false` eine andere. Bau so
-`xor`: für `true` die Abbildung `not`, für `false` gar nichts (`y` selbst).
+*Ein eigener Baustein.* Es gibt vier Abbildungen `Bool → Bool`: `id`, `not`, immer `T`, immer `F`.
+Neuer Baustein: `bind`. Er hat zwei Felder, `true` und `false`, und in jedes legst du eine Abbildung
+(hineinziehen, oder das Feld antippen, bis es die richtige ist). Sein Eingang `c` wählt das Feld: Ist
+`c` `true`, geht der Wert `v` durch die Abbildung in `true`, sonst durch die in `false`. Bau `and`:
+ist `x` `true`, `y` selbst; ist `x` `false`, immer `F`.
+:::
+
+:::proofen
+*Tip.* `decide +revert`.
+:::
+
+:::proofde
+*Tipp.* `decide +revert`.
+:::
+:::solution
+```
+decide +revert
+```
+:::
+::::
+
+::::circuit (inputs := "x y") (gates := "bind") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : (if x then !y else y) = (x ^^ y)") (play := "a=bind; a.T=not; a.F=id; x>a.0; y>a.1; a>out")
+:::en
+*xor, built yourself.* `true` when exactly one input is. With `bind`: for `x = true` one map of `y`,
+for `x = false` another. Four maps for each field: sixteen gates with two inputs, all of them.
+:::
+
+:::de
+*xor, selbst gebaut.* `true`, wenn genau ein Eingang es ist. Mit `bind`: für `x = true` eine
+Abbildung von `y`, für `x = false` eine andere. Vier Abbildungen für jedes Feld: sechzehn Bausteine mit
+zwei Eingängen, alle.
+:::
+
+:::proofen
+*Tip.* `decide +revert`.
+:::
+
+:::proofde
+*Tipp.* `decide +revert`.
+:::
+:::solution
+```
+decide +revert
+```
+:::
+::::
+
+::::circuit (inputs := "x y") (gates := "bind") (table := "1101") (goal := "!x || y") (proof := "(x y : Bool) : (if x then y else true) = (!x || y)") (play := "a=bind; a.T=id; a.F=true; x>a.0; y>a.1; a>out")
+:::en
+*If x, then y.* The implication: `false` only when `x` is `true` and `y` is `false`. In Lean
+`!x || y`.
+:::
+
+:::de
+*Wenn x, dann y.* Die Implikation: `false` nur, wenn `x` `true` ist und `y` `false`. In Lean
+`!x || y`.
 :::
 
 :::proofen

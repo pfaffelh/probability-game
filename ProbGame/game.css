@@ -519,3 +519,11 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 .pg-gdash.pg-gchip-ok { fill: #2e8b37; }
 .pg-gdash.pg-gchip-bad { fill: #b03a2e; }
 .pg-cportname { font: bold 11px var(--verso-code-font-family, monospace); fill: #8a5a16; pointer-events: none; }
+.pg-cslot { fill: #fffdf7; stroke: #b0782a; stroke-width: 1.5; stroke-dasharray: 4 3; cursor: pointer; }
+.pg-cslot-full { stroke-dasharray: none; fill: white; }
+.pg-mapglyph { pointer-events: none; }
+.pg-mapglyph line { stroke: #5c3d0e; stroke-width: 2; }
+.pg-mapdot-t { fill: #f2cd62; stroke: #9a6a14; stroke-width: 1; }
+.pg-mapdot-f { fill: #d9d6ce; stroke: #6f6a5e; stroke-width: 1; }
+.pg-gate-icon.pg-gate-icon-tall { height: 118px; }
+.pg-gate-icon.pg-map-icon { width: 72px; height: 66px; }
