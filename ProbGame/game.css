@@ -527,3 +527,19 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 .pg-mapdot-f { fill: #d9d6ce; stroke: #6f6a5e; stroke-width: 1; }
 .pg-gate-icon.pg-gate-icon-tall { height: 118px; }
 .pg-gate-icon.pg-map-icon { width: 72px; height: 66px; }
+
+/* the two halves of a level: tabs Board | Lean beside the level's name */
+.pg-tabs { display: inline-flex; border: 1.5px solid #c9b48f; border-radius: 8px; overflow: hidden; flex: none; }
+.pg-tabs[hidden] { display: none; }
+.pg-tab { border: none; background: white; padding: 0.2em 0.8em; font: inherit; font-family: var(--verso-structure-font-family, sans-serif); cursor: pointer; color: #6b4a14; white-space: nowrap; }
+.pg-tab + .pg-tab { border-left: 1.5px solid #c9b48f; }
+.pg-tab.pg-tab-on { background: #f0d9ac; font-weight: bold; color: #3d2a0b; }
+.pg-tab:disabled { color: #b8a88a; cursor: not-allowed; }
+/* the board's solution beside the proof: a picture, folded on phones */
+.pg-proof-sol { margin: 0.3rem 0 0.5rem; border: 1px solid #e6d6b8; border-radius: 8px; background: #fffaf0; }
+.pg-proof-sol > summary { cursor: pointer; font-family: var(--verso-structure-font-family, sans-serif); padding: 0.3em 0.6em; color: #6b4a14; }
+.pg-proof-sol-pic { padding: 0 0.5rem 0.5rem; overflow: auto; pointer-events: none; }
+.pg-proof-sol-pic > * { max-width: 100% !important; margin: 0 auto; }
+.pg-proof-sol-pic svg { display: block; max-width: 100%; max-height: 32svh; width: auto; height: auto; margin: 0 auto; }
+.pg-proof-sol-pic .pg-crow, .pg-proof-sol-pic .pg-cboard-col { display: flex; flex-direction: column; align-items: center; flex: none; max-width: none; }
+.pg-goals > .pg-next { margin-top: 0.5rem; }

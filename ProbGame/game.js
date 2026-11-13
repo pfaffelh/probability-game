@@ -650,6 +650,7 @@
       many.type = 'button'
       many.addEventListener('click', () => this.throwMany(100))
       throws.append(many, el('span', 'pg-throws-note', this.thrown ? tr('{n} throws; the thin bars: how often.', { n: this.thrown }) : tr('Where does the coin land, after your moves?')))
+      this.picture = row
       const parts = [task, row, slider, throws, this.info, ...(SHOW ? [] : [ln]), el('div', 'pg-moves-head', tr('Moves')), moves, tools, ...(SHOW ? [] : [lean])]
       if (done) {
         const box = el('div', 'pg-solved')
@@ -661,7 +662,7 @@
           box.append(el('div', 'pg-solved-lean-head', tr('In Lean, for every p:')))
           box.append(el('pre', 'pg-lean', statement))
         }
-        const next = el('button', 'pg-next', tr(this.root.dataset.proof && !SHOW ? 'To the proof ›' : 'Next level ›'))
+        const next = el('button', 'pg-next', tr('Next ›'))
         next.type = 'button'
         next.addEventListener('click', () => this.onNext?.())
         box.append(next)
@@ -1017,6 +1018,7 @@
       input.addEventListener('input', () => { P = Number(input.value); try { localStorage.setItem('pg:p', input.value) } catch {}; this.render() })
       slider.append(`${tr('the picture for p =')} ${P.toFixed(2)} `, input, el('span', 'pg-slider-note', ' ' + tr('(only an example; the masses hold for every p)')))
 
+      this.picture = area
       const parts = [...(beside ? [this.targetBox] : []), task, blocks, area, tools, info, slider]
       if (done) {
         const box = el('div', 'pg-solved')
@@ -1025,7 +1027,7 @@
           box.append(el('div', 'pg-solved-lean-head', tr('As a do block in Lean:')))
           box.append(el('pre', 'pg-lean', this.lean(this.checked.node)))
         }
-        const next = el('button', 'pg-next', tr(this.root.dataset.proof && !SHOW ? 'To the proof ›' : 'Next level ›'))
+        const next = el('button', 'pg-next', tr('Next ›'))
         next.type = 'button'
         next.addEventListener('click', () => this.onNext?.())
         box.append(next)
@@ -1253,6 +1255,7 @@
       }
       const task = el('div', 'pg-task')
       task.append(el('b', '', this.monad === 'Id' ? tr('Task: bring the figure to the flag.') : tr('Task: reach exactly the marked points ({n}).', { n: this.target.size })))
+      this.picture = s
       const parts = [task, s, this.info, ...(SHOW ? [] : [ln]), el('div', 'pg-moves-head', tr('Moves')), moves, tools, ...(SHOW ? [] : [el('pre', 'pg-lean', this.leanState())])]
       if (done) {
         const box = el('div', 'pg-solved')
@@ -1261,7 +1264,7 @@
           box.append(el('div', 'pg-solved-lean-head', tr('In Lean:')))
           box.append(el('pre', 'pg-lean', `${this.leanState()} = ${this.leanNow.result.replace(/\s+/g, ' ')}`))
         }
-        const next = el('button', 'pg-next', tr(this.root.dataset.proof && !SHOW ? 'To the proof ›' : 'Next level ›'))
+        const next = el('button', 'pg-next', tr('Next ›'))
         next.type = 'button'
         next.addEventListener('click', () => this.onNext?.())
         box.append(next)
@@ -1515,6 +1518,7 @@
       const task = el('div', 'pg-task')
       task.append(el('b', '', tr(this.rows ? 'Task: build a chain of gates that brings each coin into its ring.' : 'Task: build a chain of gates that brings the coin into the target.') +
         (this.count ? ' (' + tr('in exactly {n} gates', { n: this.count }) + ')' : '')))
+      this.picture = s
       const parts = [task, s, this.info, ...(SHOW ? [] : [ln]), el('div', 'pg-moves-head', tr('Gates')), moves, tools, ...(SHOW ? [] : [el('pre', 'pg-lean', this.leanState())])]
       if (done) {
         const box = el('div', 'pg-solved')
@@ -1523,7 +1527,7 @@
           box.append(el('div', 'pg-solved-lean-head', tr('In Lean:')))
           box.append(el('pre', 'pg-lean', `${this.leanState()} = ${this.leanNow.result.replace(/\s+/g, ' ')}`))
         }
-        const next = el('button', 'pg-next', tr(this.root.dataset.proof && !SHOW ? 'To the proof ›' : 'Next level ›'))
+        const next = el('button', 'pg-next', tr('Next ›'))
         next.type = 'button'
         next.addEventListener('click', () => this.onNext?.())
         box.append(next)
@@ -2254,6 +2258,7 @@
       ln.append(el('span', 'pg-lean-label', tr('Lean:') + ' '), el('code', '', this.leanState()))
       const task = el('div', 'pg-task')
       task.append(el('b', '', tr(this.random ? 'Task: build a circuit whose output has the distribution of the target.' : 'Task: build a circuit whose output is the target, in every row.')))
+      this.picture = rowEl
       const parts = [task, rowEl, this.info, ...(SHOW ? [] : [ln]), el('div', 'pg-moves-head', tr('Gates')), moves, tools]
       if (done) {
         // the proof is about the circuit built (without coins)
@@ -2264,7 +2269,7 @@
           box.append(el('div', 'pg-solved-lean-head', tr(this.random ? 'In Lean, for every p:' : 'In Lean:')))
           box.append(el('pre', 'pg-lean', this.random ? `${this.leanState()}\n  -- ${tr('a coin: true with probability')} ${new Poly(this.target.mass.get('true')?.c ?? [])}` : `${this.statement()}`))
         }
-        const next = el('button', 'pg-next', tr(this.root.dataset.proof && !SHOW ? 'To the proof ›' : 'Next level ›'))
+        const next = el('button', 'pg-next', tr('Next ›'))
         next.type = 'button'
         next.addEventListener('click', () => this.onNext?.())
         box.append(next)
@@ -2402,7 +2407,7 @@
     Proof: 'Beweis', 'Run': 'Ausführen', 'Inventory': 'Inventar', Tactics: 'Taktiken', Theorems: 'Sätze',
     'Goal': 'Ziel', 'goal {i} of {n}': 'Ziel {i} von {n}', 'Lean is thinking …': 'Lean denkt …',
     'Your lemma {x} is now in your inventory.': 'Dein Lemma {x} ist jetzt in deinem Inventar.',
-    'To the proof ›': 'Zum Beweis ›', 'Insert': 'Einsetzen', 'Remove the last line': 'Letzte Zeile entfernen',
+    'To the proof ›': 'Zum Beweis ›', 'Your solution on the board': 'Deine Lösung auf dem Spielfeld', 'Insert': 'Einsetzen', 'Remove the last line': 'Letzte Zeile entfernen',
     'The proof needs Lean: open the game with ?backend=… (the address of a bridge).': 'Der Beweis braucht Lean: Öffne das Spiel mit ?backend=… (der Adresse einer Bridge).',
     'Lean cannot be reached: {e}': 'Lean ist nicht erreichbar: {e}',
     '{x} is not unlocked yet.': '{x} ist noch nicht freigeschaltet.',
@@ -2430,6 +2435,7 @@
   const advice = m => { const a = ADVICE.find(([r]) => r.test(m)); return a ? (LANG === 'de' ? a[2] : a[1]) : '' }
   Object.assign(DE, { 'What Lean says': 'Was Lean sagt' })
 
+  let SOL_OPEN = null  // the solution beside the proof: open or folded, as the player left it
   class Proof {
     constructor(level, onChange) {
       const root = level.root
@@ -2597,13 +2603,36 @@
       const head = el('h3', 'pg-proof-head', tr('Proof'))
       const stmt = el('pre', 'pg-proof-statement', `${this.lemma ? `theorem ${this.lemma}` : 'example'} ${this.statement}`)
       const parts = STAGE ? [head, stmt] : [head, ...this.texts, stmt]
-      if (!BACKEND) { parts.push(el('div', 'pg-info pg-warn', tr('The proof needs Lean: open the game with ?backend=… (the address of a bridge).'))); this.box.replaceChildren(...parts); return }
+      // on the stage: the board's solution beside the proof (a picture, not to play with)
+      const pic = STAGE && this.level.picture
+      if (pic) {
+        const sol = el('details', 'pg-proof-sol'), sum = el('summary', '', '▦ ' + tr('Your solution on the board'))
+        sol.open = SOL_OPEN ?? !matchMedia('(max-width: 700px)').matches
+        sol.addEventListener('toggle', () => { SOL_OPEN = sol.open })
+        const c = pic.cloneNode(true)
+        c.removeAttribute('style'); c.querySelectorAll('[style*="max-width"]').forEach(e => { e.style.maxWidth = '' })
+        c.querySelectorAll('button, input, label.pg-slider, .pg-throws').forEach(e => e.remove())
+        c.inert = true
+        const fig = el('div', 'pg-proof-sol-pic'); fig.append(c)
+        sol.append(sum, fig)
+        parts.splice(1, 0, sol)
+      }
+      if (!BACKEND) {
+        parts.push(el('div', 'pg-info pg-warn', tr('The proof needs Lean: open the game with ?backend=… (the address of a bridge).')))
+        if (STAGE) { const main = el('div', 'pg-proof-main'); main.append(...parts); this.box.replaceChildren(main) } else this.box.replaceChildren(...parts)
+        return
+      }
 
       // the lines so far, and the goals now
       const hist = el('ol', 'pg-proof-lines')
       this.lines.forEach(l => hist.append(el('li', '', l)))
       const goals = el('div', 'pg-goals')
       if (this.done) goals.append(el('div', 'pg-proof-done', 'goals accomplished 🎉' + (this.lemma ? ' ' + tr('Your lemma {x} is now in your inventory.', { x: this.lemma }) : '')))
+      if (this.done && STAGE) {
+        const next = el('button', 'pg-next', tr('Next ›')); next.type = 'button'
+        next.addEventListener('click', () => this.level.onNextLevel?.())
+        goals.append(next)
+      }
       else if (this.goals) this.goals.forEach((g, i) => {
         // the goal now; the others folded, one line each
         const box = el(i ? 'details' : 'div', 'pg-goal' + (i ? ' pg-goal-later' : ''))
@@ -2854,7 +2883,11 @@
     const h1 = roots[0].parentElement?.querySelector('h1')
     const worldTitle = el('div', 'pg-stage-title', (h1?.textContent ?? '').replace('🔗', '').trim()), levelTitle = el('div', 'pg-level-title')
     titles.append(worldTitle, levelTitle)
-    top.append(titles, dots)
+    // the two halves of a level, equal in rank: the board and the Lean proof
+    const tabs = el('div', 'pg-tabs'), tabBoard = el('button', 'pg-tab'), tabLean = el('button', 'pg-tab')
+    tabBoard.type = tabLean.type = 'button'
+    tabs.append(tabBoard, tabLean)
+    top.append(titles, tabs, dots)
     roots[0].before(stg)
     // the text of the world: between the heading and the first level
     const intro = []
@@ -2911,7 +2944,7 @@
     // the tool bar
     const undo = barButton('pg-undo', '↶', tr('Undo')), restart = barButton('pg-restart', '⟲', tr('Start over'), tr('Restart'))
     const lean = barButton('pg-lean-button', 'λ', 'Lean'), tips = barButton('pg-tips-button', '💡', tr('Tips'))
-    const toggle = barButton('pg-view-button', '∀', tr('Proof ')), next = barButton('pg-next-button', '›', tr('Next ›'), tr('Next'))
+    const next = barButton('pg-next-button', '›', tr('Next ›'), tr('Next'))
     const nextWorld = document.querySelector('nav.prev-next-buttons a[rel="next"]')
     // On phones the gates of a circuit are behind ＋ (as in the IPM): a popover above the tool bar;
     // a tap takes a gate, a finger held on one drags it onto the board.
@@ -2943,12 +2976,17 @@
     try { leanOpen = localStorage.getItem('pg:lean') === '1' } catch {}
     lean.addEventListener('click', () => { leanOpen = !leanOpen; try { localStorage.setItem('pg:lean', leanOpen ? '1' : '0') } catch {}; refresh() })
     tips.addEventListener('click', () => tipBox(tr('Tips'), view() === 'proof' ? proofTip(current) : boardTip(current, true)))
-    toggle.addEventListener('click', () => setView(view() === 'proof' ? 'board' : 'proof'))
-    next.addEventListener('click', () => {
-      if (current < levels.length - 1) show(current + 1)
+    tabBoard.addEventListener('click', () => setView('board'))
+    tabLean.addEventListener('click', () => { if (levels[current].solved) setView('proof') })
+    // Next: from the board to the Lean proof of the same level, from there to the next level
+    const toLean = () => { const l = levels[current]; return !!l.proof && view() === 'board' && l.solved }
+    const goNext = () => {
+      if (toLean()) setView('proof')
+      else if (current < levels.length - 1) show(current + 1)
       else if (nextWorld) location.href = nextWorld.getAttribute('href').replace(/#.*$/, '')
-    })
-    bar.append(add, undo, restart, ...(SHOW ? [] : [lean]), tips, ...(SHOW ? [] : [toggle]), next)
+    }
+    next.addEventListener('click', goNext)
+    bar.append(add, undo, restart, ...(SHOW ? [] : [lean]), tips, next)
     bar.before(pop)
 
     const refresh = () => {
@@ -2971,15 +3009,16 @@
       lean.setAttribute('aria-pressed', String(leanOpen))
       leanBox.hidden = !leanOpen || v === 'proof' || !l.leanParts?.length
       if (!leanBox.hidden) leanBox.replaceChildren(...l.leanParts)
-      toggle.hidden = !l.proof
-      toggle.disabled = !l.solved
-      toggle.title = l.solved ? '' : tr('Solve the board first.')
-      for (const e of toggle.querySelectorAll('.pg-lbl, .pg-short')) e.textContent = tr(v === 'proof' ? 'Board' : 'Proof ')
-      toggle.querySelector('.pg-ico').textContent = v === 'proof' ? '▦' : '∀'
-      const last = current === levels.length - 1
-      next.disabled = last && !nextWorld
-      for (const e of next.querySelectorAll('.pg-lbl')) e.textContent = tr(last ? 'Next world ›' : 'Next ›')
-      next.classList.toggle('pg-glow', done(l) && !next.disabled)
+      tabs.hidden = !l.proof
+      tabBoard.textContent = `▦ ${tr('Board')}${l.solved ? ' ✓' : ''}`
+      tabLean.textContent = `∀ Lean${l.proof?.proved ? ' ✓' : ''}`
+      tabBoard.classList.toggle('pg-tab-on', v === 'board'); tabLean.classList.toggle('pg-tab-on', v === 'proof')
+      tabLean.disabled = !l.solved
+      tabLean.title = l.solved ? '' : tr('Solve the board first.')
+      const last = current === levels.length - 1, lean2 = toLean()
+      next.disabled = last && !nextWorld && !lean2
+      for (const e of next.querySelectorAll('.pg-lbl')) e.textContent = tr(last && !lean2 ? 'Next world ›' : 'Next ›')
+      next.classList.toggle('pg-glow', (lean2 || done(l)) && !next.disabled)
       const n = levels.filter(done).length
       if (n !== doneBefore) { doneBefore = n; worldMap() }
     }
@@ -2995,14 +3034,14 @@
       showBoardTip(current)
     }
     levels.forEach((l, k) => {
-      l.onNextLevel = () => show(k + 1)
-      l.onNext = () => (l.proof ? setView('proof') : current < levels.length - 1 ? show(k + 1) : next.click())
+      l.onNextLevel = l.onNext = () => { if (levels[current] === l) goNext() }
     })
     // ← and → go to the previous and next level (not while typing)
     document.addEventListener('keydown', ev => {
       if (ev.target.closest?.('input, textarea') || ev.altKey || ev.ctrlKey || ev.metaKey || document.querySelector('.pg-tip-overlay')) return
-      if (ev.key === 'ArrowLeft') show(current - 1)
-      if (ev.key === 'ArrowRight') show(current + 1)
+      // → as Next (the Lean proof first); ← back: from the proof to its board, else the level before
+      if (ev.key === 'ArrowLeft') { if (view() === 'proof') setView('board'); else show(current - 1) }
+      if (ev.key === 'ArrowRight' && !next.disabled) goNext()
     })
     try { localStorage.setItem(levelsKey(location.pathname), JSON.stringify(levels.map(l => !!l.proof))) } catch {}
     const fromHash = Number(/^#level-(\d+)$/.exec(location.hash)?.[1] ?? 0) - 1
