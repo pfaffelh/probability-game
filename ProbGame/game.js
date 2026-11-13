@@ -2712,6 +2712,8 @@
       this.input.value = this.typed = /<;>\s*$/.test(v) ? v.replace(/\s*$/, ' ') + text : text
       this.render(); this.input?.focus({ preventScroll: true })
     }
+    // (a tactic with nothing to work on here: said so, nothing in the input)
+    nothing(text) { this.choice = null; this.error = text; this.render() }
     // a tapped tactic into the input: whole when it needs nothing more, with a choice when it needs a
     // name (cases x or cases y), else its start (rw [, apply …) for the rules to come
     tapTactic(it) {
@@ -2723,11 +2725,11 @@
         case 'cases': {
           const vs = this.vars(), b = vs.filter(x => /^(Bool|ℕ|Nat)$/.test(x.type))
           const pick = (b.length ? b : vs.filter(x => !/[→:]/.test(x.type) || /=/.test(x.type))).map(x => `cases ${x.name}`)
-          return pick.length ? ask(pick, o => o.replace(/^cases /, '')) : this.put('cases ')
+          return pick.length ? ask(pick, o => o.replace(/^cases /, '')) : this.nothing(tr('No variable in this goal to split with cases.'))
         }
         case "induction'": {
           const ns = this.vars().filter(x => /^(ℕ|Nat)$/.test(x.type)).map(x => `induction' ${x.name} with ${x.name} ih`)
-          return ns.length ? ask(ns, o => o.split(' ')[1]) : this.put("induction' ")
+          return ns.length ? ask(ns, o => o.split(' ')[1]) : this.nothing(tr('No natural number in this goal for induction.'))
         }
         case 'decide': return ask(this.vars().length ? ['decide +revert', 'decide'] : ['decide'], o => o === 'decide' ? tr('plain') : '+revert')
         case 'funext': return this.put(`funext ${this.fresh('x', 'y', 'z', 'b')}`)
@@ -2903,7 +2905,7 @@
     'Lean did not take the line: see why above the input.': 'Lean hat die Zeile nicht genommen: warum, steht über der Eingabe.',
     'Type a tactic, or tap one in the inventory.': 'Tippe eine Taktik ein, oder tippe eine im Inventar an.', 'One goal left.': 'Noch ein Ziel.', '{n} goals left.': 'Noch {n} Ziele.',
     'Tips': 'Tipps', 'Tip': 'Tipp', 'Got it': 'Verstanden', 'Close': 'Schließen', 'Restart': 'Neu', 'Next': 'Weiter', 'Next ›': 'Weiter ›',
-    'Next world ›': 'Nächste Welt ›', 'Which?': 'Welche?', plain: 'ohne', 'This wire belongs to the level; it stays.': 'Diese Leitung gehört zum Level; sie bleibt.', '{x} is wired by the level; it stays so.': '{x} ist vom Level verdrahtet; das bleibt so.', 'World': 'Welt', 'Board': 'Spielfeld', 'Proof ': 'Beweis', 'This world': 'Diese Welt',
+    'Next world ›': 'Nächste Welt ›', 'Which?': 'Welche?', 'No variable in this goal to split with cases.': 'In diesem Ziel gibt es keine Variable, die cases aufteilen könnte.', 'No natural number in this goal for induction.': 'In diesem Ziel gibt es keine natürliche Zahl für eine Induktion.', plain: 'ohne', 'This wire belongs to the level; it stays.': 'Diese Leitung gehört zum Level; sie bleibt.', '{x} is wired by the level; it stays so.': '{x} ist vom Level verdrahtet; das bleibt so.', 'World': 'Welt', 'Board': 'Spielfeld', 'Proof ': 'Beweis', 'This world': 'Diese Welt',
     'New in this level': 'Neu in diesem Level', 'New in this proof': 'Neu in diesem Beweis', 'Solve the board first.': 'Erst das Spielfeld lösen.',
   })
   // What the moves and building blocks do, for the tips (by kind of board: level, bool, build, src, walk).
