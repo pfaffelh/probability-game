@@ -2704,19 +2704,20 @@
     // name (cases x or cases y), else its start (rw [, apply …) for the rules to come
     tapTactic(it) {
       const v = this.input?.value ?? ''
-      const ask = options => { if (options.length === 1) return this.put(options[0]); this.choice = { options }; this.render() }
+      // (several: a bubble at the chip with what to choose, `x` `y`; one: no question)
+      const ask = (options, label = o => o) => { if (options.length === 1) return this.put(options[0]); this.choice = { from: it.name, options: options.map(o => ({ text: o, label: label(o) })) }; this.render() }
       switch (it.name) {
         case '<;>': this.input.value = this.typed = v.replace(/\s*$/, '') + ' <;> '; this.choice = null; this.render(); this.input.focus({ preventScroll: true }); return
         case 'cases': {
           const vs = this.vars(), b = vs.filter(x => /^(Bool|ℕ|Nat)$/.test(x.type))
           const pick = (b.length ? b : vs.filter(x => !/[→:]/.test(x.type) || /=/.test(x.type))).map(x => `cases ${x.name}`)
-          return pick.length ? ask(pick) : this.put('cases ')
+          return pick.length ? ask(pick, o => o.replace(/^cases /, '')) : this.put('cases ')
         }
         case "induction'": {
           const ns = this.vars().filter(x => /^(ℕ|Nat)$/.test(x.type)).map(x => `induction' ${x.name} with ${x.name} ih`)
-          return ns.length ? ask(ns) : this.put("induction' ")
+          return ns.length ? ask(ns, o => o.split(' ')[1]) : this.put("induction' ")
         }
-        case 'decide': return ask(this.vars().length ? ['decide +revert', 'decide'] : ['decide'])
+        case 'decide': return ask(this.vars().length ? ['decide +revert', 'decide'] : ['decide'], o => o === 'decide' ? tr('plain') : '+revert')
         case 'funext': return this.put(`funext ${this.fresh('x', 'y', 'z', 'b')}`)
         case 'intro': return this.put(`intro ${this.fresh('h', 'h2', 'h3')}`)
         case 'have': return this.put(`have ${this.fresh('h2', 'h3', 'h4')} := `)
@@ -2828,26 +2829,23 @@
           b.disabled = this.busy || this.done
           b.addEventListener('click', () => { if (!this.busy && !this.done) (item.kind === 'tactic' ? this.tapTactic(item) : this.tapRule(item)) })
           group.append(b)
+          // its choice, right at it: x or y
+          if (this.choice?.from === item.name && !this.done) {
+            const pop = el('span', 'pg-chip-pop')
+            for (const o of this.choice.options) {
+              const c = el('button', 'pg-chip pg-chip-choice', o.label); c.type = 'button'; c.title = o.text
+              c.addEventListener('click', () => this.put(o.text))
+              pop.append(c)
+            }
+            const x = el('button', 'pg-chip-x', '✕'); x.type = 'button'; x.addEventListener('click', () => { this.choice = null; this.render() })
+            pop.append(x)
+            group.append(pop)
+          }
         }
         inv.append(group)
       }
-      // a choice (cases x or cases y, …): below the input
-      let pick = null
-      if (this.choice && !this.done) {
-        pick = el('div', 'pg-proof-choice')
-        pick.append(el('span', 'pg-inv-title', tr('Which?')))
-        for (const o of this.choice.options) {
-          const b = el('button', 'pg-chip pg-chip-choice', o); b.type = 'button'
-          b.addEventListener('click', () => this.put(o))
-          pick.append(b)
-        }
-        const x = el('button', 'pg-tool', '✕'); x.type = 'button'; x.addEventListener('click', () => { this.choice = null; this.render() })
-        pick.append(x)
-      }
-
       parts.push(hist, goals, err)
       if (!this.done) parts.push(row)
-      if (pick) parts.push(pick)
       if (!STAGE) parts.push(tools)
       // the board's solution below what to do (the statement, the goals, the input)
       if (sol) parts.push(sol)
@@ -2893,7 +2891,7 @@
     'Lean did not take the line: see why above the input.': 'Lean hat die Zeile nicht genommen: warum, steht über der Eingabe.',
     'Type a tactic, or tap one in the inventory.': 'Tippe eine Taktik ein, oder tippe eine im Inventar an.', 'One goal left.': 'Noch ein Ziel.', '{n} goals left.': 'Noch {n} Ziele.',
     'Tips': 'Tipps', 'Tip': 'Tipp', 'Got it': 'Verstanden', 'Close': 'Schließen', 'Restart': 'Neu', 'Next': 'Weiter', 'Next ›': 'Weiter ›',
-    'Next world ›': 'Nächste Welt ›', 'Which?': 'Welche?', 'This wire belongs to the level; it stays.': 'Diese Leitung gehört zum Level; sie bleibt.', 'World': 'Welt', 'Board': 'Spielfeld', 'Proof ': 'Beweis', 'This world': 'Diese Welt',
+    'Next world ›': 'Nächste Welt ›', 'Which?': 'Welche?', plain: 'ohne', 'This wire belongs to the level; it stays.': 'Diese Leitung gehört zum Level; sie bleibt.', 'World': 'Welt', 'Board': 'Spielfeld', 'Proof ': 'Beweis', 'This world': 'Diese Welt',
     'New in this level': 'Neu in diesem Level', 'New in this proof': 'Neu in diesem Beweis', 'Solve the board first.': 'Erst das Spielfeld lösen.',
   })
   // What the moves and building blocks do, for the tips (by kind of board: level, bool, build, src, walk).
