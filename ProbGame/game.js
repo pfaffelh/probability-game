@@ -3098,7 +3098,10 @@
       levels.forEach(x => x.proof?.update())
       levelTitle.textContent = levelName(current)
       status.textContent = (v === 'proof' ? l.proof.status() : l.status?.()) ?? ''
-      status.classList.toggle('pg-status-done', v === 'proof' ? !!l.proof.done : !!l.solved && /^✓/.test(status.textContent))
+      // (the part shown solved: the status line and the frame of the level green)
+      const shownDone = v === 'proof' ? !!l.proof?.proved : !!l.solved
+      status.classList.toggle('pg-status-done', shownDone)
+      for (const x of levels) x.root.classList.toggle('pg-level-done', x === l && shownDone)
       undo.disabled = restart.disabled = v === 'proof' ? !l.proof.canUndo : !l.canUndo
       lean.hidden = v === 'proof'
       add.hidden = !(l instanceof Circuit) || v === 'proof'

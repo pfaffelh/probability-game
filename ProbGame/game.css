@@ -553,3 +553,5 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 .pg-cbr-v { stroke: #8a5a16; }
 .pg-cbr-label { font: bold 10px var(--verso-code-font-family, monospace); fill: #2e6fb8; pointer-events: none; }
 .pg-cbr-off { opacity: 0.25; }
+/* a level whose part shown is solved: its frame green */
+.pg-stage > .pg-level.pg-level-done { border: 2px solid #2e8b37; background: #f3faf3; box-shadow: 0 0 0 3px #d6eed8; }
