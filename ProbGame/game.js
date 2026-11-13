@@ -1998,6 +1998,8 @@
       if (this.sel?.kind === 'in') return tr('Now tap where it comes from: a coin above, or a gate.')
       const loose = this.names.find((x, k) => this.ctl[k] && !this.wireTo(x, 0))
       if (loose) return tr('Wire the coin {y}: which coin it is depends on a wire into it, from a coin above or a gate.', { y: loose })
+      // (a level without gates: a wire only)
+      if (!this.gates.length && !this.wires.length) return tr('Tap {x}, then the Output.', { x: this.names[0] })
       if (!this.gatesOn.length && !this.wires.length) return tr(STAGE && matchMedia('(max-width: 760px), (max-height: 500px)').matches ? 'Take a gate with ＋ Gate.' : 'Drag a gate onto the board, or tap it.')
       const open = this.gatesOn.find(g => [...Array(GATES[g.kind].n).keys()].some(i => !this.wireTo(g.id, i)))
       const empty = this.gatesOn.find(g => GATES[g.kind].slots && [...Array(GATES[g.kind].slots).keys()].some(i => !g.maps?.[i]))
@@ -2183,7 +2185,7 @@
         else g.append(svg('text', { class: 'pg-cname', x: a.x, y: a.y - (this.random ? 26 : 20), 'text-anchor': 'middle' }, this.random ? `${x} ← ${this.leanCoin(this.coins[k])}` : x))
         // (as in the table below: a circle of the same size with ?, and in the row shown its value, T or F)
         g.append(svg('circle', { class: 'pg-cinput-hit', cx: a.x, cy: a.y, r: 22 }))
-        const r = this.random ? 12 : this.outBox().rh <= 20 ? 9 : 12, v = shown ? row[k] : null
+        const r = this.random ? 12 : this.outBox().rh <= 20 ? 9 : 12, v = shown ? row[k] : x === 'true' ? true : x === 'false' ? false : null
         const chip = svg('g', { class: 'pg-gchip pg-cinput-chip ' + (v === null ? 'pg-cinput-empty' : 'pg-gchip-' + v) })
         chip.append(svg('circle', { cx: a.x, cy: a.y, r }))
         chip.append(svg('text', { class: r > 9 ? 'pg-gchip-big' : '', x: a.x, y: a.y + (r > 9 ? 4.5 : 3.5), 'text-anchor': 'middle' }, v === null ? '?' : v ? 'T' : 'F'))
@@ -2905,7 +2907,7 @@
     'Lean did not take the line: see why above the input.': 'Lean hat die Zeile nicht genommen: warum, steht über der Eingabe.',
     'Type a tactic, or tap one in the inventory.': 'Tippe eine Taktik ein, oder tippe eine im Inventar an.', 'One goal left.': 'Noch ein Ziel.', '{n} goals left.': 'Noch {n} Ziele.',
     'Tips': 'Tipps', 'Tip': 'Tipp', 'Got it': 'Verstanden', 'Close': 'Schließen', 'Restart': 'Neu', 'Next': 'Weiter', 'Next ›': 'Weiter ›',
-    'Next world ›': 'Nächste Welt ›', 'Which?': 'Welche?', 'No variable in this goal to split with cases.': 'In diesem Ziel gibt es keine Variable, die cases aufteilen könnte.', 'No natural number in this goal for induction.': 'In diesem Ziel gibt es keine natürliche Zahl für eine Induktion.', plain: 'ohne', 'This wire belongs to the level; it stays.': 'Diese Leitung gehört zum Level; sie bleibt.', '{x} is wired by the level; it stays so.': '{x} ist vom Level verdrahtet; das bleibt so.', 'World': 'Welt', 'Board': 'Spielfeld', 'Proof ': 'Beweis', 'This world': 'Diese Welt',
+    'Next world ›': 'Nächste Welt ›', 'Which?': 'Welche?', 'Tap {x}, then the Output.': 'Tippe {x} an, dann den Ausgang.', 'No variable in this goal to split with cases.': 'In diesem Ziel gibt es keine Variable, die cases aufteilen könnte.', 'No natural number in this goal for induction.': 'In diesem Ziel gibt es keine natürliche Zahl für eine Induktion.', plain: 'ohne', 'This wire belongs to the level; it stays.': 'Diese Leitung gehört zum Level; sie bleibt.', '{x} is wired by the level; it stays so.': '{x} ist vom Level verdrahtet; das bleibt so.', 'World': 'Welt', 'Board': 'Spielfeld', 'Proof ': 'Beweis', 'This world': 'Diese Welt',
     'New in this level': 'Neu in diesem Level', 'New in this proof': 'Neu in diesem Beweis', 'Solve the board first.': 'Erst das Spielfeld lösen.',
   })
   // What the moves and building blocks do, for the tips (by kind of board: level, bool, build, src, walk).
