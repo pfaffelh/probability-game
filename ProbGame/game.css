@@ -481,7 +481,7 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 @keyframes pg-open { 0%, 100% { stroke-width: 2; } 50% { stroke-width: 4.5; } }
 
 /* the values of a row on the board: shown on demand */
-.pg-rowbar { display: flex; align-items: center; gap: 0.4em; flex-wrap: wrap; justify-content: center; }
+.pg-rowbar { font-family: var(--verso-structure-font-family, sans-serif); display: flex; align-items: center; gap: 0.4em; flex-wrap: wrap; justify-content: center; }
 .pg-rowbtn { font: inherit; font-size: 0.9em; color: white; background: #b0782a; border: none; border-radius: 8px; padding: 0.3em 0.7em; min-height: 34px; cursor: pointer; }
 .pg-rowbtn:hover { background: #95631f; }
 .pg-rowbar-text { font-size: 0.9em; color: #5c3d0e; min-width: 6.5em; text-align: center; }
@@ -497,3 +497,5 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 .pg-gchip text.pg-gchip-big { font-size: 14px; }
 .pg-tlabel { font-size: 15px; }
 .pg-coutput line, .pg-coutput text { pointer-events: none; }
+.pg-cboard-col { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; flex: 1 1 24rem; max-width: 480px; margin: 0 auto; }
+.pg-cboard-col .pg-svg.pg-csvg { flex: none; width: 100%; }
