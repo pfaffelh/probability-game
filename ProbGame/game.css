@@ -479,3 +479,9 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 /* open inputs call for a wire */
 .pg-cport-open { animation: pg-open 1.4s ease-in-out infinite; }
 @keyframes pg-open { 0%, 100% { stroke-width: 2; } 50% { stroke-width: 4.5; } }
+
+/* the values of a row on the board: shown on demand */
+.pg-rowbar { display: flex; align-items: center; gap: 0.4em; flex-wrap: wrap; justify-content: center; }
+.pg-rowbtn { font: inherit; font-size: 0.9em; color: white; background: #b0782a; border: none; border-radius: 8px; padding: 0.3em 0.7em; min-height: 34px; cursor: pointer; }
+.pg-rowbtn:hover { background: #95631f; }
+.pg-rowbar-text { font-size: 0.9em; color: #5c3d0e; min-width: 6.5em; text-align: center; }
