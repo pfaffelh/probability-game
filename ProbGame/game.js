@@ -1573,6 +1573,8 @@
     'Tap a row to see its coins on the board.': 'Tippe eine Zeile an, um ihre Münzen auf dem Spielfeld zu sehen.',
     'P(row)': 'P(Zeile)', 'thrown': 'geworfen', '{n} throws': '{n} Würfe', 'a coin: true with probability': 'eine Münze: true mit Wahrscheinlichkeit', 'The mass of each output: the sum of P over its rows.': 'Die Masse jedes Ausgangs: die Summe von P über seine Zeilen.',
   })
+  // the bin: one for the page, shown while a gate is dragged
+  const trashCan = () => document.querySelector('body > .pg-bin') ?? document.body.appendChild(el('div', 'pg-bin', '🗑'))
   const CW = 480, CH = 560, GW = 140, GH2 = 84
   // The picture of a gate: the map it is. One input: its two values above, the two images below,
   // a line from each value to its image (not: crossed). Two inputs: a column for each pair of
@@ -1839,14 +1841,21 @@
       g.addEventListener('pointerdown', ev => {
         if (ev.target.closest('.pg-cport, .pg-cx') || ev.button > 0) return
         try { g.setPointerCapture(ev.pointerId) } catch {}
-        const start = this.toSvg(ev), bin = this.svg.querySelector('.pg-bin')
+        const start = this.toSvg(ev), bin = trashCan()
         let moved = false, d = { x: 0, y: 0 }
         const move = e => {
           const now = this.toSvg(e); d = { x: now.x - start.x, y: now.y - start.y }
           if (!moved && Math.hypot(d.x, d.y) < 6) return
           moved = true
-          bin.classList.add('pg-bin-shown')
-          bin.classList.toggle('pg-bin-hot', Math.hypot(now.x - (CW - 34), now.y - (CH - 34)) < 40)
+          // the bin, as in the IPM: in the corner of the part of the board that is seen
+          if (!bin.classList.contains('pg-bin-shown')) {
+            const r = this.svg.getBoundingClientRect(), bar = document.querySelector('.pg-toolbar')?.getBoundingClientRect()
+            const bottom = Math.min(r.bottom, window.innerHeight, bar ? bar.top - 40 : Infinity)
+            bin.style.left = `${Math.min(r.right, window.innerWidth) - 74}px`; bin.style.top = `${Math.max(r.top, bottom - 74)}px`
+            bin.classList.add('pg-bin-shown')
+          }
+          const b = bin.getBoundingClientRect()
+          bin.classList.toggle('pg-bin-hot', Math.hypot(e.clientX - (b.left + b.width / 2), e.clientY - (b.top + b.height / 2)) < 48)
           g.setAttribute('transform', `translate(${d.x},${d.y})`)
           // the wires of the gate go with it
           for (const p of this.svg.querySelectorAll(`.pg-cwire[data-from="${gate.id}"], .pg-cwire[data-to="${gate.id}"]`)) {
@@ -1974,10 +1983,6 @@
       addPort(og, 'out', 'in', 0)
       og.addEventListener('click', ev => { if (!ev.target.closest('.pg-cport')) this.tapIn('out', 0) })
       s.append(og)
-      // the bin, shown while a gate is dragged
-      const bin = svg('g', { class: 'pg-bin' })
-      bin.append(svg('circle', { cx: CW - 34, cy: CH - 34, r: 26 }), svg('text', { x: CW - 34, y: CH - 25, 'text-anchor': 'middle' }, '🗑'))
-      s.append(bin)
 
       // the truth table (and with coins: the mass of each row, and the distribution)
       const outs = this.outputs()
