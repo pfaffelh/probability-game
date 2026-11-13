@@ -245,6 +245,8 @@ html.pg-playing .prev-next-buttons { display: none !important; }
   .pg-stage .pg-palette { width: auto; }
   .pg-stage .pg-palette .pg-moves, .pg-stage .pg-palette .pg-blocks { flex-direction: row; flex-wrap: wrap; }
   .pg-stage .pg-palette .pg-moves-head { display: none; }
+  /* circuits: the gates above the board, staying there while the board scrolls */
+  .pg-stage .pg-circuit .pg-palette { order: -1; position: sticky; top: 0; z-index: 2; background: #fffcf3; padding-bottom: 0.2rem; }
   .pg-stage > .pg-level:not([hidden]) { padding: 0.3rem 0.5rem; }
   .pg-stage .pg-slider-note { display: none; }
   .pg-toolbar { flex-wrap: nowrap; gap: 3px; }
