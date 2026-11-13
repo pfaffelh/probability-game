@@ -3174,7 +3174,8 @@
       levelTitle.textContent = levelName(current)
       status.textContent = (v === 'proof' ? l.proof.status() : l.status?.()) ?? ''
       // (the part shown solved: the status line and the frame of the level green)
-      const shownDone = v === 'proof' ? !!l.proof?.proved : !!l.solved
+      // (what is on the screen now: after Start over no longer, though the level stays solved, ✓)
+      const shownDone = v === 'proof' ? !!l.proof?.done : !!(l.done ?? l.checked?.ok)
       status.classList.toggle('pg-status-done', shownDone)
       for (const x of levels) x.root.classList.toggle('pg-level-done', x === l && shownDone)
       undo.disabled = v === 'proof' ? !l.proof.canUndo : !l.canUndo
