@@ -28,7 +28,7 @@ jede Zeile der Eingänge. Tippe eine Zeile an, und ihre Münzen liegen auf dem S
 deine Schaltung eine Funktion von `x` und `y`, und `decide +revert` prüft jede Zeile.
 :::
 
-::::circuit (inputs := "x") (gates := "not") (table := "10") (goal := "not x") (proof := "(x : Bool) : (!x) = (not x)") (play := "a=not; x>a.0; a>out")
+::::circuit (inputs := "x") (gates := "not") (table := "10") (goal := "not x") (proof := "(x : Bool) : (!x) = (not x)") (new := "rfl") (play := "a=not; x>a.0; a>out")
 :::en
 *A wire and a gate.* Drag `not` onto the board, then wire `x` to it and it to the output.
 :::
@@ -39,21 +39,67 @@ Ausgang.
 :::
 
 :::proofen
-The statement is your circuit: its output, as a function of `x`, is the target. `decide +revert`
-checks it for both values of `x`.
+The statement is your circuit: its output, as a function of `x`, is the target. The tactic `rfl`
+proves an equation `a = b` whose two sides become the same after *reducing*. Reducing is computing
+by the definitions: Lean replaces a name by its definition, and a function defined by cases by the
+case that applies, as soon as it knows the value. `not` is defined by its two cases,
+`not false = true` and `not true = false`, so `!true` reduces to `false`, and `!(!true)` to `!false`
+and then to `true`. Here nothing has to be computed: `!x` is only another way of writing `not x`.
 
-*Tip.* `decide +revert`.
+*Tip.* `rfl`.
 :::
 
 :::proofde
-Die Aussage ist deine Schaltung: Ihr Ausgang, als Funktion von `x`, ist das Ziel. `decide +revert`
-prüft das für beide Werte von `x`.
+Die Aussage ist deine Schaltung: Ihr Ausgang, als Funktion von `x`, ist das Ziel. Die Taktik `rfl`
+beweist eine Gleichung `a = b`, deren beide Seiten nach dem *Reduzieren* gleich sind. Reduzieren ist
+Rechnen mit den Definitionen: Lean ersetzt einen Namen durch seine Definition, und eine Funktion, die
+durch Fälle definiert ist, durch den Fall, der zutrifft, sobald es den Wert kennt. `not` ist durch
+seine zwei Fälle definiert, `not false = true` und `not true = false`; also reduziert `!true` zu
+`false`, und `!(!true)` zu `!false` und dann zu `true`. Hier muss nichts gerechnet werden: `!x` ist
+nur eine andere Schreibweise für `not x`.
 
-*Tipp.* `decide +revert`.
+*Tipp.* `rfl`.
 :::
 :::solution
 ```
-decide +revert
+rfl
+```
+:::
+::::
+
+::::circuit (inputs := "x") (gates := "not") (table := "01") (goal := "x") (shape := "!(!x)") (proof := "(x : Bool) : (!(!x)) = x") (lemma := "Bool.not_not") (new := "cases") (play := "a=not; b=not; x>a.0; a>b.0; b>out")
+:::en
+*Flipped twice.* The output is the input again, with two `not`.
+:::
+
+:::de
+*Zweimal umgedreht.* Der Ausgang ist wieder der Eingang, mit zwei `nicht`.
+:::
+
+:::proofen
+`!(!x) = x` for every `x`. Now `rfl` does not help: `not` is defined by its cases, and Lean cannot
+reduce `!x` as long as it does not know `x`. The tactic `cases x` splits into the cases `false` and
+`true`, two goals one after the other, as the two rows of the table. In each, both sides reduce to
+the same: `!(!false)` to `!true` and then to `false`. Your result becomes the lemma `Bool.not_not`, as
+it is called in Lean.
+
+*Tip.* `cases x`, then `rfl`, `rfl`.
+:::
+
+:::proofde
+`!(!x) = x` für jedes `x`. Jetzt hilft `rfl` nicht: `not` ist durch seine Fälle definiert, und Lean
+kann `!x` nicht reduzieren, solange es `x` nicht kennt. Die Taktik `cases x` teilt in die Fälle
+`false` und `true`, zwei Ziele nacheinander, wie die zwei Zeilen der Tafel. In jedem reduzieren beide
+Seiten zum selben: `!(!false)` zu `!true` und dann zu `false`. Dein Ergebnis wird das Lemma
+`Bool.not_not`, wie es in Lean heißt.
+
+*Tipp.* `cases x`, dann `rfl`, `rfl`.
+:::
+:::solution
+```
+cases x
+rfl
+rfl
 ```
 :::
 ::::
@@ -69,15 +115,15 @@ Paar von Werten.
 :::
 
 :::proofen
-*Tip.* `decide +revert`.
+*Tip.* `rfl`.
 :::
 
 :::proofde
-*Tipp.* `decide +revert`.
+*Tipp.* `rfl`.
 :::
 :::solution
 ```
-decide +revert
+rfl
 ```
 :::
 ::::
@@ -92,20 +138,27 @@ decide +revert
 :::
 
 :::proofen
-*Tip.* `decide +revert`.
+`||` is defined by cases of its left side: `false || b` reduces to `b`, and `true || b` to `true`.
+
+*Tip.* `cases x`, then `rfl` in each case.
 :::
 
 :::proofde
-*Tipp.* `decide +revert`.
+`||` ist durch Fälle seiner linken Seite definiert: `false || b` reduziert zu `b`, und `true || b` zu
+`true`.
+
+*Tipp.* `cases x`, dann `rfl` in jedem Fall.
 :::
 :::solution
 ```
-decide +revert
+cases x
+rfl
+rfl
 ```
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "and, not") (table := "0111") (goal := "x || y") (proof := "(x y : Bool) : (!(!x && !y)) = (x || y)") (play := "a=not; b=not; c=and; d=not; x>a.0; y>b.0; a>c.0; b>c.1; c>d.0; d>out")
+::::circuit (inputs := "x y") (gates := "and, not") (table := "0111") (goal := "x || y") (proof := "(x y : Bool) : (!(!x && !y)) = (x || y)") (new := "decide") (play := "a=not; b=not; c=and; d=not; x>a.0; y>b.0; a>c.0; b>c.1; c>d.0; d>out")
 :::en
 *Or, without or.* At least one `true`, with `and` and `not` only. (Not both `false`.)
 :::
@@ -115,13 +168,19 @@ decide +revert
 :::
 
 :::proofen
-This is one of De Morgan's laws: `!(!x && !y) = (x || y)`.
+This is one of De Morgan's laws: `!(!x && !y) = (x || y)`. By hand: `cases x`, `cases y`, and `rfl`
+in each of the four cases, the four rows of the table. The tactic `decide` does that for you: it
+reduces a statement about `Bool` until it is `true` or `false`. `decide +revert` first takes the
+variables into the statement, here `∀ x y, …`, and so checks every row.
 
 *Tip.* `decide +revert`.
 :::
 
 :::proofde
-Das ist eine der Regeln von De Morgan: `!(!x && !y) = (x || y)`.
+Das ist eine der Regeln von De Morgan: `!(!x && !y) = (x || y)`. Von Hand: `cases x`, `cases y`, und
+`rfl` in jedem der vier Fälle, den vier Zeilen der Tafel. Die Taktik `decide` macht das für dich: Sie
+reduziert eine Aussage über `Bool`, bis sie `true` oder `false` ist. `decide +revert` nimmt zuerst die
+Variablen in die Aussage, hier `∀ x y, …`, und prüft so jede Zeile.
 
 *Tipp.* `decide +revert`.
 :::
@@ -255,6 +314,79 @@ decide +revert
 :::
 
 :::proofde
+*Tipp.* `decide +revert`.
+:::
+:::solution
+```
+decide +revert
+```
+:::
+::::
+
+::::circuit (inputs := "x") (gates := "f") (table := "-1") (shape := "f (f x)") (every := "id true") (proof := "(f : Bool → Bool) (h : f true = true) : f (f true) = true") (new := "rw") (play := "a=f; b=f; a.0=id; x>a.0; a>b.0; b>out")
+:::en
+*The same map twice.* New gate: `f`, an unknown map. It has one field for one of the four maps, and
+every `f` on the board has the same one. Build `f (f x)`. Only the row `x = true` counts: there the
+output is to be `true` again. In Lean `f` is any map with `f true = true`. Which of the four are
+these? Try each of them in `f`: the board ticks off the ones that count.
+:::
+
+:::de
+*Zweimal dieselbe Abbildung.* Neuer Baustein: `f`, eine unbekannte Abbildung. Er hat ein Feld für
+eine der vier Abbildungen, und jedes `f` auf dem Spielfeld hat dieselbe. Bau `f (f x)`. Nur die Zeile
+`x = true` zählt: Dort soll der Ausgang wieder `true` sein. In Lean ist `f` irgendeine Abbildung mit
+`f true = true`. Welche der vier sind das? Probier jede in `f` aus: Das Spielfeld hakt die ab, die
+zählen.
+:::
+
+:::proofen
+A map `f` that sends `true` to `true`, the hypothesis `h : f true = true`, does so twice. Here `rfl`
+cannot help: nothing is known of `f` but `h`. `rw [h]` rewrites with the hypothesis: `f true` becomes
+`true`, wherever it stands in the goal.
+
+*Tip.* `rw [h, h]`.
+:::
+
+:::proofde
+Eine Abbildung `f`, die `true` nach `true` schickt, die Annahme `h : f true = true`, tut das auch
+zweimal. Hier hilft `rfl` nicht: Von `f` ist nichts bekannt außer `h`. `rw [h]` schreibt mit der
+Annahme um: `f true` wird `true`, wo immer es im Ziel steht.
+
+*Tipp.* `rw [h, h]`.
+:::
+:::solution
+```
+rw [h, h]
+```
+:::
+::::
+
+::::circuit (inputs := "b") (gates := "f") (table := "f") (shape := "f (f (f b))") (every := "id not true false") (proof := "(f : Bool → Bool) (b : Bool) : f (f (f b)) = f b") (play := "a=f; c=f; d=f; b>a.0; a>c.0; c>d.0; d>out")
+:::en
+*Three times is once.* Build `f (f (f b))`. The target is `f` itself, once: for every map in `f`,
+three times is to be the same as once. Check it for each of the four maps.
+:::
+
+:::de
+*Dreimal ist einmal.* Bau `f (f (f b))`. Das Ziel ist `f` selbst, einmal: Für jede Abbildung in `f`
+soll dreimal dasselbe sein wie einmal. Prüf es für jede der vier Abbildungen.
+:::
+
+:::proofen
+No rule says what `f` does. But there are only four maps `Bool → Bool`, the four you tried, and with
+the two values of `b` these are eight cases. `decide +revert` checks them all, as the board did. With
+coins this no longer works: a coin `coin p` is a different distribution for every number `p` between
+0 and 1, infinitely many cases. There, the rules do the work.
+
+*Tip.* `decide +revert`.
+:::
+
+:::proofde
+Keine Regel sagt, was `f` tut. Aber es gibt nur vier Abbildungen `Bool → Bool`, die vier, die du
+ausprobiert hast, und mit den zwei Werten von `b` sind das acht Fälle. `decide +revert` prüft sie
+alle, wie das Spielfeld. Mit Münzen geht das nicht mehr: Eine Münze `coin p` ist für jede Zahl `p`
+zwischen 0 und 1 eine andere Verteilung, unendlich viele Fälle. Dort machen die Regeln die Arbeit.
+
 *Tipp.* `decide +revert`.
 :::
 :::solution

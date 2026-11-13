@@ -298,17 +298,18 @@ def boolean : DirectiveExpanderOf BoolConfig
 -- world (`bool`). With coins (`coins := "p p"`: a coin `coin p` at each input) the target is the
 -- distribution of the output (`target := "bool true:2p(1-p) false:1-2p(1-p)"`), and the group is
 -- that of chance.
-block_extension Block.circuit (inputs gates table goal coins target new proof lemma context world : String) where
+block_extension Block.circuit (inputs gates table goal coins target new proof lemma context world shape every : String) where
   data := Json.mkObj [("inputs", inputs), ("gates", gates), ("table", table), ("goal", goal), ("coins", coins),
     ("target", target), ("new", new), ("proof", proof), ("lemma", lemma), ("context", context), ("world", world),
-    ("group", if coins.isEmpty then "bool" else "chance")]
+    ("shape", shape), ("every", every), ("group", if coins.isEmpty then "bool" else "chance")]
   traverse id data _ := do registerLevel id data; pure none
   extraJs := {JS.mk gameJs}
   extraCss := {CSS.mk gameCss}
   toHtml := some fun _ goB id data content => do
     let get (k : String) := (data.getObjValAs? String k).toOption.getD ""
     pure <| .tag "div" (#[("class", "pg-level pg-circuit"), ("data-inputs", get "inputs"), ("data-gates", get "gates"),
-        ("data-table", get "table"), ("data-goal", get "goal"), ("data-coins", get "coins"), ("data-target", get "target")] ++
+        ("data-table", get "table"), ("data-goal", get "goal"), ("data-coins", get "coins"), ("data-target", get "target"),
+        ("data-shape", get "shape"), ("data-every", get "every")] ++
         proofAttrs id (← Doc.Html.HtmlT.state) data (get "context")) <|
       .seq #[.tag "div" #[("class", "pg-text")] (← content.mapM goB), .tag "div" #[("class", "pg-board")] .empty]
   toTeX := none
@@ -325,12 +326,15 @@ structure CircuitConfig where
   lemma : String
   context : String
   play : String
+  shape : String
+  every : String
 
 instance : FromArgs CircuitConfig DocElabM where
   fromArgs := CircuitConfig.mk <$> .namedD `inputs .string "x y" <*> .named `gates .string false <*>
     .namedD `table .string "" <*> .namedD `goal .string "" <*> .namedD `coins .string "" <*> .namedD `target .string "" <*>
     .namedD `new .string "" <*> .namedD `proof .string "" <*> .namedD `lemma .string "" <*>
-    .namedD `context .string "Lean/WorldBool.lean" <*> .namedD `play .string ""
+    .namedD `context .string "Lean/WorldBool.lean" <*> .namedD `play .string "" <*>
+    .namedD `shape .string "" <*> .namedD `every .string ""
 
 /-- A circuit: `::::circuit (inputs := "x y") (gates := "and, or, not") (table := "0110") (goal := "x ^^ y")`. -/
 @[directive]
@@ -341,7 +345,7 @@ def circuit : DirectiveExpanderOf CircuitConfig
     let world ← worldOf
     ``(Verso.Doc.Block.other (Block.circuit $(quote cfg.inputs) $(quote cfg.gates) $(quote cfg.table) $(quote cfg.goal)
         $(quote cfg.coins) $(quote cfg.target) $(quote cfg.new) $(quote cfg.proof) $(quote cfg.lemma) $(quote context)
-        $(quote world)) #[$blocks,*])
+        $(quote world) $(quote cfg.shape) $(quote cfg.every)) #[$blocks,*])
 
 -- The lexicon: every move, building block, tactic and rule of the game, which `game.js` writes
 -- into this block (`::::lexicon` with no content), from the same tables as the tips.
