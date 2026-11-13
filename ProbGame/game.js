@@ -2686,52 +2686,48 @@
     }
     // a name not yet taken in the goal
     fresh(...want) { const taken = new Set(this.vars().map(v => v.name)); return want.find(n => !taken.has(n)) ?? want[0] + '₁' }
-    // a line put together: after `t <;>` it goes on that line; a whole line runs at once
-    put(text, whole = true) {
+    // a line put together by taps, into the input (it runs with Run or Enter, as a typed one):
+    // after `t <;>` it goes on that line, else it takes the place of what is there
+    put(text) {
       const v = (this.input?.value ?? '')
-      const line = /<;>\s*$/.test(v) ? v.replace(/\s*$/, ' ') + text : text
       this.choice = null
-      this.input.value = this.typed = line
-      if (whole) this.run(); else { this.render(); this.input?.focus({ preventScroll: true }) }
+      this.input.value = this.typed = /<;>\s*$/.test(v) ? v.replace(/\s*$/, ' ') + text : text
+      this.render(); this.input?.focus({ preventScroll: true })
     }
-    // a tapped tactic: at once when it needs nothing more, a choice when it needs a name, else its start
-    // in the input (rw [, apply …) for the rules to come
+    // a tapped tactic into the input: whole when it needs nothing more, with a choice when it needs a
+    // name (cases x or cases y), else its start (rw [, apply …) for the rules to come
     tapTactic(it) {
       const v = this.input?.value ?? ''
-      const ask = (options, run = true) => { if (options.length === 1) return this.put(options[0], run); this.choice = { options, run }; this.render() }
+      const ask = options => { if (options.length === 1) return this.put(options[0]); this.choice = { options }; this.render() }
       switch (it.name) {
-        case '<;>': {
-          // after a line that ran: that line again, to go on with `<;>`
-          if (v.trim()) { this.input.value = this.typed = v.replace(/\s*$/, ' <;> '); this.choice = null; this.render(); this.input.focus({ preventScroll: true }); return }
-          const last = this.lines[this.lines.length - 1]
-          if (!last) return
-          this.typed = last + ' <;> '; this.choice = null; this.back(); return
-        }
+        case '<;>': this.input.value = this.typed = v.replace(/\s*$/, '') + ' <;> '; this.choice = null; this.render(); this.input.focus({ preventScroll: true }); return
         case 'cases': {
           const vs = this.vars(), b = vs.filter(x => /^(Bool|ℕ|Nat)$/.test(x.type))
           const pick = (b.length ? b : vs.filter(x => !/[→:]/.test(x.type) || /=/.test(x.type))).map(x => `cases ${x.name}`)
-          return pick.length ? ask(pick) : this.put('cases ', false)
+          return pick.length ? ask(pick) : this.put('cases ')
         }
         case "induction'": {
           const ns = this.vars().filter(x => /^(ℕ|Nat)$/.test(x.type)).map(x => `induction' ${x.name} with ${x.name} ih`)
-          return ns.length ? ask(ns) : this.put("induction' ", false)
+          return ns.length ? ask(ns) : this.put("induction' ")
         }
         case 'decide': return ask(this.vars().length ? ['decide +revert', 'decide'] : ['decide'])
         case 'funext': return this.put(`funext ${this.fresh('x', 'y', 'z', 'b')}`)
         case 'intro': return this.put(`intro ${this.fresh('h', 'h2', 'h3')}`)
-        case 'have': return this.put(`have ${this.fresh('h2', 'h3', 'h4')} := `, false)
-        case 'rw': return this.put('rw [', false)
-        case 'simp only': return this.put('simp only [', false)
-        case 'apply': case 'exists': return this.put(it.name + ' ', false)
+        case 'have': return this.put(`have ${this.fresh('h2', 'h3', 'h4')} := `)
+        case 'rw': return this.put('rw [')
+        case 'simp only': return this.put('simp only [')
+        case 'apply': case 'exists': return this.put(it.name + ' ')
         default: return this.put(it.insert.trim())
       }
     }
-    // a tapped rule: into the open brackets of rw/simp only, after apply (and then run), else rw [rule] at once
+    // a tapped rule: into the open brackets of rw/simp only, after apply, else as rw [rule]
     tapRule(it) {
       const v = this.input?.value ?? ''
       this.choice = null
       if (/\[[^\]]*$/.test(v)) { this.input.value = this.typed = (/\[\s*$/.test(v) ? v.replace(/\s*$/, '') : v.replace(/\s*$/, '') + ', ') + it.name; this.render(); this.input.focus({ preventScroll: true }); return }
       if (/^apply\s*$/.test(v)) return this.put(`apply ${it.name}`)
+      // (rw [a] there: b goes into its brackets, rw [a, b])
+      if (/\[[^\]]*\S[^\]]*\]\s*$/.test(v)) { this.input.value = this.typed = v.replace(/\s*\]\s*$/, `, ${it.name}]`); this.render(); this.input.focus({ preventScroll: true }); return }
       if (/:=\s*$/.test(v) || /^exists\s*$/.test(v)) { this.input.value = this.typed = v.replace(/\s*$/, ' ') + it.name + ' '; this.render(); this.input.focus({ preventScroll: true }); return }
       this.put(`rw [${it.name}]`)
     }
@@ -2836,7 +2832,7 @@
         pick.append(el('span', 'pg-inv-title', tr('Which?')))
         for (const o of this.choice.options) {
           const b = el('button', 'pg-chip pg-chip-choice', o); b.type = 'button'
-          b.addEventListener('click', () => this.put(o, this.choice?.run ?? true))
+          b.addEventListener('click', () => this.put(o))
           pick.append(b)
         }
         const x = el('button', 'pg-tool', '✕'); x.type = 'button'; x.addEventListener('click', () => { this.choice = null; this.render() })
