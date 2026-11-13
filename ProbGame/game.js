@@ -2049,7 +2049,9 @@
         btn('▸', () => { this.row = (this.row + 1) % n; this.render() }, tr('next row')),
         btn(tr('hide'), () => { this.row = null; this.render() }))
       else rowBar.append(btn(tr('Show the values row by row'), () => { this.row = 0; this.render() }))
-      side.append(table, rowBar, el('div', 'pg-truth-note', tr(shown ? 'Tap a row to see its coins on the board.' : 'Or tap a row of the table.')))
+      if (!this.random) rowBar.classList.add('pg-rowbar-below')
+      // (without coins the target is on the board, in the output box: no table beside it)
+      if (this.random) side.append(table, rowBar, el('div', 'pg-truth-note', tr(shown ? 'Tap a row to see its coins on the board.' : 'Or tap a row of the table.')))
       if (this.random) {
         const d = this.dist()
         if (d) {
@@ -2079,7 +2081,8 @@
         side.append(slider, throws)
       }
       const rowEl = el('div', 'pg-row pg-crow')
-      rowEl.append(s, side)
+      if (this.random) rowEl.append(s, side)
+      else { const col = el('div', 'pg-cboard-col'); col.append(s, rowBar); rowEl.append(col) }
 
       const moves = el('div', 'pg-moves')
       for (const kind of this.gates) {
