@@ -67,13 +67,13 @@ rfl
 :::
 ::::
 
-::::circuit (inputs := "x") (gates := "not") (table := "01") (goal := "x") (shape := "!(!x)") (proof := "(x : Bool) : (!(!x)) = x") (lemma := "Bool.not_not") (new := "cases") (play := "a=not; b=not; x>a.0; a>b.0; b>out")
+::::circuit (inputs := "x") (gates := "not") (table := "01") (goal := "x") (shape := "!(!x)") (start := "a=not; x>a.0") (proof := "(x : Bool) : (!(!x)) = x") (lemma := "Bool.not_not") (new := "cases") (play := "b=not; a>b.0; b>out")
 :::en
-*Flipped twice.* The output is the input again, with two `not`.
+*Flipped twice.* One `not` is already on the board and stays there. Add a second one, so that the output is the input again.
 :::
 
 :::de
-*Zweimal umgedreht.* Der Ausgang ist wieder der Eingang, mit zwei `nicht`.
+*Zweimal umgedreht.* Ein `nicht` liegt schon auf dem Spielfeld und bleibt dort. Füge ein zweites hinzu, sodass der Ausgang wieder der Eingang ist.
 :::
 
 :::proofen
