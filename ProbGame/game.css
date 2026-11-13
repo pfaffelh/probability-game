@@ -543,3 +543,6 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 .pg-proof-sol-pic svg { display: block; max-width: 100%; max-height: 32svh; width: auto; height: auto; margin: 0 auto; }
 .pg-proof-sol-pic .pg-crow, .pg-proof-sol-pic .pg-cboard-col { display: flex; flex-direction: column; align-items: center; flex: none; max-width: none; }
 .pg-goals > .pg-next { margin-top: 0.5rem; }
+/* a half solved: green, as the dots */
+.pg-tab.pg-tab-done { background: #e3f3e5; color: #1f6b27; }
+.pg-tab.pg-tab-done.pg-tab-on { background: #2e8b37; color: white; }
