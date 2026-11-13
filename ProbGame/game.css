@@ -496,6 +496,8 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 .pg-coutput .pg-gchip { pointer-events: none; }
 .pg-gchip text.pg-gchip-big { font-size: 14px; }
 .pg-tlabel { font-size: 15px; }
-.pg-coutput line, .pg-coutput text { pointer-events: none; }
+.pg-coutput line, .pg-coutput text, .pg-coutput .pg-gused-col { pointer-events: none; }
 .pg-cboard-col { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; flex: 1 1 24rem; max-width: 480px; margin: 0 auto; }
 .pg-cboard-col .pg-svg.pg-csvg { flex: none; width: 100%; }
+.pg-gate-sym { font: bold 1.4em var(--verso-code-font-family, monospace); min-width: 1.4em; text-align: center; }
+.pg-csym { font-size: 26px; }
