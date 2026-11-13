@@ -182,6 +182,58 @@ decide +revert
 :::
 ::::
 
+::::circuit (inputs := "x") (gates := "toNat, not") (table := "nat 10") (goal := "1 - x.toNat") (proof := "(x : Bool) : ((!x).toNat) = (1 - x.toNat)") (play := "a=not; b=toNat; x>a.0; a>b.0; b>out")
+:::en
+*A number.* New gate: `toNat` makes a coin a number, `false` is `0` and `true` is `1`. Its output is
+blue: a wire of numbers. The target is now a number in every row: `1` when `x` is `false`, `0` when
+it is `true`.
+:::
+
+:::de
+*Eine Zahl.* Neuer Baustein: `toNat` macht aus einer Münze eine Zahl, `false` ist `0` und `true` ist
+`1`. Sein Ausgang ist blau: ein Draht mit Zahlen. Das Ziel ist jetzt in jeder Zeile eine Zahl: `1`,
+wenn `x` `false` ist, `0`, wenn es `true` ist.
+:::
+
+:::proofen
+*Tip.* `decide +revert`: the numbers are compared as well.
+:::
+
+:::proofde
+*Tipp.* `decide +revert`: auch Zahlen werden verglichen.
+:::
+:::solution
+```
+decide +revert
+```
+:::
+::::
+
+::::circuit (inputs := "x y") (gates := "toNat, plus, and, or, not") (table := "nat 0112") (goal := "x.toNat + y.toNat") (proof := "(x y : Bool) : (x.toNat + y.toNat) = (x.toNat + y.toNat)") (play := "a=toNat; b=toNat; c=plus; x>a.0; y>b.0; a>c.0; b>c.1; c>out")
+:::en
+*Count.* New gate: `plus` adds two numbers. The target counts how many of `x`, `y` are `true`:
+`0`, `1` or `2`. A coin does not fit into `plus`: first `toNat`.
+:::
+
+:::de
+*Zählen.* Neuer Baustein: `plus` addiert zwei Zahlen. Das Ziel zählt, wie viele von `x`, `y` `true`
+sind: `0`, `1` oder `2`. Eine Münze passt nicht in `plus`: erst `toNat`.
+:::
+
+:::proofen
+*Tip.* `decide +revert`.
+:::
+
+:::proofde
+*Tipp.* `decide +revert`.
+:::
+:::solution
+```
+decide +revert
+```
+:::
+::::
+
 ::::circuit (inputs := "x y z") (gates := "and, or") (table := "00010111") (goal := "decide (2 ≤ x.toNat + y.toNat + z.toNat)") (proof := "(x y z : Bool) : ((x && y) || (x && z) || (y && z)) = (decide (2 ≤ x.toNat + y.toNat + z.toNat))") (play := "a=and; b=and; c=and; d=or; e=or; x>a.0; y>a.1; x>b.0; z>b.1; y>c.0; z>c.1; a>d.0; b>d.1; d>e.0; c>e.1; e>out")
 :::en
 *The boss: the majority of three.* `true` when at least two of the three inputs are. Eight rows.
