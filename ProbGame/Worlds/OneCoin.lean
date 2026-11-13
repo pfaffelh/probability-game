@@ -113,7 +113,153 @@ rw [coin_false]
 :::
 ::::
 
-::::level (start := "bernoulli p") (target := "pure true") (moves := "not, heads") (lean := "(bernoulli p h).map (fun _ => true) = pure true") (leanTarget := "DiscreteMeasure.pure true") (proof := "(p : I) (b : Bool) : (fun _ => b) <$> coin p = pure b") (lemma := "coin_const") (new := "apply, cases, bool_ext, coin_total, pure_true") (play := "heads")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ false = 1 - μ true") (lemma := "mass_false") (new := "mass_total, mass_ne_top, ENNReal.add_sub_cancel_left")
+:::en
+*What is not at true.* Now in Lean only: a statement about *every* distribution on `Bool`, which no
+board can show.
+:::
+
+:::de
+*Was nicht bei true liegt.* Jetzt nur in Lean: eine Aussage über *jede* Verteilung auf `Bool`, die
+kein Spielfeld zeigen kann.
+:::
+
+:::proofen
+`μ : DiscreteMeasure Bool` is any distribution on `Bool`, and `[Prob μ]` says that its total mass is
+one. That is the rule `mass_total μ : μ true + μ false = 1`. So the mass at `false` is what is
+missing at `true`. Masses are numbers in $`[0, \infty]` (`ENNReal`); taking away is allowed when
+what is taken away is finite: `ENNReal.add_sub_cancel_left (h : a ≠ ⊤) : a + b - a = b`, and
+`mass_ne_top μ b : μ b ≠ ⊤` says that a mass is finite. `rw [← mass_total μ]` rewrites from right
+to left: the `1` becomes `μ true + μ false`.
+
+*Tip.* `rw [← mass_total μ]`, then `rw [ENNReal.add_sub_cancel_left (mass_ne_top μ true)]`.
+:::
+
+:::proofde
+`μ : DiscreteMeasure Bool` ist irgendeine Verteilung auf `Bool`, und `[Prob μ]` sagt, dass ihre
+Gesamtmasse eins ist. Das ist die Regel `mass_total μ : μ true + μ false = 1`. Also ist die Masse bei
+`false` das, was bei `true` zu eins fehlt. Massen sind Zahlen in $`[0, \infty]` (`ENNReal`);
+wegnehmen darf man, wenn das Weggenommene endlich ist:
+`ENNReal.add_sub_cancel_left (h : a ≠ ⊤) : a + b - a = b`, und `mass_ne_top μ b : μ b ≠ ⊤` sagt,
+dass eine Masse endlich ist. `rw [← mass_total μ]` schreibt von rechts nach links um: Die `1` wird zu
+`μ true + μ false`.
+
+*Tipp.* `rw [← mass_total μ]`, dann `rw [ENNReal.add_sub_cancel_left (mass_ne_top μ true)]`.
+:::
+:::solution
+```
+rw [← mass_total μ]
+rw [ENNReal.add_sub_cancel_left (mass_ne_top μ true)]
+```
+:::
+::::
+
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ true = 1 - μ false") (lemma := "mass_true") (new := "add_comm")
+:::en
+*What is not at false.* The same the other way round.
+:::
+
+:::de
+*Was nicht bei false liegt.* Dasselbe andersherum.
+:::
+
+:::proofen
+As before, but now `μ false` is taken away, and in `μ true + μ false` it stands second. The rule
+`add_comm : a + b = b + a` turns the sum round.
+
+*Tip.* `rw [← mass_total μ]`, `rw [add_comm]`, then `ENNReal.add_sub_cancel_left` as before, with
+`mass_ne_top μ false`.
+:::
+
+:::proofde
+Wie eben, aber jetzt wird `μ false` weggenommen, und in `μ true + μ false` steht es an zweiter
+Stelle. Die Regel `add_comm : a + b = b + a` dreht die Summe um.
+
+*Tipp.* `rw [← mass_total μ]`, `rw [add_comm]`, dann `ENNReal.add_sub_cancel_left` wie eben, mit
+`mass_ne_top μ false`.
+:::
+:::solution
+```
+rw [← mass_total μ]
+rw [add_comm]
+rw [ENNReal.add_sub_cancel_left (mass_ne_top μ false)]
+```
+:::
+::::
+
+::::leanonly (proof := "(μ ν : DiscreteMeasure Bool) [Prob μ] [Prob ν] (h : μ true = ν true) : μ = ν") (lemma := "bool_ext") (new := "ext, cases, exact")
+:::en
+*One bar is enough.* Two distributions on `Bool` with the same mass at `true` are the same. That is
+why the board only had to look at one bar.
+:::
+
+:::de
+*Eine Säule reicht.* Zwei Verteilungen auf `Bool` mit derselben Masse bei `true` sind gleich. Darum
+musste das Spielfeld nur auf eine Säule schauen.
+:::
+
+:::proofen
+Now there is a hypothesis: `h : μ true = ν true`. Three new tactics. `ext x`: two distributions are
+equal when they have the same mass at every point `x`. `cases x`: the point is `false` or `true`, two
+goals one after the other. `exact h`: the goal is exactly the hypothesis `h`. At `false`, your lemma
+`mass_false` helps, twice, and then `h`.
+
+*Tip.* `ext x`, `cases x`, then `rw [mass_false, mass_false, h]`, and `exact h`.
+:::
+
+:::proofde
+Jetzt gibt es eine Annahme: `h : μ true = ν true`. Drei neue Taktiken. `ext x`: Zwei Verteilungen sind
+gleich, wenn sie an jedem Punkt `x` dieselbe Masse haben. `cases x`: Der Punkt ist `false` oder `true`,
+zwei Ziele nacheinander. `exact h`: Das Ziel ist genau die Annahme `h`. Bei `false` hilft dein Lemma
+`mass_false`, zweimal, und dann `h`.
+
+*Tipp.* `ext x`, `cases x`, dann `rw [mass_false, mass_false, h]`, und `exact h`.
+:::
+:::solution
+```
+ext x
+cases x
+rw [mass_false, mass_false, h]
+exact h
+```
+:::
+::::
+
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ = coin (chance μ)") (lemma := "eq_coin") (new := "apply, chance, chance_eq")
+:::en
+*Every distribution is a coin.* Whatever distribution on `Bool`: it is the coin with its mass at
+`true`.
+:::
+
+:::de
+*Jede Verteilung ist eine Münze.* Welche Verteilung auf `Bool` auch immer: Sie ist die Münze mit ihrer
+Masse bei `true`.
+:::
+
+:::proofen
+`coin` takes a number in $`[0, 1]`, a mass is a number in $`[0, \infty]`. `chance μ` is the mass at
+`true` as a number in $`[0, 1]`, and `chance_eq : ↑(chance μ) = μ true`. The tactic `apply bool_ext`
+turns the goal `μ = ν` into what your lemma needs: `μ true = ν true`.
+
+*Tip.* `apply bool_ext`, then `rw [coin_true, chance_eq]`.
+:::
+
+:::proofde
+`coin` nimmt eine Zahl in $`[0, 1]`, eine Masse ist eine Zahl in $`[0, \infty]`. `chance μ` ist die
+Masse bei `true` als Zahl in $`[0, 1]`, und `chance_eq : ↑(chance μ) = μ true`. Die Taktik
+`apply bool_ext` macht aus dem Ziel `μ = ν` das, was dein Lemma braucht: `μ true = ν true`.
+
+*Tipp.* `apply bool_ext`, dann `rw [coin_true, chance_eq]`.
+:::
+:::solution
+```
+apply bool_ext
+rw [coin_true, chance_eq]
+```
+:::
+::::
+
+::::level (start := "bernoulli p") (target := "pure true") (moves := "not, heads") (lean := "(bernoulli p h).map (fun _ => true) = pure true") (leanTarget := "DiscreteMeasure.pure true") (proof := "(p : I) (b : Bool) : (fun _ => b) <$> coin p = pure b") (lemma := "coin_const") (new := "coin_total, pure_true") (play := "heads")
 :::en
 *Always `true`.* A constant map sends both outcomes to the same point: all the mass goes together.
 The result is sure, a point mass (Dirac measure).
@@ -129,14 +275,11 @@ kommt zusammen. Das Ergebnis ist sicher, eine Punktmasse (Dirac-Maß).
 the board showed, for both values `b`: all the mass goes to one point. It becomes your lemma
 `coin_const`.
 
-On the two points `false` and `true`, the bar at `true` decides everything: the rest of the mass
-lies at `false`, since the total mass is $`1` (`Prob μ`). This is the first rule of the game,
-`bool_ext μ ν (h : μ true = ν true) : μ = ν`. The tactic `apply bool_ext` turns a goal `μ = ν` into
-what the rule needs: `μ true = ν true`.
+On the two points `false` and `true`, the bar at `true` decides everything: that is your lemma
+`bool_ext`, and `apply bool_ext` turns the goal into `μ true = ν true`.
 
 Compare the bars at `true`: `apply bool_ext`, then `map_true`, and
-the new rule `pure_true : (pure b) true = bif b then 1 else 0`. Then `b` has to be known: the new
-tactic `cases b` splits into the cases `false` and `true`, two goals, one after the other. For
+the new rule `pure_true : (pure b) true = bif b then 1 else 0`. Then `b` has to be known: `cases b`. For
 `true`, the new rule `coin_total : (coin p) true + (coin p) false = 1` says that the coin has total
 mass one. `rw [Bool.cond_true]` rewrites one `bif` at a time.
 
@@ -150,14 +293,11 @@ mass one. `rw [Bool.cond_true]` rewrites one `bif` at a time.
 was das Spielfeld gezeigt hat, für beide Werte `b`: Die ganze Masse geht zu einem Punkt. Sie wird
 dein Lemma `coin_const`.
 
-Auf den zwei Punkten `false` und `true` entscheidet die Säule bei `true` alles: Der Rest der Masse
-liegt bei `false`, denn die Gesamtmasse ist $`1` (`Prob μ`). Das ist die erste Regel des Spiels,
-`bool_ext μ ν (h : μ true = ν true) : μ = ν`. Die Taktik `apply bool_ext` macht aus einem Ziel
-`μ = ν` das, was die Regel braucht: `μ true = ν true`.
+Auf den zwei Punkten `false` und `true` entscheidet die Säule bei `true` alles: Das ist dein Lemma
+`bool_ext`, und `apply bool_ext` macht aus dem Ziel `μ true = ν true`.
 
 Vergleiche die Säulen bei `true`: `apply bool_ext`, dann `map_true` und die neue Regel
-`pure_true : (pure b) true = bif b then 1 else 0`. Dann muss `b` bekannt sein: Die neue Taktik
-`cases b` teilt in die Fälle `false` und `true`, zwei Ziele, eines nach dem anderen. Für `true` sagt
+`pure_true : (pure b) true = bif b then 1 else 0`. Dann muss `b` bekannt sein: `cases b`. Für `true` sagt
 die neue Regel `coin_total : (coin p) true + (coin p) false = 1`, dass die Münze die Gesamtmasse
 eins hat. `rw [Bool.cond_true]` schreibt immer nur ein `bif` um.
 
@@ -288,7 +428,7 @@ rfl
 
 :::proofen
 Flipping turns the coin `p` into the coin $`1 - p`. Two distributions on `Bool` are the same when
-their bars at `true` are (`bool_ext`, from *Always `true`*), and you know the bar at `true` of the flipped
+their bars at `true` are (`bool_ext`, your lemma), and you know the bar at `true` of the flipped
 coin (`coin_not_true`, from *Where does the mass go?*). Your result becomes the lemma `coin_not`, which the next worlds use
 all the time.
 
@@ -297,7 +437,7 @@ all the time.
 
 :::proofde
 Umdrehen macht aus der Münze $`p` die Münze $`1 - p`. Zwei Verteilungen auf `Bool` sind gleich, wenn
-ihre Säulen bei `true` gleich sind (`bool_ext`, aus *Immer `true`*), und die Säule bei `true` der umgedrehten
+ihre Säulen bei `true` gleich sind (`bool_ext`, dein Lemma), und die Säule bei `true` der umgedrehten
 Münze kennst du (`coin_not_true`, aus *Wohin geht die Masse?*). Dein Ergebnis wird das Lemma `coin_not`, das die nächsten
 Welten ständig benutzen.
 
