@@ -2648,7 +2648,11 @@
     }
 
     async run() {
-      const line = this.input.value.trim()
+      let line = this.input.value.trim()
+      // (rw [a, b — the bracket closed)
+      const open = (line.match(/\[/g) ?? []).length - (line.match(/\]/g) ?? []).length
+      if (open > 0) line += ']'.repeat(open)
+      this.choice = null
       if (!line || this.busy || !this.session) return
       const no = this.refuse(line)
       if (no) { this.error = no; this.render(); return }
@@ -2670,16 +2674,66 @@
       this.done = false
       this.busy = false; this.render(); this.input?.focus({ preventScroll: true })
     }
-    // a tapped item goes into the input: a rule into the brackets of rw/simp only, or as rw [rule]
-    insert(item) {
-      let v = this.input.value
-      if (item.kind === 'tactic') v = item.name === '<;>' ? v + item.insert : (v.trim() ? v : item.insert)
-      else if (/^have \S+ :=\s*$/.test(v) || /^apply\s*$/.test(v)) v = v.replace(/\s*$/, ' ') + item.name + (v.startsWith('have') ? ' ' : '')
-      else if (/\[[^\]]*$/.test(v) || /\[\s*\]$/.test(v)) v = v.replace(/\[\s*\]$/, '[').replace(/(\[.*\S)$/, '$1, ') + item.name + (v.endsWith('[') || /\[\s*\]$/.test(v) ? ']' : '')
-      else if (/\[.*\]/.test(v)) v = v.replace(/\s*\]([^\]]*)$/, (m, rest) => (/\[\s*$/.test(v.slice(0, v.lastIndexOf(']'))) ? '' : ', ') + item.name + ']' + rest)
-      else v = `rw [${item.name}]`
-      this.input.value = this.typed = v
-      this.input.focus({ preventScroll: true })
+    // the names in the goal now, with their types (`x y : Bool` gives x and y)
+    vars() {
+      const out = []
+      for (const l of String(this.goals?.[0] ?? '').split('\n')) {
+        if (/^\s*⊢/.test(l)) break
+        const m = /^\s*([^:⊢]+?)\s*:\s*(.+)$/.exec(l)
+        if (m && !/^case\b/.test(l)) for (const n of m[1].split(/\s+/)) if (n) out.push({ name: n, type: m[2].trim() })
+      }
+      return out
+    }
+    // a name not yet taken in the goal
+    fresh(...want) { const taken = new Set(this.vars().map(v => v.name)); return want.find(n => !taken.has(n)) ?? want[0] + '₁' }
+    // a line put together: after `t <;>` it goes on that line; a whole line runs at once
+    put(text, whole = true) {
+      const v = (this.input?.value ?? '')
+      const line = /<;>\s*$/.test(v) ? v.replace(/\s*$/, ' ') + text : text
+      this.choice = null
+      this.input.value = this.typed = line
+      if (whole) this.run(); else { this.render(); this.input?.focus({ preventScroll: true }) }
+    }
+    // a tapped tactic: at once when it needs nothing more, a choice when it needs a name, else its start
+    // in the input (rw [, apply …) for the rules to come
+    tapTactic(it) {
+      const v = this.input?.value ?? ''
+      const ask = (options, run = true) => { if (options.length === 1) return this.put(options[0], run); this.choice = { options, run }; this.render() }
+      switch (it.name) {
+        case '<;>': {
+          // after a line that ran: that line again, to go on with `<;>`
+          if (v.trim()) { this.input.value = this.typed = v.replace(/\s*$/, ' <;> '); this.choice = null; this.render(); this.input.focus({ preventScroll: true }); return }
+          const last = this.lines[this.lines.length - 1]
+          if (!last) return
+          this.typed = last + ' <;> '; this.choice = null; this.back(); return
+        }
+        case 'cases': {
+          const vs = this.vars(), b = vs.filter(x => /^(Bool|ℕ|Nat)$/.test(x.type))
+          const pick = (b.length ? b : vs.filter(x => !/[→:]/.test(x.type) || /=/.test(x.type))).map(x => `cases ${x.name}`)
+          return pick.length ? ask(pick) : this.put('cases ', false)
+        }
+        case "induction'": {
+          const ns = this.vars().filter(x => /^(ℕ|Nat)$/.test(x.type)).map(x => `induction' ${x.name} with ${x.name} ih`)
+          return ns.length ? ask(ns) : this.put("induction' ", false)
+        }
+        case 'decide': return ask(this.vars().length ? ['decide +revert', 'decide'] : ['decide'])
+        case 'funext': return this.put(`funext ${this.fresh('x', 'y', 'z', 'b')}`)
+        case 'intro': return this.put(`intro ${this.fresh('h', 'h2', 'h3')}`)
+        case 'have': return this.put(`have ${this.fresh('h2', 'h3', 'h4')} := `, false)
+        case 'rw': return this.put('rw [', false)
+        case 'simp only': return this.put('simp only [', false)
+        case 'apply': case 'exists': return this.put(it.name + ' ', false)
+        default: return this.put(it.insert.trim())
+      }
+    }
+    // a tapped rule: into the open brackets of rw/simp only, after apply (and then run), else rw [rule] at once
+    tapRule(it) {
+      const v = this.input?.value ?? ''
+      this.choice = null
+      if (/\[[^\]]*$/.test(v)) { this.input.value = this.typed = (/\[\s*$/.test(v) ? v.replace(/\s*$/, '') : v.replace(/\s*$/, '') + ', ') + it.name; this.render(); this.input.focus({ preventScroll: true }); return }
+      if (/^apply\s*$/.test(v)) return this.put(`apply ${it.name}`)
+      if (/:=\s*$/.test(v) || /^exists\s*$/.test(v)) { this.input.value = this.typed = v.replace(/\s*$/, ' ') + it.name + ' '; this.render(); this.input.focus({ preventScroll: true }); return }
+      this.put(`rw [${it.name}]`)
     }
 
     render() {
@@ -2758,31 +2812,40 @@
 
       // the inventory
       const inv = el('div', 'pg-inventory')
-      inv.append(el('div', 'pg-moves-head', tr('Inventory')))
+      const ihead = el('div', 'pg-moves-head', tr('Inventory'))
+      // (what each one does: in the lexicon)
+      const lex = [...document.querySelectorAll('#toc a')].find(a => /\/Lexicon\/$/.test(new URL(a.href, location.href).pathname))
+      if (lex) { const a = el('a', 'pg-inv-lex', tr('📖 Lexicon')); a.href = lex.href; a.target = '_blank'; ihead.append(' ', a) }
+      inv.append(ihead)
       for (const [kind, title] of [['tactic', tr('Tactics')], ['rule', tr('Theorems')]]) {
         const group = el('div', 'pg-inv-group')
         group.append(el('span', 'pg-inv-title', title + ':'))
         for (const item of INVENTORY.filter(i => (kind === 'tactic' ? i.kind === 'tactic' : i.kind !== 'tactic') && this.available(i))) {
-          const b = el('button', 'pg-chip' + (item.kind === 'lemma' ? ' pg-chip-lemma' : '') + (this.picked === item.name ? ' pg-chip-on' : '') + (this.isNew(item) ? ' pg-chip-new' : ''), item.name)
-          b.type = 'button'
-          b.addEventListener('click', () => { this.picked = this.picked === item.name ? null : item.name; this.render() })
+          const b = el('button', 'pg-chip' + (item.kind === 'lemma' ? ' pg-chip-lemma' : '') + (this.isNew(item) ? ' pg-chip-new' : ''), item.name)
+          b.type = 'button'; b.title = (this.world0 && item.sig0) || item.sig || ''
+          b.disabled = this.busy || this.done
+          b.addEventListener('click', () => { if (!this.busy && !this.done) (item.kind === 'tactic' ? this.tapTactic(item) : this.tapRule(item)) })
           group.append(b)
         }
         inv.append(group)
       }
-      const it = INVENTORY.find(i => i.name === this.picked)
-      if (it) {
-        const doc = el('div', 'pg-inv-doc')
-        const w = this.world0 && it.sig0 ? '0' : '', text = this.world0 && it.en0 ? (LANG === 'de' ? it.de0 : it.en0) : this.worldB && it.enb ? (LANG === 'de' ? it.deb : it.enb) : (LANG === 'de' ? it.de : it.en)
-        doc.append(el('code', 'pg-inv-sig', it['sig' + w]), el('div', '', text))
-        const ins = el('button', 'pg-tool', tr('Insert')); ins.type = 'button'
-        ins.addEventListener('click', () => this.insert(it))
-        doc.append(ins)
-        inv.append(doc)
+      // a choice (cases x or cases y, …): below the input
+      let pick = null
+      if (this.choice && !this.done) {
+        pick = el('div', 'pg-proof-choice')
+        pick.append(el('span', 'pg-inv-title', tr('Which?')))
+        for (const o of this.choice.options) {
+          const b = el('button', 'pg-chip pg-chip-choice', o); b.type = 'button'
+          b.addEventListener('click', () => this.put(o, this.choice?.run ?? true))
+          pick.append(b)
+        }
+        const x = el('button', 'pg-tool', '✕'); x.type = 'button'; x.addEventListener('click', () => { this.choice = null; this.render() })
+        pick.append(x)
       }
 
       parts.push(hist, goals, err)
       if (!this.done) parts.push(row)
+      if (pick) parts.push(pick)
       if (!STAGE) parts.push(tools)
       // the board's solution below what to do (the statement, the goals, the input)
       if (sol) parts.push(sol)
@@ -2828,7 +2891,7 @@
     'Lean did not take the line: see why above the input.': 'Lean hat die Zeile nicht genommen: warum, steht über der Eingabe.',
     'Type a tactic, or tap one in the inventory.': 'Tippe eine Taktik ein, oder tippe eine im Inventar an.', 'One goal left.': 'Noch ein Ziel.', '{n} goals left.': 'Noch {n} Ziele.',
     'Tips': 'Tipps', 'Tip': 'Tipp', 'Got it': 'Verstanden', 'Close': 'Schließen', 'Restart': 'Neu', 'Next': 'Weiter', 'Next ›': 'Weiter ›',
-    'Next world ›': 'Nächste Welt ›', 'This wire belongs to the level; it stays.': 'Diese Leitung gehört zum Level; sie bleibt.', 'World': 'Welt', 'Board': 'Spielfeld', 'Proof ': 'Beweis', 'This world': 'Diese Welt',
+    'Next world ›': 'Nächste Welt ›', 'Which?': 'Welche?', 'This wire belongs to the level; it stays.': 'Diese Leitung gehört zum Level; sie bleibt.', 'World': 'Welt', 'Board': 'Spielfeld', 'Proof ': 'Beweis', 'This world': 'Diese Welt',
     'New in this level': 'Neu in diesem Level', 'New in this proof': 'Neu in diesem Beweis', 'Solve the board first.': 'Erst das Spielfeld lösen.',
   })
   // What the moves and building blocks do, for the tips (by kind of board: level, bool, build, src, walk).

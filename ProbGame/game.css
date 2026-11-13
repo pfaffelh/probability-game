@@ -555,3 +555,7 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 .pg-cbr-off { opacity: 0.25; }
 /* a level whose part shown is solved: its frame green */
 .pg-stage > .pg-level.pg-level-done { border: 2px solid #2e8b37; background: #f3faf3; box-shadow: 0 0 0 3px #d6eed8; }
+/* the proof: a choice for a tactic that needs a name (cases x or cases y), below the input */
+.pg-proof-choice { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; margin: 0.5rem 0; padding: 0.4rem 0.6rem; border: 1.5px solid #2e6fb8; border-radius: 8px; background: #f3f7fd; }
+.pg-chip.pg-chip-choice { font-weight: bold; }
+.pg-inv-lex { font-weight: normal; font-size: 0.85em; margin-left: 0.5em; color: #8a5a16; }
