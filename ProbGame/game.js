@@ -17,7 +17,7 @@
   let LANG = 'en'
   try { LANG = localStorage.getItem('pg:lang') ?? 'en' } catch {}
   const DE = {
-    Moves: 'Züge', Undo: 'Zurück', 'Start over': 'Neu anfangen', 'Next level ›': 'Nächstes Level ›',
+    Moves: 'Züge', Undo: 'Zurück', 'Add a gate': 'Baustein hinzufügen', Gate: 'Baustein', 'Start over': 'Neu anfangen', 'Next level ›': 'Nächstes Level ›',
     Target: 'Ziel', 'In Lean, for every p:': 'In Lean, für jedes p:', 'proved': 'bewiesen',
     'Tap a bar to see where its mass came from.': 'Tippe eine Säule an, um zu sehen, woher ihre Masse kommt.',
     'This move needs a coin, not a number.': 'Dieser Zug braucht eine Münze, keine Zahl.',
@@ -1768,7 +1768,7 @@
         const move = e => {
           if (!dragging) return
           if (!ghost && Math.hypot(e.clientX - start.x, e.clientY - start.y) < 6) return
-          if (!ghost) { ghost = el('div', 'pg-ghost', `${GATES[kind].sym} ${tr(GATES[kind].label)}`); document.body.append(ghost) }
+          if (!ghost) { ghost = el('div', 'pg-ghost', `${GATES[kind].sym} ${tr(GATES[kind].label)}`); document.body.append(ghost); item.closest('.pg-popover')?.classList.add('pg-pop-dragging') }
           ghost.style.left = `${e.clientX - 40}px`; ghost.style.top = `${e.clientY - 18}px`
           this.svg.classList.toggle('pg-drop', this.overBoard(e))
         }
@@ -1777,6 +1777,7 @@
           clearTimeout(hold); dragging = false; item.classList.remove('pg-held'); this.svg.classList.remove('pg-drop')
           // (the click that the browser sends after it may hit the new button of the side: it is ignored)
           this.paletteUp = Date.now()
+          if (item.closest('.pg-popover')) this.picked?.()
           if (!ghost) { if (e.type === 'pointerup') this.addGate(kind); return }
           ghost.remove()
           if (e.type === 'pointerup' && this.overBoard(e)) this.addGate(kind, this.toSvg(e))
@@ -1784,7 +1785,7 @@
         item.addEventListener('pointermove', move); item.addEventListener('pointerup', up); item.addEventListener('pointercancel', up)
       })
       // (a click without pointer events, e.g. from the keyboard)
-      item.addEventListener('click', () => { if (Date.now() - (this.paletteUp ?? 0) > 800) this.addGate(kind) })
+      item.addEventListener('click', () => { if (Date.now() - (this.paletteUp ?? 0) > 800) { this.addGate(kind); if (item.closest('.pg-popover')) this.picked?.() } })
     }
     // a gate on the board: dragged to move it, or onto the bin to remove it; a tap chooses it
     makeGateDraggable(g, gate) {
@@ -2648,6 +2649,29 @@
     const lean = barButton('pg-lean-button', 'λ', 'Lean'), tips = barButton('pg-tips-button', '💡', tr('Tips'))
     const toggle = barButton('pg-view-button', '∀', tr('Proof ')), next = barButton('pg-next-button', '›', tr('Next ›'), tr('Next'))
     const nextWorld = document.querySelector('nav.prev-next-buttons a[rel="next"]')
+    // On phones the gates of a circuit are behind ＋ (as in the IPM): a popover above the tool bar;
+    // a tap takes a gate, a finger held on one drags it onto the board.
+    const add = barButton('pg-add-button', '＋', tr('Add a gate'), tr('Gate')), pop = el('div', 'pg-popover')
+    pop.hidden = true
+    const closePop = () => { pop.hidden = true; pop.classList.remove('pg-pop-dragging'); add.setAttribute('aria-expanded', 'false') }
+    const openPop = () => {
+      const l = levels[current]
+      const head = el('div', 'pg-pop-head'), close = el('button', 'pg-pop-close', '✕'), list = el('div', 'pg-pop-list')
+      close.type = 'button'; close.addEventListener('click', closePop)
+      head.append(el('span', 'pg-pop-title', tr('Add a gate')), close)
+      for (const kind of l.gates) {
+        const b = el('button', 'pg-move pg-gate-item', `${GATES[kind].sym} ${tr(GATES[kind].label)}`)
+        b.type = 'button'; b.dataset.move = kind
+        l.makePaletteDraggable(b, kind)
+        list.append(b)
+      }
+      l.picked = closePop
+      pop.replaceChildren(head, list)
+      pop.hidden = false; add.setAttribute('aria-expanded', 'true')
+    }
+    add.addEventListener('click', () => (pop.hidden ? openPop() : closePop()))
+    document.addEventListener('pointerdown', ev => { if (!pop.hidden && !pop.contains(ev.target) && !add.contains(ev.target)) closePop() })
+    document.addEventListener('keydown', ev => { if (ev.key === 'Escape' && !pop.hidden) closePop() })
     undo.addEventListener('click', () => { const l = levels[current]; if (view() === 'proof') l.proof.back(); else l.undo() })
     restart.addEventListener('click', () => { const l = levels[current]; if (view() === 'proof') l.proof.restart(); else l.reset() })
     let leanOpen = false
@@ -2659,7 +2683,8 @@
       if (current < levels.length - 1) show(current + 1)
       else if (nextWorld) location.href = nextWorld.getAttribute('href').replace(/#.*$/, '')
     })
-    bar.append(undo, restart, ...(SHOW ? [] : [lean]), tips, ...(SHOW ? [] : [toggle]), next)
+    bar.append(add, undo, restart, ...(SHOW ? [] : [lean]), tips, ...(SHOW ? [] : [toggle]), next)
+    bar.before(pop)
 
     const refresh = () => {
       const l = levels[current], v = view()
@@ -2676,6 +2701,8 @@
       status.classList.toggle('pg-status-done', v === 'proof' ? !!l.proof.done : !!l.solved && /^✓/.test(status.textContent))
       undo.disabled = restart.disabled = v === 'proof' ? !l.proof.canUndo : !l.canUndo
       lean.hidden = v === 'proof'
+      add.hidden = !(l instanceof Circuit) || v === 'proof'
+      if (add.hidden || pop.dataset.level !== String(current)) { closePop(); pop.dataset.level = String(current) }
       lean.setAttribute('aria-pressed', String(leanOpen))
       leanBox.hidden = !leanOpen || v === 'proof' || !l.leanParts?.length
       if (!leanBox.hidden) leanBox.replaceChildren(...l.leanParts)

@@ -245,8 +245,9 @@ html.pg-playing .prev-next-buttons { display: none !important; }
   .pg-stage .pg-palette { width: auto; }
   .pg-stage .pg-palette .pg-moves, .pg-stage .pg-palette .pg-blocks { flex-direction: row; flex-wrap: wrap; }
   .pg-stage .pg-palette .pg-moves-head { display: none; }
-  /* circuits: the gates above the board, staying there while the board scrolls */
-  .pg-stage .pg-circuit .pg-palette { order: -1; position: sticky; top: 0; z-index: 2; background: #fffcf3; padding-bottom: 0.2rem; }
+  /* circuits: the gates behind ＋ in the tool bar (as in the IPM) */
+  .pg-stage .pg-circuit .pg-palette { display: none; }
+  .pg-toolbar .pg-add-button:not([hidden]) { display: flex; }
   .pg-stage > .pg-level:not([hidden]) { padding: 0.3rem 0.5rem; }
   .pg-stage .pg-slider-note { display: none; }
   .pg-toolbar { flex-wrap: nowrap; gap: 3px; }
@@ -439,3 +440,21 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 .pg-out-svg rect.pg-target-mass { fill: #5c3d0e; stroke: #b0782a; }
 .pg-out-svg text.pg-target-mass { fill: #5c3d0e; }
 .pg-out-svg .pg-target-title { fill: #8a5a16; }
+
+/* circuits: the gates left of the board (large screens); on phones behind ＋ Gate in the tool bar,
+   in a popover above it (as in the IPM) */
+.pg-stage .pg-circuit .pg-palette { order: -1; width: 11rem; }
+.pg-toolbar .pg-add-button { display: none; }
+.pg-stage { position: relative; }
+.pg-popover {
+  position: absolute; left: 0.3rem; right: 0.3rem; bottom: 4.2rem; z-index: 20; max-height: 55vh; overflow-y: auto;
+  background: white; border: 1px solid #d9c49c; border-radius: 10px; padding: 0.3em 0.6em 0.7em; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+  font-family: var(--verso-structure-font-family, sans-serif);
+}
+.pg-popover[hidden] { display: none; }
+.pg-popover.pg-pop-dragging { visibility: hidden; }
+.pg-pop-head { display: flex; align-items: center; justify-content: space-between; }
+.pg-pop-title { font-weight: bold; color: #5c3d0e; }
+.pg-pop-close { font: inherit; font-size: 1.1em; background: none; border: none; color: #555; cursor: pointer; min-width: 40px; min-height: 40px; }
+.pg-pop-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr)); gap: 0.4em; }
+.pg-pop-list .pg-move { touch-action: pan-y; min-height: 44px; }
