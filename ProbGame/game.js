@@ -1556,8 +1556,8 @@
     if: { n: 3, ports: ['c', 'T', 'F'], f: ([c, a, b]) => (c ? a : b), lean: ([c, a, b]) => `if ${c} then ${a} else ${b}`, sym: 'if', label: 'if' },
     // a gate built of two maps Bool → Bool: `c` chooses the map (the one for true or the one for
     // false), and `v` goes through it: `if c then f v else g v`; the maps are put into its two fields
-    // (its inputs at the corners: c on the left decides, into one of the two fields; v on the right goes into both)
-    bind: { n: 2, inX: [-40, 40], h: 112, slots: 2, sym: 'bind', label: 'bind',
+    // (its inputs: c from the left side, below the fields, decides which field; v on top goes into both)
+    bind: { n: 2, inPos: [[-56, 68, 'left'], [0, 0]], h: 104, slots: 2, sym: 'bind', label: 'bind',
       f: ([c, v], gate) => { const m = gate?.maps?.[c ? 0 : 1]; return m ? MAPS[m].f(v) : null },
       lean: ([c, v], gate) => `if ${c} then ${gate?.maps?.[0] ? MAPS[gate.maps[0]].lean(v) : '?'} else ${gate?.maps?.[1] ? MAPS[gate.maps[1]].lean(v) : '?'}` },
     // an unknown map f: one field for one of the four maps, the same in every f on the board
@@ -1632,7 +1632,7 @@
     g.append(svg('rect', { x: -GW / 2, y: -H / 2, width: GW, height: H, rx: 12 }))
     if (G.slots) g.append(bindInside(null, 0, 0, kind))
     else { const pic = gatePicture(kind); pic.setAttribute('transform', 'translate(-14,-2)'); g.append(pic) }
-    for (let i = 0; i < G.n; i++) g.append(svg('circle', { class: 'pg-cport' + (gateIn(kind, i) === 'nat' ? ' pg-cport-nat' : ''), cx: G.inX?.[i] ?? -GW / 2 + GW * (i + 1) / (G.n + 1), cy: -H / 2, r: 9 }))
+    for (let i = 0; i < G.n; i++) g.append(svg('circle', { class: 'pg-cport' + (gateIn(kind, i) === 'nat' ? ' pg-cport-nat' : ''), cx: G.inPos?.[i][0] ?? -GW / 2 + GW * (i + 1) / (G.n + 1), cy: -H / 2 + (G.inPos?.[i][1] ?? 0), r: 9 }))
     G.ports?.forEach((t, i) => g.append(svg('text', { class: 'pg-cportname', x: -GW / 2 + GW * (i + 1) / (G.n + 1), y: -H / 2 + 21, 'text-anchor': 'middle' }, t)))
     g.append(svg('circle', { class: 'pg-cport' + (gateOut(kind) === 'nat' ? ' pg-cport-nat' : ''), 'data-kind': 'out', cx: 0, cy: H / 2, r: 7 }))
     s.append(g); return s
@@ -1646,21 +1646,20 @@
       g.append(svg('text', { class: 'pg-csym pg-csym-f', x, y: y + H / 2 - 12, 'text-anchor': 'middle' }, 'f'))
       return g
     }
-    // the field for true above, for false below; from c (left) a line into each, marked T and F: c goes
-    // into one of them; from v (right) a line into both. In the row shown (`on`: the value of c), the
-    // field used and its lines stand out, the others fade.
+    // the fields side by side, T and F. From v (on top) a fork into both: v goes through the field
+    // chosen. From c (the left side) a line below them, with an arrow up into each, T and F: c chooses
+    // the field. In the row shown (`on`: the value of c) the field not used and its lines fade.
     const g = svg('g'), H = GATES.bind.h, top = y - H / 2
     const off = i => on !== null && on !== undefined && (on ? 1 : 0) === i
-    for (const [side, cls] of [[-40, 'pg-cbr-c'], [40, 'pg-cbr-v']]) {
-      g.append(svg('path', { class: 'pg-cbr ' + cls, d: `M ${x + side} ${top} V ${top + 70}` }))
-      ;[30, 70].forEach((dy, i) => {
-        const end = x + Math.sign(side) * 26
-        g.append(svg('path', { class: 'pg-cbr ' + cls + (off(i) ? ' pg-cbr-off' : ''), d: `M ${x + side} ${top + dy} H ${end} M ${end - 5 * Math.sign(side)} ${top + dy - 4} L ${end} ${top + dy} L ${end - 5 * Math.sign(side)} ${top + dy + 4}` }))
-      })
-    }
-    ;['T', 'F'].forEach((t, i) => g.append(svg('text', { class: 'pg-cbr-label' + (off(i) ? ' pg-cbr-off' : ''), x: x - 33, y: top + 26 + 40 * i, 'text-anchor': 'middle' }, t)))
+    const cx = i => x + (i ? 28 : -28)
+    g.append(svg('path', { class: 'pg-cbr pg-cbr-v', d: `M ${x} ${top} V ${top + 10}` }))
+    ;[0, 1].forEach(i => g.append(svg('path', { class: 'pg-cbr pg-cbr-v' + (off(i) ? ' pg-cbr-off' : ''), d: `M ${x} ${top + 10} H ${cx(i)} V ${top + 20} M ${cx(i) - 4} ${top + 15} L ${cx(i)} ${top + 20} L ${cx(i) + 4} ${top + 15}` })))
+    g.append(svg('path', { class: 'pg-cbr pg-cbr-c', d: `M ${x - GW / 2} ${top + 68} H ${cx(0)}` }))
+    g.append(svg('path', { class: 'pg-cbr pg-cbr-c' + (off(1) ? ' pg-cbr-off' : ''), d: `M ${cx(0)} ${top + 68} H ${cx(1)}` }))
     ;[0, 1].forEach(i => {
-      const x0 = x - 24, y0 = top + 14 + 40 * i, m = maps?.[i] ?? null
+      g.append(svg('path', { class: 'pg-cbr pg-cbr-c' + (off(i) ? ' pg-cbr-off' : ''), d: `M ${cx(i)} ${top + 68} V ${top + 55} M ${cx(i) - 4} ${top + 60} L ${cx(i)} ${top + 55} L ${cx(i) + 4} ${top + 60}` }))
+      g.append(svg('text', { class: 'pg-cbr-label' + (off(i) ? ' pg-cbr-off' : ''), x: cx(i) + 9, y: top + 66, 'text-anchor': 'middle' }, i ? 'F' : 'T'))
+      const x0 = cx(i) - 24, y0 = top + 21, m = maps?.[i] ?? null
       g.append(svg('rect', { class: 'pg-cslot' + (m ? ' pg-cslot-full' : '') + (off(i) ? ' pg-cbr-off' : ''), x: x0, y: y0, width: 48, height: 32, rx: 6, 'data-slot': i }))
       g.append(mapGlyph(m, x0, y0, 48, 32))
     })
@@ -1770,7 +1769,9 @@
       if (id === 'out') { const b = this.outBox(); return { x: b.x, y: b.top } }
       const g = this.block(id), n = GATES[g.kind].n
       const H = gateH(g.kind)
-      return kind === 'out' ? { x: g.x, y: g.y + H / 2 } : { x: g.x + (GATES[g.kind].inX?.[i] ?? -GW / 2 + GW * (i + 1) / (n + 1)), y: g.y - H / 2 }
+      const P = GATES[g.kind].inPos?.[i]
+      if (kind !== 'out' && P) return { x: g.x + P[0], y: g.y - H / 2 + P[1], side: P[2] }
+      return kind === 'out' ? { x: g.x, y: g.y + H / 2 } : { x: g.x - GW / 2 + GW * (i + 1) / (n + 1), y: g.y - H / 2 }
     }
     inputsOf(id) { const k = this.names.indexOf(id); return id === 'out' ? 1 : k >= 0 ? (this.ctl[k] ? 1 : 0) : GATES[this.block(id).kind].n }
     typeOut(id) { return this.names.includes(id) ? 'bool' : gateOut(this.block(id).kind) }
@@ -1815,7 +1816,7 @@
       let gate = null, i = 0
       if (at) {
         gate = binds.find(g => Math.abs(at.x - g.x) <= GW / 2 + 10 && Math.abs(at.y - g.y) <= gateH(g.kind) / 2 + 10)
-        i = gate && GATES[gate.kind].slots > 1 && at.y > gate.y - gateH(gate.kind) / 2 + 50 ? 1 : 0
+        i = gate && GATES[gate.kind].slots > 1 && at.x > gate.x ? 1 : 0
       } else {
         gate = [...binds].reverse().find(g => [...Array(GATES[g.kind].slots).keys()].some(i => !g.maps?.[i])); if (gate) i = gate.maps?.[0] ? 1 : 0
       }
@@ -2087,7 +2088,7 @@
           // the wires of the gate go with it
           for (const p of this.svg.querySelectorAll(`.pg-cwire[data-from="${gate.id}"], .pg-cwire[data-to="${gate.id}"]`)) {
             const w = this.wires[Number(p.dataset.k)], a = this.port(w.from, 'out'), b = this.port(w.to, 'in', w.i)
-            const a2 = w.from === gate.id ? { x: a.x + d.x, y: a.y + d.y } : a, b2 = w.to === gate.id ? { x: b.x + d.x, y: b.y + d.y } : b
+            const a2 = w.from === gate.id ? { x: a.x + d.x, y: a.y + d.y } : a, b2 = w.to === gate.id ? { ...b, x: b.x + d.x, y: b.y + d.y } : b
             p.setAttribute('d', wirePath(a2, b2))
           }
         }
@@ -2378,7 +2379,12 @@
     }
   }
   // a wire, from an output (above) to an input (below)
-  const wirePath = (a, b) => { const dy = Math.max(30, Math.abs(b.y - a.y) / 2); return `M${a.x},${a.y} C${a.x},${a.y + dy} ${b.x},${b.y - dy} ${b.x},${b.y}` }
+  const wirePath = (a, b) => {
+    const dy = Math.max(30, Math.abs(b.y - a.y) / 2)
+    // (into an input at the left side of a gate: from the left)
+    if (b.side === 'left') { const dx = Math.max(40, Math.abs(b.x - a.x) / 2); return `M${a.x},${a.y} C${a.x},${a.y + dy} ${b.x - dx},${b.y} ${b.x},${b.y}` }
+    return `M${a.x},${a.y} C${a.x},${a.y + dy} ${b.x},${b.y - dy} ${b.x},${b.y}`
+  }
 
   // ---------------------------------------------------------------- the proof
 

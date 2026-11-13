@@ -247,20 +247,21 @@ decide +revert
 ::::circuit (inputs := "x y") (gates := "bind") (table := "0001") (goal := "x && y") (proof := "(x y : Bool) : (if x then y else false) = (x && y)") (play := "a=bind; a.T=id; a.F=false; x>a.0; y>a.1; a>out")
 :::en
 *A gate of your own.* There are four maps `Bool → Bool`: `id`, `not`, always `T`, always `F`. New
-gate: `bind`. It has two fields, `T` above and `F` below, and you put a map into each (drag it in,
-or tap the field until it is the one you want). What happens depends on one value only, the one at
-the left input: it goes into one of the two fields, `T` or `F`. The value at the right input goes
-into both fields; the field chosen applies its map to it. In Lean:
+gate: `bind`. It has two fields, `T` and `F`, and you put a map into each (drag it in, or tap the
+field until it is the one you want). What happens depends on one value only, the one at the input on
+the left side: it chooses one of the two fields, `T` or `F` (the blue arrows). The value at the input
+on top goes into both fields; the field chosen applies its map to it. In Lean:
 `c >>= fun b => if b then f v else g v`. Build `and`: when `x` is `true`, `y` itself; when `x` is
 `false`, always `F`. (Show the values row by row: the field not used fades.)
 :::
 
 :::de
 *Ein eigener Baustein.* Es gibt vier Abbildungen `Bool → Bool`: `id`, `not`, immer `T`, immer `F`.
-Neuer Baustein: `bind`. Er hat zwei Felder, `T` oben und `F` unten, und in jedes legst du eine
+Neuer Baustein: `bind`. Er hat zwei Felder, `T` und `F`, und in jedes legst du eine
 Abbildung (hineinziehen, oder das Feld antippen, bis es die richtige ist). Was passiert, hängt nur von
-einem Wert ab, dem am linken Eingang: Er geht in eines der beiden Felder, `T` oder `F`. Der Wert am
-rechten Eingang geht in beide Felder; das gewählte Feld wendet seine Abbildung darauf an. In Lean:
+einem Wert ab, dem am Eingang an der linken Seite: Er wählt eines der beiden Felder, `T` oder `F` (die
+blauen Pfeile). Der Wert am Eingang oben geht in beide Felder; das gewählte Feld wendet seine Abbildung
+darauf an. In Lean:
 `c >>= fun b => if b then f v else g v`. Bau `and`: ist `x` `true`, `y` selbst; ist `x` `false`, immer
 `F`. (Zeig die Werte Zeile für Zeile: Das Feld, das nicht benutzt wird, verblasst.)
 :::
