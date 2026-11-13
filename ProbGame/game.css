@@ -473,9 +473,14 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 .pg-gsep { stroke: #d8c7a4; stroke-width: 1; }
 .pg-gplus { font: bold 18px var(--verso-code-font-family, monospace); fill: #5c3d0e; }
 .pg-gpic { pointer-events: none; }
-.pg-gate-item { display: flex; align-items: center; gap: 0.4em; }
-.pg-gate-icon { width: 62px; height: 54px; flex: none; background: #fff6e2; border-radius: 6px; }
-.pg-ghost { display: flex; align-items: center; gap: 0.4em; }
+.pg-gate-item { display: flex; align-items: center; justify-content: center; }
+/* the gates beside the board look as they do on it */
+.pg-move.pg-gate-item, .pg-move.pg-gate-item:hover { background: none; padding: 0; border-radius: 0; color: inherit; }
+.pg-gate-icon { width: 118px; height: 80px; flex: none; overflow: visible; }
+.pg-gate-icon .pg-cport-open, .pg-gate-icon .pg-cport { animation: none; pointer-events: none; }
+.pg-gate-item:hover .pg-gate-icon rect, .pg-gate-item:focus-visible .pg-gate-icon rect { stroke: #2e6fb8; }
+.pg-ghost { display: flex; align-items: center; }
+.pg-ghost.pg-ghost-gate { background: none; padding: 0; opacity: 0.85; }
 /* open inputs call for a wire */
 .pg-cport-open { animation: pg-open 1.4s ease-in-out infinite; }
 @keyframes pg-open { 0%, 100% { stroke-width: 2; } 50% { stroke-width: 4.5; } }

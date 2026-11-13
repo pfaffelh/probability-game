@@ -1578,12 +1578,16 @@
   // the bin: one for the page, shown while a gate is dragged
   const trashCan = () => document.querySelector('body > .pg-bin') ?? document.body.appendChild(el('div', 'pg-bin', '🗑'))
   const CW = 480, CH = 620, GW = 112, GH2 = 60
-  // The picture of a gate: the map it is. One input: its two values above, the two images below,
-  // a line from each value to its image (not: crossed). Two inputs: a column for each pair of
-  // values (in the order of the truth table), the image below. `ins` (the values coming in, in the
-  // row shown) marks the line or column that is used.
+  // a gate as it lies on the board (box, sign, name, its inputs above, its output below), for the
+  // buttons beside the board, the ＋ list and the gate being dragged
   const gateIcon = kind => {
-    const s = svg('svg', { viewBox: '-24 -22 48 50', class: 'pg-gate-icon' }); s.append(gatePicture(kind)); return s
+    const G = GATES[kind], s = svg('svg', { viewBox: `${-GW / 2 - 3} ${-GH2 / 2 - 11} ${GW + 6} ${GH2 + 20}`, class: 'pg-gate-icon' })
+    const g = svg('g', { class: 'pg-cblock' })
+    g.append(svg('rect', { x: -GW / 2, y: -GH2 / 2, width: GW, height: GH2, rx: 12 }))
+    const pic = gatePicture(kind); pic.setAttribute('transform', 'translate(-14,-2)'); g.append(pic)
+    for (let i = 0; i < G.n; i++) g.append(svg('circle', { class: 'pg-cport' + (gateIn(kind, i) === 'nat' ? ' pg-cport-nat' : ''), cx: -GW / 2 + GW * (i + 1) / (G.n + 1), cy: -GH2 / 2, r: 9 }))
+    g.append(svg('circle', { class: 'pg-cport' + (gateOut(kind) === 'nat' ? ' pg-cport-nat' : ''), 'data-kind': 'out', cx: 0, cy: GH2 / 2, r: 7 }))
+    s.append(g); return s
   }
   // the picture of a gate: its sign, its name below
   function gatePicture(kind) {
@@ -1806,8 +1810,8 @@
         const move = e => {
           if (!dragging) return
           if (!ghost && Math.hypot(e.clientX - start.x, e.clientY - start.y) < 6) return
-          if (!ghost) { ghost = el('div', 'pg-ghost'); ghost.append(el('span', 'pg-gate-sym', GATES[kind].sym), el('span', '', tr(GATES[kind].label))); document.body.append(ghost); item.closest('.pg-popover')?.classList.add('pg-pop-dragging') }
-          ghost.style.left = `${e.clientX - 40}px`; ghost.style.top = `${e.clientY - 18}px`
+          if (!ghost) { ghost = el('div', 'pg-ghost pg-ghost-gate'); ghost.append(gateIcon(kind)); document.body.append(ghost); item.closest('.pg-popover')?.classList.add('pg-pop-dragging') }
+          ghost.style.left = `${e.clientX - 59}px`; ghost.style.top = `${e.clientY - 40}px`
           this.svg.classList.toggle('pg-drop', this.overBoard(e))
         }
         const up = e => {
@@ -2065,7 +2069,7 @@
       const moves = el('div', 'pg-moves')
       for (const kind of this.gates) {
         const b = el('button', 'pg-move pg-gate-item')
-        b.append(el('span', 'pg-gate-sym', GATES[kind].sym), el('span', 'pg-gate-name', tr(GATES[kind].label)))
+        b.append(gateIcon(kind)); b.title = tr(GATES[kind].label)
         b.type = 'button'; b.dataset.move = kind
         this.makePaletteDraggable(b, kind)
         moves.append(b)
@@ -2737,7 +2741,7 @@
       head.append(el('span', 'pg-pop-title', tr('Add a gate')), close)
       for (const kind of l.gates) {
         const b = el('button', 'pg-move pg-gate-item')
-        b.append(el('span', 'pg-gate-sym', GATES[kind].sym), el('span', 'pg-gate-name', tr(GATES[kind].label)))
+        b.append(gateIcon(kind)); b.title = tr(GATES[kind].label)
         b.type = 'button'; b.dataset.move = kind
         l.makePaletteDraggable(b, kind)
         list.append(b)
