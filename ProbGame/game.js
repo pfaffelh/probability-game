@@ -3013,6 +3013,7 @@
       tabBoard.textContent = `▦ ${tr('Board')}${l.solved ? ' ✓' : ''}`
       tabLean.textContent = `∀ Lean${l.proof?.proved ? ' ✓' : ''}`
       tabBoard.classList.toggle('pg-tab-on', v === 'board'); tabLean.classList.toggle('pg-tab-on', v === 'proof')
+      tabBoard.classList.toggle('pg-tab-done', !!l.solved); tabLean.classList.toggle('pg-tab-done', !!l.proof?.proved)
       tabLean.disabled = !l.solved
       tabLean.title = l.solved ? '' : tr('Solve the board first.')
       const last = current === levels.length - 1, lean2 = toLean()
