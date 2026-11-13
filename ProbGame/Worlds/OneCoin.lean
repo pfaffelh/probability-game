@@ -45,15 +45,17 @@ Die Münze wird geworfen. *100-mal werfen* wirft sie hundertmal, für das $`p` d
 dem, was sie zeigt; die Häufigkeiten, die schmalen Säulen neben den Massen, kommen den Massen nahe.
 :::
 
-::::level (start := "bernoulli p") (target := "bernoulli 1-p") (moves := "not") (lean := "(bernoulli p h).map not true = 1 - p") (leanTarget := "coin (σ p)") (proof := "(p : I) : (not <$> coin p) true = σ p") (lemma := "coin_not_true") (new := "rw, coin_true, coin_false, map_true, Bool.not_true, Bool.not_false, Bool.cond_true, Bool.cond_false, zero_add, Bool.not_not") (play := "not")
+::::circuit (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : (not <$> coin p) true = σ p") (lemma := "coin_not_true") (new := "rw, coin_true, coin_false, map_true, Bool.not_true, Bool.not_false, Bool.cond_true, Bool.cond_false, zero_add, Bool.not_not") (play := "a=not; x>a.0; a>out")
 :::en
-*Where does the mass go?* Flip the coin once, and look at the bar at `true`: its mass came from
-`false`.
+*Where does the mass go?* The coin `x` is thrown at the top; below, the output with the target:
+`false` with mass $`p`, `true` with $`1 - p`. Put a `not` between them. Then look at `true`: its mass
+came from `false`.
 :::
 
 :::de
-*Wohin geht die Masse?* Dreh die Münze einmal um und sieh dir die Säule bei `true` an: Ihre Masse
-kam von `false`.
+*Wohin geht die Masse?* Oben wird die Münze `x` geworfen; unten der Ausgang mit dem Ziel: `false`
+mit Masse $`p`, `true` mit $`1 - p`. Setz ein `nicht` dazwischen. Dann sieh dir `true` an: Seine
+Masse kam von `false`.
 :::
 
 :::proofen
