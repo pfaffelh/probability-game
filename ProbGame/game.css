@@ -547,3 +547,9 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 .pg-tab.pg-tab-done { background: #e3f3e5; color: #1f6b27; }
 .pg-tab.pg-tab-done.pg-tab-on { background: #2e8b37; color: white; }
 .pg-csym-f { font-style: italic; font-size: 20px; }
+/* bind: from c (left) into one of the two fields, from v (right) into both */
+.pg-cbr { fill: none; stroke-width: 2; pointer-events: none; }
+.pg-cbr-c { stroke: #2e6fb8; }
+.pg-cbr-v { stroke: #8a5a16; }
+.pg-cbr-label { font: bold 10px var(--verso-code-font-family, monospace); fill: #2e6fb8; pointer-events: none; }
+.pg-cbr-off { opacity: 0.25; }
