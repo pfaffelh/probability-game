@@ -581,3 +581,4 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 .pg-chip-peek { flex-basis: 100%; display: flex; flex-direction: column; gap: 0.2rem; position: relative; margin: 0.2rem 0; padding: 0.4rem 1.6rem 0.4rem 0.6rem; border: 1.5px solid #2e6fb8; border-radius: 8px; background: #f3f7fd; font-size: 0.9em; }
 .pg-chip-peek .pg-chip-x { position: absolute; right: 0.3rem; top: 0.2rem; }
 .pg-chip-peek .pg-inv-sig { overflow-wrap: anywhere; }
+.pg-ccaption { font-size: 11px; font-weight: normal; }

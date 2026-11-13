@@ -11,42 +11,43 @@ htmlSplit := .never
 %%%
 
 :::en
-Now you build a circuit. The coins of the level lie there from the start, each as a line; all coins
-have the same $`p` and are independent of each other. Tap one or several lines (a tap beside them
-chooses none again), then a function: a column takes the
-lines with a dot as its inputs, and its result runs on as a new line. A line that a column only
-crosses, without a dot, is not used. A coin may go into several functions; then the results depend
-on each other, and the game takes that into account. At the end of each line is its distribution,
-found by going through all outcomes of the coins it comes from: with two coins, `true`–`true` has
-mass $`p^2`, `true`–`false` $`p(1 - p)`, and so on.
+The circuits of the world *Circuits*, now with a coin at each input: `x ← coin p`, `y ← coin p`, …,
+all with the same $`p` and thrown independently of each other. Then the output is random too: its
+distribution is the target. Each row of the truth table has a mass, the product of the masses of its
+inputs ($`p` for `true`, $`1 - p` for `false`): with two coins, `true`–`true` has mass $`p^2`,
+`true`–`false` $`p(1 - p)`, and so on. The mass of the output at a value is the sum over the rows
+where the output has that value. The output box below shows the target and your output, as masses and
+as a small histogram (the target dashed); beside the board the bars, and *Throw 100 times*.
 
-*Check* compares the chosen line with the target, for every $`p`; for this, exactly one line is chosen. *Delete*
-removes the chosen lines and all that is built on them.
+A coin may go into several gates; then the results depend on each other, and the game takes that into
+account.
 :::
 
 :::proofen
-The circuit, read from left to right, is a `do` block in Lean.
+The circuit, read from top to bottom, is a `do` block in Lean: each coin a line `let x ← coin p`,
+and at the end `pure (…)` with what the gates compute.
 :::
 
 :::de
-Jetzt baust du einen Schaltplan. Die Münzen des Levels liegen von Anfang an da, jede als Leitung;
-alle Münzen haben dasselbe $`p` und sind unabhängig voneinander. Tippe eine oder mehrere Leitungen an
-(ein Tipp daneben hebt die Auswahl wieder auf), dann eine Funktion: Eine Spalte nimmt die Leitungen mit einem Punkt als Eingänge, und ihr Ergebnis läuft als
-neue Leitung weiter. Eine Leitung, die eine Spalte nur kreuzt, ohne Punkt, wird nicht benutzt. Eine
-Münze darf in mehrere Funktionen gehen; dann hängen die Ergebnisse voneinander ab, und das Spiel
-berücksichtigt das. Am Ende jeder Leitung steht ihre Verteilung, die sich ergibt, indem man alle
-Ausgänge der Münzen durchgeht, aus denen sie kommt: Bei zwei Münzen hat `true`–`true` die Masse
-$`p^2`, `true`–`false` $`p(1 - p)`, und so weiter.
+Die Schaltungen der Welt *Schaltungen*, jetzt mit einer Münze an jedem Eingang: `x ← coin p`,
+`y ← coin p`, …, alle mit demselben $`p` und unabhängig voneinander geworfen. Dann ist auch der Ausgang
+zufällig: Seine Verteilung ist das Ziel. Jede Zeile der Wahrheitstafel hat eine Masse, das Produkt der
+Massen ihrer Eingänge ($`p` für `true`, $`1 - p` für `false`): Bei zwei Münzen hat `true`–`true` die
+Masse $`p^2`, `true`–`false` $`p(1 - p)`, und so weiter. Die Masse des Ausgangs bei einem Wert ist die
+Summe über die Zeilen, in denen der Ausgang diesen Wert hat. Der Ausgabekasten unten zeigt Ziel und
+Ausgang, als Massen und als kleines Histogramm (das Ziel gestrichelt); neben dem Spielfeld die Säulen
+und *100-mal werfen*.
 
-*Prüfen* vergleicht die ausgewählte Leitung mit dem Ziel, für jedes $`p`; dafür ist genau eine Leitung ausgewählt.
-*Löschen* entfernt die ausgewählten Leitungen und alles, was auf ihnen gebaut ist.
+Eine Münze darf in mehrere Bausteine gehen; dann hängen die Ergebnisse voneinander ab, und das Spiel
+berücksichtigt das.
 :::
 
 :::proofde
-Der Schaltplan, von links nach rechts gelesen, ist ein `do`-Block in Lean.
+Die Schaltung, von oben nach unten gelesen, ist ein `do`-Block in Lean: jede Münze eine Zeile
+`let x ← coin p`, und am Ende `pure (…)` mit dem, was die Bausteine rechnen.
 :::
 
-::::build (target := "bool true:p^2 false:1-p^2") (moves := "not, and, or") (coins := "2") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && y)) = coin (p * p)") (new := "coin_and") (play := "M1 M2 and")
+::::circuit (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:p^2 false:1-p^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && y)) = coin (p * p)") (new := "coin_and") (play := "a=and; x>a.0; y>a.1; a>out")
 :::en
 *Both `true`.* Two coins, and `true` only when both show `true`.
 :::
@@ -76,7 +77,7 @@ rw [coin_and]
 :::
 ::::
 
-::::build (target := "bool true:p(1-p) false:1-p(1-p)") (moves := "not, and, or") (coins := "2") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && !y)) = coin (p * σ p)") (play := "M2 not; M1 Z1 and")
+::::circuit (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:p(1-p) false:1-p(1-p)") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && !y)) = coin (p * σ p)") (play := "a=not; b=and; y>a.0; x>b.0; a>b.1; b>out")
 :::en
 *First `true`, then `false`.*
 :::
@@ -111,7 +112,7 @@ simp only [bind_map_left]
 :::
 ::::
 
-::::build (target := "bool true:2p-p^2 false:(1-p)^2") (moves := "not, and, or") (coins := "2") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x || y)) = coin (σ (σ p * σ p))") (new := "map_bind, or_eq") (play := "M1 M2 or")
+::::circuit (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:2p-p^2 false:(1-p)^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x || y)) = coin (σ (σ p * σ p))") (new := "map_bind, or_eq") (play := "a=or; x>a.0; y>a.1; a>out")
 :::en
 *At least one `true`.* `false` only when both show `false`: $`(1 - p)^2`.
 :::
@@ -148,7 +149,7 @@ simp only [bind_map_left, map_bind, map_pure, or_eq]
 :::
 ::::
 
-::::build (target := "pure false") (moves := "not, and, or") (coins := "1") (proof := "(p : I) : (do let x ← coin p; pure (x && !x)) = pure false") (new := "Bool.and_not_self, coin_unused") (play := "M1 not; M1 Z1 and")
+::::circuit (inputs := "x") (gates := "and, or, not") (coins := "p") (target := "pure false") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; pure (x && !x)) = pure false") (new := "Bool.and_not_self, coin_unused") (play := "a=not; b=and; x>a.0; x>b.0; a>b.1; b>out")
 :::en
 *Surely `false`, with a single coin.* A coin that goes into two functions is the same coin in both:
 the results depend on each other.
@@ -181,7 +182,7 @@ rw [coin_unused]
 :::
 ::::
 
-::::build (target := "pure true") (moves := "not, and, or") (coins := "1") (proof := "(p : I) : (do let x ← coin p; pure (x || !x)) = pure true") (new := "Bool.or_not_self") (play := "M1 not; M1 Z1 or")
+::::circuit (inputs := "x") (gates := "and, or, not") (coins := "p") (target := "pure true") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; pure (x || !x)) = pure true") (new := "Bool.or_not_self") (play := "a=not; b=or; x>a.0; x>b.0; a>b.1; b>out")
 :::en
 *Surely `true`, with a single coin.* As before, now with `or`: the coin or its flip shows `true`.
 :::
@@ -210,7 +211,7 @@ rw [coin_unused]
 :::
 ::::
 
-::::build (target := "bool true:2p(1-p) false:p^2+(1-p)^2") (moves := "not, and, or") (coins := "2") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure ((x || y) && !(x && y))) = (do let x ← coin p; let y ← coin p; pure (xor x y))") (play := "M1 M2 or; M1 M2 and; Z2 not; Z1 Z3 and")
+::::circuit (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:2p(1-p) false:p^2+(1-p)^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure ((x || y) && !(x && y))) = (do let x ← coin p; let y ← coin p; pure (xor x y))") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out")
 :::en
 *Exactly one `true`*, without a function for it: at least one, but not both.
 :::
@@ -243,7 +244,7 @@ cases x <;> cases y <;> rfl
 :::
 ::::
 
-::::build (target := "nat 0:(1-p)^2 1:2p(1-p) 2:p^2") (moves := "not, and, or, toNat, add") (coins := "2") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x.toNat + y.toNat)) = binom p 2") (new := "binom_zero, binom_succ, add_zero") (play := "M1 toNat; M2 toNat; Z1 Z2 add")
+::::circuit (inputs := "x y") (gates := "toNat, plus, and, or, not") (coins := "p p") (target := "nat 0:(1-p)^2 1:2p(1-p) 2:p^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x.toNat + y.toNat)) = binom p 2") (new := "binom_zero, binom_succ, add_zero") (play := "a=toNat; b=toNat; c=plus; x>a.0; y>b.0; a>c.0; b>c.1; c>out")
 :::en
 *The number of `true`.* From coins to numbers ($`0` and $`1`), and add them: the binomial distribution $`B(2, p)`.
 :::
@@ -281,18 +282,17 @@ simp only [bind_assoc, pure_bind, add_zero]
 :::
 ::::
 
-::::build (target := "nat 0:(1-p)^3 1:3p(1-p)^2 2:3p^2(1-p) 3:p^3") (moves := "toNat, add") (coins := "3") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; let z ← coin p; pure (x.toNat + y.toNat + z.toNat)) = binom p 3") (new := "add_assoc") (play := "M1 toNat; M2 toNat; M3 toNat; Z1 Z2 Z3 add")
+::::circuit (inputs := "x y z") (gates := "toNat, plus") (coins := "p p p") (target := "nat 0:(1-p)^3 1:3p(1-p)^2 2:3p^2(1-p) 3:p^3") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; let z ← coin p; pure (x.toNat + y.toNat + z.toNat)) = binom p 3") (new := "add_assoc") (play := "a=toNat; b=toNat; c=toNat; d=plus; e=plus; x>a.0; y>b.0; z>c.0; a>d.0; b>d.1; d>e.0; c>e.1; e>out")
 :::en
 *Three coins.* Count the `true`s among three coins. Throw $`n` coins and count how often `true`
 comes up: that is the *binomial distribution* $`B(n, p)`, with
-$`P(k) = \binom{n}{k} p^k (1 - p)^{n - k}`. From the next level on, $`B(2, p)` is a building block
-of its own.
+$`P(k) = \binom{n}{k} p^k (1 - p)^{n - k}`. In the next levels, $`B(2, p)` comes already built.
 :::
 
 :::de
 *Drei Münzen.* Zähle die `true` unter drei Münzen. Wirf $`n` Münzen und zähle, wie oft `true`
 kommt: Das ist die *Binomialverteilung* $`B(n, p)`, mit $`P(k) = \binom{n}{k} p^k (1 - p)^{n - k}`.
-Ab dem nächsten Level ist $`B(2, p)` ein eigener Baustein.
+In den nächsten Leveln kommt $`B(2, p)` schon gebaut.
 :::
 
 :::proofen
@@ -314,15 +314,16 @@ simp only [bind_assoc, pure_bind, add_zero, add_assoc]
 :::
 ::::
 
-::::build (target := "nat 0:(1-p)^3 1:3p(1-p)^2 2:3p^2(1-p) 3:p^3") (moves := "toNat, add") (sources := "binom2:1, coin:1") (proof := "(p : I) (n : ℕ) : (do let X ← binom p n; let Y ← coin p; pure (X + Y.toNat)) = binom p (n + 1)") (lemma := "binom_succ'") (new := "induction'") (play := "M1 toNat; B1 Z1 add")
+::::circuit (inputs := "x y z") (gates := "toNat, plus") (coins := "p p p") (target := "nat 0:(1-p)^3 1:3p(1-p)^2 2:3p^2(1-p) 3:p^3") (start := "a=toNat@120,160; b=toNat@240,160; c=plus@180,270; x>a.0; y>b.0; a>c.0; b>c.1") (context := "Lean/Rules.lean") (proof := "(p : I) (n : ℕ) : (do let X ← binom p n; let Y ← coin p; pure (X + Y.toNat)) = binom p (n + 1)") (lemma := "binom_succ'") (new := "induction'") (play := "d=toNat; e=plus; z>d.0; c>e.0; d>e.1; e>out")
 :::en
-*A new building block.* $`B(2, p)` and one more coin give $`B(3, p)`: one more throw, one more
-chance to count.
+*A new building block.* $`B(2, p)` is already built: the two coins on the left, counted and added
+(it stays). Add one more coin `z`: one more throw, one more chance to count, and $`B(3, p)` comes out.
 :::
 
 :::de
-*Ein neuer Baustein.* $`B(2, p)` und eine weitere Münze ergeben $`B(3, p)`: ein Wurf mehr, eine
-Chance mehr zu zählen.
+*Ein neuer Baustein.* $`B(2, p)` ist schon gebaut: die zwei Münzen links, gezählt und addiert (das
+bleibt). Nimm eine weitere Münze `z` dazu: ein Wurf mehr, eine Chance mehr zu zählen, und $`B(3, p)`
+kommt heraus.
 :::
 
 :::proofen
@@ -357,15 +358,15 @@ simp only [bind_assoc, pure_bind, add_assoc]
 :::
 ::::
 
-::::build (target := "nat 0:(1-p)^4 1:4p(1-p)^3 2:6p^2(1-p)^2 3:4p^3(1-p) 4:p^4") (moves := "add") (sources := "binom2:2") (proof := "(p : I) (n m : ℕ) : (do let X ← binom p n; let Y ← binom p m; pure (X + Y)) = binom p (n + m)") (lemma := "binom_add") (play := "B1 B2 add")
+::::circuit (inputs := "x y z w") (gates := "plus") (coins := "p p p p") (target := "nat 0:(1-p)^4 1:4p(1-p)^3 2:6p^2(1-p)^2 3:4p^3(1-p) 4:p^4") (start := "a=toNat@62,150; b=toNat@176,150; c=plus@119,255; d=toNat@304,150; e=toNat@418,150; f=plus@361,255; x>a.0; y>b.0; a>c.0; b>c.1; z>d.0; w>e.0; d>f.0; e>f.1") (context := "Lean/Rules.lean") (proof := "(p : I) (n m : ℕ) : (do let X ← binom p n; let Y ← binom p m; pure (X + Y)) = binom p (n + m)") (lemma := "binom_add") (play := "g=plus; c>g.0; f>g.1; g>out")
 :::en
-*$`B(2, p) * B(2, p) = B(4, p)`.* Two independent binomials, no coins. The sum of independent
-random numbers has the *convolution* $`*` of their distributions as its distribution.
+*$`B(2, p) * B(2, p) = B(4, p)`.* Two independent binomials, both already built: add them. The sum
+of independent random numbers has the *convolution* $`*` of their distributions as its distribution.
 :::
 
 :::de
-*$`B(2, p) * B(2, p) = B(4, p)`.* Zwei unabhängige Binomialverteilungen, keine Münzen. Die
-Summe unabhängiger Zufallszahlen hat die *Faltung* $`*` ihrer Verteilungen als Verteilung.
+*$`B(2, p) * B(2, p) = B(4, p)`.* Zwei unabhängige Binomialverteilungen, beide schon gebaut: Addiere
+sie. Die Summe unabhängiger Zufallszahlen hat die *Faltung* $`*` ihrer Verteilungen als Verteilung.
 :::
 
 :::proofen
@@ -399,7 +400,7 @@ simp only [bind_assoc, pure_bind, add_assoc]
 :::
 ::::
 
-::::build (target := "bool true:3p^2-2p^3 false:1-3p^2+2p^3") (moves := "not, and, or") (coins := "3") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; let z ← coin p; pure ((x && y) || (x && z) || (y && z))) = (fun n => decide (2 ≤ n)) <$> binom p 3") (play := "M1 M2 and; M1 M3 and; M2 M3 and; Z1 Z2 Z3 or")
+::::circuit (inputs := "x y z") (gates := "and, or") (coins := "p p p") (target := "bool true:3p^2-2p^3 false:1-3p^2+2p^3") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; let z ← coin p; pure ((x && y) || (x && z) || (y && z))) = (fun n => decide (2 ≤ n)) <$> binom p 3") (play := "a=and; b=and; c=and; d=or; e=or; x>a.0; y>a.1; x>b.0; z>b.1; y>c.0; z>c.1; a>d.0; b>d.1; d>e.0; c>e.1; e>out")
 :::en
 *Boss: the majority of three.* `true` when at least two of three coins show `true`. Each coin has to
 go into two functions.

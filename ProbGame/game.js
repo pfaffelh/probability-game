@@ -50,7 +50,7 @@
   const DE_TITLES = {
     'The Probability Game': 'Das Wahrscheinlichkeits\u00ADspiel',  // (a soft hyphen, for phones)
     'One Coin': 'Eine Münze', 'Draw, then Compute': 'Erst ziehen, dann rechnen', 'Building with Coins': 'Bauen mit Münzen',
-    'Counting': 'Zählen', 'Walking on the Grid': 'Gehen auf dem Gitter', 'True and False': 'Wahr und falsch', 'Circuits with Coins': 'Schaltungen mit Münzen', 'Circuits': 'Schaltungen', 'Lexicon': 'Lexikon', 'Table of Contents': 'Inhalt', 'Contents': 'Inhalt',
+    'Counting': 'Zählen', 'Walking on the Grid': 'Gehen auf dem Gitter', 'True and False': 'Wahr und falsch', 'Circuits with Coins': 'Schaltungen mit Münzen', 'Coins that Wait': 'Münzen, die warten', 'Circuits': 'Schaltungen', 'Lexicon': 'Lexikon', 'Table of Contents': 'Inhalt', 'Contents': 'Inhalt',
   }
   function translatePage() {
     const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
@@ -1717,8 +1717,9 @@
       // (what lies on the board from the start and cannot be removed: `a=not; x>a.0`, gates and wires as in `play`)
       this.fixedGates = []; this.fixedWires = []
       for (const t of (d.start ?? '').split(';').map(t => t.trim()).filter(Boolean)) {
-        let m = /^(\w+)=(\w+)$/.exec(t)
-        if (m && GATES[m[2]]) { const k = this.fixedGates.length; this.fixedGates.push({ id: m[1], kind: m[2], x: CW / 2, y: 160 + 100 * k, fixed: true }); continue }
+        // (`a=toNat@120,160`: where it lies; else one below the other in the middle)
+        let m = /^(\w+)=(\w+)(?:@(\d+),(\d+))?$/.exec(t)
+        if (m && GATES[m[2]]) { const k = this.fixedGates.length; this.fixedGates.push({ id: m[1], kind: m[2], x: m[3] ? Number(m[3]) : CW / 2, y: m[4] ? Number(m[4]) : 160 + 100 * k, fixed: true }); continue }
         m = /^(\w+)>(\w+)(?:\.(\d+))?$/.exec(t)
         if (m) this.fixedWires.push({ from: m[1], to: m[2], i: Number(m[3] ?? 0), fixed: true })
       }
@@ -1767,7 +1768,12 @@
       for (const f of this.fixedWires) if (!this.wires.some(w => w.from === f.from && w.to === f.to && w.i === f.i)) { this.wires = this.wires.filter(w => !(w.to === f.to && w.i === f.i)); this.wires.unshift({ ...f }) }
     }
     save() { try { localStorage.setItem(this.key + ':circuit', JSON.stringify({ gates: this.gatesOn, wires: this.wires, seq: this.seq, seen: this.seen })) } catch {} }
-    inputAt(k) { return this.ctl?.[k] ? { x: 110, y: 170 } : { x: CW * (k + 1) / (this.names.length + 1), y: 48 } }
+    inputAt(k) {
+      // (a coin thrown after others, which coin depending on a wire: on the left, one below the other)
+      if (this.ctl?.[k]) return { x: 110, y: 170 + 115 * this.ctl.slice(0, k).filter(Boolean).length }
+      const top = this.names.map((_, j) => j).filter(j => !this.ctl?.[j]), r = top.indexOf(k)
+      return { x: CW * (r + 1) / (top.length + 1), y: 48 }
+    }
     get outAt() { return { x: CW / 2, y: CH - 46 } }
     // the output box: with a truth table as target, the target drawn in it (a column per row)
     outBox() {
@@ -2004,7 +2010,7 @@
     leanCoinOf(k) {
       if (!this.ctl[k]) return this.leanCoin(this.coins[k])
       const w = this.wireTo(this.names[k], 0)
-      return `if ${w ? this.leanExpr(w.from) : '?'} then ${this.leanCoin(this.ctl[k][0])} else ${this.leanCoin(this.ctl[k][1])}`
+      return `bif ${w ? this.leanExpr(w.from) : '?'} then ${this.leanCoin(this.ctl[k][0])} else ${this.leanCoin(this.ctl[k][1])}`
     }
     leanState() {
       const e = this.leanExpr()
@@ -2209,11 +2215,17 @@
         this.makePort(c, id, kind, i)
         g.append(c)
       }
+      // (three coins or more: their names alone above them, and what they are in one line on top)
+      const top = this.names.filter((_, j) => !this.ctl[j])
+      if (this.random && top.length >= 3) {
+        const cs = this.coins.filter((_, j) => !this.ctl[j])
+        s.append(svg('text', { class: 'pg-cname pg-ccaption', x: 10, y: 11 }, cs.every(c => c === cs[0]) ? `${top.join(', ')} ← ${this.leanCoin(cs[0])}` : top.map((x, j) => `${x} ← ${this.leanCoin(cs[j])}`).join(', ')))
+      }
       // the inputs: a coin each, with its value in the row shown
       this.names.forEach((x, k) => {
         const a = this.inputAt(k), g = svg('g', { class: 'pg-cinput' })
         if (this.ctl[k]) g.append(svg('text', { class: 'pg-cname', x: a.x + 30, y: a.y + 5 }, this.random ? `${x} ← ${this.leanCoinOf(k)}` : `${x} ∈ ${this.setOf(k)}`))
-        else g.append(svg('text', { class: 'pg-cname', x: a.x, y: a.y - (this.random ? 26 : 20), 'text-anchor': 'middle' }, this.random ? `${x} ← ${this.leanCoin(this.coins[k])}` : x))
+        else g.append(svg('text', { class: 'pg-cname', x: a.x, y: a.y - (this.random && this.names.filter((_, j) => !this.ctl[j]).length < 3 ? 26 : 19), 'text-anchor': 'middle' }, this.random && this.names.filter((_, j) => !this.ctl[j]).length < 3 ? `${x} ← ${this.leanCoin(this.coins[k])}` : x))
         // (as in the table below: a circle of the same size with ?, and in the row shown its value, T or F)
         g.append(svg('circle', { class: 'pg-cinput-hit', cx: a.x, cy: a.y, r: 22 }))
         const r = this.random ? 12 : this.outBox().rh <= 20 ? 9 : 12, v = shown ? row[k] : x === 'true' ? true : x === 'false' ? false : null
@@ -2270,12 +2282,17 @@
         text(x0 + 10, y(1), tr('Target'), 'pg-tlabel pg-tlabel-target', 'start')
         text(x0 + 10, y(2), tr('Output'), 'pg-tlabel', 'start')
         og.append(svg('line', { class: 'pg-gsep', x1: x0 + 8, y1: b.top + 12 + b.hist + rh + 2, x2: x0 + b.w - 8, y2: b.top + 12 + b.hist + rh + 2 }))
+        // (long masses in narrow columns: a smaller font)
+        const longest = Math.max(...b.keys.map(k => String(t.mass.get(k) ?? ZERO).length))
+        const fs = Math.max(7, Math.min(12, Math.floor((cw - 4) / (longest * 0.62))))
+        const text0 = text
+        const textM = (x, yy, s, cls) => { text0(x, yy, s, cls); og.lastChild.style.fontSize = fs + 'px' }
         b.keys.forEach((k, j) => {
           const tm = t.mass.get(k) ?? ZERO
           text(cx(j), y(0), String(k), 'pg-tmass')
-          text(cx(j), y(1), String(tm), 'pg-tmass pg-tmass-target')
+          textM(cx(j), y(1), String(tm), 'pg-tmass pg-tmass-target')
           const dm = d && d.space === t.space ? (d.mass.get(k) ?? ZERO) : null
-          text(cx(j), y(2), dm ? String(new Poly(dm.c)) : '·', 'pg-tmass ' + (dm ? (dm.eq(tm) ? 'pg-tmass-ok' : 'pg-tmass-bad') : ''))
+          textM(cx(j), y(2), dm ? String(new Poly(dm.c)) : '·', 'pg-tmass ' + (dm ? (dm.eq(tm) ? 'pg-tmass-ok' : 'pg-tmass-bad') : ''))
         })
         if (shown && vals.out !== null && vals.out !== undefined) { const j = b.keys.indexOf(String(vals.out)); if (j >= 0) og.insertBefore(svg('rect', { class: 'pg-gused-col', x: cx(j) - cw / 2, y: b.top + 6, width: cw, height: b.h - 12, rx: 7 }), og.children[1]) }
       } else {
@@ -2490,6 +2507,9 @@
     { name: 'mass_total', kind: 'rule', sig: 'mass_total μ : μ true + μ false = 1', en: 'A distribution on Bool has total mass one.', de: 'Eine Verteilung auf Bool hat die Gesamtmasse eins.' },
     { name: 'mass_ne_top', kind: 'rule', sig: 'mass_ne_top : μ b ≠ ⊤', en: 'A mass of a distribution is finite (masses are numbers in [0, ∞], and ⊤ is ∞).', de: 'Eine Masse einer Verteilung ist endlich (Massen sind Zahlen in [0, ∞], und ⊤ ist ∞).' },
     { name: 'ENNReal.add_sub_cancel_left', kind: 'rule', sig: 'ENNReal.add_sub_cancel_left (h : a ≠ ⊤) : a + b - a = b', en: 'Adding a and taking it away again: for a finite a.', de: 'a dazu und wieder weg: für ein endliches a.' },
+    { name: 'bind_true', kind: 'rule', sig: '(μ >>= f) true = μ true * f true true + μ false * f false true', en: 'The mass of a bind at true: the way through true (mass μ true, then f true) and the way through false.', de: 'Die Masse eines bind bei true: der Weg über true (Masse μ true, dann f true) und der Weg über false.' },
+    { name: 'mul_one', kind: 'rule', sig: 'a * 1 = a', en: 'Times one.', de: 'Mal eins.' },
+    { name: 'mul_zero', kind: 'rule', sig: 'a * 0 = 0', en: 'Times zero.', de: 'Mal null.' },
     { name: 'add_comm', kind: 'rule', sig: 'a + b = b + a', en: 'The order of a sum does not matter.', de: 'Die Reihenfolge einer Summe ist egal.' },
     { name: 'mass_false', kind: 'lemma', sig: 'mass_false μ : μ false = 1 - μ true', en: 'Proved by you in One Coin: what is not at true is at false.', de: 'Von dir bewiesen in „Eine Münze“: Was nicht bei true liegt, liegt bei false.' },
     { name: 'mass_true', kind: 'lemma', sig: 'mass_true μ : μ true = 1 - μ false', en: 'Proved by you in One Coin.', de: 'Von dir bewiesen in „Eine Münze“.' },
@@ -3172,7 +3192,9 @@
     const levelName = k => {
       const t = [...roots[k].querySelectorAll(':scope > .pg-text > .pg-lang:not(.pg-proof-text)')].find(e => e.lang === LANG)
       const em = t?.querySelector('p > :is(em, strong):first-child')
-      return em ? em.textContent.trim().replace(/[.:]$/, '') : ''
+      if (!em) return ''
+      const c = em.cloneNode(true); c.querySelectorAll('.katex-mathml, annotation').forEach(e => e.remove())
+      return c.textContent.trim().replace(/[.:]$/, '')
     }
     const clone = nodes => nodes.map(n => n.cloneNode(true))
     const levelText = k => clone([...roots[k].querySelectorAll(':scope > .pg-text > .pg-lang:not(.pg-proof-text)')])

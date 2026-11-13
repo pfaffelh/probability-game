@@ -4,7 +4,7 @@ import ProbGame.Worlds.OneCoin
 import ProbGame.Worlds.Draw
 import ProbGame.Worlds.TwoCoins
 import ProbGame.Worlds.Circuits
-import ProbGame.Worlds.CoinCircuits
+import ProbGame.Worlds.Bind
 import ProbGame.Lexicon
 
 open Verso.Genre Manual
@@ -31,7 +31,8 @@ on the board, then you prove it in Lean, for every probability $`p`, with the ta
 your inventory. Each lemma you prove is unlocked for the levels after it. Lean runs on the server;
 your progress stays in your browser.
 One world comes before chance: circuits of `true` and `false`, and the maps `Bool → Bool`. Then a coin with probability $`p`, what it is and where its mass
-goes; drawing and computing in `do` blocks; circuits of coins; and counting.
+goes; drawing and computing in `do` blocks; circuits of coins and counting; and coins that wait for
+others (bind). The board leads at first; Lean grows from world to world.
 :::
 
 :::de
@@ -43,8 +44,9 @@ Sätzen deines Inventars. Jedes Lemma, das du beweist, wird für die Level danac
 läuft auf dem Server; dein Fortschritt bleibt in deinem Browser.
 Eine Welt kommt vor dem Zufall: Schaltungen aus `true` und `false`, und die Abbildungen `Bool → Bool`.
 Dann eine Münze mit Wahrscheinlichkeit $`p`, was
-sie ist und wohin ihre Masse geht; Ziehen und Rechnen in `do`-Blöcken; Schaltpläne aus Münzen; und
-Zählen.
+sie ist und wohin ihre Masse geht; Ziehen und Rechnen in `do`-Blöcken; Schaltungen aus Münzen und
+Zählen; und Münzen, die auf andere warten (bind). Am Anfang führt das Spielfeld; Lean wächst von Welt zu
+Welt.
 :::
 
 {include 1 ProbGame.Worlds.Circuits}
@@ -55,6 +57,6 @@ Zählen.
 
 {include 1 ProbGame.Worlds.TwoCoins}
 
-{include 1 ProbGame.Worlds.CoinCircuits}
+{include 1 ProbGame.Worlds.Bind}
 
 {include 1 ProbGame.Lexicon}
