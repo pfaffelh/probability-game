@@ -1690,7 +1690,10 @@
       this.goal = d.goal ?? ''
       // (an unknown map f: the circuit must be `shape`; with `every`, it is checked for each of these maps)
       this.shape = d.shape ?? ''
-      this.every = (d.every ?? '').split(/[\s,]+/).filter(m => MAPS[m])
+      // (the maps there are for the fields: all four, or those of `maps`, as a hypothesis on f allows)
+      this.allowed = (d.maps ?? '').split(/[\s,]+/).filter(m => MAPS[m])
+      if (!this.allowed.length) this.allowed = MAP_ORDER
+      this.every = []
       // (what lies on the board from the start and cannot be removed: `a=not; x>a.0`, gates and wires as in `play`)
       this.fixedGates = []; this.fixedWires = []
       for (const t of (d.start ?? '').split(';').map(t => t.trim()).filter(Boolean)) {
@@ -1719,7 +1722,7 @@
 
     // ---- the circuit: the fixed blocks (inputs, output) and the gates and wires of the player
     // what lies beside the board: the gates, and with bind the four maps for its fields
-    get paletteKinds() { return this.gates.some(k => GATES[k].slots) ? [...this.gates, ...MAP_ORDER.map(m => 'map:' + m)] : this.gates }
+    get paletteKinds() { return this.gates.some(k => GATES[k].slots) ? [...this.gates, ...this.allowed.map(m => 'map:' + m)] : this.gates }
     // the map in f (the same in every f)
     get fmap() { return this.gatesOn.find(g => GATES[g.kind].shared)?.maps?.[0] ?? null }
     setMap(id, i, m) {
@@ -1826,7 +1829,7 @@
     }
     // a tap on a field: the next of the four maps
     cycleSlot(id, i) {
-      this.change(() => { const g = this.block(id); this.setMap(id, i, MAP_ORDER[(MAP_ORDER.indexOf(g.maps?.[i] ?? null) + 1) % 4]) })
+      this.change(() => { const g = this.block(id); this.setMap(id, i, this.allowed[(this.allowed.indexOf(g.maps?.[i] ?? null) + 1) % this.allowed.length]) })
     }
     clamp(a, kind) { const H = kind ? gateH(kind) : GH2; return { x: Math.max(GW / 2 + 6, Math.min(CW - GW / 2 - 6, a.x)), y: Math.max(90 + H / 2, Math.min(this.outBox().top - H / 2 - 30, a.y)) } }
     connect(from, to, i) {
@@ -1837,6 +1840,8 @@
         this.flash(tr(this.typeOut(from) === 'nat' ? 'A number does not fit into an input for a coin.' : 'A coin does not fit into an input for a number (first toNat).'))
         this.sel = null; this.render(); return
       }
+      // (an output with a wire of the level feeds that wire only: the level's start is not gone round)
+      if (this.wires.some(w => w.fixed && w.from === from)) { this.flash(tr('{x} is wired by the level; it stays so.', { x: from })); this.sel = null; this.render(); return }
       if (this.wireTo(to, i)?.fixed) { this.flash(tr('This wire belongs to the level; it stays.')); this.sel = null; this.render(); return }
       this.change(() => { this.wires = this.wires.filter(w => !(w.to === to && w.i === i)); this.wires.push({ from, to, i }) })
     }
@@ -1950,7 +1955,6 @@
       const outs = this.outputs()
       if (outs.some(o => o === null)) return false
       if (this.gatesOn.some(g => GATES[g.kind].slots && [...Array(GATES[g.kind].slots).keys()].some(i => !g.maps?.[i]))) return false
-      if (this.shape && this.leanExpr().replace(/\s+/g, ' ') !== this.shape) return false
       return outs.every((o, k) => this.rowOk(k, outs))
     }
     get done() {
@@ -1958,7 +1962,6 @@
       const outs = this.outputs()
       if (outs.some(o => o === null)) return false
       if (this.gatesOn.some(g => GATES[g.kind].slots && [...Array(GATES[g.kind].slots).keys()].some(i => !g.maps?.[i]))) return false
-      if (this.shape && this.leanExpr().replace(/\s+/g, ' ') !== this.shape) return false
       if (this.random) { const d = this.dist(); return !!d && sameDist(d, this.target) }
       return outs.every((o, k) => this.rowOk(k, outs))
     }
@@ -2000,7 +2003,6 @@
       if (!this.wireTo('out', 0)) return tr('Wire the Output: tap the last gate, then Output.')
       const outs = this.outputs()
       if (outs.some(o => o === null)) return tr('An input of a gate is still open.')
-      if (this.shape && this.leanExpr().replace(/\s+/g, ' ') !== this.shape) return tr('Your circuit is {a}; build {b}.', { a: this.leanExpr(), b: this.shape })
       if (this.every.length) {
         const ticks = this.every.map(m => `${tr(MAPS[m].label)} ${this.seen.includes(m) ? '✓' : '·'}`).join('  ')
         return `f: ${ticks} — ` + tr(this.right && this.every.includes(this.fmap) ? 'right for this f. Now the next map in f.' : this.right ? 'right, but this f does not count here. Choose another map in f.' : 'not right for this f. Choose another map in f.')
@@ -2891,7 +2893,7 @@
     'Lean did not take the line: see why above the input.': 'Lean hat die Zeile nicht genommen: warum, steht über der Eingabe.',
     'Type a tactic, or tap one in the inventory.': 'Tippe eine Taktik ein, oder tippe eine im Inventar an.', 'One goal left.': 'Noch ein Ziel.', '{n} goals left.': 'Noch {n} Ziele.',
     'Tips': 'Tipps', 'Tip': 'Tipp', 'Got it': 'Verstanden', 'Close': 'Schließen', 'Restart': 'Neu', 'Next': 'Weiter', 'Next ›': 'Weiter ›',
-    'Next world ›': 'Nächste Welt ›', 'Which?': 'Welche?', plain: 'ohne', 'This wire belongs to the level; it stays.': 'Diese Leitung gehört zum Level; sie bleibt.', 'World': 'Welt', 'Board': 'Spielfeld', 'Proof ': 'Beweis', 'This world': 'Diese Welt',
+    'Next world ›': 'Nächste Welt ›', 'Which?': 'Welche?', plain: 'ohne', 'This wire belongs to the level; it stays.': 'Diese Leitung gehört zum Level; sie bleibt.', '{x} is wired by the level; it stays so.': '{x} ist vom Level verdrahtet; das bleibt so.', 'World': 'Welt', 'Board': 'Spielfeld', 'Proof ': 'Beweis', 'This world': 'Diese Welt',
     'New in this level': 'Neu in diesem Level', 'New in this proof': 'Neu in diesem Beweis', 'Solve the board first.': 'Erst das Spielfeld lösen.',
   })
   // What the moves and building blocks do, for the tips (by kind of board: level, bool, build, src, walk).

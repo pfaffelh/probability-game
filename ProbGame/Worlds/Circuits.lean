@@ -331,20 +331,20 @@ decide +revert
 :::
 ::::
 
-::::circuit (inputs := "true") (gates := "f") (table := "1") (shape := "f (f true)") (every := "id true") (proof := "(f : Bool → Bool) (h : f true = true) : f (f true) = true") (new := "rw") (play := "a=f; b=f; a.0=id; true>a.0; a>b.0; b>out")
+::::circuit (inputs := "true") (gates := "f") (table := "1") (shape := "f (f true)") (maps := "id true") (start := "a=f; b=f; true>a.0; a>b.0; b>out") (proof := "(f : Bool → Bool) (h : f true = true) : f (f true) = true") (new := "rw") (play := "a.0=id")
 :::en
-*The same map twice.* New gate: `f`, an unknown map. It has one field for one of the four maps, and
-every `f` on the board has the same one. The input is `true` itself. Build `f (f true)`: the output is
-to be `true` again. In Lean `f` is any map with `f true = true`. Which of the four are
-these? Try each of them in `f`: the board ticks off the ones that count.
+*The same map twice.* New gate: `f`, an unknown map. It has one field for a map, and every `f` on
+the board has the same one. The circuit `f (f true)` is there already; choose the map in `f`. In Lean
+`f` is any map with `f true = true` (the hypothesis `h`), so only the maps with `f true = true` are
+offered: `id` and always `T`. Either way, the output is `true`.
 :::
 
 :::de
 *Zweimal dieselbe Abbildung.* Neuer Baustein: `f`, eine unbekannte Abbildung. Er hat ein Feld für
-eine der vier Abbildungen, und jedes `f` auf dem Spielfeld hat dieselbe. Der Eingang ist `true` selbst.
-Bau `f (f true)`: Der Ausgang soll wieder `true` sein. In Lean ist `f` irgendeine Abbildung mit
-`f true = true`. Welche der vier sind das? Probier jede in `f` aus: Das Spielfeld hakt die ab, die
-zählen.
+eine Abbildung, und jedes `f` auf dem Spielfeld hat dieselbe. Die Schaltung `f (f true)` liegt schon da;
+wähle die Abbildung in `f`. In Lean ist `f` irgendeine Abbildung mit `f true = true` (die Annahme `h`),
+darum gibt es nur die Abbildungen mit `f true = true`: `id` und immer `T`. So oder so ist der Ausgang
+`true`.
 :::
 
 :::proofen
@@ -369,15 +369,15 @@ rw [h, h]
 :::
 ::::
 
-::::circuit (inputs := "b") (gates := "f") (table := "f") (shape := "f (f (f b))") (every := "id not true false") (proof := "(f : Bool → Bool) (b : Bool) : f (f (f b)) = f b") (play := "a=f; c=f; d=f; b>a.0; a>c.0; c>d.0; d>out")
+::::circuit (inputs := "b") (gates := "f") (table := "f") (shape := "f (f (f b))") (start := "a=f; c=f; d=f; b>a.0; a>c.0; c>d.0; d>out") (proof := "(f : Bool → Bool) (b : Bool) : f (f (f b)) = f b") (play := "a.0=id")
 :::en
-*Three times is once.* Build `f (f (f b))`. The target is `f` itself, once: for every map in `f`,
-three times is to be the same as once. Check it for each of the four maps.
+*Three times is once.* The circuit `f (f (f b))` is there; the target is `f` itself, once. Choose a
+map in `f`, and then another: for each of the four, three times is the same as once.
 :::
 
 :::de
-*Dreimal ist einmal.* Bau `f (f (f b))`. Das Ziel ist `f` selbst, einmal: Für jede Abbildung in `f`
-soll dreimal dasselbe sein wie einmal. Prüf es für jede der vier Abbildungen.
+*Dreimal ist einmal.* Die Schaltung `f (f (f b))` liegt da; das Ziel ist `f` selbst, einmal. Wähle
+eine Abbildung in `f`, und dann eine andere: Für jede der vier ist dreimal dasselbe wie einmal.
 :::
 
 :::proofen
