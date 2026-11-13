@@ -1548,6 +1548,8 @@
     and: { n: 2, f: ([a, b]) => a && b, lean: ([a, b]) => `${arg(a)} && ${arg(b)}`, sym: '∧', label: 'and' },
     or: { n: 2, f: ([a, b]) => a || b, lean: ([a, b]) => `${arg(a)} || ${arg(b)}`, sym: '∨', label: 'or' },
     xor: { n: 2, f: ([a, b]) => a !== b, lean: ([a, b]) => `${arg(a)} ^^ ${arg(b)}`, sym: '⊕', label: 'xor' },
+    // a gate of your own: for `true` the one value, for `false` the other (`if c then a else b`)
+    if: { n: 3, ports: ['c', 'T', 'F'], f: ([c, a, b]) => (c ? a : b), lean: ([c, a, b]) => `if ${c} then ${a} else ${b}`, sym: 'if', label: 'if' },
     nand: { n: 2, f: ([a, b]) => !(a && b), lean: ([a, b]) => `!(${arg(a)} && ${arg(b)})`, sym: '⊼', label: 'nand' },
     // counting: a coin becomes a number, numbers are added (wires of numbers are blue)
     toNat: { n: 1, ins: ['bool'], out: 'nat', f: ([a]) => (a ? 1 : 0), lean: ([a]) => `${arg(a)}.toNat`, sym: '#', label: 'toNat' },
@@ -1562,7 +1564,7 @@
     'Connect the output.': 'Verbinde den Ausgang.', 'An input of a gate is still open.': 'Ein Eingang eines Bausteins ist noch offen.',
     '{k} of {n} rows are right.': '{k} von {n} Zeilen stimmen.', 'Now tap an input (a circle above a block).': 'Tippe jetzt einen Eingang an (ein Kreis oben an einem Baustein).',
     'Now tap an output (a dot below a block).': 'Tippe jetzt einen Ausgang an (ein Punkt unten an einem Baustein).',
-    'That would go round in a circle.': 'Das ginge im Kreis.',
+    'That would go round in a circle.': 'Das ginge im Kreis.', 'value': 'Wert',
     'The coin {y} can only depend on the coins thrown before it.': 'Die Münze {y} kann nur von Münzen abhängen, die vor ihr geworfen werden.',
     'Wire the coin {y}: which coin it is depends on a wire into it, from a coin above or a gate.': 'Verdrahte die Münze {y}: welche Münze es ist, hängt von einem Draht in sie hinein ab, von einer Münze oben oder einem Baustein.',
     'previous row': 'vorige Zeile', 'next row': 'nächste Zeile', 'row {k} of {n}': 'Zeile {k} von {n}', 'hide': 'ausblenden',
@@ -1588,12 +1590,15 @@
     g.append(svg('rect', { x: -GW / 2, y: -GH2 / 2, width: GW, height: GH2, rx: 12 }))
     const pic = gatePicture(kind); pic.setAttribute('transform', 'translate(-14,-2)'); g.append(pic)
     for (let i = 0; i < G.n; i++) g.append(svg('circle', { class: 'pg-cport' + (gateIn(kind, i) === 'nat' ? ' pg-cport-nat' : ''), cx: -GW / 2 + GW * (i + 1) / (G.n + 1), cy: -GH2 / 2, r: 9 }))
+    G.ports?.forEach((t, i) => g.append(svg('text', { class: 'pg-cportname', x: -GW / 2 + GW * (i + 1) / (G.n + 1), y: -GH2 / 2 + 21, 'text-anchor': 'middle' }, t)))
     g.append(svg('circle', { class: 'pg-cport' + (gateOut(kind) === 'nat' ? ' pg-cport-nat' : ''), 'data-kind': 'out', cx: 0, cy: GH2 / 2, r: 7 }))
     s.append(g); return s
   }
   // the picture of a gate: its sign, its name below
   function gatePicture(kind) {
     const G = GATES[kind], g = svg('g', { class: 'pg-gpic' })
+    // (a gate with names at its inputs: its name alone, below them)
+    if (G.ports) { g.append(svg('text', { class: 'pg-csym', x: 14, y: 18, 'text-anchor': 'middle' }, G.sym)); return g }
     g.append(svg('text', { class: 'pg-csym', x: 0, y: 4, 'text-anchor': 'middle' }, G.sym))
     g.append(svg('text', { class: 'pg-clabel', x: 0, y: 22, 'text-anchor': 'middle' }, tr(G.label)))
     return g
@@ -1603,7 +1608,9 @@
     constructor(root, index, onSolved) {
       this.root = root; this.index = index; this.onSolved = onSolved
       const d = root.dataset
-      this.names = d.inputs.split(/\s+/).filter(Boolean)
+      // (an input `y:*|0` depends on a wire: `y ∈ if c then {F, T} else {F}`; rows without it fall away)
+      const ins = d.inputs.split(/\s+/).filter(Boolean)
+      this.names = ins.map(t => t.split(':')[0])
       this.gates = d.gates.split(',').map(g => g.trim()).filter(g => GATES[g])
       // the target: a value per row, `0`/`1` for false/true, or numbers after `nat` (`nat 0112`)
       this.natOut = /^nat\s/.test(d.table ?? '')
@@ -1613,7 +1620,7 @@
       this.random = this.coins.length > 0
       // a coin thrown after others, which coin depending on a wire (bind): `q|r` is
       // `if c then coin q else coin r`, with `c` what the player wires into it (`0`, `1`: pure false, true)
-      this.ctl = this.coins.map(c => (c.includes('|') ? c.split('|') : null))
+      this.ctl = this.random ? this.coins.map(c => (c.includes('|') ? c.split('|') : null)) : ins.map(t => (t.includes(':') ? t.split(':')[1].split('|') : null))
       this.binds = this.ctl.some(Boolean)
       this.target = this.random ? parseDist(d.target) : null
       this.board = root.querySelector('.pg-board')
@@ -1640,7 +1647,14 @@
     get outAt() { return { x: CW / 2, y: CH - 46 } }
     // the output box: with a truth table as target, the target drawn in it (a column per row)
     outBox() {
-      if (this.random) { const a = this.outAt; return { x: a.x, top: a.y - 30, w: 140, h: 60 } }
+      if (this.random) {
+        // the target on the board: a column for each value, its mass in the target and in the output
+        const t = this.target, keys = axis(t.space, [...t.mass.keys()])
+        const longest = Math.max(...keys.map(k => String(t.mass.get(k) ?? ZERO).length), 3)
+        const cols = keys.length, cw = Math.max(46, Math.min(Math.floor((CW - 104) / cols), longest * 8 + 14)), rh = 24
+        const h = 12 + 3 * rh + 8, w = 84 + cols * cw + 12
+        return { x: CW / 2, top: CH - 12 - h, w, h, cw, rh, keys }
+      }
       // (few rows: bigger coins)
       const n = this.names.length, cols = 2 ** n, cw = cols <= 4 ? 32 : 22, rh = cols <= 4 ? 28 : 20
       const h = 14 + n * rh + 10 + 2 * (rh + 4) + 6, w = 84 + cols * cw + 12
@@ -1684,7 +1698,7 @@
     addGate(kind, at) {
       if (!at) {
         const spots = []
-        for (const y of this.binds ? [270, 370, 460] : [160, 260, 360]) for (const x of [CW / 2, CW / 2 - 135, CW / 2 + 135]) spots.push({ x, y })
+        for (const y of this.binds ? [265, 345, 420] : [160, 260, 360]) for (const x of [CW / 2, CW / 2 - 135, CW / 2 + 135]) spots.push({ x, y })
         at = spots.find(s => !this.gatesOn.some(g => Math.abs(g.x - s.x) < GW && Math.abs(g.y - s.y) < GH2 + 20)) ?? { x: CW / 2, y: CH / 2 }
       }
       const c = this.clamp(at)
@@ -1775,12 +1789,32 @@
       }
       this.thrown += n; this.render()
     }
-    want(k) { return this.natOut ? Number(this.table[k]) : this.table[k] === '1' }
+    want(k) { const c = this.table[k]; return c === '-' ? null : this.natOut ? Number(c) : c === '1' }
+    // (without coins) whether a row is there: a dependent input takes only the values its wire allows
+    // (null while a dependent input is not wired)
+    present(row) {
+      if (!this.binds) return true
+      const vals = this.values(row)
+      for (let k = 0; k < row.length; k++) {
+        if (!this.ctl[k]) continue
+        const w = this.wireTo(this.names[k], 0), c = w ? vals[w.from] : null
+        if (c === null || c === undefined) return null
+        const a = this.ctl[k][c ? 0 : 1]
+        if (a !== '*' && (a === '1') !== row[k]) return false
+      }
+      return true
+    }
+    rowOk(k, outs) {
+      const there = this.present(this.rows[k]), want = this.want(k)
+      if (there === null) return false
+      if (!there) return want === null
+      return want !== null && outs[k] === want
+    }
     get done() {
       const outs = this.outputs()
       if (outs.some(o => o === null)) return false
       if (this.random) { const d = this.dist(); return !!d && sameDist(d, this.target) }
-      return outs.every((o, k) => o === this.want(k))
+      return outs.every((o, k) => this.rowOk(k, outs))
     }
     // the circuit as Lean writes it
     leanExpr(id = 'out') {
@@ -1789,6 +1823,11 @@
       return id === 'out' ? ins[0] : GATES[this.block(id).kind].lean(ins)
     }
     leanCoin(c) { return c === 'p' ? 'coin p' : c === '1-p' ? 'coin (σ p)' : c === '0' ? 'pure false' : c === '1' ? 'pure true' : `coin (${c})` }
+    // a dependent input without coins: the values it may take, `if c then {F, T} else {F}`
+    setOf(k) {
+      const w = this.wireTo(this.names[k], 0), set = a => (a === '*' ? '{F, T}' : a === '1' ? '{T}' : '{F}')
+      return `if ${w ? this.leanExpr(w.from) : '?'} then ${set(this.ctl[k][0])} else ${set(this.ctl[k][1])}`
+    }
     // the coin of input k in Lean: with a wire into it, `if c then … else …`
     leanCoinOf(k) {
       if (!this.ctl[k]) return this.leanCoin(this.coins[k])
@@ -1820,7 +1859,7 @@
         const k = axis(t.space, [...d.mass.keys(), ...t.mass.keys()]).find(k => !(d.mass.get(k) ?? ZERO).eq(t.mass.get(k) ?? ZERO)) ?? 'true'
         return tr('At {k}: P = {m}, the target has {t}.', { k, m: String(new Poly((d.mass.get(k) ?? ZERO).c)), t: String(t.mass.get(k) ?? ZERO) })
       }
-      const k = outs.filter((o, r) => o === this.want(r)).length
+      const k = outs.filter((o, r) => this.rowOk(r, outs)).length
       return tr('{k} of {n} rows are right.', { k, n: outs.length })
     }
     check() {
@@ -1980,7 +2019,7 @@
       // the inputs: a coin each, with its value in the row shown
       this.names.forEach((x, k) => {
         const a = this.inputAt(k), g = svg('g', { class: 'pg-cinput' })
-        if (this.ctl[k]) g.append(svg('text', { class: 'pg-cname', x: a.x + 30, y: a.y + 5 }, `${x} ← ${this.leanCoinOf(k)}`))
+        if (this.ctl[k]) g.append(svg('text', { class: 'pg-cname', x: a.x + 30, y: a.y + 5 }, this.random ? `${x} ← ${this.leanCoinOf(k)}` : `${x} ∈ ${this.setOf(k)}`))
         else g.append(svg('text', { class: 'pg-cname', x: a.x, y: a.y - 26, 'text-anchor': 'middle' }, this.random ? `${x} ← ${this.leanCoin(this.coins[k])}` : x))
         if (shown) { const c = coin(row[k], 20); pose(c, a.x, a.y, 1, row[k]); g.append(c) } else g.append(svg('circle', { class: 'pg-cinput-hit', cx: a.x, cy: a.y, r: 22 }))
         addPort(g, x, 'out')
@@ -1993,6 +2032,7 @@
         const G = GATES[gate.kind], g = svg('g', { class: 'pg-cblock' + (this.selBlock === gate.id ? ' pg-cblock-sel' : ''), 'data-id': gate.id, 'data-kind': gate.kind })
         g.append(svg('rect', { x: gate.x - GW / 2, y: gate.y - GH2 / 2, width: GW, height: GH2, rx: 12 }))
         const pic = gatePicture(gate.kind); pic.setAttribute('transform', `translate(${gate.x - 14},${gate.y - 2})`); g.append(pic)
+        G.ports?.forEach((t, i) => { const q = this.port(gate.id, 'in', i); g.append(svg('text', { class: 'pg-cportname', x: q.x, y: q.y + 21, 'text-anchor': 'middle' }, t)) })
         for (let i = 0; i < G.n; i++) addPort(g, gate.id, 'in', i)
         addPort(g, gate.id, 'out')
         // the coin at its output, in the row shown
@@ -2011,10 +2051,22 @@
       // the output
       const o = this.outAt, og = svg('g', { class: 'pg-coutput' })
       if (this.random) {
-        og.append(svg('rect', { x: o.x - 70, y: o.y - 30, width: 140, height: 60, rx: 14 }))
-        og.append(svg('text', { class: 'pg-cname', x: o.x - 52, y: o.y + 5 }, tr('Output')))
-        const ov = vals.out
-        const oc = coin(ov ?? '?', 18); pose(oc, o.x + 38, o.y, 1, ov ?? '?'); og.append(oc)
+        const b = this.outBox(), x0 = b.x - b.w / 2, t = this.target, d = this.dist(), { cw, rh } = b
+        og.append(svg('rect', { class: 'pg-cbox', x: x0, y: b.top, width: b.w, height: b.h, rx: 14 }))
+        const cx = k => x0 + 84 + cw / 2 + k * cw, y = i => b.top + 12 + rh / 2 + i * rh + 4
+        const text = (x, yy, s, cls, anchor = 'middle') => og.append(svg('text', { class: cls, x, y: yy, 'text-anchor': anchor }, s))
+        text(x0 + 10, y(0), tr('value'), 'pg-tlabel', 'start')
+        text(x0 + 10, y(1), tr('Target'), 'pg-tlabel pg-tlabel-target', 'start')
+        text(x0 + 10, y(2), tr('Output'), 'pg-tlabel', 'start')
+        og.append(svg('line', { class: 'pg-gsep', x1: x0 + 8, y1: b.top + 12 + rh + 2, x2: x0 + b.w - 8, y2: b.top + 12 + rh + 2 }))
+        b.keys.forEach((k, j) => {
+          const tm = t.mass.get(k) ?? ZERO
+          text(cx(j), y(0), String(k), 'pg-tmass')
+          text(cx(j), y(1), String(tm), 'pg-tmass pg-tmass-target')
+          const dm = d && d.space === t.space ? (d.mass.get(k) ?? ZERO) : null
+          text(cx(j), y(2), dm ? String(new Poly(dm.c)) : '·', 'pg-tmass ' + (dm ? (dm.eq(tm) ? 'pg-tmass-ok' : 'pg-tmass-bad') : ''))
+        })
+        if (shown && vals.out !== null && vals.out !== undefined) { const j = b.keys.indexOf(String(vals.out)); if (j >= 0) og.insertBefore(svg('rect', { class: 'pg-gused-col', x: cx(j) - cw / 2, y: b.top + 6, width: cw, height: b.h - 12, rx: 7 }), og.children[1]) }
       } else {
         // the target, as a map: a column for each row (the values of the inputs above the line),
         // the target below, and what the circuit gives
@@ -2030,12 +2082,18 @@
           if (v !== null) c.append(svg('text', { class: r > 9 ? 'pg-gchip-big' : '', x, y: y + (r > 9 ? 4.5 : 3.5), 'text-anchor': 'middle' }, typeof v === 'number' ? String(v) : v ? 'T' : 'F'))
           og.append(c)
         }
-        this.names.forEach((nm, i) => { label(yIn(i), nm); this.rows.forEach((r, k) => chip(cx(k), yIn(i), r[i])) })
+        // (a row not in the target: a dash; a row that falls away by the wires: faded, no output)
+        const dash = (x, y, cls = '') => og.append(svg('text', { class: 'pg-gdash ' + cls, x, y: y + 5, 'text-anchor': 'middle' }, '–'))
+        const there = this.rows.map(r => this.present(r))
+        this.names.forEach((nm, i) => { label(yIn(i), nm); this.rows.forEach((r, k) => chip(cx(k), yIn(i), r[i], there[k] === false ? 'pg-gchip-gone' : '')) })
         og.append(svg('line', { class: 'pg-gsep', x1: x0 + 8, y1: ySep, x2: x0 + b.w - 8, y2: ySep }))
         label(yT, tr('Target'), 'pg-tlabel-target')
-        this.rows.forEach((r, k) => chip(cx(k), yT, this.want(k)))
+        this.rows.forEach((r, k) => { const w = this.want(k); if (w === null) dash(cx(k), yT, 'pg-gdash-target'); else chip(cx(k), yT, w) })
         label(yO, tr('Output'))
-        this.rows.forEach((r, k) => chip(cx(k), yO, outs[k], outs[k] === null ? '' : outs[k] === this.want(k) ? 'pg-gchip-ok' : 'pg-gchip-bad'))
+        this.rows.forEach((r, k) => {
+          const ok = outs[k] === null || there[k] === null ? '' : this.rowOk(k, outs) ? 'pg-gchip-ok' : 'pg-gchip-bad'
+          if (there[k] === false) dash(cx(k), yO, ok); else chip(cx(k), yO, outs[k], ok)
+        })
       }
       addPort(og, 'out', 'in', 0)
       og.addEventListener('click', ev => { if (!ev.target.closest('.pg-cport')) this.tapIn('out', 0) })

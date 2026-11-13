@@ -506,3 +506,16 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 .pg-cboard-col .pg-svg.pg-csvg { flex: none; width: 100%; }
 .pg-gate-sym { font: bold 1.4em var(--verso-code-font-family, monospace); min-width: 1.4em; text-align: center; }
 .pg-csym { font-size: 26px; }
+
+/* the target on the board with coins: masses by value */
+.pg-tmass { font: bold 13px var(--verso-code-font-family, monospace); fill: #5c3d0e; pointer-events: none; }
+.pg-tmass-target { fill: #2e6fb8; }
+.pg-tmass-ok { fill: #2e8b37; }
+.pg-tmass-bad { fill: #b03a2e; }
+/* rows that fall away (a dependent input) */
+.pg-gchip-gone { opacity: 0.25; }
+.pg-gdash { font: bold 18px sans-serif; fill: #8a7a5a; pointer-events: none; }
+.pg-gdash-target { fill: #2e6fb8; }
+.pg-gdash.pg-gchip-ok { fill: #2e8b37; }
+.pg-gdash.pg-gchip-bad { fill: #b03a2e; }
+.pg-cportname { font: bold 11px var(--verso-code-font-family, monospace); fill: #8a5a16; pointer-events: none; }
