@@ -13,7 +13,7 @@ const check = (ok, what) => { if (!ok) { failures++; console.log('FAIL', what) }
 await page.goto(base); await page.evaluate(() => localStorage.clear()); await page.reload()
 check(await page.evaluate(() => document.documentElement.lang) === 'en', 'the default is not English')
 const pages = ['', ...await page.evaluate(() => [...new Set([...document.querySelectorAll('a[href]')].map(a => /^([^/#?.]+)\/#/.exec(a.getAttribute('href'))?.[1]).filter(Boolean))].map(p => p + '/'))]
-for (const [lang, other, title] of [['de', 'en', 'Wahrscheinlichkeit|Wahr und falsch|Gitter|Münze|ziehen|Bauen|Zählen|Lexikon'], ['en', 'de', 'Probability|True and False|Grid|Coin|Draw|Building|Counting|Lexicon']]) {
+for (const [lang, other, title] of [['de', 'en', 'Wahrscheinlichkeit|Wahr und falsch|Schaltungen|Gitter|Münze|ziehen|Bauen|Zählen|Lexikon'], ['en', 'de', 'Probability|True and False|Circuits|Grid|Coin|Draw|Building|Counting|Lexicon']]) {
   await page.locator('header .pg-langbtn', { hasText: lang.toUpperCase() }).click()
   await page.waitForLoadState('load'); await page.waitForTimeout(300)
   for (const path of pages) {

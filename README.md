@@ -33,6 +33,21 @@ the computing in `Bool` (`decide +revert` for `!(!b) = b`, the player's `Bool.no
 values of `b`; `cases b` by hand), `not ∘ not = id` by `decide`, a hypothesis in `rw`; the boss is
 `f (f (f b)) = f b` for every `f : Bool → Bool`, by `decide +revert`: four maps, eight cases. Its levels (`::::boolean`) have an inventory of their own.
 
+**Circuits** (after *True and False*; `::::circuit`): maps with several inputs, built as in the IPM: the
+inputs above (a coin each), gates (`not`, `and`, `or`, later `xor`) dragged from the side onto the board
+(or tapped), wires from an output to an input (tapped one after the other, or dragged), the output
+below; a gate is moved, dragged onto the bin, or tapped for ✕, a wire tapped for ✕. The target is a
+truth table (`table := "0110"`, the rows ff, ft, tf, tt); a row tapped shows its coins on the board.
+The proof is about the circuit built: `(x y : Bool) : (circuit) = (goal)`, by `decide +revert`.
+Levels: not; both; always true without it; or without or (De Morgan); exactly one (xor); the same, with
+your xor as a gate; boss: the majority of three, against `decide (2 ≤ x.toNat + y.toNat + z.toNat)`.
+
+**Circuits with Coins** (after *Building with Coins*): the same circuits with `coin p` at each input
+(`coins := "p p"`). Each row of the truth table has its mass, the output a distribution, the target is
+one (`target := "bool true:p^2 …"`, or on ℕ with `toNat` and `plus`, whose wires are blue); a hundred
+throws count the rows. Levels: two coins, one coin (`coin_and`); first true, then false; at least one;
+exactly one; how many true (`B(2, p)`); three coins (`B(3, p)`); boss: the majority of three coins.
+
 **Walking on the grid** (branch `monad` only, before chance; `::::walk`, `Lean/WorldWalk.lean`): a figure on
 $\mathbb{Z} \times \mathbb{Z}$, the moves `north`, `east`, `south`, `west` as maps `Pos → m Pos`
 into a monad, a walk as the program `pure (0, 0) >>= north >>= east`. First in `Id` (sure moves:

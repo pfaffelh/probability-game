@@ -24,9 +24,8 @@ lives on the same space). The masses are $`p` and $`1 - p`; the picture shows th
 $`p`, which the slider changes.
 
 In *True and False* the coin lay surely on one side: all the mass, $`1`, was there. Now it is thrown.
-*Throw* (or a tap on the coin) throws it, for the $`p` of the picture, and plays your moves on what
-it shows; it lands beside the bar of where it ends up. After many throws the frequencies, the thin
-bars, come close to the masses.
+*Throw 100 times* throws it a hundred times, for the $`p` of the picture, and plays your moves on
+what it shows; the frequencies, the thin bars beside the masses, come close to the masses.
 :::
 
 :::de
@@ -44,9 +43,8 @@ wenn es auf demselben Raum lebt). Die Massen sind $`p` und $`1 - p`; das Bild ze
 Beispiel-$`p`, das der Schieberegler ändert.
 
 In *Wahr und falsch* lag die Münze sicher auf einer Seite: Die ganze Masse, $`1`, war dort. Jetzt wird
-sie geworfen. *Werfen* (oder ein Tippen auf die Münze) wirft sie, für das $`p` des Bilds, und spielt
-deine Züge auf dem, was sie zeigt; sie landet neben der Säule, wo sie am Ende hinkommt. Nach vielen
-Würfen kommen die Häufigkeiten, die schmalen Säulen, den Massen nahe.
+sie geworfen. *100-mal werfen* wirft sie hundertmal, für das $`p` des Bilds, und spielt deine Züge auf
+dem, was sie zeigt; die Häufigkeiten, die schmalen Säulen neben den Massen, kommen den Massen nahe.
 :::
 
 ::::level (start := "bernoulli p") (target := "bernoulli 1-p") (moves := "not") (lean := "(bernoulli p h).map not true = 1 - p") (leanTarget := "coin (σ p)") (proof := "(p : I) : (not <$> coin p) true = σ p") (lemma := "coin_not_true") (new := "rw, coin_true, coin_false, map_true, Bool.not_true, Bool.not_false, Bool.cond_true, Bool.cond_false, zero_add, Bool.not_not") (play := "not")

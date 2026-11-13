@@ -339,7 +339,7 @@ html.pg-front .prev-next-buttons { display: none !important; }
 .pg-coin-q .pg-coin-face { fill: #f6eedd; stroke: #b0782a; stroke-dasharray: 5 3; }
 .pg-coin-rim { fill: none; stroke: rgba(0, 0, 0, 0.18); stroke-width: 1.5; }
 .pg-coin-text { font-family: var(--verso-code-font-family, monospace); font-weight: bold; fill: #3f2c0c; pointer-events: none; }
-.pg-launch { cursor: pointer; }
+.pg-launch { pointer-events: none; }
 .pg-launch-label { font: 15px var(--verso-code-font-family, monospace); fill: #6b5634; }
 .pg-launch-move { font: bold 16px var(--verso-code-font-family, monospace); fill: #b0782a; }
 .pg-freq { fill: #2e6fb8; opacity: 0.75; }
@@ -348,10 +348,92 @@ html.pg-front .prev-next-buttons { display: none !important; }
 .pg-throws .pg-tool { font-size: 0.95em; }
 .pg-coin-true .pg-coin-text, .pg-coin-false .pg-coin-text { font-family: Georgia, 'Times New Roman', serif; }
 
-/* the first world: the moves as a map, inputs above, Bool below */
-.pg-map-dot { fill: #6b5634; }
-.pg-map-side { font: italic 16px var(--verso-code-font-family, monospace); fill: #6b5634; }
-.pg-map-arrow { stroke: #b0782a; stroke-width: 2.5; }
-.pg-target-arrow { stroke: #2e6fb8; stroke-width: 1.8; }
-.pg-target-dot { fill: #2e6fb8; }
 circle.pg-target { stroke-dasharray: 6 4; }
+
+/* the first world: gates in a chain, from the start above to the target below */
+.pg-svg.pg-gates { max-width: 450px; }
+.pg-lane { stroke: #d8c7a4; stroke-width: 3; }
+.pg-gate-box { fill: #fffaf0; stroke: #b0782a; stroke-width: 2; }
+.pg-wire { fill: none; stroke: #8a5a16; stroke-width: 3.5; stroke-linecap: round; }
+.pg-gate-name { font: bold 16px var(--verso-code-font-family, monospace); fill: #8a5a16; }
+.pg-gate-x, .pg-gap { cursor: pointer; }
+.pg-gate-x circle { fill: #f6e3df; stroke: #b03a2e; stroke-width: 1.2; }
+.pg-gate-x text { font: bold 13px sans-serif; fill: #b03a2e; pointer-events: none; }
+.pg-gap circle { fill: white; stroke: #b0782a; stroke-width: 1.2; stroke-dasharray: 3 2; }
+.pg-gap text { font: bold 15px sans-serif; fill: #b0782a; pointer-events: none; }
+.pg-gap-chosen circle { fill: #b0782a; stroke-dasharray: none; }
+.pg-gap-chosen text { fill: white; }
+.pg-goal-box { fill: #f5f8fd; stroke: #2e6fb8; stroke-width: 2; stroke-dasharray: 7 5; }
+.pg-ring-label { font: 11px var(--verso-structure-font-family, sans-serif); fill: #2e6fb8; }
+.pg-start-coin { opacity: 0.45; }
+.pg-coin-label { font: 11px var(--verso-structure-font-family, sans-serif); fill: #8a5a16; }
+/* two coins: the colour of where each starts (b = false purple, b = true green), and of its ring */
+.pg-who-0 .pg-coin-face { stroke: #7b3fa0; stroke-width: 5; }
+.pg-who-1 .pg-coin-face { stroke: #138a72; stroke-width: 5; }
+circle.pg-target.pg-who-0 { stroke: #7b3fa0; stroke-width: 3; }
+circle.pg-target.pg-who-1 { stroke: #138a72; stroke-width: 3; }
+text.pg-who-0 { fill: #7b3fa0; font-weight: bold; }
+text.pg-who-1 { fill: #138a72; font-weight: bold; }
+.pg-start-coin.pg-who-0, .pg-start-coin.pg-who-1 { opacity: 0.6; }
+
+/* circuits: inputs above, gates dragged onto the board, wires, the output below; the truth table */
+.pg-crow { align-items: flex-start; }
+.pg-svg.pg-csvg { flex: 1 1 24rem; max-width: 480px; touch-action: none; border-radius: 10px; }
+.pg-cbg { fill: #fffdf8; stroke: #e3d5bb; stroke-width: 1; }
+.pg-csvg.pg-drop .pg-cbg { fill: #f3ead6; }
+.pg-cwire { fill: none; stroke: #8a5a16; stroke-width: 3; stroke-linecap: round; pointer-events: none; }
+.pg-cwire-hit { fill: none; stroke: transparent; stroke-width: 16; cursor: pointer; }
+.pg-cwire-sel .pg-cwire { stroke: #2e6fb8; stroke-width: 4; }
+.pg-cwire-new { stroke: #2e6fb8; stroke-dasharray: 6 4; }
+.pg-cblock { cursor: grab; }
+.pg-cblock rect { fill: #fff6e2; stroke: #b0782a; stroke-width: 2; }
+.pg-cblock-sel rect { stroke: #2e6fb8; stroke-width: 3; }
+.pg-csym { font: bold 22px var(--verso-code-font-family, monospace); fill: #5c3d0e; pointer-events: none; }
+.pg-clabel { font: 12px var(--verso-structure-font-family, sans-serif); fill: #8a5a16; pointer-events: none; }
+.pg-cname { font: bold 15px var(--verso-code-font-family, monospace); fill: #5c3d0e; pointer-events: none; }
+.pg-cinput, .pg-coutput { cursor: pointer; }
+.pg-coutput rect { fill: #f5f8fd; stroke: #2e6fb8; stroke-width: 2; stroke-dasharray: 7 5; }
+.pg-cport { fill: white; stroke: #8a5a16; stroke-width: 2; cursor: pointer; }
+.pg-cport[data-kind="out"] { fill: #8a5a16; }
+.pg-cport-open { fill: #fbe9e5; stroke: #b03a2e; }
+.pg-cport-sel { fill: #2e6fb8 !important; stroke: #2e6fb8; }
+.pg-cport-cand { stroke: #2e8b37; stroke-width: 3.5; fill: #dff3e2; animation: pg-glow 1s ease-in-out infinite alternate; }
+@keyframes pg-glow { from { stroke-opacity: 0.45; } to { stroke-opacity: 1; } }
+.pg-cval { pointer-events: none; }
+.pg-cx { cursor: pointer; }
+.pg-cx circle { fill: #f6e3df; stroke: #b03a2e; stroke-width: 1.2; }
+.pg-cx text { font: bold 13px sans-serif; fill: #b03a2e; pointer-events: none; }
+.pg-bin { opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+.pg-bin circle { fill: #f6e3df; stroke: #b03a2e; stroke-width: 2; }
+.pg-bin text { font-size: 24px; }
+.pg-bin.pg-bin-shown { opacity: 0.85; }
+.pg-bin.pg-bin-hot circle { fill: #b03a2e; }
+.pg-ghost { position: fixed; z-index: 1000; pointer-events: none; background: #b0782a; color: white; font: bold 15px var(--verso-structure-font-family, sans-serif); border-radius: 16px; padding: 0.35em 0.9em; opacity: 0.9; }
+.pg-held { outline: 3px solid #2e6fb8; }
+.pg-gate-item { touch-action: pan-y; }
+.pg-cside { display: flex; flex-direction: column; gap: 0.5rem; align-items: center; font-family: var(--verso-structure-font-family, sans-serif); }
+table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
+.pg-truth th { font: bold 0.9em var(--verso-code-font-family, monospace); padding: 0.2em 0.5em; color: #5c3d0e; border-bottom: 2px solid #d8c7a4; }
+.pg-truth td { padding: 0.15em 0.5em; text-align: center; border-bottom: 1px solid #efe4cf; }
+.pg-truth tr { cursor: pointer; }
+.pg-truth tr.pg-truth-sel td { background: #f6ead3; }
+.pg-truth tr.pg-truth-ok td:last-child { background: #e3f3e5; }
+.pg-truth tr.pg-truth-bad td:last-child { background: #f7e0dd; }
+.pg-truth tr.pg-truth-true td:last-child { background: #fbefc8; }
+.pg-truth .pg-truth-target { border-left: 2px dashed #2e6fb8; border-right: 2px dashed #2e6fb8; background: #f5f8fd; }
+.pg-truth-p { font: 0.9em var(--verso-code-font-family, monospace); color: #5c3d0e; }
+.pg-tf { display: inline-block; width: 1.6em; height: 1.6em; line-height: 1.6em; border-radius: 50%; font: bold 0.85em Georgia, serif; text-align: center; }
+.pg-tf-true { background: #f2cd62; border: 2px solid #9a6a14; }
+.pg-tf-false { background: #d9d6ce; border: 2px solid #6f6a5e; }
+.pg-tf-none { color: #aaa; }
+.pg-truth-note { font-size: 0.82em; color: #777; text-align: center; max-width: 16rem; }
+.pg-truth-sum { font: 0.9em var(--verso-code-font-family, monospace); color: #5c3d0e; text-align: center; max-width: 20rem; }
+.pg-cwire-nat { stroke: #2e6fb8; }
+.pg-cport-nat { stroke: #2e6fb8; }
+.pg-cport-nat[data-kind="out"] { fill: #2e6fb8; }
+.pg-tf-num { background: #fff6e2; border: 2px solid #b0782a; font-family: var(--verso-code-font-family, monospace); }
+.pg-truth-count { font: 0.9em var(--verso-structure-font-family, sans-serif); color: #2e6fb8; }
+.pg-target-svg.pg-out-svg { border: 2px solid #b0782a; background: #fffaf0; }
+.pg-out-svg rect.pg-target-mass { fill: #5c3d0e; stroke: #b0782a; }
+.pg-out-svg text.pg-target-mass { fill: #5c3d0e; }
+.pg-out-svg .pg-target-title { fill: #8a5a16; }

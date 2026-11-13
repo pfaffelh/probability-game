@@ -50,7 +50,7 @@
   const DE_TITLES = {
     'The Probability Game': 'Das Wahrscheinlichkeits\u00ADspiel',  // (a soft hyphen, for phones)
     'One Coin': 'Eine Münze', 'Draw, then Compute': 'Erst ziehen, dann rechnen', 'Building with Coins': 'Bauen mit Münzen',
-    'Counting': 'Zählen', 'Walking on the Grid': 'Gehen auf dem Gitter', 'True and False': 'Wahr und falsch', 'Lexicon': 'Lexikon', 'Table of Contents': 'Inhalt', 'Contents': 'Inhalt',
+    'Counting': 'Zählen', 'Walking on the Grid': 'Gehen auf dem Gitter', 'True and False': 'Wahr und falsch', 'Circuits with Coins': 'Schaltungen mit Münzen', 'Circuits': 'Schaltungen', 'Lexicon': 'Lexikon', 'Table of Contents': 'Inhalt', 'Contents': 'Inhalt',
   }
   function translatePage() {
     const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
@@ -327,7 +327,7 @@
     if (v === undefined) return
     // the faces bear T and F, as heads and tails; a token its number
     const t = String(v), face = { true: 'T', false: 'F' }[t] ?? t, text = g.firstChild.lastChild
-    g.setAttribute('class', 'pg-coin ' + ({ true: 'pg-coin-true', false: 'pg-coin-false', '?': 'pg-coin-q' }[t] ?? 'pg-coin-num') + (g.classList.contains('pg-map-coin') ? ' pg-map-coin' : ''))
+    g.setAttribute('class', 'pg-coin ' + ({ true: 'pg-coin-true', false: 'pg-coin-false', '?': 'pg-coin-q' }[t] ?? 'pg-coin-num') + ['pg-run-coin', 'pg-start-coin', 'pg-who-0', 'pg-who-1'].filter(c => g.classList.contains(c)).map(c => ' ' + c).join(''))
     text.textContent = face
     text.setAttribute('font-size', Math.round(Number(g.dataset.r) * (face.length === 1 ? 0.95 : face.length === 2 ? 0.7 : 0.5)))
   }
@@ -347,13 +347,13 @@
   }
 
   // The target, small, beside the board: a chart of each distribution (one, or one per row, for b = …).
-  function targetChart(charts) {
+  function targetChart(charts, title = tr('Target'), cls = '') {
     const t0 = charts[0].dist, ks = axis(t0.space, charts.flatMap(c => [...c.dist.mass.keys()]))
     const gap = Math.max(46, ...charts.flatMap(c => ks.map(k => String(c.dist.mass.get(k) ?? ZERO).length * 7 + 8)))
     const w = Math.max(200, gap * ks.length + 16), x0 = w / 2 - (gap * (ks.length - 1)) / 2, bw = Math.min(40, gap - 10)
     const one = charts.length === 1, bh = one ? 95 : 60, base = j => (one ? 120 : 108 + 118 * j)
-    const g = svg('svg', { viewBox: `0 0 ${w} ${base(charts.length - 1) + 30}`, class: 'pg-target-svg', width: w })
-    g.append(svg('text', { x: 6, y: 16, class: 'pg-target-title' }, tr('Target')))
+    const g = svg('svg', { viewBox: `0 0 ${w} ${base(charts.length - 1) + 30}`, class: 'pg-target-svg' + (cls ? ' ' + cls : ''), width: w })
+    g.append(svg('text', { x: 6, y: 16, class: 'pg-target-title' }, title))
     g.append(svg('text', { x: w - 8, y: 16, 'text-anchor': 'end', class: 'pg-space' }, spaceName(t0.space)))
     charts.forEach((c, j) => {
       const b = base(j)
@@ -582,13 +582,12 @@
           s.append(svg('text', { x: xs[k], y: BASE + 44, 'text-anchor': 'middle', class: 'pg-freq-text' }, `${c}×`))
         }
       }
-      // the coin to throw, left of the axis (tap it to throw)
+      // the coin, left of the axis
       if (this.start.space === 'bool') {
         const launch = svg('g', { class: 'pg-launch' }), c = coin(this.sureStart ?? '?')
         pose(c, LX, LY, 1, this.sureStart ?? '?')
         launch.append(svg('text', { class: 'pg-launch-move', x: LX, y: LY - 40, 'text-anchor': 'middle' }), c,
           svg('text', { class: 'pg-launch-label', x: LX, y: LY + COIN_R + 20, 'text-anchor': 'middle' }, this.leanStart))
-        launch.addEventListener('click', () => this.throwOne())
         s.append(launch)
       }
       this.svg = s
@@ -647,10 +646,10 @@
       slider.append(`${tr('the picture for p =')} ${P.toFixed(2)} `, input, el('span', 'pg-slider-note', ' ' + tr('(only an example; the masses hold for every p)')))
       // throwing the coin
       const throws = el('div', 'pg-throws')
-      const one = el('button', 'pg-tool pg-throw', '🪙 ' + tr('Throw')), many = el('button', 'pg-tool pg-throw', tr('Throw 100 times'))
-      one.type = many.type = 'button'
-      one.addEventListener('click', () => this.throwOne()); many.addEventListener('click', () => this.throwMany(100))
-      throws.append(one, many, el('span', 'pg-throws-note', this.thrown ? tr('{n} throws; the thin bars: how often.', { n: this.thrown }) : tr('Where does the coin land, after your moves?')))
+      const many = el('button', 'pg-tool pg-throw', '🪙 ' + tr('Throw 100 times'))
+      many.type = 'button'
+      many.addEventListener('click', () => this.throwMany(100))
+      throws.append(many, el('span', 'pg-throws-note', this.thrown ? tr('{n} throws; the thin bars: how often.', { n: this.thrown }) : tr('Where does the coin land, after your moves?')))
       const parts = [task, row, slider, throws, this.info, ...(SHOW ? [] : [ln]), el('div', 'pg-moves-head', tr('Moves')), moves, tools, ...(SHOW ? [] : [lean])]
       if (done) {
         const box = el('div', 'pg-solved')
@@ -1286,15 +1285,16 @@
   const RULESB = 'id_eq, Bool.not_not, Bool.not_true, Bool.not_false'
   const arg = e => (/^\w+$/.test(e) ? e : `(${e})`)
   const MOVESB = {
-    not: { f: b => !b, lean: e => `!${arg(e)}`, label: 'not: swap the sides' },
-    true: { f: () => true, lean: e => `(fun _ => true) ${arg(e)}`, label: 'always true' },
-    false: { f: () => false, lean: e => `(fun _ => false) ${arg(e)}`, label: 'always false' },
+    not: { f: b => !b, lean: e => `!${arg(e)}`, label: 'not: swap the sides', short: 'not' },
+    true: { f: () => true, lean: e => `(fun _ => true) ${arg(e)}`, label: 'always true', short: 'always true' },
+    false: { f: () => false, lean: e => `(fun _ => false) ${arg(e)}`, label: 'always false', short: 'always false' },
   }
   Object.assign(DE, {
     'Throw': 'Werfen', 'Throw 100 times': '100-mal werfen', '{n} throws; the thin bars: how often.': '{n} Würfe; die schmalen Säulen: wie oft.',
     'Where does the coin land, after your moves?': 'Wo landet die Münze, nach deinen Zügen?',
-    'Task: lay the coin as in the target.': 'Aufgabe: Leg die Münze so, wie im Ziel.',
-    'Task: lay each coin as in the target.': 'Aufgabe: Leg jede Münze so, wie im Ziel.',
+    'Task: build a chain of gates that brings the coin into the target.': 'Aufgabe: Bau eine Kette von Bausteinen, die die Münze ins Ziel bringt.',
+    'Task: build a chain of gates that brings each coin into its ring.': 'Aufgabe: Bau eine Kette von Bausteinen, die jede Münze in ihren Ring bringt.',
+    'Gates': 'Bausteine', 'Tap a gate.': 'Tippe einen Baustein an.', 'in exactly {n} gates': 'mit genau {n} Bausteinen',
     'As in the target, but in {n} moves, please.': 'Wie im Ziel, aber bitte in {n} Zügen.', 'not as in the target yet.': 'noch nicht wie im Ziel.', 'Not as in the target yet.': 'Noch nicht wie im Ziel.',
     'in exactly {n} moves': 'in genau {n} Zügen',
     '{n} moves so far': 'bisher {n} Züge',
@@ -1352,21 +1352,34 @@
         (!BACKEND || this.leanAgrees() === true)
     }
 
+    // The moves are gates in a chain, from the start above to the target below. A gate tapped goes
+    // into the gap chosen (the last one, unless another is chosen with its ＋); ✕ takes a gate out.
+    // Each change is kept for Undo; after it the coins run through the whole chain anew.
     play(m) {
-      // a move tapped while the coin turns is played after it
       if (this.animating) { (this.queue ??= []).push(m); return }
       if (this.count && this.steps.length >= this.count) { this.queue = []; this.flash(tr('Too many moves: undo, or start over.')); return }
-      const before = this.values
-      this.steps.push(m)
-      this.updateLean()
-      this.animate(before, this.values, () => { this.render(); this.check(); const q = this.queue?.shift(); if (q) this.play(q) })
+      const at = Math.min(this.gap ?? this.steps.length, this.steps.length)
+      this.change([...this.steps.slice(0, at), m, ...this.steps.slice(at)], at + 1)
     }
-    undo() { if (this.animating || !this.steps.length) return; this.steps.pop(); this.updateLean(); this.render() }
-    reset() { if (this.animating) return; this.steps = []; this.updateLean(); this.render() }
-    get canUndo() { return this.steps.length > 0 }
+    remove(k) { if (!this.animating) this.change(this.steps.filter((_, j) => j !== k), k) }
+    change(steps, gap) {
+      (this.history ??= []).push({ steps: this.steps, gap: this.gap })
+      this.steps = steps; this.gap = gap >= steps.length ? null : gap
+      this.updateLean()
+      this.travel(() => { this.render(); this.check(); const q = this.queue?.shift(); if (q) this.play(q) })
+    }
+    undo() {
+      if (this.animating || !this.history?.length) return
+      const h = this.history.pop(); this.steps = h.steps; this.gap = h.gap; this.updateLean(); this.render()
+    }
+    reset() {
+      if (this.animating || !this.steps.length) return
+      this.history.push({ steps: this.steps, gap: this.gap }); this.steps = []; this.gap = null; this.updateLean(); this.render()
+    }
+    get canUndo() { return !!this.history?.length }
     status() {
       if (this.done) return 'goals accomplished 🎉'
-      if (!this.steps.length) return tr('Tap a move.')
+      if (!this.steps.length) return tr('Tap a gate.')
       if (this.count && this.steps.length > this.count) return tr('Too many moves: undo, or start over.')
       if (this.onTarget) return this.count && this.steps.length !== this.count ? tr('As in the target, but in {n} moves, please.', { n: this.count }) : tr('Lean is checking …')
       return this.count ? tr('{n} moves so far', { n: this.steps.length }) + ' · ' + tr('not as in the target yet.') : tr('Not as in the target yet.')
@@ -1380,80 +1393,99 @@
     }
     flash(text) { this.info.textContent = text; this.info.classList.add('pg-warn'); setTimeout(() => this.info.classList.remove('pg-warn'), 1200) }
 
-    // The moves played are a map: from the inputs above (b = false and b = true, or the start) to
-    // Bool below, an arrow from each input to where its coin lies; coins on the same side lie one
-    // on the other. The target: dashed rings where the coins are to lie (and the map in the box).
-    geometry() { return { xs: layout(['false', 'true']), top: 64, base: BASE, r: 22 } }
-    coinAt(values, i) {
-      const g = this.geometry(), v = values[i], k = values.slice(0, i).filter(w => w === v).length, n = values.filter(w => w === v).length
-      return [g.xs[v] + (k - (n - 1) / 2) * (2 * g.r + 8), g.base - g.r - 8]
+    // The board, from above: the start (a coin on its lane, or one for each b), the gates one under
+    // the other, each with its wires from the lanes above to the lanes below, and the target, a box with
+    // rings where the coins are to land. Two lanes, false left and true right.
+    geometry() {
+      const n = this.steps.length, lane = { false: 175, true: 275 }, r = 20, GH = 66, GG = 30, top = 76
+      const gate = k => top + GG + k * (GH + GG)  // the upper edge of gate k
+      const rest = top + GG + n * (GH + GG) + 62  // where the coins land
+      return { n, lane, r, GH, GG, top, gate, gap: k => gate(k) - GG / 2, rest, h: rest + r + 46, w: 450 }
     }
-    // the coins move to their new sides, the arrows with them; a coin that changes sides turns over (700 ms)
-    animate(before, after, done) {
-      const g = this.geometry()
-      const coins = [...this.svg.querySelectorAll('.pg-map-coin')], arrows = [...this.svg.querySelectorAll('.pg-map-arrow')]
+    // with two coins, each has the colour of where it starts (b = false, b = true), and so has its ring
+    who(b) { return this.rows ? [`pg-who-${b ? 1 : 0}`] : [] }
+    // the coins after k gates (or k = 0, at the start), side by side where they share a lane
+    stage(k) { return this.inputs.map(b => this.steps.slice(0, k).reduce((v, m) => MOVESB[m].f(v), b)) }
+    at(values, i, y) {
+      const g = this.geometry(), v = values[i], j = values.slice(0, i).filter(w => w === v).length, n = values.filter(w => w === v).length
+      return [g.lane[v] + (j - (n - 1) / 2) * (2 * g.r + 22), y]
+    }
+    // the coins run from the start through each gate (along its wires, turning over where a wire goes
+    // to the other lane) down into the target
+    travel(done) {
+      this.render({ start: true })
+      const g = this.geometry(), coins = [...this.svg.querySelectorAll('.pg-run-coin')], parts = []
+      const stages = Array.from({ length: g.n + 1 }, (_, k) => this.stage(k))
+      const line = (k, y0, y1, T) => parts.push({ T, f: t => coins.forEach((c, i) => {
+        const [x0] = this.at(stages[k], i, 0), [x1] = this.at(stages[k], i, 0)
+        pose(c, x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, 1, stages[k][i])
+      }) })
+      const Tg = Math.max(180, Math.min(380, 1500 / Math.max(1, g.n)))
+      line(0, g.top - 24, g.n ? g.gate(0) : g.rest, g.n ? 160 : 260)
+      for (let k = 0; k < g.n; k++) {
+        const y0 = g.gate(k), y1 = y0 + g.GH
+        parts.push({ T: Tg, f: t => coins.forEach((c, i) => {
+          const [x0] = this.at(stages[k], i, 0), [x1] = this.at(stages[k + 1], i, 0), a = stages[k][i], b = stages[k + 1][i]
+          // along the wire: a curve from (x0, y0) to (x1, y1)
+          const u = 1 - t, x = u * u * u * x0 + 3 * u * u * t * x0 + 3 * u * t * t * x1 + t * t * t * x1
+          const y = u * u * u * y0 + 3 * u * u * t * (y0 + g.GH / 2) + 3 * u * t * t * (y1 - g.GH / 2) + t * t * t * y1
+          pose(c, x, y, a !== b ? Math.cos(Math.PI * t) : 1, a !== b && t >= 0.5 ? b : a)
+        }) })
+        line(k + 1, y1, k + 1 < g.n ? g.gate(k + 1) : g.rest, k + 1 < g.n ? 120 : 220)
+      }
       this.animating = true
-      run([{ T: 700, f: t => {
-        const e = ease(t)
-        this.inputs.forEach((b, i) => {
-          const [x0, y0] = this.coinAt(before, i), [x1, y1] = this.coinAt(after, i), x = x0 + (x1 - x0) * e, y = y0 + (y1 - y0) * e
-          const turn = before[i] !== after[i]
-          pose(coins[i], x, y, turn ? Math.cos(Math.PI * e) : 1, turn && e >= 0.5 ? after[i] : before[i])
-          arrows[i].setAttribute('x2', x); arrows[i].setAttribute('y2', y - g.r - 4)
-        })
-      } }], () => { this.animating = false; done() })
+      run(parts, () => { this.animating = false; done() })
     }
 
-    // the target, small, beside the board: the map, inputs above, Bool below
-    targetMap() {
-      const w = 200, h = 168, top = 50, base = 128, xs = { false: 70, true: 130 }, r = 9
-      const at = i => { const v = this.target[i], k = this.target.slice(0, i).filter(x => x === v).length, n = this.target.filter(x => x === v).length; return [xs[v] + (k - (n - 1) / 2) * (2 * r + 4), base - r - 4] }
-      const g = svg('svg', { viewBox: `0 0 ${w} ${h}`, class: 'pg-target-svg', width: w })
-      g.append(svg('text', { x: 6, y: 16, class: 'pg-target-title' }, tr('Target')))
-      g.append(svg('text', { x: 6, y: top + 4, class: 'pg-target-point' }, this.rows ? 'b' : ''))
-      for (const b of this.inputs) {
-        g.append(svg('circle', { class: 'pg-map-dot pg-target-dot', cx: xs[b], cy: top, r: 4 }))
-        g.append(svg('text', { x: xs[b], y: top - 9, 'text-anchor': 'middle', class: 'pg-target-point' }, String(b)))
-      }
-      g.append(svg('line', { x1: 6, x2: w - 6, y1: base, y2: base, class: 'pg-axis' }))
-      for (const k of [false, true]) g.append(svg('text', { x: xs[k], y: base + 16, 'text-anchor': 'middle', class: 'pg-target-point' }, String(k)))
-      g.append(svg('text', { x: w - 8, y: base + 32, 'text-anchor': 'end', class: 'pg-space' }, 'Bool'))
-      this.inputs.forEach((b, i) => {
-        const [x, y] = at(i)
-        g.append(svg('line', { class: 'pg-map-arrow pg-target-arrow', x1: xs[b], y1: top + 6, x2: x, y2: y - r - 3 }))
-        g.append(svg('circle', { class: 'pg-target-mass', cx: x, cy: y, r }))
-      })
-      return g
-    }
-
-    render() {
+    render(opts = {}) {
       if (this.animating) return  // (drawn when the animation ends)
-      const done = this.done, g = this.geometry(), values = this.values
-      const s = svg('svg', { viewBox: `0 0 ${W} 300`, class: 'pg-svg pg-map' + (done ? ' pg-done' : '') })
-      const defs = arrowDefs()
-      s.append(defs)
-      // above: the inputs
-      s.append(svg('text', { class: 'pg-map-side', x: 14, y: g.top + 5 }, this.rows ? 'b' : tr('start')))
-      for (const b of this.inputs) {
-        s.append(svg('circle', { class: 'pg-map-dot', cx: g.xs[b], cy: g.top, r: 6 }))
-        s.append(svg('text', { class: 'pg-point', x: g.xs[b], y: g.top - 16, 'text-anchor': 'middle' }, String(b)))
+      const done = this.done, g = this.geometry(), values = this.values, L = g.lane
+      const s = svg('svg', { viewBox: `0 0 ${g.w} ${g.h}`, class: 'pg-svg pg-gates' + (done ? ' pg-done' : '') })
+      // the lanes, behind everything
+      for (const v of [false, true]) s.append(svg('line', { class: 'pg-lane', x1: L[v], x2: L[v], y1: g.top - 20, y2: g.rest }))
+      // the start
+      this.inputs.forEach(b => {
+        s.append(svg('text', { class: 'pg-point ' + this.who(b).join(' '), x: L[b], y: 18, 'text-anchor': 'middle' }, this.rows ? `b = ${b}` : tr('start')))
+        const c = coin(b, g.r); c.classList.add('pg-start-coin', ...this.who(b)); pose(c, L[b], g.top - 24, 1, b); s.append(c)
+      })
+      // the gates, with their wires; ✕ takes one out
+      this.steps.forEach((m, k) => {
+        const y = g.gate(k), gate = svg('g', { class: 'pg-gate' })
+        gate.append(svg('rect', { class: 'pg-gate-box', x: L.false - 52, y, width: L.true - L.false + 104, height: g.GH, rx: 12 }))
+        for (const a of [false, true]) {
+          const b = MOVESB[m].f(a)
+          gate.append(svg('path', { class: 'pg-wire', d: `M${L[a]},${y} C${L[a]},${y + g.GH / 2} ${L[b]},${y + g.GH / 2} ${L[b]},${y + g.GH}` }))
+        }
+        gate.append(svg('text', { class: 'pg-gate-name', x: L.true + 64, y: y + g.GH / 2 + 5 }, tr(MOVESB[m].short)))
+        const x = svg('g', { class: 'pg-gate-x' })
+        x.append(svg('circle', { cx: L.false - 76, cy: y + g.GH / 2, r: 12 }), svg('text', { x: L.false - 76, y: y + g.GH / 2 + 5, 'text-anchor': 'middle' }, '✕'))
+        x.addEventListener('click', () => this.remove(k))
+        gate.append(x)
+        s.append(gate)
+      })
+      // the gaps, where a new gate goes (with gates on the board)
+      if (g.n) for (let k = 0; k <= g.n; k++) {
+        const chosen = (this.gap ?? g.n) === k, gp = svg('g', { class: 'pg-gap' + (chosen ? ' pg-gap-chosen' : '') })
+        gp.append(svg('circle', { cx: L.false - 76, cy: g.gap(k), r: 10 }), svg('text', { x: L.false - 76, y: g.gap(k) + 5, 'text-anchor': 'middle' }, '+'))
+        gp.addEventListener('click', () => { this.gap = k === g.n ? null : k; this.render() })
+        s.append(gp)
       }
-      // below: Bool, with the coins
-      s.append(svg('line', { x1: 10, x2: W - 10, y1: g.base, y2: g.base, class: 'pg-axis' }))
-      s.append(svg('text', { x: W - 12, y: g.base + 42, 'text-anchor': 'end', class: 'pg-space' }, 'Bool'))
-      for (const k of [false, true]) s.append(svg('text', { x: g.xs[k], y: g.base + 24, 'text-anchor': 'middle', class: 'pg-point' }, String(k)))
+      // the target: a box, with rings where the coins are to land
+      const boxTop = g.rest - g.r - 30
+      s.append(svg('rect', { class: 'pg-goal-box', x: 40, y: boxTop, width: g.w - 80, height: g.h - boxTop - 6, rx: 12 }))
+      s.append(svg('text', { class: 'pg-target-title', x: 52, y: boxTop + 20 }, tr('Target')))
       this.inputs.forEach((b, i) => {
-        const [tx, ty] = this.coinAt(this.target, i)
-        s.append(svg('circle', { class: 'pg-target', cx: tx, cy: ty, r: g.r + 6 }))
+        const [x, y] = this.at(this.target, i, g.rest)
+        s.append(svg('circle', { class: 'pg-target ' + this.who(b).join(' '), cx: x, cy: y, r: g.r + 5 }))
+        if (this.rows) s.append(svg('text', { class: 'pg-ring-label ' + this.who(b).join(' '), x, y: y + g.r + 17, 'text-anchor': 'middle' }, `b = ${b}`))
       })
+      for (const v of [false, true]) s.append(svg('text', { class: 'pg-point', x: L[v] + (v ? 1 : -1) * 92, y: g.rest + 5, 'text-anchor': 'middle' }, String(v)))
+      // the coins: where they land (or at the start, before they run)
       this.inputs.forEach((b, i) => {
-        const [x, y] = this.coinAt(values, i)
-        s.append(svg('line', { class: 'pg-map-arrow', x1: g.xs[b], y1: g.top + 9, x2: x, y2: y - g.r - 4, 'marker-end': defs.dataset.url }))
-      })
-      this.inputs.forEach((b, i) => {
-        const [x, y] = this.coinAt(values, i), c = coin(values[i], g.r)
-        c.classList.add('pg-map-coin'); pose(c, x, y, 1, values[i])
-        s.append(c)
+        const v = opts.start ? b : values[i], [x, y] = opts.start ? [L[b], g.top - 24] : this.at(values, i, g.rest)
+        const c = coin(v, g.r); c.classList.add('pg-run-coin', ...this.who(b)); pose(c, x, y, 1, v); s.append(c)
+        // which b it came from (two coins)
+        if (this.rows && !opts.start) s.append(svg('text', { class: 'pg-coin-label ' + this.who(b).join(' '), x, y: y - g.r - 6, 'text-anchor': 'middle' }, `b = ${b}`))
       })
       this.svg = s
 
@@ -1481,11 +1513,9 @@
         if (this.onTarget && this.leanAgrees() === false) ln.append(el('div', 'pg-warn', tr('Lean disagrees.')))
       }
       const task = el('div', 'pg-task')
-      task.append(el('b', '', tr(this.rows ? 'Task: lay each coin as in the target.' : 'Task: lay the coin as in the target.') +
-        (this.count ? ' (' + tr('in exactly {n} moves', { n: this.count }) + ')' : '')))
-      const row = el('div', 'pg-row')
-      row.append(s, this.targetMap())
-      const parts = [task, row, this.info, ...(SHOW ? [] : [ln]), el('div', 'pg-moves-head', tr('Moves')), moves, tools, ...(SHOW ? [] : [el('pre', 'pg-lean', this.leanState())])]
+      task.append(el('b', '', tr(this.rows ? 'Task: build a chain of gates that brings each coin into its ring.' : 'Task: build a chain of gates that brings the coin into the target.') +
+        (this.count ? ' (' + tr('in exactly {n} gates', { n: this.count }) + ')' : '')))
+      const parts = [task, s, this.info, ...(SHOW ? [] : [ln]), el('div', 'pg-moves-head', tr('Gates')), moves, tools, ...(SHOW ? [] : [el('pre', 'pg-lean', this.leanState())])]
       if (done) {
         const box = el('div', 'pg-solved')
         box.append(el('div', 'pg-solved-head', 'goals accomplished 🎉' + (this.leanAgrees() ? ` (${tr('confirmed by Lean')})` : '')))
@@ -1502,6 +1532,499 @@
       showBoard(this, parts)
     }
   }
+
+  // ---------------------------------------------------------------- circuits
+
+  // A circuit, as the proofs of the IPM: the inputs above (a coin for each), gates that are dragged
+  // onto the board from the side (or tapped there), wires from an output (below a block) to an input
+  // (above one), and the output below. A wire is made by tapping an output and then an input (or
+  // the other way round), or by dragging from one to the other; tapping a wire or a gate offers ✕,
+  // and a gate dragged onto the bin is gone. Without coins the target is a truth table (a row for each
+  // value of the inputs; tapping a row shows its coins on the board), with coins (`coin p` at each
+  // input) it is the distribution of the output: the mass of a row is the product of the masses of
+  // its inputs, and the mass at true is the sum over the rows where the output is true.
+  const GATES = {
+    not: { n: 1, f: ([a]) => !a, lean: ([a]) => `!${arg(a)}`, sym: '¬', label: 'not' },
+    and: { n: 2, f: ([a, b]) => a && b, lean: ([a, b]) => `${arg(a)} && ${arg(b)}`, sym: '∧', label: 'and' },
+    or: { n: 2, f: ([a, b]) => a || b, lean: ([a, b]) => `${arg(a)} || ${arg(b)}`, sym: '∨', label: 'or' },
+    xor: { n: 2, f: ([a, b]) => a !== b, lean: ([a, b]) => `${arg(a)} ^^ ${arg(b)}`, sym: '⊕', label: 'xor' },
+    nand: { n: 2, f: ([a, b]) => !(a && b), lean: ([a, b]) => `!(${arg(a)} && ${arg(b)})`, sym: '⊼', label: 'nand' },
+    // counting: a coin becomes a number, numbers are added (wires of numbers are blue)
+    toNat: { n: 1, ins: ['bool'], out: 'nat', f: ([a]) => (a ? 1 : 0), lean: ([a]) => `${arg(a)}.toNat`, sym: '#', label: 'toNat' },
+    plus: { n: 2, ins: ['nat', 'nat'], out: 'nat', f: ([a, b]) => a + b, lean: ([a, b]) => `${a} + ${b}`, sym: '+', label: 'plus' },
+  }
+  // the kind of what a port carries: a coin (bool) or a number (nat); the output takes either
+  const gateIn = (kind, i) => (GATES[kind].ins?.[i] === 'nat' ? 'nat' : 'bool')
+  const gateOut = kind => GATES[kind].out ?? 'bool'
+  Object.assign(DE, {
+    'and': 'und', 'or': 'oder', 'xor': 'xor', 'nand': 'nand', 'plus': 'plus',
+    'A number does not fit into an input for a coin.': 'Eine Zahl passt nicht in einen Eingang für eine Münze.', 'A coin does not fit into an input for a number (first toNat).': 'Eine Münze passt nicht in einen Eingang für eine Zahl (erst toNat).', 'Output': 'Ausgang', 'yours': 'deine', 'Gates': 'Bausteine',
+    'Connect the output.': 'Verbinde den Ausgang.', 'An input of a gate is still open.': 'Ein Eingang eines Bausteins ist noch offen.',
+    '{k} of {n} rows are right.': '{k} von {n} Zeilen stimmen.', 'Now tap an input (a circle above a block).': 'Tippe jetzt einen Eingang an (ein Kreis oben an einem Baustein).',
+    'Now tap an output (a dot below a block).': 'Tippe jetzt einen Ausgang an (ein Punkt unten an einem Baustein).',
+    'That would go round in a circle.': 'Das ginge im Kreis.', 'Drag gates onto the board, or tap them.': 'Zieh Bausteine aufs Spielfeld, oder tippe sie an.',
+    'Task: build a circuit whose output is the target, in every row.': 'Aufgabe: Bau eine Schaltung, deren Ausgang in jeder Zeile das Ziel ist.',
+    'Task: build a circuit whose output has the distribution of the target.': 'Aufgabe: Bau eine Schaltung, deren Ausgang die Verteilung des Ziels hat.',
+    'Tap a row to see its coins on the board.': 'Tippe eine Zeile an, um ihre Münzen auf dem Spielfeld zu sehen.',
+    'P(row)': 'P(Zeile)', 'thrown': 'geworfen', '{n} throws': '{n} Würfe', 'a coin: true with probability': 'eine Münze: true mit Wahrscheinlichkeit', 'The mass of each output: the sum of P over its rows.': 'Die Masse jedes Ausgangs: die Summe von P über seine Zeilen.',
+  })
+  const CW = 480, CH = 560, GW = 96, GH2 = 54
+  class Circuit {
+    constructor(root, index, onSolved) {
+      this.root = root; this.index = index; this.onSolved = onSolved
+      const d = root.dataset
+      this.names = d.inputs.split(/\s+/).filter(Boolean)
+      this.gates = d.gates.split(',').map(g => g.trim()).filter(g => GATES[g])
+      this.table = d.table ?? ''
+      this.goal = d.goal ?? ''
+      this.coins = (d.coins ?? '').split(/\s+/).filter(Boolean)
+      this.random = this.coins.length > 0
+      this.target = this.random ? parseDist(d.target) : null
+      this.board = root.querySelector('.pg-board')
+      this.key = `pg:${location.pathname}:${index}`
+      this.row = 0; this.sel = null; this.selWire = null; this.selBlock = null
+      this.history = []
+      // the throws (with coins): how often each row came; they stay when the circuit changes
+      this.counts = this.rows.map(() => 0); this.thrown = 0
+      this.load()
+      this.render()
+    }
+    get solved() { try { return localStorage.getItem(this.key) === '1' } catch { return false } }
+
+    // ---- the circuit: the fixed blocks (inputs, output) and the gates and wires of the player
+    load() {
+      let saved = null
+      try { saved = JSON.parse(localStorage.getItem(this.key + ':circuit') ?? 'null') } catch {}
+      this.gatesOn = saved?.gates ?? []   // { id, kind, x, y }
+      this.wires = saved?.wires ?? []     // { from: id, to: id, i }
+      this.seq = saved?.seq ?? 1
+    }
+    save() { try { localStorage.setItem(this.key + ':circuit', JSON.stringify({ gates: this.gatesOn, wires: this.wires, seq: this.seq })) } catch {} }
+    inputAt(k) { return { x: CW * (k + 1) / (this.names.length + 1), y: 48 } }
+    get outAt() { return { x: CW / 2, y: CH - 46 } }
+    block(id) { return this.gatesOn.find(g => g.id === id) }
+    // where a port is: outputs below a block, inputs above it
+    port(id, kind, i = 0) {
+      const k = this.names.indexOf(id)
+      if (k >= 0) { const a = this.inputAt(k); return { x: a.x, y: a.y + 30 } }
+      if (id === 'out') { const a = this.outAt; return { x: a.x, y: a.y - 30 } }
+      const g = this.block(id), n = GATES[g.kind].n
+      return kind === 'out' ? { x: g.x, y: g.y + GH2 / 2 } : { x: g.x - GW / 2 + GW * (i + 1) / (n + 1), y: g.y - GH2 / 2 }
+    }
+    inputsOf(id) { return id === 'out' ? 1 : this.names.includes(id) ? 0 : GATES[this.block(id).kind].n }
+    typeOut(id) { return this.names.includes(id) ? 'bool' : gateOut(this.block(id).kind) }
+    typeIn(id, i) { return id === 'out' || this.names.includes(id) ? null : gateIn(this.block(id).kind, i) }
+    fits(from, to, i) { const t = this.typeIn(to, i); return t === null || t === this.typeOut(from) }
+    wireTo(id, i) { return this.wires.find(w => w.to === id && w.i === i) }
+    // whether `to` reaches `from` along the wires (a wire from `from` to `to` would close a circle)
+    reaches(from, to) {
+      const seen = new Set(), stack = [to]
+      while (stack.length) { const b = stack.pop(); if (b === from) return true; if (seen.has(b)) continue; seen.add(b); for (const w of this.wires) if (w.from === b) stack.push(w.to) }
+      return false
+    }
+    change(f) {
+      this.history.push(JSON.stringify({ gates: this.gatesOn, wires: this.wires, seq: this.seq }))
+      f(); this.save(); this.sel = null; this.selWire = null; this.selBlock = null
+      this.render(); this.check()
+    }
+    undo() { const h = this.history.pop(); if (!h) return; const o = JSON.parse(h); this.gatesOn = o.gates; this.wires = o.wires; this.seq = o.seq; this.save(); this.render() }
+    reset() { if (!this.gatesOn.length && !this.wires.length) return; this.change(() => { this.gatesOn = []; this.wires = []; this.seq = 1 }) }
+    get canUndo() { return this.history.length > 0 }
+    // a gate: where it is dropped, or in the first free place
+    addGate(kind, at) {
+      if (!at) {
+        const spots = []
+        for (const y of [150, 240, 330, 420]) for (const x of [CW / 2, CW / 2 - 130, CW / 2 + 130]) spots.push({ x, y })
+        at = spots.find(s => !this.gatesOn.some(g => Math.abs(g.x - s.x) < GW && Math.abs(g.y - s.y) < GH2 + 20)) ?? { x: CW / 2, y: CH / 2 }
+      }
+      const c = this.clamp(at)
+      this.change(() => { this.gatesOn.push({ id: `g${this.seq++}`, kind, x: c.x, y: c.y }) })
+    }
+    clamp(a) { return { x: Math.max(GW / 2 + 6, Math.min(CW - GW / 2 - 6, a.x)), y: Math.max(120, Math.min(CH - 120, a.y)) } }
+    connect(from, to, i) {
+      if (from === to || this.reaches(from, to)) { this.flash(tr('That would go round in a circle.')); this.sel = null; this.render(); return }
+      if (!this.fits(from, to, i)) {
+        this.flash(tr(this.typeOut(from) === 'nat' ? 'A number does not fit into an input for a coin.' : 'A coin does not fit into an input for a number (first toNat).'))
+        this.sel = null; this.render(); return
+      }
+      this.change(() => { this.wires = this.wires.filter(w => !(w.to === to && w.i === i)); this.wires.push({ from, to, i }) })
+    }
+    tapOut(id) {
+      this.selWire = null; this.selBlock = null
+      if (this.sel?.kind === 'in') return this.connect(id, this.sel.id, this.sel.i)
+      this.sel = this.sel?.kind === 'out' && this.sel.id === id ? null : { kind: 'out', id }
+      this.render()
+    }
+    tapIn(id, i) {
+      this.selWire = null; this.selBlock = null
+      if (this.sel?.kind === 'out') return this.connect(this.sel.id, id, i)
+      this.sel = this.sel?.kind === 'in' && this.sel.id === id && this.sel.i === i ? null : { kind: 'in', id, i }
+      this.render()
+    }
+    // a tapped gate: completes a chosen port with its own (its first free input), else offers ✕
+    tapGate(id) {
+      if (this.sel?.kind === 'out') { const n = this.inputsOf(id); const i = [...Array(n).keys()].find(i => !this.wireTo(id, i)) ?? 0; if (n) return this.connect(this.sel.id, id, i) }
+      if (this.sel?.kind === 'in') return this.connect(id, this.sel.id, this.sel.i)
+      this.selBlock = this.selBlock === id ? null : id; this.selWire = null; this.sel = null
+      this.render()
+    }
+
+    // ---- what the circuit computes
+    get rows() { return Array.from({ length: 2 ** this.names.length }, (_, r) => this.names.map((_, k) => !!((r >> (this.names.length - 1 - k)) & 1))) }
+    // the value of each block in a row (null where an input is open)
+    values(row) {
+      const memo = {}
+      const val = id => {
+        if (id in memo) return memo[id]
+        memo[id] = null  // (no circles: the wires make none)
+        const k = this.names.indexOf(id)
+        if (k >= 0) return (memo[id] = row[k])
+        const n = this.inputsOf(id), ins = [...Array(n).keys()].map(i => { const w = this.wireTo(id, i); return w ? val(w.from) : null })
+        if (ins.some(v => v === null)) return (memo[id] = null)
+        return (memo[id] = id === 'out' ? ins[0] : GATES[this.block(id).kind].f(ins))
+      }
+      for (const g of this.gatesOn) val(g.id)
+      val('out')
+      return memo
+    }
+    outputs() { return this.rows.map(r => this.values(r).out) }
+    // the mass of a row: the product of the masses of its inputs
+    mass(row) { return row.reduce((m, v, k) => { const q = parsePoly(this.coins[k] ?? 'p'); return m.mul(v ? q : complement(q)) }, ONE) }
+    dist() {
+      const outs = this.outputs()
+      if (outs.some(o => o === null)) return null
+      const nat = this.typeOut(this.wireTo('out', 0).from) === 'nat', mass = new Map(nat ? [] : [['true', ZERO], ['false', ZERO]])
+      this.rows.forEach((r, k) => { const v = String(outs[k]); mass.set(v, (mass.get(v) ?? ZERO).add(this.mass(r))) })
+      return { space: nat ? 'nat' : 'bool', mass }
+    }
+    // a hundred throws of the coins at the inputs, for the p of the picture
+    throwMany(n) {
+      for (let j = 0; j < n; j++) {
+        const r = this.names.reduce((r, _, k) => 2 * r + (Math.random() < parsePoly(this.coins[k] ?? 'p').value(P) ? 1 : 0), 0)
+        this.counts[r]++
+      }
+      this.thrown += n; this.render()
+    }
+    get done() {
+      const outs = this.outputs()
+      if (outs.some(o => o === null)) return false
+      if (this.random) return sameDist(this.dist(), this.target)
+      return outs.every((o, k) => o === (this.table[k] === '1'))
+    }
+    // the circuit as Lean writes it
+    leanExpr(id = 'out') {
+      if (this.names.includes(id)) return id
+      const n = this.inputsOf(id), ins = [...Array(n).keys()].map(i => { const w = this.wireTo(id, i); return w ? this.leanExpr(w.from) : '?' })
+      return id === 'out' ? ins[0] : GATES[this.block(id).kind].lean(ins)
+    }
+    leanCoin(c) { return c === 'p' ? 'coin p' : c === '1-p' ? 'coin (σ p)' : `coin (${c})` }
+    leanState() {
+      const e = this.leanExpr()
+      if (!this.random) return `fun ${this.names.join(' ')} => ${e}`
+      return `do ${this.names.map((x, k) => `let ${x} ← ${this.leanCoin(this.coins[k])}`).join('; ')}; pure (${e})`
+    }
+    statement() { return `(${this.names.join(' ')} : Bool) : (${this.leanExpr()}) = (${this.goal})` }
+    status() {
+      if (this.done) return 'goals accomplished 🎉'
+      if (this.sel?.kind === 'out') return tr('Now tap an input (a circle above a block).')
+      if (this.sel?.kind === 'in') return tr('Now tap an output (a dot below a block).')
+      if (!this.gatesOn.length && !this.wires.length) return tr('Drag gates onto the board, or tap them.')
+      if (!this.wireTo('out', 0)) return tr('Connect the output.')
+      const outs = this.outputs()
+      if (outs.some(o => o === null)) return tr('An input of a gate is still open.')
+      if (this.random) {
+        const d = this.dist(), t = this.target
+        if (d.space !== t.space) return tr('The distribution lives on {a}, the target on {b}.', { a: spaceName(d.space), b: spaceName(t.space) })
+        const k = axis(t.space, [...d.mass.keys(), ...t.mass.keys()]).find(k => !(d.mass.get(k) ?? ZERO).eq(t.mass.get(k) ?? ZERO)) ?? 'true'
+        return tr('At {k}: P = {m}, the target has {t}.', { k, m: String(new Poly((d.mass.get(k) ?? ZERO).c)), t: String(t.mass.get(k) ?? ZERO) })
+      }
+      const k = outs.filter((o, r) => o === (this.table[r] === '1')).length
+      return tr('{k} of {n} rows are right.', { k, n: outs.length })
+    }
+    check() {
+      if (!this.done) return
+      const first = !this.solved
+      try { localStorage.setItem(this.key, '1') } catch {}
+      this.render()
+      this.onSolved?.(first)
+    }
+    flash(text) { if (!this.info) return; this.info.textContent = text; this.info.classList.add('pg-warn'); setTimeout(() => this.info.classList.remove('pg-warn'), 1500) }
+
+    // ---- dragging
+    toSvg(e) { const pt = this.svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; return pt.matrixTransform(this.svg.getScreenCTM().inverse()) }
+    overBoard(e) { const r = this.svg.getBoundingClientRect(); return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom }
+    // a gate of the side: a tap puts it on the board, a drag puts it where it is dropped (a finger
+    // holds it a moment first, so that the list can still scroll)
+    makePaletteDraggable(item, kind) {
+      let dragging = false
+      item.addEventListener('touchmove', e => { if (dragging) e.preventDefault() }, { passive: false })
+      item.addEventListener('pointerdown', ev => {
+        if (ev.button > 0) return
+        try { item.setPointerCapture(ev.pointerId) } catch {}
+        const start = { x: ev.clientX, y: ev.clientY }
+        let ghost = null, hold = null
+        dragging = ev.pointerType !== 'touch'
+        if (!dragging) hold = setTimeout(() => { dragging = true; item.classList.add('pg-held') }, 300)
+        const move = e => {
+          if (!dragging) return
+          if (!ghost && Math.hypot(e.clientX - start.x, e.clientY - start.y) < 6) return
+          if (!ghost) { ghost = el('div', 'pg-ghost', `${GATES[kind].sym} ${tr(GATES[kind].label)}`); document.body.append(ghost) }
+          ghost.style.left = `${e.clientX - 40}px`; ghost.style.top = `${e.clientY - 18}px`
+          this.svg.classList.toggle('pg-drop', this.overBoard(e))
+        }
+        const up = e => {
+          item.removeEventListener('pointermove', move); item.removeEventListener('pointerup', up); item.removeEventListener('pointercancel', up)
+          clearTimeout(hold); dragging = false; item.classList.remove('pg-held'); this.svg.classList.remove('pg-drop')
+          // (the click that the browser sends after it may hit the new button of the side: it is ignored)
+          this.paletteUp = Date.now()
+          if (!ghost) { if (e.type === 'pointerup') this.addGate(kind); return }
+          ghost.remove()
+          if (e.type === 'pointerup' && this.overBoard(e)) this.addGate(kind, this.toSvg(e))
+        }
+        item.addEventListener('pointermove', move); item.addEventListener('pointerup', up); item.addEventListener('pointercancel', up)
+      })
+      // (a click without pointer events, e.g. from the keyboard)
+      item.addEventListener('click', () => { if (Date.now() - (this.paletteUp ?? 0) > 800) this.addGate(kind) })
+    }
+    // a gate on the board: dragged to move it, or onto the bin to remove it; a tap chooses it
+    makeGateDraggable(g, gate) {
+      g.addEventListener('touchstart', e => { if (!e.target.closest('.pg-cport, .pg-cx')) e.preventDefault() }, { passive: false })
+      g.addEventListener('pointerdown', ev => {
+        if (ev.target.closest('.pg-cport, .pg-cx') || ev.button > 0) return
+        try { g.setPointerCapture(ev.pointerId) } catch {}
+        const start = this.toSvg(ev), bin = this.svg.querySelector('.pg-bin')
+        let moved = false, d = { x: 0, y: 0 }
+        const move = e => {
+          const now = this.toSvg(e); d = { x: now.x - start.x, y: now.y - start.y }
+          if (!moved && Math.hypot(d.x, d.y) < 6) return
+          moved = true
+          bin.classList.add('pg-bin-shown')
+          bin.classList.toggle('pg-bin-hot', Math.hypot(now.x - (CW - 34), now.y - (CH - 34)) < 40)
+          g.setAttribute('transform', `translate(${d.x},${d.y})`)
+          // the wires of the gate go with it
+          for (const p of this.svg.querySelectorAll(`.pg-cwire[data-from="${gate.id}"], .pg-cwire[data-to="${gate.id}"]`)) {
+            const w = this.wires[Number(p.dataset.k)], a = this.port(w.from, 'out'), b = this.port(w.to, 'in', w.i)
+            const a2 = w.from === gate.id ? { x: a.x + d.x, y: a.y + d.y } : a, b2 = w.to === gate.id ? { x: b.x + d.x, y: b.y + d.y } : b
+            p.setAttribute('d', wirePath(a2, b2))
+          }
+        }
+        const up = e => {
+          g.removeEventListener('pointermove', move); g.removeEventListener('pointerup', up); g.removeEventListener('pointercancel', up)
+          if (!moved) { if (e.type === 'pointerup') this.tapGate(gate.id); return }
+          const hot = bin.classList.contains('pg-bin-hot') && e.type === 'pointerup'
+          bin.classList.remove('pg-bin-shown', 'pg-bin-hot')
+          if (hot) return this.change(() => { this.gatesOn = this.gatesOn.filter(x => x.id !== gate.id); this.wires = this.wires.filter(w => w.from !== gate.id && w.to !== gate.id) })
+          const c = this.clamp({ x: gate.x + d.x, y: gate.y + d.y })
+          this.change(() => { const x = this.block(gate.id); x.x = c.x; x.y = c.y })
+        }
+        g.addEventListener('pointermove', move); g.addEventListener('pointerup', up); g.addEventListener('pointercancel', up)
+      })
+    }
+    // a port: tapped (choose it, or complete the one chosen), or dragged to another port
+    makePort(c, id, kind, i) {
+      c.addEventListener('touchstart', e => e.preventDefault(), { passive: false })
+      c.addEventListener('pointerdown', ev => {
+        if (ev.button > 0) return
+        ev.stopPropagation()
+        try { c.setPointerCapture(ev.pointerId) } catch {}
+        const a = this.port(id, kind, i), start = { x: ev.clientX, y: ev.clientY }
+        let line = null
+        const move = e => {
+          if (!line && Math.hypot(e.clientX - start.x, e.clientY - start.y) < 6) return
+          if (!line) { line = svg('path', { class: 'pg-cwire pg-cwire-new' }); this.svg.append(line) }
+          const b = this.toSvg(e)
+          line.setAttribute('d', kind === 'out' ? wirePath(a, b) : wirePath(b, a))
+        }
+        const up = e => {
+          c.removeEventListener('pointermove', move); c.removeEventListener('pointerup', up); c.removeEventListener('pointercancel', up)
+          if (!line) { if (e.type === 'pointerup') (kind === 'out' ? this.tapOut(id) : this.tapIn(id, i)); return }
+          line.remove()
+          if (e.type !== 'pointerup') return
+          const t = document.elementFromPoint(e.clientX, e.clientY)?.closest('.pg-cport')
+          if (!t || t.dataset.kind === kind) return
+          if (kind === 'out') this.connect(id, t.dataset.block, Number(t.dataset.i))
+          else this.connect(t.dataset.block, id, i)
+        }
+        c.addEventListener('pointermove', move); c.addEventListener('pointerup', up); c.addEventListener('pointercancel', up)
+      })
+    }
+
+    // ---- drawing
+    render() {
+      const done = this.done, row = this.rows[this.row] ?? this.rows[0], vals = this.values(row)
+      const s = svg('svg', { viewBox: `0 0 ${CW} ${CH}`, class: 'pg-svg pg-csvg' + (done ? ' pg-done' : '') })
+      this.svg = s
+      const bg = svg('rect', { class: 'pg-cbg', x: 0, y: 0, width: CW, height: CH })
+      bg.addEventListener('click', () => { if (this.sel || this.selWire !== null || this.selBlock) { this.sel = null; this.selWire = null; this.selBlock = null; this.render() } })
+      s.append(bg)
+      // the wires, with the coin each carries in the row shown
+      this.wires.forEach((w, k) => {
+        const a = this.port(w.from, 'out'), b = this.port(w.to, 'in', w.i), d = wirePath(a, b)
+        const g = svg('g', { class: 'pg-cwire-g' + (this.selWire === k ? ' pg-cwire-sel' : '') })
+        const hit = svg('path', { class: 'pg-cwire-hit', d }), path = svg('path', { class: 'pg-cwire' + (this.typeOut(w.from) === 'nat' ? ' pg-cwire-nat' : ''), d, 'data-from': w.from, 'data-to': w.to, 'data-k': k })
+        g.append(hit, path)
+        g.addEventListener('click', () => { this.selWire = this.selWire === k ? null : k; this.sel = null; this.selBlock = null; this.render() })
+        if (this.selWire === k) {
+          const m = { x: (a.x + b.x) / 2 + 22, y: (a.y + b.y) / 2 }
+          const x = svg('g', { class: 'pg-cx' })
+          x.append(svg('circle', { cx: m.x, cy: m.y, r: 13 }), svg('text', { x: m.x, y: m.y + 5, 'text-anchor': 'middle' }, '✕'))
+          x.addEventListener('click', ev => { ev.stopPropagation(); this.change(() => { this.wires.splice(k, 1) }) })
+          g.append(x)
+        }
+        s.append(g)
+      })
+      const portClass = (id, kind, i) => {
+        const sel = this.sel, open = kind === 'in' && !this.wireTo(id, i)
+        const chosen = sel && sel.kind === kind && sel.id === id && (kind === 'out' || sel.i === i)
+        const fit = sel && sel.kind !== kind && (kind === 'in' ? this.fits(sel.id, id, i) : this.fits(id, sel.id, sel.i))
+        const cand = sel && sel.kind !== kind && sel.id !== id && fit
+        const nat = kind === 'out' ? this.typeOut(id) === 'nat' : this.typeIn(id, i) === 'nat'
+        return 'pg-cport' + (nat ? ' pg-cport-nat' : '') + (open ? ' pg-cport-open' : '') + (chosen ? ' pg-cport-sel' : '') + (cand && (kind === 'out' || open) ? ' pg-cport-cand' : '')
+      }
+      const addPort = (g, id, kind, i = 0) => {
+        const q = this.port(id, kind, i)
+        const c = svg('circle', { class: portClass(id, kind, i), cx: q.x, cy: q.y, r: kind === 'out' ? 7 : 9, 'data-block': id, 'data-kind': kind, 'data-i': i })
+        this.makePort(c, id, kind, i)
+        g.append(c)
+      }
+      // the inputs: a coin each, with its value in the row shown
+      this.names.forEach((x, k) => {
+        const a = this.inputAt(k), g = svg('g', { class: 'pg-cinput' })
+        g.append(svg('text', { class: 'pg-cname', x: a.x, y: a.y - 26, 'text-anchor': 'middle' }, this.random ? `${x} ← ${this.leanCoin(this.coins[k])}` : x))
+        const c = coin(row[k], 20); pose(c, a.x, a.y, 1, row[k]); g.append(c)
+        addPort(g, x, 'out')
+        g.addEventListener('click', ev => { if (!ev.target.closest('.pg-cport')) this.tapOut(x) })
+        s.append(g)
+      })
+      // the gates
+      for (const gate of this.gatesOn) {
+        const G = GATES[gate.kind], g = svg('g', { class: 'pg-cblock' + (this.selBlock === gate.id ? ' pg-cblock-sel' : ''), 'data-id': gate.id, 'data-kind': gate.kind })
+        g.append(svg('rect', { x: gate.x - GW / 2, y: gate.y - GH2 / 2, width: GW, height: GH2, rx: 12 }))
+        g.append(svg('text', { class: 'pg-csym', x: gate.x - 14, y: gate.y + 4, 'text-anchor': 'middle' }, G.sym))
+        g.append(svg('text', { class: 'pg-clabel', x: gate.x - 14, y: gate.y + 20, 'text-anchor': 'middle' }, tr(G.label)))
+        for (let i = 0; i < G.n; i++) addPort(g, gate.id, 'in', i)
+        addPort(g, gate.id, 'out')
+        // the coin at its output, in the row shown
+        const v = vals[gate.id]
+        if (v !== null && v !== undefined) { const c = coin(v, 13); pose(c, gate.x + GW / 2 - 20, gate.y, 1, v); c.classList.add('pg-cval'); g.append(c) }
+        if (this.selBlock === gate.id) {
+          const x = svg('g', { class: 'pg-cx' })
+          x.append(svg('circle', { cx: gate.x + GW / 2 + 4, cy: gate.y - GH2 / 2 - 4, r: 13 }), svg('text', { x: gate.x + GW / 2 + 4, y: gate.y - GH2 / 2 + 1, 'text-anchor': 'middle' }, '✕'))
+          x.addEventListener('pointerdown', ev => ev.stopPropagation())
+          x.addEventListener('click', ev => { ev.stopPropagation(); this.change(() => { this.gatesOn = this.gatesOn.filter(y => y.id !== gate.id); this.wires = this.wires.filter(w => w.from !== gate.id && w.to !== gate.id) }) })
+          g.append(x)
+        }
+        this.makeGateDraggable(g, gate)
+        s.append(g)
+      }
+      // the output
+      const o = this.outAt, og = svg('g', { class: 'pg-coutput' })
+      og.append(svg('rect', { x: o.x - 70, y: o.y - 30, width: 140, height: 60, rx: 14 }))
+      og.append(svg('text', { class: 'pg-cname', x: o.x - 52, y: o.y + 5 }, tr('Output')))
+      const ov = vals.out
+      const oc = coin(ov ?? '?', 18); pose(oc, o.x + 38, o.y, 1, ov ?? '?'); og.append(oc)
+      addPort(og, 'out', 'in', 0)
+      og.addEventListener('click', ev => { if (!ev.target.closest('.pg-cport')) this.tapIn('out', 0) })
+      s.append(og)
+      // the bin, shown while a gate is dragged
+      const bin = svg('g', { class: 'pg-bin' })
+      bin.append(svg('circle', { cx: CW - 34, cy: CH - 34, r: 26 }), svg('text', { x: CW - 34, y: CH - 25, 'text-anchor': 'middle' }, '🗑'))
+      s.append(bin)
+
+      // the truth table (and with coins: the mass of each row, and the distribution)
+      const outs = this.outputs()
+      const table = el('table', 'pg-truth')
+      const head = el('tr')
+      for (const x of this.names) head.append(el('th', '', x))
+      if (this.random) head.append(el('th', '', tr('P(row)')))
+      if (this.random && this.thrown) head.append(el('th', '', tr('thrown')))
+      if (!this.random) head.append(el('th', 'pg-truth-target', tr('Target')))
+      head.append(el('th', '', tr('Output')))
+      table.append(head)
+      const chip = v => el('span', 'pg-tf pg-tf-' + (v === null ? 'none' : typeof v === 'number' ? 'num' : v), v === null ? '·' : typeof v === 'number' ? String(v) : v ? 'T' : 'F')
+      this.rows.forEach((r, k) => {
+        const want = this.table[k] === '1', got = outs[k]
+        const tr_ = el('tr', (k === this.row ? 'pg-truth-sel ' : '') + (this.random ? (got ? 'pg-truth-true' : '') : got === null ? '' : got === want ? 'pg-truth-ok' : 'pg-truth-bad'))
+        for (const v of r) { const td = el('td'); td.append(chip(v)); tr_.append(td) }
+        if (this.random) tr_.append(el('td', 'pg-truth-p', String(this.mass(r))))
+        if (this.random && this.thrown) tr_.append(el('td', 'pg-truth-count', `${this.counts[k]}×`))
+        if (!this.random) { const td = el('td', 'pg-truth-target'); td.append(chip(want)); tr_.append(td) }
+        const td = el('td'); td.append(chip(got)); tr_.append(td)
+        tr_.addEventListener('click', () => { this.row = k; this.render() })
+        table.append(tr_)
+      })
+      const side = el('div', 'pg-cside')
+      side.append(table, el('div', 'pg-truth-note', tr('Tap a row to see its coins on the board.')))
+      if (this.random) {
+        const d = this.dist()
+        if (d) {
+          // the mass at true: the masses of the rows where the output is true, added up
+          // (for each point of the output: the masses of its rows, added up)
+          for (const k of axis(d.space, [...d.mass.keys()]).filter(k => d.space === 'bool' ? k === 'true' : true)) {
+            const terms = this.rows.filter((r, j) => String(outs[j]) === k).map(r => String(this.mass(r)))
+            side.append(el('div', 'pg-truth-sum', `P(${tr('Output')} = ${k}) = ${terms.length ? terms.join(' + ') : '0'}${terms.length > 1 ? ' = ' + new Poly((d.mass.get(k) ?? ZERO).c) : ''}`))
+          }
+          side.append(targetChart([{ dist: d }], tr('Output'), 'pg-out-svg'))
+        }
+        side.append(targetChart([{ dist: this.target }]), el('div', 'pg-truth-note', tr('The mass of each output: the sum of P over its rows.')))
+        // many throws: how often each row came, and so how often each output
+        const throws = el('div', 'pg-throws'), many = el('button', 'pg-tool pg-throw', '🪙 ' + tr('Throw 100 times'))
+        many.type = 'button'; many.addEventListener('click', () => this.throwMany(100))
+        throws.append(many)
+        if (this.thrown && !outs.some(o => o === null)) {
+          const freq = new Map()
+          this.rows.forEach((r, k) => { const v = String(outs[k]); freq.set(v, (freq.get(v) ?? 0) + this.counts[k]) })
+          throws.append(el('span', 'pg-throws-note', `${tr('{n} throws', { n: this.thrown })}: ` +
+            [...freq].sort((a, b) => (a[0] < b[0] ? -1 : 1)).map(([v, c]) => `${tr('Output')} ${v}: ${c}×`).join(', ')))
+        }
+        const slider = el('label', 'pg-slider'), input = el('input')
+        input.type = 'range'; input.min = '0.05'; input.max = '0.95'; input.step = '0.05'; input.value = String(P)
+        input.addEventListener('input', () => { P = Number(input.value); this.counts = this.rows.map(() => 0); this.thrown = 0; try { localStorage.setItem('pg:p', input.value) } catch {}; this.render() })
+        slider.append(`${tr('the picture for p =')} ${P.toFixed(2)} `, input)
+        side.append(slider, throws)
+      }
+      const rowEl = el('div', 'pg-row pg-crow')
+      rowEl.append(s, side)
+
+      const moves = el('div', 'pg-moves')
+      for (const kind of this.gates) {
+        const b = el('button', 'pg-move pg-gate-item', `${GATES[kind].sym} ${tr(GATES[kind].label)}`)
+        b.type = 'button'; b.dataset.move = kind
+        this.makePaletteDraggable(b, kind)
+        moves.append(b)
+      }
+      const tools = el('div', 'pg-tools')
+      const undo = el('button', 'pg-tool', '↶ ' + tr('Undo')), reset = el('button', 'pg-tool', '⟲ ' + tr('Start over'))
+      undo.type = reset.type = 'button'
+      undo.disabled = !this.canUndo; reset.disabled = !this.gatesOn.length && !this.wires.length
+      undo.addEventListener('click', () => this.undo()); reset.addEventListener('click', () => this.reset())
+      tools.append(undo, reset)
+      this.info = el('div', 'pg-info', '')
+      const ln = el('div', 'pg-lean-state')
+      ln.append(el('span', 'pg-lean-label', tr('Lean:') + ' '), el('code', '', this.leanState()))
+      const task = el('div', 'pg-task')
+      task.append(el('b', '', tr(this.random ? 'Task: build a circuit whose output has the distribution of the target.' : 'Task: build a circuit whose output is the target, in every row.')))
+      const parts = [task, rowEl, this.info, ...(SHOW ? [] : [ln]), el('div', 'pg-moves-head', tr('Gates')), moves, tools]
+      if (done) {
+        // the proof is about the circuit built (without coins)
+        if (!this.random && this.proof) this.proof.setStatement(this.statement())
+        const box = el('div', 'pg-solved')
+        box.append(el('div', 'pg-solved-head', 'goals accomplished 🎉'))
+        if (!SHOW) {
+          box.append(el('div', 'pg-solved-lean-head', tr(this.random ? 'In Lean, for every p:' : 'In Lean:')))
+          box.append(el('pre', 'pg-lean', this.random ? `${this.leanState()}\n  -- ${tr('a coin: true with probability')} ${new Poly(this.target.mass.get('true')?.c ?? [])}` : `${this.statement()}`))
+        }
+        const next = el('button', 'pg-next', tr(this.root.dataset.proof && !SHOW ? 'To the proof ›' : 'Next level ›'))
+        next.type = 'button'
+        next.addEventListener('click', () => this.onNext?.())
+        box.append(next)
+        parts.push(box)
+      }
+      showBoard(this, parts)
+    }
+  }
+  // a wire, from an output (above) to an input (below)
+  const wirePath = (a, b) => { const dy = Math.max(30, Math.abs(b.y - a.y) / 2); return `M${a.x},${a.y} C${a.x},${a.y + dy} ${b.x},${b.y - dy} ${b.x},${b.y}` }
 
   // ---------------------------------------------------------------- the proof
 
@@ -1673,6 +2196,12 @@
 
     get proved() { try { return localStorage.getItem(this.key + 'd') === '1' } catch { return false } }
     get canUndo() { return !this.busy && this.lines.length > 0 }
+    // the statement, when the board makes it (a circuit): a new one starts the proof anew
+    setStatement(st) {
+      if (st === this.statement) return
+      this.statement = st; this.started = false; this.session = null; this.goals = null; this.error = ''
+      if (!this.box.hidden) this.render()
+    }
     status() {
       if (!BACKEND) return ''
       if (this.done) return 'goals accomplished 🎉'
@@ -1942,6 +2471,13 @@
     'build:add': ['Adds the numbers of its lines.', 'Addiert die Zahlen seiner Leitungen.'],
     'build:pos': ['true when the number is at least 1.', 'true, wenn die Zahl mindestens 1 ist.'],
     'build:max': ['The largest of the numbers of its lines.', 'Die größte der Zahlen seiner Leitungen.'],
+    'circuit:not': ['One input: true where it is false, and the other way round.', 'Ein Eingang: true, wo er false ist, und umgekehrt.'],
+    'circuit:and': ['Two inputs: true when both are true.', 'Zwei Eingänge: true, wenn beide true sind.'],
+    'circuit:or': ['Two inputs: true when at least one is true.', 'Zwei Eingänge: true, wenn mindestens einer true ist.'],
+    'circuit:xor': ['Two inputs: true when exactly one is true.', 'Zwei Eingänge: true, wenn genau einer true ist.'],
+    'circuit:nand': ['Two inputs: true unless both are true.', 'Zwei Eingänge: true, außer wenn beide true sind.'],
+    'circuit:toNat': ['From a coin to a number: false is 0, true is 1. Numbers run on blue wires.', 'Von einer Münze zu einer Zahl: false ist 0, true ist 1. Zahlen laufen auf blauen Drähten.'],
+    'circuit:plus': ['Two numbers in: their sum.', 'Zwei Zahlen hinein: ihre Summe.'],
     'walk:north': ['One step up.', 'Ein Schritt nach oben.'], 'walk:south': ['One step down.', 'Ein Schritt nach unten.'],
     'walk:east': ['One step to the right.', 'Ein Schritt nach rechts.'], 'walk:west': ['One step to the left.', 'Ein Schritt nach links.'],
     'walk:step': ['All four ways at once: in Set the figure is wherever it can be.', 'Alle vier Richtungen zugleich: In Set ist die Figur überall, wo sie sein kann.'],
@@ -1967,6 +2503,7 @@
       ...level.funs.map(f => ['build:' + f, funLabel(f), el('div', 'pg-map-sym', FUNS[f].sym)])]
     if (level instanceof Grid) return level.moves.map(m => ['walk:' + m, tr(LABEL0[m]), null])
     if (level instanceof Bools) return level.moves.map(m => ['bool:' + m, tr(MOVESB[m].label), mapPicture(k => String(MOVESB[m].f(k === 'true')))])
+    if (level instanceof Circuit) return level.gates.map(g => ['circuit:' + g, tr(GATES[g].label), el('div', 'pg-map-sym', GATES[g].sym)])
     return r.dataset.moves.split(',').map(x => x.trim()).filter(Boolean).map(spec => {
       const m = parseMove(spec)
       return ['level:' + spec.split(/\s+/)[0], m.label(), mapPicture(m.f, m.to)]
@@ -2043,7 +2580,7 @@
     const roots = [...document.querySelectorAll('.pg-level')]
     if (!roots.length) return
     STAGE = true
-    const levels = roots.map((r, i) => new (r.classList.contains('pg-build') ? Builder : r.classList.contains('pg-walk') ? Grid : r.classList.contains('pg-bool') ? Bools : Level)(r, i, () => refresh()))
+    const levels = roots.map((r, i) => new (r.classList.contains('pg-build') ? Builder : r.classList.contains('pg-walk') ? Grid : r.classList.contains('pg-bool') ? Bools : r.classList.contains('pg-circuit') ? Circuit : Level)(r, i, () => refresh()))
     levels.forEach(l => { if (l.root.dataset.proof && !SHOW) l.proof = new Proof(l, () => refresh()) })
     const done = l => l.solved && (!l.proof || l.proof.proved)
 
@@ -2238,7 +2775,7 @@
         g.append(svg('path', { d: `M${x},${y - r} A${r},${r} 0 ${frac > 0.5 ? 1 : 0} 1 ${ex},${ey}`, class: 'pg-map-ring' }))
       }
       // (the worlds before chance have no number: a sign of their own)
-      const sign = /True-and-False\/$/.test(w.path) ? '⊤' : /Walking-on-the-Grid\/$/.test(w.path) ? '⌗' : '•'
+      const sign = /True-and-False\/$/.test(w.path) ? '⊤' : /Walking-on-the-Grid\/$/.test(w.path) ? '⌗' : /Circuits\/$/.test(w.path) ? '∧' : '•'
       g.append(svg('text', { x, y: y + 6, 'text-anchor': 'middle', class: 'pg-map-n' }, w.num || sign))
       g.append(svg('text', { x: x + r + 8, y: y - 1, class: 'pg-map-name' }, name))
       g.append(svg('text', { x: x + r + 8, y: y + 13, class: 'pg-map-count' }, c ? `${c[0]}/${c[1]}` : ''))
