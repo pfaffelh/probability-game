@@ -2477,7 +2477,7 @@
       en: 'Induction on the natural number n: first the goal for 0, then the goal for n + 1, with the hypothesis ih for n.',
       de: 'Induktion nach der natürlichen Zahl n: zuerst das Ziel für 0, dann das Ziel für n + 1, mit der Annahme ih für n.' },
     { name: 'mass_total', kind: 'rule', sig: 'mass_total μ : μ true + μ false = 1', en: 'A distribution on Bool has total mass one.', de: 'Eine Verteilung auf Bool hat die Gesamtmasse eins.' },
-    { name: 'mass_ne_top', kind: 'rule', sig: 'mass_ne_top μ b : μ b ≠ ⊤', en: 'A mass of a distribution is finite (masses are numbers in [0, ∞], and ⊤ is ∞).', de: 'Eine Masse einer Verteilung ist endlich (Massen sind Zahlen in [0, ∞], und ⊤ ist ∞).' },
+    { name: 'mass_ne_top', kind: 'rule', sig: 'mass_ne_top : μ b ≠ ⊤', en: 'A mass of a distribution is finite (masses are numbers in [0, ∞], and ⊤ is ∞).', de: 'Eine Masse einer Verteilung ist endlich (Massen sind Zahlen in [0, ∞], und ⊤ ist ∞).' },
     { name: 'ENNReal.add_sub_cancel_left', kind: 'rule', sig: 'ENNReal.add_sub_cancel_left (h : a ≠ ⊤) : a + b - a = b', en: 'Adding a and taking it away again: for a finite a.', de: 'a dazu und wieder weg: für ein endliches a.' },
     { name: 'add_comm', kind: 'rule', sig: 'a + b = b + a', en: 'The order of a sum does not matter.', de: 'Die Reihenfolge einer Summe ist egal.' },
     { name: 'mass_false', kind: 'lemma', sig: 'mass_false μ : μ false = 1 - μ true', en: 'Proved by you in One Coin: what is not at true is at false.', de: 'Von dir bewiesen in „Eine Münze“: Was nicht bei true liegt, liegt bei false.' },
