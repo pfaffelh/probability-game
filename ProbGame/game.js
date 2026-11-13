@@ -1380,6 +1380,7 @@
       this.history.push({ steps: this.steps, gap: this.gap }); this.steps = []; this.gap = null; this.updateLean(); this.render()
     }
     get canUndo() { return !!this.history?.length }
+    get canReset() { return this.steps.length > 0 }
     status() {
       if (this.done) return 'goals accomplished 🎉'
       if (!this.steps.length) return tr('Tap a gate.')
@@ -1799,7 +1800,9 @@
       this.render(); this.check()
     }
     undo() { const h = this.history.pop(); if (!h) return; const o = JSON.parse(h); this.gatesOn = o.gates; this.wires = o.wires; this.seq = o.seq; this.save(); this.render() }
-    reset() { if (this.gatesOn.length === this.fixedGates.length && this.wires.length === this.fixedWires.length) return; this.change(() => { this.gatesOn = []; this.wires = []; this.seq = 1; this.putFixed() }) }
+    // (something on the board beyond what the level starts with: also after a reload, with no history)
+    get canReset() { return this.gatesOn.length > this.fixedGates.length || this.wires.length > this.fixedWires.length || this.gatesOn.some(g => g.maps?.some(Boolean)) }
+    reset() { if (!this.canReset) return; this.change(() => { this.gatesOn = []; this.wires = []; this.seq = 1; this.seen = []; this.putFixed() }) }
     get canUndo() { return this.history.length > 0 }
     // a gate: where it is dropped, or in the first free place
     addGate(kind, at) {
@@ -3167,7 +3170,8 @@
       const shownDone = v === 'proof' ? !!l.proof?.proved : !!l.solved
       status.classList.toggle('pg-status-done', shownDone)
       for (const x of levels) x.root.classList.toggle('pg-level-done', x === l && shownDone)
-      undo.disabled = restart.disabled = v === 'proof' ? !l.proof.canUndo : !l.canUndo
+      undo.disabled = v === 'proof' ? !l.proof.canUndo : !l.canUndo
+      restart.disabled = v === 'proof' ? !l.proof.canUndo : !(l.canReset ?? l.canUndo)
       lean.hidden = v === 'proof'
       add.hidden = !(l instanceof Circuit) || v === 'proof'
       if (add.hidden || pop.dataset.level !== String(current)) { closePop(); pop.dataset.level = String(current) }
