@@ -1735,6 +1735,9 @@
       this.putFixed()
       this.seq = saved?.seq ?? 1
       this.seen = saved?.seen ?? []       // (with every) the maps f for which the circuit was right
+      // (what was saved before the level changed: gates of kinds it has not, wires to what is not there)
+      this.gatesOn = this.gatesOn.filter(g => GATES[g.kind] && !this.names.includes(g.id) && g.id !== 'out')
+      this.wires = this.wires.filter(w => (this.names.includes(w.from) || this.block(w.from)) && (w.to === 'out' || this.block(w.to) || this.ctl[this.names.indexOf(w.to)]) && w.i < this.inputsOf(w.to))
     }
     // the fixed gates and wires: there, whatever was saved
     putFixed() {
@@ -2959,7 +2962,16 @@
     const roots = [...document.querySelectorAll('.pg-level')]
     if (!roots.length) return
     STAGE = true
-    const levels = roots.map((r, i) => new (r.classList.contains('pg-build') ? Builder : r.classList.contains('pg-walk') ? Grid : r.classList.contains('pg-bool') ? Bools : r.classList.contains('pg-circuit') ? Circuit : Level)(r, i, () => refresh()))
+    // (a level whose saved state no longer fits it, after the level changed: started afresh, its state forgotten)
+    const make = (r, i) => new (r.classList.contains('pg-build') ? Builder : r.classList.contains('pg-walk') ? Grid : r.classList.contains('pg-bool') ? Bools : r.classList.contains('pg-circuit') ? Circuit : Level)(r, i, () => refresh())
+    const levels = roots.map((r, i) => {
+      try { return make(r, i) } catch (e) {
+        console.warn('level', i + 1, 'started afresh:', e)
+        try { const k = `pg:${location.pathname}:${i}`; for (const key of Object.keys(localStorage)) if (key.startsWith(k + ":")) localStorage.removeItem(key) } catch {}
+        r.querySelector('.pg-board')?.replaceChildren()
+        return make(r, i)
+      }
+    })
     levels.forEach(l => { if (l.root.dataset.proof && !SHOW) l.proof = new Proof(l, () => refresh()) })
     const done = l => l.solved && (!l.proof || l.proof.proved)
 
