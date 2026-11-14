@@ -134,7 +134,7 @@ header .pg-langs { align-self: center; margin: 0 0.8em 0 0.5em; flex-shrink: 0; 
 .pg-proof-lines li { padding: 0.1em 0; color: #1f6b27; }
 .pg-goals { display: flex; flex-direction: column; gap: 0.4rem; margin: 0.4rem 0; }
 .pg-goal { background: #fffaf0; border: 1px solid #e3d5bb; border-radius: 8px; padding: 0.3em 0.6em; overflow-x: auto; }
-.pg-goal pre { margin: 0; font-size: 0.86em; line-height: 1.35; }
+.pg-goal pre { margin: 0; font-size: 0.86em; line-height: 1.35; white-space: pre-wrap; overflow-wrap: anywhere; }
 .pg-goal-later { opacity: 0.7; }
 .pg-goal-later summary { cursor: pointer; }
 .pg-goal-no { font-size: 0.75em; color: #8f7a55; font-family: var(--verso-structure-font-family, sans-serif); }
@@ -571,3 +571,14 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 .pg-chist-axis { stroke: #b8a88a; stroke-width: 1; }
 .pg-chist-out { fill: #8a5a16; opacity: 0.85; }
 .pg-chist-target { fill: none; stroke: #2e6fb8; stroke-width: 1.5; stroke-dasharray: 4 2; }
+/* the inventory: what an item says (a long press, or all of them with the switch) */
+.pg-chip { -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; }
+.pg-chip.pg-chip-off { opacity: 0.55; }
+.pg-inv-sigs { border: 1px solid #c9b48f; background: white; border-radius: 999px; font: inherit; font-size: 0.78em; font-weight: normal; padding: 0.05em 0.6em; margin-left: 0.4em; cursor: pointer; color: #6b4a14; }
+.pg-inv-sigs.pg-on { background: #f0d9ac; }
+.pg-inv-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem; flex-basis: 100%; min-width: 0; }
+.pg-inv-row .pg-inv-sig { font-size: 0.78em; color: #5c4a2a; overflow-wrap: anywhere; }
+.pg-chip-peek { flex-basis: 100%; display: flex; flex-direction: column; gap: 0.2rem; position: relative; margin: 0.2rem 0; padding: 0.4rem 1.6rem 0.4rem 0.6rem; border: 1.5px solid #2e6fb8; border-radius: 8px; background: #f3f7fd; font-size: 0.9em; }
+.pg-chip-peek .pg-chip-x { position: absolute; right: 0.3rem; top: 0.2rem; }
+.pg-chip-peek .pg-inv-sig { overflow-wrap: anywhere; }
+.pg-ccaption { font-size: 11px; font-weight: normal; }

@@ -50,7 +50,7 @@
   const DE_TITLES = {
     'The Probability Game': 'Das Wahrscheinlichkeits\u00ADspiel',  // (a soft hyphen, for phones)
     'One Coin': 'Eine Münze', 'Draw, then Compute': 'Erst ziehen, dann rechnen', 'Building with Coins': 'Bauen mit Münzen',
-    'Counting': 'Zählen', 'Walking on the Grid': 'Gehen auf dem Gitter', 'True and False': 'Wahr und falsch', 'Circuits with Coins': 'Schaltungen mit Münzen', 'Circuits': 'Schaltungen', 'Lexicon': 'Lexikon', 'Table of Contents': 'Inhalt', 'Contents': 'Inhalt',
+    'Counting': 'Zählen', 'Walking on the Grid': 'Gehen auf dem Gitter', 'True and False': 'Wahr und falsch', 'Circuits with Coins': 'Schaltungen mit Münzen', 'Coins that Wait': 'Münzen, die warten', 'Circuits': 'Schaltungen', 'Lexicon': 'Lexikon', 'Table of Contents': 'Inhalt', 'Contents': 'Inhalt',
   }
   function translatePage() {
     const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
@@ -1564,6 +1564,9 @@
     // an unknown map f: one field for one of the four maps, the same in every f on the board
     f: { n: 1, h: 84, slots: 1, shared: true, sym: 'f', label: 'f',
       f: ([v], gate) => { const m = gate?.maps?.[0]; return m ? MAPS[m].f(v) : null }, lean: ([v]) => `f ${arg(v)}` },
+    // the constant maps (the moves heads and tails of a coin): whatever comes in, the same comes out
+    alwaysT: { n: 1, f: () => true, lean: () => 'true', sym: 'T', label: 'always T' },
+    alwaysF: { n: 1, f: () => false, lean: () => 'false', sym: 'F', label: 'always F' },
     nand: { n: 2, f: ([a, b]) => !(a && b), lean: ([a, b]) => `!(${arg(a)} && ${arg(b)})`, sym: '⊼', label: 'nand' },
     // counting: a coin becomes a number, numbers are added (wires of numbers are blue)
     toNat: { n: 1, ins: ['bool'], out: 'nat', f: ([a]) => (a ? 1 : 0), lean: ([a]) => `${arg(a)}.toNat`, sym: '#', label: 'toNat' },
@@ -1717,8 +1720,9 @@
       // (what lies on the board from the start and cannot be removed: `a=not; x>a.0`, gates and wires as in `play`)
       this.fixedGates = []; this.fixedWires = []
       for (const t of (d.start ?? '').split(';').map(t => t.trim()).filter(Boolean)) {
-        let m = /^(\w+)=(\w+)$/.exec(t)
-        if (m && GATES[m[2]]) { const k = this.fixedGates.length; this.fixedGates.push({ id: m[1], kind: m[2], x: CW / 2, y: 160 + 100 * k, fixed: true }); continue }
+        // (`a=toNat@120,160`: where it lies; else one below the other in the middle)
+        let m = /^(\w+)=(\w+)(?:@(\d+),(\d+))?$/.exec(t)
+        if (m && GATES[m[2]]) { const k = this.fixedGates.length; this.fixedGates.push({ id: m[1], kind: m[2], x: m[3] ? Number(m[3]) : CW / 2, y: m[4] ? Number(m[4]) : 160 + 100 * k, fixed: true }); continue }
         m = /^(\w+)>(\w+)(?:\.(\d+))?$/.exec(t)
         if (m) this.fixedWires.push({ from: m[1], to: m[2], i: Number(m[3] ?? 0), fixed: true })
       }
@@ -1767,7 +1771,12 @@
       for (const f of this.fixedWires) if (!this.wires.some(w => w.from === f.from && w.to === f.to && w.i === f.i)) { this.wires = this.wires.filter(w => !(w.to === f.to && w.i === f.i)); this.wires.unshift({ ...f }) }
     }
     save() { try { localStorage.setItem(this.key + ':circuit', JSON.stringify({ gates: this.gatesOn, wires: this.wires, seq: this.seq, seen: this.seen })) } catch {} }
-    inputAt(k) { return this.ctl?.[k] ? { x: 110, y: 170 } : { x: CW * (k + 1) / (this.names.length + 1), y: 48 } }
+    inputAt(k) {
+      // (a coin thrown after others, which coin depending on a wire: on the left, one below the other)
+      if (this.ctl?.[k]) return { x: 110, y: 170 + 115 * this.ctl.slice(0, k).filter(Boolean).length }
+      const top = this.names.map((_, j) => j).filter(j => !this.ctl?.[j]), r = top.indexOf(k)
+      return { x: CW * (r + 1) / (top.length + 1), y: 48 }
+    }
     get outAt() { return { x: CW / 2, y: CH - 46 } }
     // the output box: with a truth table as target, the target drawn in it (a column per row)
     outBox() {
@@ -2004,14 +2013,29 @@
     leanCoinOf(k) {
       if (!this.ctl[k]) return this.leanCoin(this.coins[k])
       const w = this.wireTo(this.names[k], 0)
-      return `if ${w ? this.leanExpr(w.from) : '?'} then ${this.leanCoin(this.ctl[k][0])} else ${this.leanCoin(this.ctl[k][1])}`
+      return `bif ${w ? this.leanExpr(w.from) : '?'} then ${this.leanCoin(this.ctl[k][0])} else ${this.leanCoin(this.ctl[k][1])}`
     }
     leanState() {
       const e = this.leanExpr()
       if (!this.random) return `fun ${this.names.join(' ')} => ${e}`
       return `do ${this.names.map((x, k) => `let ${x} ← ${this.leanCoinOf(k)}`).join('; ')}; pure (${e})`
     }
-    statement() { return `(${this.names.join(' ')} : Bool) : (${this.leanExpr()}) = (${this.goal})` }
+    // the target table as a decision by cases, input after input: `bif x then (bif y then true else
+    // false) else …` (null with a row that does not count). (Not `fun | … => …`: its auxiliary
+    // definition is unknown to the proof states of the REPL.)
+    tableFn() {
+      const ws = this.rows.map((r, k) => this.want(k))
+      if (ws.some(w => w === null)) return null
+      const n = this.names.length
+      const tree = (k, row) => k === n ? String(ws[this.rows.findIndex(r => r.every((v, j) => v === row[j]))])
+        : `(bif ${this.names[k]} then ${tree(k + 1, [...row, true])} else ${tree(k + 1, [...row, false])})`
+      return tree(0, [])
+    }
+    // the statement of a circuit: it is the target table, `(x && y) = (bif x then … else …)`
+    statement() {
+      const t = this.tableFn(), xs = this.names.join(' ')
+      return `(${xs} : Bool) : (${this.leanExpr()}) = ${t ?? `(${this.goal})`}`
+    }
     status() {
       if (this.done) return 'goals accomplished 🎉'
       if (this.sel?.kind === 'out') return tr('Now tap where it goes: a gate, or Output.')
@@ -2198,11 +2222,17 @@
         this.makePort(c, id, kind, i)
         g.append(c)
       }
+      // (three coins or more: their names alone above them, and what they are in one line on top)
+      const top = this.names.filter((_, j) => !this.ctl[j])
+      if (this.random && top.length >= 3) {
+        const cs = this.coins.filter((_, j) => !this.ctl[j])
+        s.append(svg('text', { class: 'pg-cname pg-ccaption', x: 10, y: 11 }, cs.every(c => c === cs[0]) ? `${top.join(', ')} ← ${this.leanCoin(cs[0])}` : top.map((x, j) => `${x} ← ${this.leanCoin(cs[j])}`).join(', ')))
+      }
       // the inputs: a coin each, with its value in the row shown
       this.names.forEach((x, k) => {
         const a = this.inputAt(k), g = svg('g', { class: 'pg-cinput' })
         if (this.ctl[k]) g.append(svg('text', { class: 'pg-cname', x: a.x + 30, y: a.y + 5 }, this.random ? `${x} ← ${this.leanCoinOf(k)}` : `${x} ∈ ${this.setOf(k)}`))
-        else g.append(svg('text', { class: 'pg-cname', x: a.x, y: a.y - (this.random ? 26 : 20), 'text-anchor': 'middle' }, this.random ? `${x} ← ${this.leanCoin(this.coins[k])}` : x))
+        else g.append(svg('text', { class: 'pg-cname', x: a.x, y: a.y - (this.random && this.names.filter((_, j) => !this.ctl[j]).length < 3 ? 26 : 19), 'text-anchor': 'middle' }, this.random && this.names.filter((_, j) => !this.ctl[j]).length < 3 ? `${x} ← ${this.leanCoin(this.coins[k])}` : x))
         // (as in the table below: a circle of the same size with ?, and in the row shown its value, T or F)
         g.append(svg('circle', { class: 'pg-cinput-hit', cx: a.x, cy: a.y, r: 22 }))
         const r = this.random ? 12 : this.outBox().rh <= 20 ? 9 : 12, v = shown ? row[k] : x === 'true' ? true : x === 'false' ? false : null
@@ -2259,12 +2289,17 @@
         text(x0 + 10, y(1), tr('Target'), 'pg-tlabel pg-tlabel-target', 'start')
         text(x0 + 10, y(2), tr('Output'), 'pg-tlabel', 'start')
         og.append(svg('line', { class: 'pg-gsep', x1: x0 + 8, y1: b.top + 12 + b.hist + rh + 2, x2: x0 + b.w - 8, y2: b.top + 12 + b.hist + rh + 2 }))
+        // (long masses in narrow columns: a smaller font)
+        const longest = Math.max(...b.keys.map(k => String(t.mass.get(k) ?? ZERO).length))
+        const fs = Math.max(7, Math.min(12, Math.floor((cw - 4) / (longest * 0.62))))
+        const text0 = text
+        const textM = (x, yy, s, cls) => { text0(x, yy, s, cls); og.lastChild.style.fontSize = fs + 'px' }
         b.keys.forEach((k, j) => {
           const tm = t.mass.get(k) ?? ZERO
           text(cx(j), y(0), String(k), 'pg-tmass')
-          text(cx(j), y(1), String(tm), 'pg-tmass pg-tmass-target')
+          textM(cx(j), y(1), String(tm), 'pg-tmass pg-tmass-target')
           const dm = d && d.space === t.space ? (d.mass.get(k) ?? ZERO) : null
-          text(cx(j), y(2), dm ? String(new Poly(dm.c)) : '·', 'pg-tmass ' + (dm ? (dm.eq(tm) ? 'pg-tmass-ok' : 'pg-tmass-bad') : ''))
+          textM(cx(j), y(2), dm ? String(new Poly(dm.c)) : '·', 'pg-tmass ' + (dm ? (dm.eq(tm) ? 'pg-tmass-ok' : 'pg-tmass-bad') : ''))
         })
         if (shown && vals.out !== null && vals.out !== undefined) { const j = b.keys.indexOf(String(vals.out)); if (j >= 0) og.insertBefore(svg('rect', { class: 'pg-gused-col', x: cx(j) - cw / 2, y: b.top + 6, width: cw, height: b.h - 12, rx: 7 }), og.children[1]) }
       } else {
@@ -2479,6 +2514,9 @@
     { name: 'mass_total', kind: 'rule', sig: 'mass_total μ : μ true + μ false = 1', en: 'A distribution on Bool has total mass one.', de: 'Eine Verteilung auf Bool hat die Gesamtmasse eins.' },
     { name: 'mass_ne_top', kind: 'rule', sig: 'mass_ne_top : μ b ≠ ⊤', en: 'A mass of a distribution is finite (masses are numbers in [0, ∞], and ⊤ is ∞).', de: 'Eine Masse einer Verteilung ist endlich (Massen sind Zahlen in [0, ∞], und ⊤ ist ∞).' },
     { name: 'ENNReal.add_sub_cancel_left', kind: 'rule', sig: 'ENNReal.add_sub_cancel_left (h : a ≠ ⊤) : a + b - a = b', en: 'Adding a and taking it away again: for a finite a.', de: 'a dazu und wieder weg: für ein endliches a.' },
+    { name: 'bind_true', kind: 'rule', sig: '(μ >>= f) true = μ true * f true true + μ false * f false true', en: 'The mass of a bind at true: the way through true (mass μ true, then f true) and the way through false.', de: 'Die Masse eines bind bei true: der Weg über true (Masse μ true, dann f true) und der Weg über false.' },
+    { name: 'mul_one', kind: 'rule', sig: 'a * 1 = a', en: 'Times one.', de: 'Mal eins.' },
+    { name: 'mul_zero', kind: 'rule', sig: 'a * 0 = 0', en: 'Times zero.', de: 'Mal null.' },
     { name: 'add_comm', kind: 'rule', sig: 'a + b = b + a', en: 'The order of a sum does not matter.', de: 'Die Reihenfolge einer Summe ist egal.' },
     { name: 'mass_false', kind: 'lemma', sig: 'mass_false μ : μ false = 1 - μ true', en: 'Proved by you in One Coin: what is not at true is at false.', de: 'Von dir bewiesen in „Eine Münze“: Was nicht bei true liegt, liegt bei false.' },
     { name: 'mass_true', kind: 'lemma', sig: 'mass_true μ : μ true = 1 - μ false', en: 'Proved by you in One Coin.', de: 'Von dir bewiesen in „Eine Münze“.' },
@@ -2886,16 +2924,39 @@
       // (what each one does: in the lexicon)
       const lex = [...document.querySelectorAll('#toc a')].find(a => /\/Lexicon\/$/.test(new URL(a.href, location.href).pathname))
       if (lex) { const a = el('a', 'pg-inv-lex', tr('📖 Lexicon')); a.href = lex.href; a.target = '_blank'; ihead.append(' ', a) }
+      // (the statements of all items, for every screen: there is no hover on a phone)
+      let sigs = false
+      try { sigs = localStorage.getItem('pg:sigs') === 'on' } catch {}
+      const st = el('button', 'pg-inv-sigs' + (sigs ? ' pg-on' : ''), tr(sigs ? 'Hide statements' : 'Show statements')); st.type = 'button'
+      st.addEventListener('click', () => { try { localStorage.setItem('pg:sigs', sigs ? 'off' : 'on') } catch {}; this.render() })
+      ihead.append(' ', st)
       inv.append(ihead)
+      const sigOf = item => (this.world0 && item.sig0) || item.sig || ''
+      const textOf = item => this.world0 && item.en0 ? (LANG === 'de' ? item.de0 : item.en0) : this.worldB && item.enb ? (LANG === 'de' ? item.deb : item.enb) : (LANG === 'de' ? item.de : item.en)
       for (const [kind, title] of [['tactic', tr('Tactics')], ['rule', tr('Theorems')]]) {
         const group = el('div', 'pg-inv-group')
         group.append(el('span', 'pg-inv-title', title + ':'))
         for (const item of INVENTORY.filter(i => (kind === 'tactic' ? i.kind === 'tactic' : i.kind !== 'tactic') && this.available(i))) {
-          const b = el('button', 'pg-chip' + (item.kind === 'lemma' ? ' pg-chip-lemma' : '') + (this.isNew(item) ? ' pg-chip-new' : ''), item.name)
-          b.type = 'button'; b.title = (this.world0 && item.sig0) || item.sig || ''
-          b.disabled = this.busy || this.done
-          b.addEventListener('click', () => { if (!this.busy && !this.done) (item.kind === 'tactic' ? this.tapTactic(item) : this.tapRule(item)) })
-          group.append(b)
+          const b = el('button', 'pg-chip' + (item.kind === 'lemma' ? ' pg-chip-lemma' : '') + (this.isNew(item) ? ' pg-chip-new' : '') + (this.busy || this.done ? ' pg-chip-off' : '') + (this.peek === item.name ? ' pg-chip-on' : ''), item.name)
+          b.type = 'button'; b.title = sigOf(item)
+          // a long press shows what it says (a phone has no hover); a tap puts it into the input
+          let timer = null
+          const stop = () => { clearTimeout(timer); timer = null }
+          b.addEventListener('pointerdown', () => { stop(); timer = setTimeout(() => { timer = null; this.pressed = true; this.peek = this.peek === item.name ? null : item.name; this.render() }, 450) })
+          for (const ev of ['pointerup', 'pointerleave', 'pointercancel']) b.addEventListener(ev, stop)
+          b.addEventListener('contextmenu', e => e.preventDefault())
+          b.addEventListener('click', () => {
+            if (this.pressed) { this.pressed = false; return }
+            if (!this.busy && !this.done) (item.kind === 'tactic' ? this.tapTactic(item) : this.tapRule(item))
+          })
+          if (sigs) { const r = el('div', 'pg-inv-row'); r.append(b, el('code', 'pg-inv-sig', sigOf(item))); group.append(r) } else group.append(b)
+          if (this.peek === item.name) {
+            const pk = el('div', 'pg-chip-peek')
+            pk.append(el('code', 'pg-inv-sig', sigOf(item)), el('div', '', textOf(item) ?? ''))
+            const x = el('button', 'pg-chip-x', '✕'); x.type = 'button'; x.addEventListener('click', () => { this.peek = null; this.render() })
+            pk.append(x)
+            group.append(pk)
+          }
           // its choice, right at it: x or y
           if (this.choice?.from === item.name && !this.done) {
             const pop = el('span', 'pg-chip-pop')
@@ -2958,7 +3019,7 @@
     'Lean did not take the line: see why above the input.': 'Lean hat die Zeile nicht genommen: warum, steht über der Eingabe.',
     'Type a tactic, or tap one in the inventory.': 'Tippe eine Taktik ein, oder tippe eine im Inventar an.', 'One goal left.': 'Noch ein Ziel.', '{n} goals left.': 'Noch {n} Ziele.',
     'Tips': 'Tipps', 'Tip': 'Tipp', 'Got it': 'Verstanden', 'Close': 'Schließen', 'Restart': 'Neu', 'Next': 'Weiter', 'Next ›': 'Weiter ›',
-    'Next world ›': 'Nächste Welt ›', 'Which?': 'Welche?', 'Tap {x}, then the Output.': 'Tippe {x} an, dann den Ausgang.', 'No variable in this goal to split with cases.': 'In diesem Ziel gibt es keine Variable, die cases aufteilen könnte.', 'No natural number in this goal for induction.': 'In diesem Ziel gibt es keine natürliche Zahl für eine Induktion.', plain: 'ohne', 'This wire belongs to the level; it stays.': 'Diese Leitung gehört zum Level; sie bleibt.', '{x} is wired by the level; it stays so.': '{x} ist vom Level verdrahtet; das bleibt so.', 'World': 'Welt', 'Board': 'Spielfeld', 'Proof ': 'Beweis', 'This world': 'Diese Welt',
+    'Next world ›': 'Nächste Welt ›', 'Which?': 'Welche?', 'Show statements': 'Aussagen zeigen', 'Hide statements': 'Aussagen verbergen', 'Tap {x}, then the Output.': 'Tippe {x} an, dann den Ausgang.', 'No variable in this goal to split with cases.': 'In diesem Ziel gibt es keine Variable, die cases aufteilen könnte.', 'No natural number in this goal for induction.': 'In diesem Ziel gibt es keine natürliche Zahl für eine Induktion.', plain: 'ohne', 'This wire belongs to the level; it stays.': 'Diese Leitung gehört zum Level; sie bleibt.', '{x} is wired by the level; it stays so.': '{x} ist vom Level verdrahtet; das bleibt so.', 'World': 'Welt', 'Board': 'Spielfeld', 'Proof ': 'Beweis', 'This world': 'Diese Welt',
     'New in this level': 'Neu in diesem Level', 'New in this proof': 'Neu in diesem Beweis', 'Solve the board first.': 'Erst das Spielfeld lösen.',
   })
   // What the moves and building blocks do, for the tips (by kind of board: level, bool, build, src, walk).
@@ -2989,6 +3050,10 @@
     'circuit:xor': ['Two inputs: true when exactly one is true.', 'Zwei Eingänge: true, wenn genau einer true ist.'],
     'circuit:nand': ['Two inputs: true unless both are true.', 'Zwei Eingänge: true, außer wenn beide true sind.'],
     'circuit:toNat': ['From a coin to a number: false is 0, true is 1. Numbers run on blue wires.', 'Von einer Münze zu einer Zahl: false ist 0, true ist 1. Zahlen laufen auf blauen Drähten.'],
+    'circuit:alwaysT': ['One input, and whatever it is: true. All the mass goes to true; the result is sure.', 'Ein Eingang, und was auch immer er ist: true. Die ganze Masse geht nach true; das Ergebnis ist sicher.'],
+    'circuit:alwaysF': ['One input, and whatever it is: false. All the mass goes to false.', 'Ein Eingang, und was auch immer er ist: false. Die ganze Masse geht nach false.'],
+    'circuit:bind': ['Two fields for maps Bool → Bool. The input on the left side chooses the field (T or F); the input on top goes through the map in that field.', 'Zwei Felder für Abbildungen Bool → Bool. Der Eingang an der linken Seite wählt das Feld (T oder F); der Eingang oben geht durch die Abbildung in diesem Feld.'],
+    'circuit:f': ['An unknown map: one field for a map, the same in every f on the board.', 'Eine unbekannte Abbildung: ein Feld für eine Abbildung, dieselbe in jedem f auf dem Spielfeld.'],
     'circuit:plus': ['Two numbers in: their sum.', 'Zwei Zahlen hinein: ihre Summe.'],
     'walk:north': ['One step up.', 'Ein Schritt nach oben.'], 'walk:south': ['One step down.', 'Ein Schritt nach unten.'],
     'walk:east': ['One step to the right.', 'Ein Schritt nach rechts.'], 'walk:west': ['One step to the left.', 'Ein Schritt nach links.'],
@@ -3138,7 +3203,9 @@
     const levelName = k => {
       const t = [...roots[k].querySelectorAll(':scope > .pg-text > .pg-lang:not(.pg-proof-text)')].find(e => e.lang === LANG)
       const em = t?.querySelector('p > :is(em, strong):first-child')
-      return em ? em.textContent.trim().replace(/[.:]$/, '') : ''
+      if (!em) return ''
+      const c = em.cloneNode(true); c.querySelectorAll('.katex-mathml, annotation').forEach(e => e.remove())
+      return c.textContent.trim().replace(/[.:]$/, '')
     }
     const clone = nodes => nodes.map(n => n.cloneNode(true))
     const levelText = k => clone([...roots[k].querySelectorAll(':scope > .pg-text > .pg-lang:not(.pg-proof-text)')])
@@ -3398,11 +3465,9 @@
     const group = (title, cards) => { if (cards.length) parts.push(el('h3', '', title), ...cards.map(moveCard)) }
     if (bool) group(tr('Moves of a sure coin'), Object.keys(MOVESB).map(m => ['bool:' + m, tr(MOVESB[m].label), mapPicture(k => String(MOVESB[m].f(k === 'true')))]))
     if (walk) group(tr('Moves on the grid'), Object.keys(LABEL0).map(m => ['walk:' + m, tr(LABEL0[m]), null]))
-    if (coin) group(tr('Moves on a coin'), ['id', 'not', 'heads', 'tails', 'toNat', 'payoff 5 -2'].map(spec => {
-      const m = parseMove(spec); return ['level:' + spec.split(' ')[0], m.label(), mapPicture(m.f, m.to)]
-    }))
-    if (coin) group(tr('Building blocks of the circuits'), [['src:coin', source('coin').label(), null], ['src:binom', 'B(n, p)', null],
-      ...Object.keys(FUNS).map(f => ['build:' + f, funLabel(f), el('div', 'pg-map-sym', FUNS[f].sym)])])
+    // the gates of the circuits (all worlds of coins and circuits are played as circuits)
+    group(tr('Building blocks of the circuits'), ['not', 'and', 'or', 'xor', 'alwaysT', 'alwaysF', 'toNat', 'plus', 'bind', 'f']
+      .filter(g => GATES[g]).map(g => ['circuit:' + g, tr(GATES[g].label), gateIcon(g)]))
     if (!SHOW) {
       parts.push(el('h2', '', tr('Tactics and rules')))
       // what the levels of this edition bring (ProbGame/Level.lean)

@@ -12,40 +12,36 @@ htmlSplit := .never
 
 :::en
 A coin shows `true` with probability $`p` and `false` with probability $`1 - p`, for any $`p`, as in
-Lean, where a coin is a random `Bool`. Its
-distribution is drawn as two bars. A distribution is the same as a probability measure: it gives
-each outcome its mass, here $`1 - p` and $`p`, and the masses add up to $`1`. A *move* applies a map
-$`f` to the outcome: the mass of each outcome goes to its image, and where several outcomes have the
-same image, their masses add up. What you get is the distribution of $`f(X)`, the *image measure* $`P \circ f^{-1}`:
-$`P(f(X) = b) = P(X \in f^{-1}(\{b\}))`. Tap a bar to see where its mass came from.
+Lean, where a coin is a random `Bool`. Its distribution gives each outcome its *mass*, here $`1 - p`
+and $`p`; the masses add up to $`1`. A distribution is the same as a probability measure.
 
-Bring the distribution into the shape of the target, drawn on the right (and dashed on the board when it
-lives on the same space). The masses are $`p` and $`1 - p`; the picture shows them for an example
-$`p`, which the slider changes.
-
-The coin is thrown. *Throw 100 times* throws it a hundred times, for the $`p` of the picture, and plays your moves on
-what it shows; the frequencies, the thin bars beside the masses, come close to the masses.
+The board is played from top to bottom, as in *Circuits*: at the top the coin `x ← coin p` is thrown,
+below it the gates, at the bottom the output box with the target. A gate applies a map $`f` to the
+outcome: the mass of each outcome goes to its image, and where several outcomes have the same image,
+their masses add up. What comes out is the distribution of $`f(X)`, the *image measure*
+$`P \circ f^{-1}`: $`P(f(X) = b) = P(X \in f^{-1}(\{b\}))`. The output box shows the target and your
+output, as masses and as a small histogram (the target dashed); beside the board the bars for an
+example $`p` (the slider changes it), and *Throw 100 times*: the coin thrown a hundred times, the
+frequencies close to the masses.
 :::
 
 :::de
 Eine Münze zeigt `true` mit Wahrscheinlichkeit $`p` und `false` mit Wahrscheinlichkeit $`1 - p`, für
-ein beliebiges $`p`, wie in Lean, wo eine Münze ein zufälliges `Bool` ist. Ihre Verteilung ist als zwei Säulen
-gezeichnet. Eine Verteilung ist dasselbe wie ein Wahrscheinlichkeitsmaß: Sie gibt jedem Ergebnis
-seine Masse, hier $`1 - p` und $`p`, und die Massen ergeben zusammen $`1`. Ein *Zug* wendet eine
-Abbildung $`f` auf das Ergebnis an: Die Masse jedes Ergebnisses geht zu seinem Bild, und wo mehrere
-Ergebnisse dasselbe Bild haben, addieren sich ihre Massen. Was herauskommt, ist die Verteilung von $`f(X)`, das
-*Bildmaß* $`P \circ f^{-1}`: $`P(f(X) = b) = P(X \in f^{-1}(\{b\}))`. Tippe eine Säule an, um zu
-sehen, woher ihre Masse kommt.
+ein beliebiges $`p`, wie in Lean, wo eine Münze ein zufälliges `Bool` ist. Ihre Verteilung gibt jedem
+Ergebnis seine *Masse*, hier $`1 - p` und $`p`; die Massen ergeben zusammen $`1`. Eine Verteilung ist
+dasselbe wie ein Wahrscheinlichkeitsmaß.
 
-Bring die Verteilung in die Form des Ziels, das rechts gezeichnet ist (und gestrichelt auf dem Spielfeld,
-wenn es auf demselben Raum lebt). Die Massen sind $`p` und $`1 - p`; das Bild zeigt sie für ein
-Beispiel-$`p`, das der Schieberegler ändert.
-
-Die Münze wird geworfen. *100-mal werfen* wirft sie hundertmal, für das $`p` des Bilds, und spielt deine Züge auf
-dem, was sie zeigt; die Häufigkeiten, die schmalen Säulen neben den Massen, kommen den Massen nahe.
+Das Spielfeld wird von oben nach unten gespielt, wie in *Schaltungen*: Oben wird die Münze
+`x ← coin p` geworfen, darunter die Bausteine, unten der Ausgabekasten mit dem Ziel. Ein Baustein wendet
+eine Abbildung $`f` auf das Ergebnis an: Die Masse jedes Ergebnisses geht zu seinem Bild, und wo mehrere
+Ergebnisse dasselbe Bild haben, addieren sich ihre Massen. Was herauskommt, ist die Verteilung von
+$`f(X)`, das *Bildmaß* $`P \circ f^{-1}`: $`P(f(X) = b) = P(X \in f^{-1}(\{b\}))`. Der Ausgabekasten
+zeigt Ziel und Ausgang, als Massen und als kleines Histogramm (das Ziel gestrichelt); neben dem
+Spielfeld die Säulen für ein Beispiel-$`p` (der Schieberegler ändert es) und *100-mal werfen*: die
+Münze hundertmal geworfen, die Häufigkeiten nahe bei den Massen.
 :::
 
-::::circuit (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : (not <$> coin p) true = σ p") (lemma := "coin_not_true") (new := "rw, coin_true, coin_false, map_true, Bool.not_true, Bool.not_false, Bool.cond_true, Bool.cond_false, zero_add, Bool.not_not") (play := "a=not; x>a.0; a>out")
+::::circuit (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : (not <$> coin p) true = σ p") (new := "rw, coin_true, coin_false, map_true, Bool.not_true, Bool.not_false, Bool.cond_true, Bool.cond_false, zero_add, Bool.not_not") (play := "a=not; x>a.0; a>out")
 :::en
 *Where does the mass go?* The coin `x` is thrown at the top; below, the output with the target:
 `false` with mass $`p`, `true` with $`1 - p`. Put a `not` between them. Then look at `true`: its mass
@@ -66,7 +62,7 @@ distribution `μ`. `p : I` says that $`p` lies in the unit interval $`I = [0, 1]
 and `↑p` is the number $`p` as a mass. Below is the *goal*, what is to be shown, and above it the
 hypotheses (here only `p`).
 
-The rule of moves:
+The rule of gates (maps):
 `map_true : (f <$> μ) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)`.
 The mass at `true` comes from `true` when `f true` is `true`, and from `false` when `f false` is
 `true`; `bif c then a else b` is `a` when `c` is `true`, and `b` when it is `false`.
@@ -74,7 +70,8 @@ The mass at `true` comes from `true` when `f true` is `true`, and from `false` w
 What is left is computing, one rule after another: `Bool.not_true : (!true) = false`,
 `Bool.not_false : (!false) = true`, `Bool.cond_false : (bif false then a else b) = b`,
 `Bool.cond_true : (bif true then a else b) = a`, `zero_add : 0 + a = a`, and
-`coin_false : (coin p) false = ↑(σ p)`. Your result becomes the lemma `coin_not_true`.
+`coin_false : (coin p) false = ↑(σ p)`. Keep this computation in mind: the boss of this world needs it
+again.
 
 *Tip.* `rw [map_true]`, `rw [Bool.not_true, Bool.not_false]`,
 `rw [Bool.cond_false, Bool.cond_true, zero_add]`, `rw [coin_false]` (type it, or tap the inventory,
@@ -84,12 +81,12 @@ and press *Run*).
 :::proofde
 *Jetzt der Beweis.* In Lean ist eine Verteilung ein Maß: `μ : DiscreteMeasure Bool` gibt jedem
 Punkt von `Bool` seine Masse, und `μ x` ist die Masse von `μ` in `x`, die Höhe seiner Säule. Die
-Münze ist `coin p`, und `f <$> μ` ist das Bildmaß von `μ` unter `f`: der Zug `f`, angewandt auf die
+Münze ist `coin p`, und `f <$> μ` ist das Bildmaß von `μ` unter `f`: der Baustein `f`, angewandt auf die
 Verteilung `μ`. `p : I` sagt, dass $`p` im Einheitsintervall $`I = [0, 1]` liegt, `σ p` ist
 $`1 - p`, und `↑p` ist die Zahl $`p` als Masse. Unten steht das *Ziel*, also das, was zu zeigen ist,
 und darüber die Annahmen (hier nur `p`).
 
-Die Regel der Züge:
+Die Regel der Bausteine (Abbildungen):
 `map_true : (f <$> μ) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)`.
 Die Masse bei `true` kommt von `true`, wenn `f true` gleich `true` ist, und von `false`, wenn
 `f false` gleich `true` ist; `bif c then a else b` ist `a`, wenn `c` gleich `true` ist, und `b`,
@@ -98,7 +95,8 @@ wenn es `false` ist.
 Der Rest ist Rechnen, eine Regel nach der anderen: `Bool.not_true : (!true) = false`,
 `Bool.not_false : (!false) = true`, `Bool.cond_false : (bif false then a else b) = b`,
 `Bool.cond_true : (bif true then a else b) = a`, `zero_add : 0 + a = a` und
-`coin_false : (coin p) false = ↑(σ p)`. Dein Ergebnis wird das Lemma `coin_not_true`.
+`coin_false : (coin p) false = ↑(σ p)`. Merk dir diese Rechnung: Der Endgegner dieser Welt braucht sie
+noch einmal.
 
 *Tipp.* `rw [map_true]`, `rw [Bool.not_true, Bool.not_false]`,
 `rw [Bool.cond_false, Bool.cond_true, zero_add]`, `rw [coin_false]`.
@@ -262,7 +260,7 @@ rw [coin_true, chance_eq]
 :::
 ::::
 
-::::level (start := "bernoulli p") (target := "pure true") (moves := "not, heads") (lean := "(bernoulli p h).map (fun _ => true) = pure true") (leanTarget := "DiscreteMeasure.pure true") (proof := "(p : I) (b : Bool) : (fun _ => b) <$> coin p = pure b") (lemma := "coin_const") (new := "coin_total, pure_true") (play := "heads")
+::::circuit (inputs := "x") (gates := "not, alwaysT") (coins := "p") (target := "pure true") (context := "Lean/Rules.lean") (proof := "(p : I) (b : Bool) : (fun _ => b) <$> coin p = pure b") (lemma := "coin_const") (new := "coin_total, pure_true") (play := "a=alwaysT; x>a.0; a>out")
 :::en
 *Always `true`.* A constant map sends both outcomes to the same point: all the mass goes together.
 The result is sure, a point mass (Dirac measure).
@@ -319,19 +317,19 @@ rw [Bool.cond_true, Bool.cond_true, Bool.cond_true, coin_total]
 :::
 ::::
 
-::::level (start := "bernoulli p") (target := "pure false") (moves := "not, heads") (lean := "((bernoulli p h).map (fun _ => true)).map not = pure false") (leanTarget := "DiscreteMeasure.pure false") (proof := "(p : I) : not <$> ((fun _ => true) <$> coin p) = pure false") (new := "rfl, map_pure") (play := "heads, not")
+::::circuit (inputs := "x") (gates := "not, alwaysT") (coins := "p") (target := "pure false") (context := "Lean/Rules.lean") (proof := "(p : I) : not <$> ((fun _ => true) <$> coin p) = pure false") (new := "rfl, map_pure") (play := "a=alwaysT; b=not; x>a.0; a>b.0; b>out")
 :::en
-*Surely `false`, but there is no “always `false`”.* Two moves one after the other: the image measure of
+*Surely `false`, but there is no “always `false`”.* Two gates one after the other: the image measure of
 the image measure is the image measure of the composition, $`(P \circ f^{-1}) \circ g^{-1} = P \circ (g \circ f)^{-1}`.
 :::
 
 :::de
-*Sicher `false`, aber es gibt kein „immer `false`“.* Zwei Züge nacheinander: Das Bildmaß des Bildmaßes ist
+*Sicher `false`, aber es gibt kein „immer `false`“.* Zwei Bausteine nacheinander: Das Bildmaß des Bildmaßes ist
 das Bildmaß der Verkettung, $`(P \circ f^{-1}) \circ g^{-1} = P \circ (g \circ f)^{-1}`.
 :::
 
 :::proofen
-Two new tools. The rule `map_pure : f <$> pure a = pure (f a)`: a move on a point mass moves the
+Two new tools. The rule `map_pure : f <$> pure a = pure (f a)`: a gate on a point mass moves the
 point. And the tactic `rfl`, which closes a goal whose two sides are the same after computing: `!true`
 is `false`.
 
@@ -340,7 +338,7 @@ is `false`.
 :::
 
 :::proofde
-Zwei neue Werkzeuge. Die Regel `map_pure : f <$> pure a = pure (f a)`: Ein Zug auf einer
+Zwei neue Werkzeuge. Die Regel `map_pure : f <$> pure a = pure (f a)`: Ein Baustein auf einer
 Punktmasse verschiebt den Punkt. Und die Taktik `rfl`, die ein Ziel schließt, dessen beide Seiten
 nach Ausrechnen gleich sind: `!true` ist `false`.
 
@@ -356,7 +354,7 @@ rfl
 :::
 ::::
 
-::::level (start := "bernoulli p") (target := "nat 1:p 0:1-p") (moves := "not, toNat") (lean := "(bernoulli p h).map Bool.toNat 1 = p") (leanTarget := "map Bool.toNat (coin p)") (proof := "(p : I) : Bool.toNat <$> coin p = (fun b => if b then 1 else 0) <$> coin p") (new := "congr, funext, <;>") (play := "toNat")
+::::circuit (inputs := "x") (gates := "not, toNat") (coins := "p") (target := "nat 0:1-p 1:p") (context := "Lean/Rules.lean") (proof := "(p : I) : Bool.toNat <$> coin p = (fun b => if b then 1 else 0) <$> coin p") (new := "congr, funext, <;>") (play := "a=toNat; x>a.0; a>out")
 :::en
 *From sides to numbers.* `Bool.toNat` counts `true` as $`1` and `false` as $`0`: the distribution
 moves to the natural numbers. This is how a coin becomes a random number.
@@ -395,7 +393,7 @@ cases b <;> rfl
 :::
 ::::
 
-::::level (start := "bernoulli p") (target := "nat 0:1") (moves := "not, heads, tails, toNat") (lean := "((bernoulli p h).map (fun _ => false)).map Bool.toNat = pure 0") (leanTarget := "DiscreteMeasure.pure 0") (proof := "(p : I) : Bool.toNat <$> ((fun _ => false) <$> coin p) = pure 0") (play := "tails, toNat")
+::::circuit (inputs := "x") (gates := "not, alwaysT, alwaysF, toNat") (coins := "p") (target := "pure 0") (context := "Lean/Rules.lean") (proof := "(p : I) : Bool.toNat <$> ((fun _ => false) <$> coin p) = pure 0") (play := "a=alwaysF; b=toNat; x>a.0; a>b.0; b>out")
 :::en
 *Surely zero.* A point mass on the numbers, however you get there.
 :::
@@ -420,51 +418,56 @@ rfl
 ::::
 
 :::::only (edition := "main")
-::::level (start := "bernoulli p") (target := "bernoulli 1-p") (moves := "not, heads, tails, toNat") (lean := "(bernoulli p h).map not = bernoulli (1 - p) tsub_le_self") (leanTarget := "coin (σ p)") (proof := "(p : I) : not <$> coin p = coin (σ p)") (lemma := "coin_not") (play := "not")
+::::circuit (inputs := "x") (gates := "not, alwaysT, alwaysF, toNat") (coins := "p") (target := "bernoulli 1-p") (context := "Lean/Rules.lean") (proof := "(p : I) : not <$> coin p = coin (σ p)") (lemma := "coin_not") (play := "a=not; x>a.0; a>out")
 :::en
-*The boss: flip the coin.* Not just the bar at `true`: the whole coin.
+*The boss: flip the coin.* Not just the mass at `true`: the whole coin.
 :::
 
 :::de
-*Der Endgegner: Dreh die Münze um.* Nicht nur die Säule bei `true`: die ganze Münze.
+*Der Endgegner: Dreh die Münze um.* Nicht nur die Masse bei `true`: die ganze Münze.
 :::
 
 :::proofen
-Flipping turns the coin `p` into the coin $`1 - p`. Two distributions on `Bool` are the same when
-their bars at `true` are (`bool_ext`, your lemma), and you know the bar at `true` of the flipped
-coin (`coin_not_true`, from *Where does the mass go?*). Your result becomes the lemma `coin_not`, which the next worlds use
-all the time.
+Flipping turns the coin `p` into the coin $`1 - p`: the whole coin, not only its mass at `true`.
+Everything of this world comes together: two distributions on `Bool` are the same when their masses
+at `true` are (`bool_ext`, your lemma), and the mass at `true` of the flipped coin you computed in
+*Where does the mass go?*. Your result becomes the lemma `coin_not`, which the next worlds use all
+the time.
 
-*Tip.* `apply bool_ext`, then `rw` with your lemma and `coin_true`.
+*Tip.* `apply bool_ext`, then the computation of the first level, and at the end `coin_true`.
 :::
 
 :::proofde
-Umdrehen macht aus der Münze $`p` die Münze $`1 - p`. Zwei Verteilungen auf `Bool` sind gleich, wenn
-ihre Säulen bei `true` gleich sind (`bool_ext`, dein Lemma), und die Säule bei `true` der umgedrehten
-Münze kennst du (`coin_not_true`, aus *Wohin geht die Masse?*). Dein Ergebnis wird das Lemma `coin_not`, das die nächsten
-Welten ständig benutzen.
+Umdrehen macht aus der Münze $`p` die Münze $`1 - p`: die ganze Münze, nicht nur ihre Masse bei
+`true`. Alles aus dieser Welt kommt zusammen: Zwei Verteilungen auf `Bool` sind gleich, wenn ihre
+Massen bei `true` gleich sind (`bool_ext`, dein Lemma), und die Masse bei `true` der umgedrehten Münze
+hast du in *Wohin geht die Masse?* ausgerechnet. Dein Ergebnis wird das Lemma `coin_not`, das die
+nächsten Welten ständig benutzen.
 
-*Tipp.* `apply bool_ext`, dann `rw` mit deinem Lemma und `coin_true`.
+*Tipp.* `apply bool_ext`, dann die Rechnung des ersten Levels, und am Ende `coin_true`.
 :::
 :::solution
 ```
 apply bool_ext
-rw [coin_not_true, coin_true]
+rw [map_true]
+rw [Bool.not_true, Bool.not_false]
+rw [Bool.cond_false, Bool.cond_true, zero_add]
+rw [coin_false, coin_true]
 ```
 :::
 ::::
 :::::
 
 :::::only (edition := "show")
-::::level (start := "bernoulli p") (target := "nat 1:1-p 0:p") (moves := "not, heads, tails, toNat") (play := "not, toNat")
+::::circuit (inputs := "x") (gates := "not, alwaysT, alwaysF, toNat") (coins := "p") (target := "nat 0:p 1:1-p") (context := "Lean/Rules.lean") (play := "a=not; b=toNat; x>a.0; a>b.0; b>out")
 :::en
-*The boss: count the `false`.* $`1` when the coin shows `false`, $`0` when it shows `true`. Two moves
+*The boss: count the `false`.* $`1` when the coin shows `false`, $`0` when it shows `true`. Two gates
 of this world, one after the other.
 :::
 
 :::de
 *Der Endgegner: Zähl die `false`.* $`1`, wenn die Münze `false` zeigt, $`0`, wenn sie `true` zeigt.
-Zwei Züge dieser Welt, einer nach dem anderen.
+Zwei Bausteine dieser Welt, einer nach dem anderen.
 :::
 ::::
 :::::

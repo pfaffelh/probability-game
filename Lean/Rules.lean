@@ -99,6 +99,11 @@ theorem map_true (f : Bool → Bool) (μ : DiscreteMeasure Bool) :
     tsum_fintype, Fintype.sum_bool]
   cases f true <;> cases f false <;> simp [Set.indicator]
 
+/-- The mass of a bind at `true`: through `true` and through `false` (Coins that wait). -/
+theorem bind_true (μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) :
+    (μ >>= f) true = μ true * f true true + μ false * f false true := by
+  rw [← MeasureTheory.DiscreteMeasure.bind_eq_bind, MeasureTheory.DiscreteMeasure.bind_apply, tsum_fintype, Fintype.sum_bool]
+
 /-- A coin whose result is not used changes nothing. -/
 theorem coin_unused {β : Type} (p : I) (ν : DiscreteMeasure β) : (do let _ ← coin p; ν) = ν :=
   MeasureTheory.DiscreteMeasure.bind_const_of_hasSum (MeasureTheory.DiscreteMeasure.hasSum_coin p) ν
