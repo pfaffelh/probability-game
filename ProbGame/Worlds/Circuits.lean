@@ -187,114 +187,36 @@ cases x <;> rfl
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "and, or") (table := "0001") (goal := "x && y") (proof := "(x y : Bool) : (x && y) = (bif x then (bif y then true else false) else (bif y then false else false))") (play := "a=and; x>a.0; y>a.1; a>out")
+::::circuit (inputs := "x y") (gates := "and, or, not") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : ((x || y) && !(x && y)) = (bif x then (bif y then false else true) else (bif y then true else false))") (new := "decide") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out")
 :::en
-*Both.* The output is `true` only when both inputs are. Four rows now: one for each pair of values.
+*Exactly one.* Two inputs now, and four rows: one for each pair of values. `true` when exactly one
+input is `true`: at least one, but not both. In Lean this is `xor`, written `x ^^ y`.
 :::
 
 :::de
-*Beide.* Der Ausgang ist nur `true`, wenn beide Eingänge es sind. Jetzt vier Zeilen: eine für jedes
-Paar von Werten.
+*Genau eines.* Jetzt zwei Eingänge und vier Zeilen: eine für jedes Paar von Werten. `true`, wenn
+genau ein Eingang `true` ist: mindestens einer, aber nicht beide. In Lean ist das `xor`, geschrieben
+`x ^^ y`.
 :::
 
 :::proofen
-The table on the right has four rows now, one for each pair of values: first `x` decides, then `y`,
-`bif x then (bif y then true else false) else (bif y then false else false)`. `cases x` makes two goals; in each, `cases y`
-makes two more: four goals, the four rows. With `<;>` in one line: `cases x <;> cases y <;> rfl`.
+The table has four rows now, one for each pair of values: first `x` decides, then `y`, a `bif` in
+each branch of a `bif`. `cases x` makes two goals; in each, `cases y` makes two more: four goals, the
+four rows. With `<;>` in one line: `cases x <;> cases y <;> rfl`. The tactic `decide` does that for
+you: it reduces a statement about `Bool` until it is `true` or `false`. `decide +revert` first takes
+the variables into the statement, here `∀ x y, …`, and so checks every row.
 
-*Tip.* `cases x <;> cases y <;> rfl`.
+*Tip.* `cases x <;> cases y <;> rfl`, or `decide +revert`.
 :::
 
 :::proofde
-Die Tafel rechts hat jetzt vier Zeilen, eine für jedes Paar von Werten: erst entscheidet `x`, dann
-`y`, `bif x then (bif y then true else false) else (bif y then false else false)`. `cases x` macht zwei Ziele; in jedem
-macht `cases y` zwei weitere: vier Ziele, die vier Zeilen. Mit `<;>` in einer Zeile:
-`cases x <;> cases y <;> rfl`.
+Die Tafel hat jetzt vier Zeilen, eine für jedes Paar von Werten: erst entscheidet `x`, dann `y`, ein
+`bif` in jedem Zweig eines `bif`. `cases x` macht zwei Ziele; in jedem macht `cases y` zwei weitere:
+vier Ziele, die vier Zeilen. Mit `<;>` in einer Zeile: `cases x <;> cases y <;> rfl`. Die Taktik
+`decide` macht das für dich: Sie reduziert eine Aussage über `Bool`, bis sie `true` oder `false` ist.
+`decide +revert` nimmt zuerst die Variablen in die Aussage, hier `∀ x y, …`, und prüft so jede Zeile.
 
-*Tipp.* `cases x <;> cases y <;> rfl`.
-:::
-:::solution
-```
-cases x <;> cases y <;> rfl
-```
-:::
-::::
-
-::::circuit (inputs := "x y") (gates := "and, not") (table := "0111") (goal := "x || y") (proof := "(x y : Bool) : (!(!x && !y)) = (bif x then (bif y then true else true) else (bif y then true else false))") (new := "decide") (play := "a=not; b=not; c=and; d=not; x>a.0; y>b.0; a>c.0; b>c.1; c>d.0; d>out")
-:::en
-*Or, without or.* At least one `true`, with `and` and `not` only. (Not both `false`.)
-:::
-
-:::de
-*Oder, ohne oder.* Mindestens einmal `true`, nur mit `und` und `nicht`. (Nicht beide `false`.)
-:::
-
-:::proofen
-This is one of De Morgan's laws: `!(!x && !y) = (x || y)`. By hand: `cases x <;> cases y <;> rfl`,
-the four rows of the table. The tactic `decide` does that for you: it
-reduces a statement about `Bool` until it is `true` or `false`. `decide +revert` first takes the
-variables into the statement, here `∀ x y, …`, and so checks every row.
-
-*Tip.* `decide +revert`.
-:::
-
-:::proofde
-Das ist eine der Regeln von De Morgan: `!(!x && !y) = (x || y)`. Von Hand:
-`cases x <;> cases y <;> rfl`, die vier Zeilen der Tafel. Die Taktik `decide` macht das für dich: Sie
-reduziert eine Aussage über `Bool`, bis sie `true` oder `false` ist. `decide +revert` nimmt zuerst die
-Variablen in die Aussage, hier `∀ x y, …`, und prüft so jede Zeile.
-
-*Tipp.* `decide +revert`.
-:::
-:::solution
-```
-decide +revert
-```
-:::
-::::
-
-::::circuit (inputs := "x y") (gates := "and, or, not") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : ((x || y) && !(x && y)) = (bif x then (bif y then false else true) else (bif y then true else false))") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out")
-:::en
-*Exactly one.* `true` when exactly one input is `true`: at least one, but not both. In Lean this is
-`xor`, written `x ^^ y`.
-:::
-
-:::de
-*Genau eines.* `true`, wenn genau ein Eingang `true` ist: mindestens einer, aber nicht beide. In Lean
-ist das `xor`, geschrieben `x ^^ y`.
-:::
-
-:::proofen
-*Tip.* `decide +revert`.
-:::
-
-:::proofde
-*Tipp.* `decide +revert`.
-:::
-:::solution
-```
-decide +revert
-```
-:::
-::::
-
-::::circuit (inputs := "x y") (gates := "and, or, not, xor") (table := "1001") (goal := "x == y") (proof := "(x y : Bool) : (!(x ^^ y)) = (bif x then (bif y then true else false) else (bif y then false else true))") (play := "a=xor; b=not; x>a.0; y>a.1; a>b.0; b>out")
-:::en
-*The same.* `true` when both inputs are the same: both `true`, or both `false`. New: what you built
-in the last level is now a gate of its own, `xor`.
-:::
-
-:::de
-*Gleich.* `true`, wenn beide Eingänge gleich sind: beide `true`, oder beide `false`. Neu: Was du im
-letzten Level gebaut hast, ist jetzt ein eigener Baustein, `xor`.
-:::
-
-:::proofen
-*Tip.* `decide +revert`.
-:::
-
-:::proofde
-*Tipp.* `decide +revert`.
+*Tipp.* `cases x <;> cases y <;> rfl`, oder `decide +revert`.
 :::
 :::solution
 ```
