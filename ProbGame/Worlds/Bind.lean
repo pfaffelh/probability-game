@@ -202,7 +202,7 @@ for `y`. `false` only when all three tries fail: $`(1 - p)^3`.
 :::proofen
 `bind_true` twice. After the first, the way through `true` is
 `(do let y ← (bif true then pure true else coin p); …) true`: with `Bool.cond_true` it becomes
-`(do let y ← pure true; …)`, and `pure_bind` (from *Draw, then Compute*) throws the point mass away:
+`(do let y ← pure true; …)`, and `pure_bind` (from *Building with Coins*) throws the point mass away:
 `(bif true then pure true else coin p) true`. The way through `false` is a bind again: `bind_true`
 once more.
 
@@ -214,7 +214,7 @@ then `rw [bind_true, Bool.cond_true, Bool.cond_false, pure_true, Bool.cond_true,
 :::proofde
 Zweimal `bind_true`. Nach dem ersten ist der Weg über `true`
 `(do let y ← (bif true then pure true else coin p); …) true`: Mit `Bool.cond_true` wird daraus
-`(do let y ← pure true; …)`, und `pure_bind` (aus *Erst ziehen, dann rechnen*) wirft die Punktmasse weg:
+`(do let y ← pure true; …)`, und `pure_bind` (aus *Bauen mit Münzen*) wirft die Punktmasse weg:
 `(bif true then pure true else coin p) true`. Der Weg über `false` ist wieder ein bind: noch einmal
 `bind_true`.
 

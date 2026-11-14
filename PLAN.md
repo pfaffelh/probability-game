@@ -60,7 +60,7 @@ with a small histogram (target dashed, output filled) and the masses `p`, `1 - p
 | 8 | Surely zero | | |
 | 9 | Boss: flipping a coin | `coin_not`: `bool_ext` and the computation of level 1 (5 lines) | |
 
-## World 2 — Draw, then Compute (Lean leads)
+## (World 2 — Draw, then Compute: dissolved on 2026-11-14 into world 3, see below)
 
 Monad laws as rules, do-notation explained (`do`, `←`, `>>=`, `fun x => …`). The boards are one-coin
 circuits too (as world 1); where the statement has a fixed number of `not`, the first ones are given.
@@ -106,3 +106,11 @@ Bosses: ∧ the majority (hardest board), 1 `coin_not` (5 lines, all of the worl
 
 Open: the Lean-only levels of world ∧ (`x = true ∨ x = false`, the four maps), `focus` per level,
 the monad branch (still the old worlds).
+
+## 2026-11-14 evening: Draw, then Compute dissolved
+
+Its boards repeated earlier ones (not, a wire, two nots, always T). Its rules now come in
+*Building with Coins* where first needed: `simp only`, `bind_map_left` (level 2), `bind_assoc`,
+`pure_bind` (level 7, `binom p 2`), `bind_pure` (`binom_add`); the do/←/>>= text is in its intro.
+`map_eq_pure_bind` is gone (nothing needed it). Worlds now: ∧, 1 One Coin, 2 Building with Coins,
+3 Coins that Wait.

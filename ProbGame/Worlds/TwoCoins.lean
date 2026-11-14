@@ -25,7 +25,11 @@ account.
 
 :::proofen
 The circuit, read from top to bottom, is a `do` block in Lean: each coin a line `let x ← coin p`,
-and at the end `pure (…)` with what the gates compute.
+which *draws* `x` from the distribution `coin p`, and at the end `pure (…)`, a sure result, with what
+the gates compute. A single gate is such a block too: `f <$> μ` is `do let x ← μ; pure (f x)`. Without
+the words of `do`, the same reads `μ >>= fun x => pure (f x)`: `>>=` (*bind*) passes what `μ` drew to
+the function after it, and `fun x => …` is that function. The proofs learn the rules of `do` blocks,
+the *monad laws*, one at a time, when a level needs them.
 :::
 
 :::de
@@ -44,7 +48,12 @@ berücksichtigt das.
 
 :::proofde
 Die Schaltung, von oben nach unten gelesen, ist ein `do`-Block in Lean: jede Münze eine Zeile
-`let x ← coin p`, und am Ende `pure (…)` mit dem, was die Bausteine rechnen.
+`let x ← coin p`, die `x` aus der Verteilung `coin p` *zieht*, und am Ende `pure (…)`, ein sicheres
+Ergebnis, mit dem, was die Bausteine rechnen. Auch ein einzelner Baustein ist so ein Block: `f <$> μ`
+ist `do let x ← μ; pure (f x)`. Ohne die Wörter von `do` liest sich dasselbe
+`μ >>= fun x => pure (f x)`: `>>=` (*bind*) gibt, was `μ` gezogen hat, an die Funktion danach weiter,
+und `fun x => …` ist diese Funktion. Die Beweise lernen die Regeln der `do`-Blöcke, die
+*Monadengesetze*, eine nach der anderen, wenn ein Level sie braucht.
 :::
 
 ::::circuit (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:p^2 false:1-p^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && y)) = coin (p * p)") (new := "coin_and") (play := "a=and; x>a.0; y>a.1; a>out")
@@ -57,15 +66,14 @@ Die Schaltung, von oben nach unten gelesen, ist ein `do`-Block in Lean: jede Mü
 :::
 
 :::proofen
-Your circuit, read from top to bottom, is a `do` block, as in *Draw, then Compute*: `let x ← coin p`
+Your circuit, read from top to bottom, is a `do` block: `let x ← coin p`
 throws a coin and calls its result `x`, and `pure` at the end is the result. Now there are two
 throws, and each `←` is a new throw, independent of the others. The new rule is independence itself:
 `coin_and : (do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)`.
 :::
 
 :::proofde
-Dein Schaltplan, von oben nach unten gelesen, ist ein `do`-Block, wie in *Erst ziehen, dann
-rechnen*: `let x ← coin p` wirft eine Münze und nennt ihr Ergebnis `x`, und `pure` am Ende ist das
+Dein Schaltplan, von oben nach unten gelesen, ist ein `do`-Block: `let x ← coin p` wirft eine Münze und nennt ihr Ergebnis `x`, und `pure` am Ende ist das
 Ergebnis. Jetzt gibt es zwei Würfe, und jedes `←` ist ein neuer Wurf, unabhängig von den anderen. Die
 neue Regel ist die Unabhängigkeit selbst:
 `coin_and : (do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)`.
@@ -77,7 +85,7 @@ rw [coin_and]
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:p(1-p) false:1-p(1-p)") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && !y)) = coin (p * σ p)") (play := "a=not; b=and; y>a.0; x>b.0; a>b.1; b>out")
+::::circuit (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:p(1-p) false:1-p(1-p)") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && !y)) = coin (p * σ p)") (new := "simp only, bind_map_left") (play := "a=not; b=and; y>a.0; x>b.0; a>b.1; b>out")
 :::en
 *First `true`, then `false`.*
 :::
@@ -88,18 +96,26 @@ rw [coin_and]
 
 :::proofen
 Work backwards, on the right side: `rw [← coin_and]` uses the rule from right to left, and
-`rw [← coin_not]` turns `coin (σ p)` into `not <$> coin p`. Then a move sits inside the `do` block,
-and `bind_map_left` moves it into the result, as in *Draw, then Compute*; inside a `do` block, with
-`simp only`.
+`rw [← coin_not]` turns `coin (σ p)` into `not <$> coin p`. Then a gate sits inside the `do` block,
+in `let y ← not <$> coin p`. The new rule
+`bind_map_left : (do let x ← f <$> μ; g x) = (do let x ← μ; g (f x))` takes the gate out of the draw
+and into what is computed. But it is needed after `let x ← coin p`, where the name `x` of the `do`
+block occurs, and there `rw` cannot rewrite. The new tactic `simp only [rules]` can: it rewrites with
+the rules everywhere, also inside `do` blocks, as often as it can, and closes the goal when the two
+sides become the same.
 
 *Tip.* `rw [← coin_and]`, `rw [← coin_not]`, `simp only [bind_map_left]`.
 :::
 
 :::proofde
 Arbeite rückwärts, auf der rechten Seite: `rw [← coin_and]` benutzt die Regel von rechts nach
-links, und `rw [← coin_not]` macht aus `coin (σ p)` ein `not <$> coin p`. Dann steht ein Zug im
-`do`-Block, und `bind_map_left` schiebt ihn ins Ergebnis, wie in *Erst ziehen, dann rechnen*;
-innerhalb eines `do`-Blocks mit `simp only`.
+links, und `rw [← coin_not]` macht aus `coin (σ p)` ein `not <$> coin p`. Dann steht ein Baustein im
+`do`-Block, in `let y ← not <$> coin p`. Die neue Regel
+`bind_map_left : (do let x ← f <$> μ; g x) = (do let x ← μ; g (f x))` holt den Baustein aus dem Ziehen
+heraus und in das Rechnen hinein. Gebraucht wird sie aber nach `let x ← coin p`, wo der Name `x` des
+`do`-Blocks vorkommt, und dort kann `rw` nicht umschreiben. Die neue Taktik `simp only [Regeln]` kann
+es: Sie schreibt mit den Regeln überall um, auch in `do`-Blöcken, so oft es geht, und schließt das
+Ziel, wenn beide Seiten gleich werden.
 
 *Tipp.* `rw [← coin_and]`, `rw [← coin_not]`, `simp only [bind_map_left]`.
 :::
@@ -244,7 +260,7 @@ cases x <;> cases y <;> rfl
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "toNat, plus, and, or, not") (coins := "p p") (target := "nat 0:(1-p)^2 1:2p(1-p) 2:p^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x.toNat + y.toNat)) = binom p 2") (new := "binom_zero, binom_succ, add_zero") (play := "a=toNat; b=toNat; c=plus; x>a.0; y>b.0; a>c.0; b>c.1; c>out")
+::::circuit (inputs := "x y") (gates := "toNat, plus, and, or, not") (coins := "p p") (target := "nat 0:(1-p)^2 1:2p(1-p) 2:p^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x.toNat + y.toNat)) = binom p 2") (new := "binom_zero, binom_succ, bind_assoc, pure_bind, add_zero") (play := "a=toNat; b=toNat; c=plus; x>a.0; y>b.0; a>c.0; b>c.1; c>out")
 :::en
 *The number of `true`.* From coins to numbers ($`0` and $`1`), and add them: the binomial distribution $`B(2, p)`.
 :::
@@ -257,9 +273,10 @@ cases x <;> cases y <;> rfl
 The binomial distribution `binom p n` is defined as the natural numbers in the Natural Number Game:
 by zero and successor. `binom_zero : binom p 0 = pure 0`: no throw, no `true`.
 `binom_succ : binom p (n + 1) = do let X ← coin p; let Y ← binom p n; pure (X.toNat + Y)`: one throw
-more. To clean up `do` blocks, the rules of *Draw, then Compute*: `bind_assoc` (a `do` block in a
-`do` block is one `do` block) and `pure_bind : (do let x ← pure a; f x) = f a`; new is
-`add_zero : n + 0 = n`.
+more. To clean up `do` blocks, two new rules: `bind_assoc` (a `do` block in a `do` block is one `do`
+block: `(do let y ← (do let x ← μ; f x); g y) = (do let x ← μ; let y ← f x; g y)`) and
+`pure_bind : (do let x ← pure a; f x) = f a` (drawing from a point mass `pure a` always gives `a`);
+and `add_zero : n + 0 = n`.
 
 *Tip.* `rw [binom_succ, binom_succ, binom_zero]`, then `simp only [bind_assoc, pure_bind, add_zero]`.
 :::
@@ -268,9 +285,10 @@ more. To clean up `do` blocks, the rules of *Draw, then Compute*: `bind_assoc` (
 Die Binomialverteilung `binom p n` ist definiert wie die natürlichen Zahlen im Natural Number Game:
 durch Null und Nachfolger. `binom_zero : binom p 0 = pure 0`: kein Wurf, kein `true`.
 `binom_succ : binom p (n + 1) = do let X ← coin p; let Y ← binom p n; pure (X.toNat + Y)`: ein Wurf
-mehr. Zum Aufräumen von `do`-Blöcken die Regeln aus *Erst ziehen, dann rechnen*: `bind_assoc` (ein
-`do`-Block in einem `do`-Block ist ein `do`-Block) und `pure_bind : (do let x ← pure a; f x) = f a`;
-neu ist `add_zero : n + 0 = n`.
+mehr. Zum Aufräumen von `do`-Blöcken zwei neue Regeln: `bind_assoc` (ein `do`-Block in einem
+`do`-Block ist ein `do`-Block: `(do let y ← (do let x ← μ; f x); g y) = (do let x ← μ; let y ← f x; g y)`)
+und `pure_bind : (do let x ← pure a; f x) = f a` (aus einer Punktmasse `pure a` zieht man immer `a`);
+und `add_zero : n + 0 = n`.
 
 *Tipp.* `rw [binom_succ, binom_succ, binom_zero]`, dann `simp only [bind_assoc, pure_bind, add_zero]`.
 :::
@@ -358,7 +376,7 @@ simp only [bind_assoc, pure_bind, add_assoc]
 :::
 ::::
 
-::::circuit (inputs := "x y z w") (gates := "plus") (coins := "p p p p") (target := "nat 0:(1-p)^4 1:4p(1-p)^3 2:6p^2(1-p)^2 3:4p^3(1-p) 4:p^4") (start := "a=toNat@62,150; b=toNat@176,150; c=plus@119,255; d=toNat@304,150; e=toNat@418,150; f=plus@361,255; x>a.0; y>b.0; a>c.0; b>c.1; z>d.0; w>e.0; d>f.0; e>f.1") (context := "Lean/Rules.lean") (proof := "(p : I) (n m : ℕ) : (do let X ← binom p n; let Y ← binom p m; pure (X + Y)) = binom p (n + m)") (lemma := "binom_add") (play := "g=plus; c>g.0; f>g.1; g>out")
+::::circuit (inputs := "x y z w") (gates := "plus") (coins := "p p p p") (target := "nat 0:(1-p)^4 1:4p(1-p)^3 2:6p^2(1-p)^2 3:4p^3(1-p) 4:p^4") (start := "a=toNat@62,150; b=toNat@176,150; c=plus@119,255; d=toNat@304,150; e=toNat@418,150; f=plus@361,255; x>a.0; y>b.0; a>c.0; b>c.1; z>d.0; w>e.0; d>f.0; e>f.1") (context := "Lean/Rules.lean") (proof := "(p : I) (n m : ℕ) : (do let X ← binom p n; let Y ← binom p m; pure (X + Y)) = binom p (n + m)") (lemma := "binom_add") (new := "bind_pure") (play := "g=plus; c>g.0; f>g.1; g>out")
 :::en
 *$`B(2, p) * B(2, p) = B(4, p)`.* Two independent binomials, both already built: add them. The sum
 of independent random numbers has the *convolution* $`*` of their distributions as its distribution.
@@ -371,7 +389,9 @@ sie. Die Summe unabhängiger Zufallszahlen hat die *Faltung* $`*` ihrer Verteilu
 
 :::proofen
 *For all $`n` and $`m`.* On the board it was $`B(2, p) * B(2, p) = B(4, p)`; here it is for all $`n` and $`m`: the
-sum of independent binomials is binomial. Here `bind_pure` from *Draw, then Compute* is needed again.
+sum of independent binomials is binomial. A new rule: to draw and give back what was drawn changes
+nothing, `bind_pure : (μ >>= fun x => pure x) = μ`. (In a `do` block, Lean shortens
+`let x ← μ; pure x` to `μ` at once; so the rule is written with `>>=`.)
 
 *Tip.* Induction on `m`. Case $`0`: `rw [binom_zero]`, `simp only [pure_bind, add_zero, bind_pure]`.
 Case $`m + 1`: write `binom p (m + 1)` with `← binom_succ' p m`, then `n + (m + 1)` as
@@ -381,8 +401,9 @@ with `simp only [bind_assoc, pure_bind, add_assoc]`.
 
 :::proofde
 *Für alle $`n` und $`m`.* Auf dem Spielfeld war es $`B(2, p) * B(2, p) = B(4, p)`; hier gilt es für alle $`n`
-und $`m`: Die Summe unabhängiger Binomialverteilungen ist binomial. Hier wird wieder `bind_pure` aus
-*Erst ziehen, dann rechnen* gebraucht.
+und $`m`: Die Summe unabhängiger Binomialverteilungen ist binomial. Eine neue Regel: Ziehen und das
+Gezogene zurückgeben ändert nichts, `bind_pure : (μ >>= fun x => pure x) = μ`. (In einem `do`-Block
+kürzt Lean `let x ← μ; pure x` sofort zu `μ`; deshalb steht die Regel mit `>>=`.)
 
 *Tipp.* Induktion nach `m`. Fall $`0`: `rw [binom_zero]`, `simp only [pure_bind, add_zero, bind_pure]`.
 Fall $`m + 1`: schreibe `binom p (m + 1)` mit `← binom_succ' p m` um, dann `n + (m + 1)` als
