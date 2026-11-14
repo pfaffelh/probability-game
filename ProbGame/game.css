@@ -584,3 +584,5 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 .pg-ccaption { font-size: 11px; font-weight: normal; }
 
 .pg-ccol-hit { fill: transparent !important; stroke: none !important; cursor: pointer; }
+.pg-cfield { font: 10.5px var(--verso-code-font-family, monospace); fill: #5a3a0c; pointer-events: none; }
+.pg-cwait .pg-cbody { fill: #fff6e2; stroke: #b0782a; stroke-width: 2; cursor: pointer; }
