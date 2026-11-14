@@ -12,23 +12,24 @@ number := false
 %%%
 
 :::en
-Maps built from gates, as circuits are. The input `x` is above, the output below. Drag gates from the side onto the board (or tap them), and draw wires: from an output,
+Maps built from gates, as circuits are. The inputs are above, the output below. Drag gates from the side onto the board (or tap them), and draw wires: from an output,
 the dot below a block, to an input, the circle above one (tap the one and then the other, or drag).
-The target is a *truth table*: the output for every row of inputs. Tap a row, and its coins are on
-the board.
+The target is a *truth table*: the output for every row of inputs, a column in the box below. Tap a
+column, and its values are on the board.
 
-Each level has a second half in Lean: there your circuit is a function of its input, and the
+Each level has a second half in Lean: there your circuit is a function of its inputs, and the
 statement says that it is the target table. The Lean half is short here; it grows in the worlds that
 follow.
 :::
 
 :::de
-Abbildungen, gebaut aus Bausteinen, wie Schaltungen. Der Eingang `x` ist oben, der Ausgang unten. Zieh Bausteine vom Rand aufs Spielfeld (oder tippe sie an) und ziehe
+Abbildungen, gebaut aus Bausteinen, wie Schaltungen. Die Eingänge sind oben, der Ausgang unten. Zieh Bausteine vom Rand aufs Spielfeld (oder tippe sie an) und ziehe
 Drähte: von einem Ausgang, dem Punkt unter einem Baustein, zu einem Eingang, dem Kreis darüber (tippe
 den einen und dann den anderen an, oder zieh). Das Ziel ist eine *Wahrheitstafel*: der Ausgang für
-jede Zeile der Eingänge. Tippe eine Zeile an, und ihre Münzen liegen auf dem Spielfeld.
+jede Zeile der Eingänge, eine Spalte im Kasten unten. Tippe eine Spalte an, und ihre Werte stehen auf
+dem Spielfeld.
 
-Jedes Level hat eine zweite Hälfte in Lean: Dort ist deine Schaltung eine Funktion ihres Eingangs,
+Jedes Level hat eine zweite Hälfte in Lean: Dort ist deine Schaltung eine Funktion ihrer Eingänge,
 und die Aussage sagt, dass sie die Zieltafel ist. Die Lean-Hälfte ist hier kurz; sie wächst in den
 Welten danach.
 :::
@@ -181,6 +182,40 @@ Entscheidung geschrieben: `bif x then true else true` ist `true`, wenn `x` `true
 :::solution
 ```
 cases x <;> rfl
+```
+:::
+::::
+
+::::circuit (inputs := "x y") (gates := "and, or, not") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : ((x || y) && !(x && y)) = (bif x then (bif y then false else true) else (bif y then true else false))") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out")
+:::en
+*The boss: exactly one.* Two inputs now, and four rows: one for each pair of values. `true` when exactly one
+input is `true`: at least one, but not both. In Lean this is `xor`, written `x ^^ y`.
+:::
+
+:::de
+*Der Endgegner: genau eines.* Jetzt zwei Eingänge und vier Zeilen: eine für jedes Paar von Werten. `true`, wenn
+genau ein Eingang `true` ist: mindestens einer, aber nicht beide. In Lean ist das `xor`, geschrieben
+`x ^^ y`.
+:::
+
+:::proofen
+The table has four rows now, one for each pair of values: first `x` decides, then `y`, a `bif` in
+each branch of a `bif`. `cases x` makes two goals; in each, `cases y` makes two more: four goals, the
+four rows. With `<;>` in one line.
+
+*Tip.* `cases x <;> cases y <;> rfl`.
+:::
+
+:::proofde
+Die Tafel hat jetzt vier Zeilen, eine für jedes Paar von Werten: erst entscheidet `x`, dann `y`, ein
+`bif` in jedem Zweig eines `bif`. `cases x` macht zwei Ziele; in jedem macht `cases y` zwei weitere:
+vier Ziele, die vier Zeilen. Mit `<;>` in einer Zeile.
+
+*Tipp.* `cases x <;> cases y <;> rfl`.
+:::
+:::solution
+```
+cases x <;> cases y <;> rfl
 ```
 :::
 ::::

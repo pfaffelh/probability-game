@@ -58,7 +58,7 @@ field until it is the one you want). What happens depends on one value only, the
 the left side: it chooses one of the two fields, `T` or `F` (the blue arrows). The value at the input
 on top goes into both fields; the field chosen applies its map to it. In Lean:
 `c >>= fun b => if b then f v else g v`. Build `and`: when `x` is `true`, `y` itself; when `x` is
-`false`, always `F`. (Show the values row by row: the field not used fades.)
+`false`, always `F`. (Tap a column of the output box: the field not used fades.)
 :::
 
 :::de
@@ -69,21 +69,19 @@ einem Wert ab, dem am Eingang an der linken Seite: Er wählt eines der beiden Fe
 blauen Pfeile). Der Wert am Eingang oben geht in beide Felder; das gewählte Feld wendet seine Abbildung
 darauf an. In Lean:
 `c >>= fun b => if b then f v else g v`. Bau `and`: ist `x` `true`, `y` selbst; ist `x` `false`, immer
-`F`. (Zeig die Werte Zeile für Zeile: Das Feld, das nicht benutzt wird, verblasst.)
+`F`. (Tippe eine Spalte des Ausgabekastens an: Das Feld, das nicht benutzt wird, verblasst.)
 :::
 
 :::proofen
-Two inputs now, so the table has four rows, one for each pair of values: first `x` decides, then
-`y`, a `bif` in each branch of a `bif`. By hand: `cases x <;> cases y <;> rfl`, the four rows; or
+Four rows, as in the boss of *Circuits*: by hand `cases x <;> cases y <;> rfl`, or
 `decide +revert` (from *Maps*), which checks them all.
 
 *Tip.* `decide +revert`.
 :::
 
 :::proofde
-Jetzt zwei Eingänge, also hat die Tafel vier Zeilen, eine für jedes Paar von Werten: erst entscheidet
-`x`, dann `y`, ein `bif` in jedem Zweig eines `bif`. Von Hand: `cases x <;> cases y <;> rfl`, die
-vier Zeilen; oder `decide +revert` (aus *Abbildungen*), das alle prüft.
+Vier Zeilen, wie beim Endgegner von *Schaltungen*: von Hand `cases x <;> cases y <;> rfl`, oder
+`decide +revert` (aus *Abbildungen*), das alle prüft.
 
 *Tipp.* `decide +revert`.
 :::

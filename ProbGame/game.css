@@ -582,3 +582,5 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 .pg-chip-peek .pg-chip-x { position: absolute; right: 0.3rem; top: 0.2rem; }
 .pg-chip-peek .pg-inv-sig { overflow-wrap: anywhere; }
 .pg-ccaption { font-size: 11px; font-weight: normal; }
+
+.pg-ccol-hit { fill: transparent !important; stroke: none !important; cursor: pointer; }
