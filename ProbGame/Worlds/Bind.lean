@@ -12,11 +12,11 @@ htmlSplit := .never
 
 :::en
 Until now all coins were thrown at once, independently. Now a coin waits: it is thrown *after* the
-coin `x`, and **which** coin it is depends on a wire. The coin `y` on the left has an input of its
-own: wire `x` into it, and `y` becomes `bif x then coin q else coin r`, the coin `q` when `x` showed
-`true`, the coin `r` when it showed `false`. This is the `bind` gate of the first three levels, now
-with distributions in its two fields: first throw `x`, then, depending on what came, throw the one or
-the other coin. In Lean: `do let x ← coin p; let y ← (bif x then coin q else coin r); …`, that is
+coin `x`, and **which** coin it is depends on a wire. The coin `y` is the `bind` gate of the first
+three levels, now with a coin in each of its two fields, `T` and `F`, and no input on top: the coin
+in the field chosen is what is thrown. Wire `x` into its left side, and `y` becomes
+`bif x then coin q else coin r`, the coin `q` when `x` showed `true`, the coin `r` when it showed
+`false`: first throw `x`, then, depending on what came, the one or the other coin. In Lean: `do let x ← coin p; let y ← (bif x then coin q else coin r); …`, that is
 `coin p >>= fun x => …`.
 
 A row of the table has a mass only once `y` is wired; the mass of `y` in a row is that of the coin
@@ -25,11 +25,11 @@ the wire chose.
 
 :::de
 Bisher wurden alle Münzen auf einmal geworfen, unabhängig. Jetzt wartet eine Münze: Sie wird *nach*
-der Münze `x` geworfen, und **welche** Münze es ist, hängt an einem Draht. Die Münze `y` links hat einen
-eigenen Eingang: Verdrahte `x` mit ihm, und `y` wird zu `bif x then coin q else coin r`, die Münze `q`,
-wenn `x` `true` zeigte, die Münze `r`, wenn es `false` zeigte. Das ist der Baustein `bind` der ersten drei
-Level, jetzt mit Verteilungen in seinen zwei Feldern: erst `x` werfen, dann, je nachdem was kam,
-die eine oder die andere Münze. In Lean: `do let x ← coin p; let y ← (bif x then coin q else coin r); …`,
+der Münze `x` geworfen, und **welche** Münze es ist, hängt an einem Draht. Die Münze `y` ist der
+Baustein `bind` der ersten drei Level, jetzt mit einer Münze in jedem seiner zwei Felder, `T` und `F`,
+und ohne Eingang oben: Geworfen wird die Münze im gewählten Feld. Verdrahte `x` mit seiner linken
+Seite, und `y` wird zu `bif x then coin q else coin r`, die Münze `q`, wenn `x` `true` zeigte, die Münze
+`r`, wenn es `false` zeigte: erst `x` werfen, dann, je nachdem was kam, die eine oder die andere Münze. In Lean: `do let x ← coin p; let y ← (bif x then coin q else coin r); …`,
 also `coin p >>= fun x => …`.
 
 Eine Zeile der Tafel hat erst eine Masse, wenn `y` verdrahtet ist; die Masse von `y` in einer Zeile ist

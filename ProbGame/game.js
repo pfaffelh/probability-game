@@ -1622,6 +1622,8 @@
   // the bin: one for the page, shown while a gate is dragged
   const trashCan = () => document.querySelector('body > .pg-bin') ?? document.body.appendChild(el('div', 'pg-bin', '🗑'))
   const CW = 480, CH = 620, GW = 112, GH2 = 60
+  // (a coin that waits: a bind box, its two fields hold the coins for true and for false)
+  const CTLW = 150, CTLH = 96
   // a gate as it lies on the board (box, sign, name, its inputs above, its output below), for the
   // buttons beside the board, the ＋ list and the gate being dragged
   const gateIcon = kind => {
@@ -1784,7 +1786,7 @@
     save() { try { localStorage.setItem(this.key + ':circuit', JSON.stringify({ gates: this.gatesOn, wires: this.wires, seq: this.seq, seen: this.seen })) } catch {} }
     inputAt(k) {
       // (a coin thrown after others, which coin depending on a wire: on the left, one below the other)
-      if (this.ctl?.[k]) return { x: 110, y: 170 + 115 * this.ctl.slice(0, k).filter(Boolean).length }
+      if (this.ctl?.[k]) return this.random ? { x: this.CW / 2 + 30, y: 180 + 135 * this.ctl.slice(0, k).filter(Boolean).length } : { x: 110, y: 170 + 115 * this.ctl.slice(0, k).filter(Boolean).length }
       const top = this.names.map((_, j) => j).filter(j => !this.ctl?.[j]), r = top.indexOf(k)
       return { x: this.CW * (r + 1) / (top.length + 1), y: 48 }
     }
@@ -1805,10 +1807,36 @@
       const h = 14 + n * rh + 10 + 2 * (rh + 4) + 6, w = 84 + cols * cw + 12
       return { x: this.CW / 2, top: this.CH - 12 - h, w, h, cw, rh }
     }
+    // a coin that waits, drawn as the bind gate: the fields T and F hold the coins (`coin p`, `pure true`),
+    // the wire on the left side chooses the field (in the row shown the other one fades); no input on
+    // top: the coin in the field chosen is thrown. Its output, below, is the coin `y`.
+    waitingCoin(x, k, a, vals, addPort) {
+      const g = svg('g', { class: 'pg-cinput pg-cwait' }), top = a.y - CTLH / 2, w = this.wireTo(x, 0)
+      const on = vals && w ? vals[w.from] : null
+      const off = i => on !== null && on !== undefined && (on ? 1 : 0) === i
+      const cx = i => a.x + (i ? 36 : -36), yc = a.y + 18
+      g.append(svg('rect', { class: 'pg-cbody', x: a.x - CTLW / 2, y: top, width: CTLW, height: CTLH, rx: 10 }))
+      g.append(svg('path', { class: 'pg-cbr pg-cbr-c', d: `M ${a.x - CTLW / 2} ${yc} H ${cx(0)}` }))
+      g.append(svg('path', { class: 'pg-cbr pg-cbr-c' + (off(1) ? ' pg-cbr-off' : ''), d: `M ${cx(0)} ${yc} H ${cx(1)}` }))
+      ;[0, 1].forEach(i => {
+        g.append(svg('path', { class: 'pg-cbr pg-cbr-c' + (off(i) ? ' pg-cbr-off' : ''), d: `M ${cx(i)} ${yc} V ${yc - 9} M ${cx(i) - 4} ${yc - 5} L ${cx(i)} ${yc - 9} L ${cx(i) + 4} ${yc - 5}` }))
+        g.append(svg('text', { class: 'pg-cbr-label' + (off(i) ? ' pg-cbr-off' : ''), x: cx(i) + 10, y: yc - 2, 'text-anchor': 'middle' }, i ? 'F' : 'T'))
+        g.append(svg('rect', { class: 'pg-cslot pg-cslot-full' + (off(i) ? ' pg-cbr-off' : ''), x: cx(i) - 32, y: top + 10, width: 64, height: 28, rx: 6 }))
+        g.append(svg('text', { class: 'pg-cfield' + (off(i) ? ' pg-cbr-off' : ''), x: cx(i), y: top + 28, 'text-anchor': 'middle' }, this.leanCoin(this.ctl[k][i])))
+      })
+      // (its name below, and in the row shown its value)
+      const v = vals?.[x] ?? null
+      g.append(svg('text', { class: 'pg-cname', x: a.x, y: a.y + CTLH / 2 - 8, 'text-anchor': 'middle' }, v === null || v === undefined ? x : `${x} = ${v ? 'T' : 'F'}`))
+      addPort(g, x, 'out')
+      addPort(g, x, 'in', 0)
+      g.addEventListener('click', ev => { if (!ev.target.closest('.pg-cport')) this.tapOut(x) })
+      return g
+    }
     block(id) { return this.gatesOn.find(g => g.id === id) }
     // where a port is: outputs below a block, inputs above it
     port(id, kind, i = 0) {
       const k = this.names.indexOf(id)
+      if (k >= 0 && this.random && this.ctl[k]) { const a = this.inputAt(k); return kind === 'in' ? { x: a.x - CTLW / 2, y: a.y + 18, side: 'left' } : { x: a.x, y: a.y + CTLH / 2 } }
       if (k >= 0) { const a = this.inputAt(k); return kind === 'in' ? { x: a.x, y: a.y - 30 } : { x: a.x, y: a.y + 30 } }
       if (id === 'out') { const b = this.outBox(); return { x: b.x, y: b.top } }
       const g = this.block(id), n = GATES[g.kind].n
@@ -2242,6 +2270,7 @@
       // the inputs: a coin each, with its value in the row shown
       this.names.forEach((x, k) => {
         const a = this.inputAt(k), g = svg('g', { class: 'pg-cinput' })
+        if (this.random && this.ctl[k]) { s.append(this.waitingCoin(x, k, a, shown ? vals : null, addPort)); return }
         if (this.ctl[k]) g.append(svg('text', { class: 'pg-cname', x: a.x + 30, y: a.y + 5 }, this.random ? `${x} ← ${this.leanCoinOf(k)}` : `${x} ∈ ${this.setOf(k)}`))
         else g.append(svg('text', { class: 'pg-cname', x: a.x, y: a.y - (this.random && this.names.filter((_, j) => !this.ctl[j]).length < 3 ? 26 : 19), 'text-anchor': 'middle' }, this.random && this.names.filter((_, j) => !this.ctl[j]).length < 3 ? `${x} ← ${this.leanCoin(this.coins[k])}` : x))
         // (as in the table below: a circle of the same size with ?, and in the row shown its value, T or F)
