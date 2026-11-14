@@ -111,84 +111,71 @@ rw [coin_false]
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ false = 1 - μ true") (lemma := "mass_false") (new := "mass_total, mass_ne_top, ENNReal.add_sub_cancel_left, exact")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b = 1 - μ (!b)") (lemma := "mass_not") (new := "cases, mass_total, mass_ne_top, ENNReal.add_sub_cancel_left, add_comm, exact")
 :::en
-*What is not at true.* Now in Lean only: a statement about *every* distribution on `Bool`, which no
-board can show.
+*The rest of the mass.* Now in Lean only: a statement about *every* distribution on `Bool`, which no
+board can show. What is not at `b` lies at `!b`.
 :::
 
 :::de
-*Was nicht bei true liegt.* Jetzt nur in Lean: eine Aussage über *jede* Verteilung auf `Bool`, die
-kein Spielfeld zeigen kann.
+*Der Rest der Masse.* Jetzt nur in Lean: eine Aussage über *jede* Verteilung auf `Bool`, die kein
+Spielfeld zeigen kann. Was nicht bei `b` liegt, liegt bei `!b`.
 :::
 
 :::proofen
 `μ : DiscreteMeasure Bool` is any distribution on `Bool`, and `[Prob μ]` says that its total mass is
-one. That is the rule `mass_total μ : μ true + μ false = 1`. So the mass at `false` is what is
-missing at `true`. Masses are numbers in $`[0, \infty]` (`ENNReal`); taking away is allowed when
-what is taken away is finite: `ENNReal.add_sub_cancel_left (h : a ≠ ⊤) : a + b - a = b`, and
-`mass_ne_top : μ b ≠ ⊤` says that a mass is finite. `rw [← mass_total μ]` rewrites from right
-to left: the `1` becomes `μ true + μ false`. A rule with a hypothesis can also be used without it:
+one. That is the rule `mass_total μ : μ true + μ false = 1`. So the mass at one side is what the
+other side misses to one.
+
+`cases b`: the point `b` is `false` or `true`, two goals one after the other (`!false` is `true`:
+`Bool.not_false`, from level 1).
+
+Masses are numbers in $`[0, \infty]` (`ENNReal`); taking away is allowed when what is taken away is
+finite: `ENNReal.add_sub_cancel_left (h : a ≠ ⊤) : a + b - a = b`, and `mass_ne_top : μ b ≠ ⊤` says
+that a mass is finite. `rw [← mass_total μ]` rewrites from right to left: the `1` becomes
+`μ true + μ false`. At `true`, `μ false` is taken away, and it stands second in the sum:
+`add_comm : a + b = b + a` turns the sum round. A rule with a hypothesis can also be used without it:
 `rw [ENNReal.add_sub_cancel_left]` then leaves the hypothesis as a second goal, and `exact h` closes a
 goal that is exactly `h`.
 
-*Tip.* `rw [← mass_total μ]`, then `rw [ENNReal.add_sub_cancel_left mass_ne_top]` (or
-`rw [ENNReal.add_sub_cancel_left]` and `exact mass_ne_top`). Type `\l` for `←`.
+*Tip.* `cases b`; at `false`: `rw [Bool.not_false, ← mass_total μ]` and
+`rw [ENNReal.add_sub_cancel_left mass_ne_top]`; at `true` the same with `Bool.not_true` and
+`add_comm` before the last step. Type `\l` for `←`.
 :::
 
 :::proofde
 `μ : DiscreteMeasure Bool` ist irgendeine Verteilung auf `Bool`, und `[Prob μ]` sagt, dass ihre
-Gesamtmasse eins ist. Das ist die Regel `mass_total μ : μ true + μ false = 1`. Also ist die Masse bei
-`false` das, was bei `true` zu eins fehlt. Massen sind Zahlen in $`[0, \infty]` (`ENNReal`);
-wegnehmen darf man, wenn das Weggenommene endlich ist:
-`ENNReal.add_sub_cancel_left (h : a ≠ ⊤) : a + b - a = b`, und `mass_ne_top : μ b ≠ ⊤` sagt,
+Gesamtmasse eins ist. Das ist die Regel `mass_total μ : μ true + μ false = 1`. Also ist die Masse auf
+der einen Seite das, was der anderen zu eins fehlt.
+
+`cases b`: Der Punkt `b` ist `false` oder `true`, zwei Ziele nacheinander (`!false` ist `true`:
+`Bool.not_false`, aus Level 1).
+
+Massen sind Zahlen in $`[0, \infty]` (`ENNReal`); wegnehmen darf man, wenn das Weggenommene endlich
+ist: `ENNReal.add_sub_cancel_left (h : a ≠ ⊤) : a + b - a = b`, und `mass_ne_top : μ b ≠ ⊤` sagt,
 dass eine Masse endlich ist. `rw [← mass_total μ]` schreibt von rechts nach links um: Die `1` wird zu
-`μ true + μ false`. Eine Regel mit Annahme geht auch ohne sie: `rw [ENNReal.add_sub_cancel_left]`
-lässt die Annahme dann als zweites Ziel übrig, und `exact h` schließt ein Ziel, das genau `h` ist.
+`μ true + μ false`. Bei `true` wird `μ false` weggenommen, und das steht in der Summe an zweiter
+Stelle: `add_comm : a + b = b + a` dreht die Summe um. Eine Regel mit Annahme geht auch ohne sie:
+`rw [ENNReal.add_sub_cancel_left]` lässt die Annahme dann als zweites Ziel übrig, und `exact h`
+schließt ein Ziel, das genau `h` ist.
 
-*Tipp.* `rw [← mass_total μ]`, dann `rw [ENNReal.add_sub_cancel_left mass_ne_top]` (oder
-`rw [ENNReal.add_sub_cancel_left]` und `exact mass_ne_top`). `\l` tippen für `←`.
+*Tipp.* `cases b`; bei `false`: `rw [Bool.not_false, ← mass_total μ]` und
+`rw [ENNReal.add_sub_cancel_left mass_ne_top]`; bei `true` dasselbe mit `Bool.not_true` und vor dem
+letzten Schritt `add_comm`. `\l` tippen für `←`.
 :::
 :::solution
 ```
-rw [← mass_total μ]
+cases b
+rw [Bool.not_false, ← mass_total μ]
 rw [ENNReal.add_sub_cancel_left mass_ne_top]
-```
-:::
-::::
-
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ true = 1 - μ false") (lemma := "mass_true") (new := "add_comm")
-:::en
-*What is not at false.* The same the other way round.
-:::
-
-:::de
-*Was nicht bei false liegt.* Dasselbe andersherum.
-:::
-
-:::proofen
-As before, but now `μ false` is taken away, and in `μ true + μ false` it stands second. The rule
-`add_comm : a + b = b + a` turns the sum round.
-
-*Tip.* `rw [← mass_total μ]`, `rw [add_comm]`, then `ENNReal.add_sub_cancel_left` as before.
-:::
-
-:::proofde
-Wie eben, aber jetzt wird `μ false` weggenommen, und in `μ true + μ false` steht es an zweiter
-Stelle. Die Regel `add_comm : a + b = b + a` dreht die Summe um.
-
-*Tipp.* `rw [← mass_total μ]`, `rw [add_comm]`, dann `ENNReal.add_sub_cancel_left` wie eben.
-:::
-:::solution
-```
-rw [← mass_total μ]
+rw [Bool.not_true, ← mass_total μ]
 rw [add_comm]
 rw [ENNReal.add_sub_cancel_left mass_ne_top]
 ```
 :::
 ::::
 
-::::leanonly (proof := "(μ ν : DiscreteMeasure Bool) [Prob μ] [Prob ν] (h : μ true = ν true) : μ = ν") (lemma := "bool_ext") (new := "ext, cases")
+::::leanonly (proof := "(μ ν : DiscreteMeasure Bool) [Prob μ] [Prob ν] (h : μ true = ν true) : μ = ν") (lemma := "bool_ext") (new := "ext")
 :::en
 *One bar is enough.* Two distributions on `Bool` with the same mass at `true` are the same. That is
 why the board only had to look at one bar.
@@ -200,27 +187,27 @@ musste das Spielfeld nur auf eine Säule schauen.
 :::
 
 :::proofen
-Now there is a hypothesis: `h : μ true = ν true`. Two new tactics. `ext x`: two distributions are
-equal when they have the same mass at every point `x`. `cases x`: the point is `false` or `true`, two
-goals one after the other. And `exact h` (from level 2). At `false`, your lemma
-`mass_false` helps, twice, and then `h`.
+Now there is a hypothesis: `h : μ true = ν true`. A new tactic: `ext x`: two distributions are
+equal when they have the same mass at every point `x`. Then `cases x` and `exact h` (from level 2).
+At `false`, your lemma `mass_not` helps, once for `μ` and once for `ν`: `mass_not μ false`.
 
-*Tip.* `ext x`, `cases x`, then `rw [mass_false, mass_false, h]`, and `exact h`.
+*Tip.* `ext x`, `cases x`, then `rw [mass_not μ false, mass_not ν false, Bool.not_false, h]`, and
+`exact h`.
 :::
 
 :::proofde
-Jetzt gibt es eine Annahme: `h : μ true = ν true`. Zwei neue Taktiken. `ext x`: Zwei Verteilungen sind
-gleich, wenn sie an jedem Punkt `x` dieselbe Masse haben. `cases x`: Der Punkt ist `false` oder `true`,
-zwei Ziele nacheinander. Und `exact h` (aus Level 2). Bei `false` hilft dein Lemma
-`mass_false`, zweimal, und dann `h`.
+Jetzt gibt es eine Annahme: `h : μ true = ν true`. Eine neue Taktik: `ext x`: Zwei Verteilungen sind
+gleich, wenn sie an jedem Punkt `x` dieselbe Masse haben. Dann `cases x` und `exact h` (aus Level 2).
+Bei `false` hilft dein Lemma `mass_not`, einmal für `μ` und einmal für `ν`: `mass_not μ false`.
 
-*Tipp.* `ext x`, `cases x`, dann `rw [mass_false, mass_false, h]`, und `exact h`.
+*Tipp.* `ext x`, `cases x`, dann `rw [mass_not μ false, mass_not ν false, Bool.not_false, h]`, und
+`exact h`.
 :::
 :::solution
 ```
 ext x
 cases x
-rw [mass_false, mass_false, h]
+rw [mass_not μ false, mass_not ν false, Bool.not_false, h]
 exact h
 ```
 :::

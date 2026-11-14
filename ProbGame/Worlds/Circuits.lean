@@ -515,7 +515,7 @@ decide +revert
 :::
 ::::
 
-::::circuit (inputs := "x y z") (gates := "and, or") (table := "00010111") (goal := "decide (2 ≤ x.toNat + y.toNat + z.toNat)") (proof := "(x y z : Bool) : ((x && y) || (x && z) || (y && z)) = (bif x then (bif y then (bif z then true else true) else (bif z then true else false)) else (bif y then (bif z then true else false) else (bif z then false else false)))") (play := "a=and; b=and; c=and; d=or; e=or; x>a.0; y>a.1; x>b.0; z>b.1; y>c.0; z>c.1; a>d.0; b>d.1; d>e.0; c>e.1; e>out")
+::::circuit (size := "big") (inputs := "x y z") (gates := "and, or") (table := "00010111") (goal := "decide (2 ≤ x.toNat + y.toNat + z.toNat)") (proof := "(x y z : Bool) : ((x && y) || (x && z) || (y && z)) = (bif x then (bif y then (bif z then true else true) else (bif z then true else false)) else (bif y then (bif z then true else false) else (bif z then false else false)))") (play := "a=and; b=and; c=and; d=or; e=or; x>a.0; y>a.1; x>b.0; z>b.1; y>c.0; z>c.1; a>d.0; b>d.1; d>e.0; c>e.1; e>out")
 :::en
 *The boss: the majority of three.* `true` when at least two of the three inputs are. Eight rows.
 In Lean the target counts: `x.toNat` is `1` for `true` and `0` for `false`.

@@ -51,15 +51,14 @@ with a small histogram (target dashed, output filled) and the masses `p`, `1 - p
 | # | level | Lean | new |
 |---|---|---|---|
 | 1 | Where does the mass go? (not) | mass at true (no lemma: the boss needs the computation again) | `rw`, `map_true`, `coin_true`, … |
-| 2 | What is not at true (Lean only) | `mass_false` | `mass_total`, `mass_ne_top`, `ENNReal.add_sub_cancel_left`, `exact` |
-| 3 | What is not at false (Lean only) | `mass_true` | `add_comm` |
-| 4 | One bar is enough (Lean only) | `bool_ext` | `ext`, `cases` |
-| 5 | Every distribution is a coin (Lean only) | `eq_coin` | `apply`, `chance`, `chance_eq` |
-| 6 | Always true | `coin_const` | `coin_total`, `pure_true` |
-| 7 | Surely false | `map_pure`, `rfl` | `rfl`, `map_pure` |
-| 8 | From sides to numbers | `congr`, `funext`, `cases b <;> rfl` | `congr`, `funext`, `<;>` |
-| 9 | Surely zero | | |
-| 10 | Boss: flipping a coin | `coin_not`: `bool_ext` and the computation of level 1 (5 lines) | |
+| 2 | The rest of the mass (Lean only) | `mass_not μ b : μ b = 1 - μ (!b)` | `cases`, `mass_total`, `mass_ne_top`, `ENNReal.add_sub_cancel_left`, `add_comm`, `exact` |
+| 3 | One bar is enough (Lean only) | `bool_ext` | `ext` |
+| 4 | Every distribution is a coin (Lean only) | `eq_coin` | `apply`, `chance`, `chance_eq` |
+| 5 | Always true | `coin_const` | `coin_total`, `pure_true` |
+| 6 | Surely false | `map_pure`, `rfl` | `rfl`, `map_pure` |
+| 7 | From sides to numbers | `congr`, `funext`, `cases b <;> rfl` | `congr`, `funext`, `<;>` |
+| 8 | Surely zero | | |
+| 9 | Boss: flipping a coin | `coin_not`: `bool_ext` and the computation of level 1 (5 lines) | |
 
 ## World 2 — Draw, then Compute (Lean leads)
 
