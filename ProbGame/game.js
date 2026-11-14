@@ -49,7 +49,7 @@
   // Headings of the site, which come from Verso.
   const DE_TITLES = {
     'The Probability Game': 'Das Wahrscheinlichkeits\u00ADspiel',  // (a soft hyphen, for phones)
-    'One Coin': 'Eine Münze', 'Draw, then Compute': 'Erst ziehen, dann rechnen', 'Building with Coins': 'Bauen mit Münzen',
+    'One Coin': 'Eine Münze', 'Maps': 'Abbildungen', 'Draw, then Compute': 'Erst ziehen, dann rechnen', 'Building with Coins': 'Bauen mit Münzen',
     'Counting': 'Zählen', 'Walking on the Grid': 'Gehen auf dem Gitter', 'True and False': 'Wahr und falsch', 'Circuits with Coins': 'Schaltungen mit Münzen', 'Coins that Wait': 'Münzen, die warten', 'Circuits': 'Schaltungen', 'Lexicon': 'Lexikon', 'Table of Contents': 'Inhalt', 'Contents': 'Inhalt',
   }
   function translatePage() {
@@ -1734,7 +1734,9 @@
       // `if c then coin q else coin r`, with `c` what the player wires into it (`0`, `1`: pure false, true)
       this.ctl = this.random ? this.coins.map(c => (c.includes('|') ? c.split('|') : null)) : ins.map(t => (t.includes(':') ? t.split(':')[1].split('|') : null))
       this.binds = this.ctl.some(Boolean)
-      this.target = this.random ? parseDist(d.target) : null
+      // (`target := "f bernoulli p"`: the target is the distribution pushed through the map in `f`)
+      this.targetF = this.random && /^f\s/.test(d.target)
+      this.target0 = this.random ? parseDist(d.target.replace(/^f\s+/, '')) : null
       this.board = root.querySelector('.pg-board')
       this.key = `pg:${location.pathname}:${index}`
       this.row = null; this.sel = null; this.selWire = null; this.selBlock = null
@@ -1750,6 +1752,13 @@
     // what lies beside the board: the gates, and with bind the four maps for its fields
     get paletteKinds() { return this.gates.some(k => GATES[k].slots) ? [...this.gates, ...this.allowed.map(m => 'map:' + m)] : this.gates }
     // the map in f (the same in every f)
+    get target() {
+      const t = this.target0, m = this.fmap
+      if (!this.targetF || !t || !m) return t
+      const mass = new Map()
+      for (const [k, q] of t.mass) { const k2 = String(MAPS[m].f(k === 'true')); mass.set(k2, (mass.get(k2) ?? ZERO).add(q)) }
+      return { space: t.space, mass }
+    }
     get fmap() { return this.gatesOn.find(g => GATES[g.kind].shared)?.maps?.[0] ?? null }
     setMap(id, i, m) {
       const g = this.block(id)
@@ -2560,6 +2569,7 @@
     { name: "binom_succ'", kind: 'lemma', sig: "(do let X ← binom p n; let Y ← coin p; pure (X + Y.toNat)) = binom p (n + 1)", en: 'Proved by you in Building with Coins.', de: 'Von dir bewiesen in „Bauen mit Münzen“.' },
     // the first world only
     { name: 'Bool.not_not', kind: 'lemma', sig: '(!(!b)) = b', en: 'Proved by you in Circuits: flipped twice is not flipped.', de: 'Von dir bewiesen in „Schaltungen“: Zweimal umgedreht ist nicht umgedreht.' },
+    { name: 'Bool.apply_apply_apply', kind: 'lemma', sig: 'f (f (f b)) = f b', en: 'Proved by you in Maps: for a map Bool → Bool, three times is once.', de: 'Von dir bewiesen in „Abbildungen“: Für eine Abbildung Bool → Bool ist dreimal dasselbe wie einmal.' },
     { name: 'Function.comp_apply', kind: 'rule', sig: '(g ∘ f) x = g (f x)', en: 'First f, then g.', de: 'Erst f, dann g.' },
     { name: 'id_eq', kind: 'rule', sig: 'id a = a', en: 'id does nothing.', de: 'id tut nichts.' },
     // world 0 only

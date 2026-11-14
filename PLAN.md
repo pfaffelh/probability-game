@@ -114,4 +114,4 @@ Its boards repeated earlier ones (not, a wire, two nots, always T). Its rules no
 `map_eq_pure_bind` is gone (nothing needed it). Worlds now: ∧, 1 One Coin, 2 Building with Coins,
 3 Coins that Wait.
 
-Circuits, 2026-11-14 evening (user): levels Both, Or without or (De Morgan), The same removed (trivial on board and in Lean); `decide` now comes with Exactly one. 13 levels.
+Circuits, 2026-11-14 evening (user): levels Both, Or without or (De Morgan), The same removed (trivial); then toNat levels out, f-levels out into a new world *Maps* (after One Coin: f (f (f b)) = f b, lemma Bool.apply_apply_apply; and f <$> f <$> f <$> coin p = f <$> coin p with map_map), the three bind levels moved to the start of *Coins that Wait* as deterministic training. Circuits: 6 levels. rw now comes in One Coin 1.
