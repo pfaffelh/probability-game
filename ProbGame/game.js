@@ -2340,6 +2340,12 @@
           const ok = outs[k] === null || there[k] === null ? '' : this.rowOk(k, outs) ? 'pg-gchip-ok' : 'pg-gchip-bad'
           if (there[k] === false) dash(cx(k), yO, ok); else chip(cx(k), yO, outs[k], ok)
         })
+        // (tap a column: its values on the board; again: hidden)
+        this.rows.forEach((r, k) => {
+          const hit = svg('rect', { class: 'pg-ccol-hit', x: cx(k) - cw / 2, y: b.top + 6, width: cw, height: b.h - 12 })
+          hit.addEventListener('click', ev => { if (this.sel) return; ev.stopPropagation(); this.row = this.row === k ? null : k; this.render() })
+          og.append(hit)
+        })
       }
       addPort(og, 'out', 'in', 0)
       og.addEventListener('click', ev => { if (!ev.target.closest('.pg-cport')) this.tapIn('out', 0) })
@@ -2368,18 +2374,8 @@
         table.append(tr_)
       })
       const side = el('div', 'pg-cside')
-      // the values on the board: none at first; row by row, and hidden again
-      const rowBar = el('div', 'pg-rowbar'), n = this.rows.length
-      const btn = (label, f, title = '') => { const b = el('button', 'pg-rowbtn', label); b.type = 'button'; b.title = title; b.addEventListener('click', f); return b }
-      if (shown) rowBar.append(
-        btn('◂', () => { this.row = (this.row + n - 1) % n; this.render() }, tr('previous row')),
-        el('span', 'pg-rowbar-text', tr('row {k} of {n}', { k: this.row + 1, n })),
-        btn('▸', () => { this.row = (this.row + 1) % n; this.render() }, tr('next row')),
-        btn(tr('hide'), () => { this.row = null; this.render() }))
-      else rowBar.append(btn(tr('Show the values row by row'), () => { this.row = 0; this.render() }))
-      if (!this.random) rowBar.classList.add('pg-rowbar-below')
-      // (without coins the target is on the board, in the output box: no table beside it)
-      if (this.random) side.append(table, rowBar, el('div', 'pg-truth-note', tr(shown ? 'Tap a row to see its coins on the board.' : 'Or tap a row of the table.')))
+      // (the values on the board: tap a row of the table, or a column of the output box)
+      if (this.random) side.append(table, el('div', 'pg-truth-note', tr('Tap a row to see its coins on the board.')))
       if (this.random) {
         const d = this.dist()
         if (d) {
@@ -2410,8 +2406,8 @@
       }
       const rowEl = el('div', 'pg-row pg-crow')
       if (this.random) rowEl.append(s, side)
-      else { const col = el('div', 'pg-cboard-col'); col.append(s, rowBar); rowEl.append(col) }
-      this.fitting = { s, box: this.random ? s : rowEl.firstChild, bar: this.random ? null : rowBar }
+      else { const col = el('div', 'pg-cboard-col'); col.append(s); rowEl.append(col) }
+      this.fitting = { s, box: this.random ? s : rowEl.firstChild, bar: null }
 
       const moves = el('div', 'pg-moves')
       for (const kind of this.paletteKinds) {
