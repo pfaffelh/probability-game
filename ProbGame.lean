@@ -26,8 +26,8 @@ point of its space a bar, as high as the point's mass. A *move* applies a map to
 point goes to its image, and where several points have the same image, their masses add up; the new
 distribution is the *image measure*. Every level has a *target*, a distribution too, and *building
 blocks*: a coin that shows `true` with probability $`p`, later the binomial distribution. You
-*compose* them, with moves and with circuits of several coins, until the distribution has the shape of
-the target. The board checks it exactly, for every $`p` at once (the masses are polynomials in $`p`);
+*compose* them in circuits, from top to bottom: the coins above, gates (maps) below them, and the
+output with the target at the bottom, until the output has the distribution of the target. The board checks it exactly, for every $`p` at once (the masses are polynomials in $`p`);
 the slider only changes the picture. Your progress stays in your browser.
 
 In [the full game](../main/), every level is then also proved in Lean.
@@ -39,8 +39,9 @@ gezeichnet: über jedem Punkt ihres Raums eine Säule, so hoch wie seine Masse. 
 Abbildung auf sie an: Die Masse jedes Punkts geht zu seinem Bild, und wo mehrere Punkte dasselbe Bild
 haben, addieren sich ihre Massen; die neue Verteilung ist das *Bildmaß*. Jedes Level hat ein *Ziel*,
 ebenfalls eine Verteilung, und *Bausteine*: eine Münze, die mit Wahrscheinlichkeit $`p` `true` zeigt,
-später die Binomialverteilung. Du *setzt* sie *zusammen*, mit Zügen und mit Schaltplänen aus mehreren
-Münzen, bis die Verteilung die Form des Ziels hat. Das Spielfeld prüft das exakt, für jedes $`p`
+später die Binomialverteilung. Du *setzt* sie in Schaltungen *zusammen*, von oben nach
+unten: oben die Münzen, darunter Bausteine (Abbildungen), unten der Ausgang mit dem Ziel, bis der
+Ausgang die Verteilung des Ziels hat. Das Spielfeld prüft das exakt, für jedes $`p`
 zugleich (die Massen sind Polynome in $`p`); der Schieberegler ändert nur das Bild. Dein Fortschritt
 bleibt in deinem Browser.
 
