@@ -41,7 +41,7 @@ Spielfeld die Säulen für ein Beispiel-$`p` (der Schieberegler ändert es) und 
 Münze hundertmal geworfen, die Häufigkeiten nahe bei den Massen.
 :::
 
-::::circuit (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : (not <$> coin p) true = σ p") (new := "rw, coin_true, coin_false, map_true, Bool.not_true, Bool.not_false, Bool.cond_true, Bool.cond_false, zero_add, Bool.not_not") (play := "a=not; x>a.0; a>out")
+::::circuit (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : (not <$> coin p) true = σ p") (new := "coin_true, coin_false, map_true, Bool.not_true, Bool.not_false, Bool.cond_true, Bool.cond_false, zero_add") (play := "a=not; x>a.0; a>out")
 :::en
 *Where does the mass go?* The coin `x` is thrown at the top; below, the output with the target:
 `false` with mass $`p`, `true` with $`1 - p`. Put a `not` between them. Then look at `true`: its mass
@@ -111,7 +111,7 @@ rw [coin_false]
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b = 1 - μ (!b)") (lemma := "mass_not") (new := "cases, mass_total, mass_ne_top, ENNReal.add_sub_cancel_left, add_comm, exact")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b = 1 - μ (!b)") (lemma := "mass_not") (new := "mass_total, mass_ne_top, ENNReal.add_sub_cancel_left, add_comm, exact")
 :::en
 *The rest of the mass.* Now in Lean only: a statement about *every* distribution on `Bool`, which no
 board can show. What is not at `b` lies at `!b`.
@@ -127,8 +127,8 @@ Spielfeld zeigen kann. Was nicht bei `b` liegt, liegt bei `!b`.
 one. That is the rule `mass_total μ : μ true + μ false = 1`. So the mass at one side is what the
 other side misses to one.
 
-`cases b`: the point `b` is `false` or `true`, two goals one after the other (`!false` is `true`:
-`Bool.not_false`, from level 1).
+`cases b` (from *Circuits*): the point `b` is `false` or `true`, two goals one after the other
+(`!false` is `true`: `Bool.not_false`, from level 1).
 
 Masses are numbers in $`[0, \infty]` (`ENNReal`); taking away is allowed when what is taken away is
 finite: `ENNReal.add_sub_cancel_left (h : a ≠ ⊤) : a + b - a = b`, and `mass_ne_top : μ b ≠ ⊤` says
@@ -148,8 +148,8 @@ goal that is exactly `h`.
 Gesamtmasse eins ist. Das ist die Regel `mass_total μ : μ true + μ false = 1`. Also ist die Masse auf
 der einen Seite das, was der anderen zu eins fehlt.
 
-`cases b`: Der Punkt `b` ist `false` oder `true`, zwei Ziele nacheinander (`!false` ist `true`:
-`Bool.not_false`, aus Level 1).
+`cases b` (aus *Schaltungen*): Der Punkt `b` ist `false` oder `true`, zwei Ziele nacheinander
+(`!false` ist `true`: `Bool.not_false`, aus Level 1).
 
 Massen sind Zahlen in $`[0, \infty]` (`ENNReal`); wegnehmen darf man, wenn das Weggenommene endlich
 ist: `ENNReal.add_sub_cancel_left (h : a ≠ ⊤) : a + b - a = b`, und `mass_ne_top : μ b ≠ ⊤` sagt,
@@ -304,7 +304,7 @@ rw [Bool.cond_true, Bool.cond_true, Bool.cond_true, coin_total]
 :::
 ::::
 
-::::circuit (inputs := "x") (gates := "not, alwaysT") (coins := "p") (target := "pure false") (context := "Lean/Rules.lean") (proof := "(p : I) : not <$> ((fun _ => true) <$> coin p) = pure false") (new := "rfl, map_pure") (play := "a=alwaysT; b=not; x>a.0; a>b.0; b>out")
+::::circuit (inputs := "x") (gates := "not, alwaysT") (coins := "p") (target := "pure false") (context := "Lean/Rules.lean") (proof := "(p : I) : not <$> ((fun _ => true) <$> coin p) = pure false") (new := "map_pure") (play := "a=alwaysT; b=not; x>a.0; a>b.0; b>out")
 :::en
 *Surely `false`, but there is no “always `false`”.* Two gates one after the other: the image measure of
 the image measure is the image measure of the composition, $`(P \circ f^{-1}) \circ g^{-1} = P \circ (g \circ f)^{-1}`.
@@ -316,18 +316,16 @@ das Bildmaß der Verkettung, $`(P \circ f^{-1}) \circ g^{-1} = P \circ (g \circ 
 :::
 
 :::proofen
-Two new tools. The rule `map_pure : f <$> pure a = pure (f a)`: a gate on a point mass moves the
-point. And the tactic `rfl`, which closes a goal whose two sides are the same after computing: `!true`
-is `false`.
+A new rule: `map_pure : f <$> pure a = pure (f a)`: a gate on a point mass moves the point. Then
+`rfl` from *Circuits*: the two sides are the same after computing, `!true` is `false`.
 
 *Tip.* `rw [coin_const]`, then `rw [map_pure]` (or both at once: `rw [coin_const, map_pure]`), then
 `rfl`.
 :::
 
 :::proofde
-Zwei neue Werkzeuge. Die Regel `map_pure : f <$> pure a = pure (f a)`: Ein Baustein auf einer
-Punktmasse verschiebt den Punkt. Und die Taktik `rfl`, die ein Ziel schließt, dessen beide Seiten
-nach Ausrechnen gleich sind: `!true` ist `false`.
+Eine neue Regel: `map_pure : f <$> pure a = pure (f a)`: Ein Baustein auf einer Punktmasse verschiebt
+den Punkt. Dann `rfl` aus *Schaltungen*: Beide Seiten sind nach Ausrechnen gleich, `!true` ist `false`.
 
 *Tipp.* `rw [coin_const]`, dann `rw [map_pure]` (oder beides auf einmal: `rw [coin_const, map_pure]`),
 dann `rfl`.
@@ -341,7 +339,7 @@ rfl
 :::
 ::::
 
-::::circuit (inputs := "x") (gates := "not, toNat") (coins := "p") (target := "nat 0:1-p 1:p") (context := "Lean/Rules.lean") (proof := "(p : I) : Bool.toNat <$> coin p = (fun b => if b then 1 else 0) <$> coin p") (new := "congr, funext, <;>") (play := "a=toNat; x>a.0; a>out")
+::::circuit (inputs := "x") (gates := "not, toNat") (coins := "p") (target := "nat 0:1-p 1:p") (context := "Lean/Rules.lean") (proof := "(p : I) : Bool.toNat <$> coin p = (fun b => if b then 1 else 0) <$> coin p") (new := "congr, funext") (play := "a=toNat; x>a.0; a>out")
 :::en
 *From sides to numbers.* `Bool.toNat` counts `true` as $`1` and `false` as $`0`: the distribution
 moves to the natural numbers. This is how a coin becomes a random number.
@@ -355,9 +353,8 @@ wandert zu den natürlichen Zahlen. So wird aus einer Münze eine Zufallszahl.
 :::proofen
 `Bool.toNat` counts `true` as $`1` and `false` as $`0`. Both sides move the same coin, with two
 maps that agree. Two new tactics: `congr 1` reduces the goal to the two maps being equal;
-`funext b` to their being equal at every `b`; and `cases b` (from *Always `true`*) splits into the cases `false` and `true`, two
-goals, one after the other. New: `t₁ <;> t₂` runs `t₂` on every goal that `t₁` leaves, so
-`cases b <;> rfl` does both cases in one line.
+`funext b` to their being equal at every `b`. Then, as in *Circuits*, `cases b <;> rfl` does both
+cases in one line.
 
 *Tip.* `congr 1`, `funext b`, `cases b <;> rfl`.
 :::
@@ -365,9 +362,8 @@ goals, one after the other. New: `t₁ <;> t₂` runs `t₂` on every goal that 
 :::proofde
 `Bool.toNat` zählt `true` als $`1` und `false` als $`0`. Beide Seiten bewegen dieselbe Münze, mit
 zwei Abbildungen, die übereinstimmen. Zwei neue Taktiken: `congr 1` führt das Ziel darauf zurück,
-dass die beiden Abbildungen gleich sind; `funext b` darauf, dass sie an jeder Stelle `b` gleich sind;
-und `cases b` (aus *Immer `true`*) teilt in die Fälle `false` und `true`, zwei Ziele, eines nach dem anderen. Neu: `t₁ <;> t₂` führt `t₂` auf jedem Ziel aus, das `t₁` übrig lässt; so erledigt
-`cases b <;> rfl` beide Fälle in einer Zeile.
+dass die beiden Abbildungen gleich sind; `funext b` darauf, dass sie an jeder Stelle `b` gleich sind.
+Dann erledigt, wie in *Schaltungen*, `cases b <;> rfl` beide Fälle in einer Zeile.
 
 *Tipp.* `congr 1`, `funext b`, `cases b <;> rfl`.
 :::
