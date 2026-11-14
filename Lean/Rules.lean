@@ -69,23 +69,18 @@ theorem mass_ne_top {μ : DiscreteMeasure Bool} [Prob μ] {b : Bool} : μ b ≠ 
   · exact ne_top_of_le_ne_top ENNReal.one_ne_top ((mass_total μ) ▸ le_add_self)
   · exact ne_top_of_le_ne_top ENNReal.one_ne_top ((mass_total μ) ▸ le_self_add)
 
-/-- One Coin, *What is not at true*: the rest of the mass lies at `false`. -/
-theorem mass_false (μ : DiscreteMeasure Bool) [Prob μ] : μ false = 1 - μ true := by
-  rw [← mass_total μ]
-  rw [ENNReal.add_sub_cancel_left mass_ne_top]
-
-/-- One Coin, *What is not at false*. -/
-theorem mass_true (μ : DiscreteMeasure Bool) [Prob μ] : μ true = 1 - μ false := by
-  rw [← mass_total μ]
-  rw [add_comm]
-  rw [ENNReal.add_sub_cancel_left mass_ne_top]
+/-- One Coin, *The rest of the mass*: what is not at `b` lies at `!b`. -/
+theorem mass_not (μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b = 1 - μ (!b) := by
+  cases b
+  · rw [Bool.not_false, ← mass_total μ, ENNReal.add_sub_cancel_left mass_ne_top]
+  · rw [Bool.not_true, ← mass_total μ, add_comm, ENNReal.add_sub_cancel_left mass_ne_top]
 
 /-- One Coin, *One bar is enough*: two distributions on `Bool` are the same when they have the
 same mass at `true`. -/
 theorem bool_ext (μ ν : DiscreteMeasure Bool) [Prob μ] [Prob ν] (h : μ true = ν true) : μ = ν := by
   ext x
   cases x
-  · rw [mass_false, mass_false, h]
+  · rw [mass_not μ false, mass_not ν false, Bool.not_false, h]
   · exact h
 
 /-- The mass at `true`, as a number in `[0, 1]` (for `coin`). -/

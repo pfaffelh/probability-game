@@ -1703,6 +1703,8 @@
     constructor(root, index, onSolved) {
       this.root = root; this.index = index; this.onSolved = onSolved
       const d = root.dataset
+      // (`size := "big"`: a larger board, for many gates)
+      this.big = d.size === 'big'; this.CW = this.big ? 760 : CW; this.CH = this.big ? 700 : CH
       // (an input `y:*|0` depends on a wire: `y ∈ if c then {F, T} else {F}`; rows without it fall away)
       const ins = d.inputs.split(/\s+/).filter(Boolean)
       this.names = ins.map(t => t.split(':')[0])
@@ -1722,7 +1724,7 @@
       for (const t of (d.start ?? '').split(';').map(t => t.trim()).filter(Boolean)) {
         // (`a=toNat@120,160`: where it lies; else one below the other in the middle)
         let m = /^(\w+)=(\w+)(?:@(\d+),(\d+))?$/.exec(t)
-        if (m && GATES[m[2]]) { const k = this.fixedGates.length; this.fixedGates.push({ id: m[1], kind: m[2], x: m[3] ? Number(m[3]) : CW / 2, y: m[4] ? Number(m[4]) : 160 + 100 * k, fixed: true }); continue }
+        if (m && GATES[m[2]]) { const k = this.fixedGates.length; this.fixedGates.push({ id: m[1], kind: m[2], x: m[3] ? Number(m[3]) : this.CW / 2, y: m[4] ? Number(m[4]) : 160 + 100 * k, fixed: true }); continue }
         m = /^(\w+)>(\w+)(?:\.(\d+))?$/.exec(t)
         if (m) this.fixedWires.push({ from: m[1], to: m[2], i: Number(m[3] ?? 0), fixed: true })
       }
@@ -1775,24 +1777,24 @@
       // (a coin thrown after others, which coin depending on a wire: on the left, one below the other)
       if (this.ctl?.[k]) return { x: 110, y: 170 + 115 * this.ctl.slice(0, k).filter(Boolean).length }
       const top = this.names.map((_, j) => j).filter(j => !this.ctl?.[j]), r = top.indexOf(k)
-      return { x: CW * (r + 1) / (top.length + 1), y: 48 }
+      return { x: this.CW * (r + 1) / (top.length + 1), y: 48 }
     }
-    get outAt() { return { x: CW / 2, y: CH - 46 } }
+    get outAt() { return { x: this.CW / 2, y: this.CH - 46 } }
     // the output box: with a truth table as target, the target drawn in it (a column per row)
     outBox() {
       if (this.random) {
         // the target on the board: a column for each value, its mass in the target and in the output
         const t = this.target, keys = axis(t.space, [...t.mass.keys()])
         const longest = Math.max(...keys.map(k => String(t.mass.get(k) ?? ZERO).length), 3)
-        const cols = keys.length, cw = Math.max(46, Math.min(Math.floor((CW - 104) / cols), longest * 8 + 14)), rh = 24
+        const cols = keys.length, cw = Math.max(46, Math.min(Math.floor((this.CW - 104) / cols), longest * 8 + 14)), rh = 24
         // (above the masses a small histogram: the target dashed, the output filled, for the p of the picture)
         const hist = 64, h = 12 + hist + 3 * rh + 8, w = 84 + cols * cw + 12
-        return { x: CW / 2, top: CH - 12 - h, w, h, cw, rh, keys, hist }
+        return { x: this.CW / 2, top: this.CH - 12 - h, w, h, cw, rh, keys, hist }
       }
       // (few rows: bigger coins)
       const n = this.names.length, cols = this.rows.length, cw = cols <= 4 ? 32 : 22, rh = cols <= 4 ? 28 : 20
       const h = 14 + n * rh + 10 + 2 * (rh + 4) + 6, w = 84 + cols * cw + 12
-      return { x: CW / 2, top: CH - 12 - h, w, h, cw, rh }
+      return { x: this.CW / 2, top: this.CH - 12 - h, w, h, cw, rh }
     }
     block(id) { return this.gatesOn.find(g => g.id === id) }
     // where a port is: outputs below a block, inputs above it
@@ -1839,8 +1841,8 @@
       if (!at) {
         const spots = []
         // (one below the other first: a chain of gates runs straight down)
-        for (const x of [CW / 2, CW / 2 - 135, CW / 2 + 135]) for (const y of this.binds ? [265, 345, 420] : [160, 260, 360]) spots.push({ x, y })
-        at = spots.find(s => !this.gatesOn.some(g => Math.abs(g.x - s.x) < GW && Math.abs(g.y - s.y) < (gateH(g.kind) + gateH(kind)) / 2 + 20)) ?? { x: CW / 2, y: CH / 2 }
+        for (const x of this.big ? [this.CW / 2, this.CW / 2 - 220, this.CW / 2 + 220] : [this.CW / 2, this.CW / 2 - 135, this.CW / 2 + 135]) for (const y of this.binds ? [265, 345, 420] : this.big ? [170, 280, 385, 490] : [160, 260, 360]) spots.push({ x, y })
+        at = spots.find(s => !this.gatesOn.some(g => Math.abs(g.x - s.x) < GW && Math.abs(g.y - s.y) < (gateH(g.kind) + gateH(kind)) / 2 + 20)) ?? { x: this.CW / 2, y: this.CH / 2 }
       }
       const c = this.clamp(at, kind)
       this.change(() => { this.gatesOn.push({ id: `g${this.seq++}`, kind, x: c.x, y: c.y, ...(GATES[kind].slots ? { maps: GATES[kind].shared ? [this.fmap] : [null, null] } : {}) }) })
@@ -1863,7 +1865,7 @@
     cycleSlot(id, i) {
       this.change(() => { const g = this.block(id); this.setMap(id, i, this.allowed[(this.allowed.indexOf(g.maps?.[i] ?? null) + 1) % this.allowed.length]) })
     }
-    clamp(a, kind) { const H = kind ? gateH(kind) : GH2; return { x: Math.max(GW / 2 + 6, Math.min(CW - GW / 2 - 6, a.x)), y: Math.max(90 + H / 2, Math.min(this.outBox().top - H / 2 - 30, a.y)) } }
+    clamp(a, kind) { const H = kind ? gateH(kind) : GH2; return { x: Math.max(GW / 2 + 6, Math.min(this.CW - GW / 2 - 6, a.x)), y: Math.max(90 + H / 2, Math.min(this.outBox().top - H / 2 - 30, a.y)) } }
     connect(from, to, i) {
       const kc = this.names.indexOf(to)
       if (kc >= 0 && [...this.deps(from)].some(d => this.names.indexOf(d) >= kc)) { this.flash(tr('The coin {y} can only depend on the coins thrown before it.', { y: to })); this.sel = null; this.render(); return }
@@ -2187,9 +2189,9 @@
     // ---- drawing
     render() {
       const done = this.done, shown = this.row !== null, row = this.rows[this.row ?? 0], vals = shown ? this.values(row) : {}
-      const s = svg('svg', { viewBox: `0 0 ${CW} ${CH}`, class: 'pg-svg pg-csvg' + (done ? ' pg-done' : '') })
+      const s = svg('svg', { viewBox: `0 0 ${this.CW} ${this.CH}`, class: 'pg-svg pg-csvg' + (done ? ' pg-done' : '') })
       this.svg = s
-      const bg = svg('rect', { class: 'pg-cbg', x: 0, y: 0, width: CW, height: CH })
+      const bg = svg('rect', { class: 'pg-cbg', x: 0, y: 0, width: this.CW, height: this.CH })
       bg.addEventListener('click', () => { if (this.sel || this.selWire !== null || this.selBlock) { this.sel = null; this.selWire = null; this.selBlock = null; this.render() } })
       s.append(bg)
       // the wires, with the coin each carries in the row shown
@@ -2453,7 +2455,7 @@
       if (!sc.clientHeight) return
       const top = f.s.getBoundingClientRect().top - sc.getBoundingClientRect().top + sc.scrollTop
       const avail = sc.clientHeight - top - (f.bar ? f.bar.offsetHeight + 8 : 0) - 10
-      f.box.style.maxWidth = `${Math.max(180, Math.min(CW, Math.floor(avail * CW / CH)))}px`
+      f.box.style.maxWidth = `${Math.max(180, Math.min(this.CW, Math.floor(avail * this.CW / this.CH)))}px`
     }
   }
   // a wire, from an output (above) to an input (below)
@@ -2518,8 +2520,7 @@
     { name: 'mul_one', kind: 'rule', sig: 'a * 1 = a', en: 'Times one.', de: 'Mal eins.' },
     { name: 'mul_zero', kind: 'rule', sig: 'a * 0 = 0', en: 'Times zero.', de: 'Mal null.' },
     { name: 'add_comm', kind: 'rule', sig: 'a + b = b + a', en: 'The order of a sum does not matter.', de: 'Die Reihenfolge einer Summe ist egal.' },
-    { name: 'mass_false', kind: 'lemma', sig: 'mass_false μ : μ false = 1 - μ true', en: 'Proved by you in One Coin: what is not at true is at false.', de: 'Von dir bewiesen in „Eine Münze“: Was nicht bei true liegt, liegt bei false.' },
-    { name: 'mass_true', kind: 'lemma', sig: 'mass_true μ : μ true = 1 - μ false', en: 'Proved by you in One Coin.', de: 'Von dir bewiesen in „Eine Münze“.' },
+    { name: 'mass_not', kind: 'lemma', sig: 'mass_not μ b : μ b = 1 - μ (!b)', en: 'Proved by you in One Coin: what is not at b lies at !b.', de: 'Von dir bewiesen in „Eine Münze“: Was nicht bei b liegt, liegt bei !b.' },
     { name: 'bool_ext', kind: 'lemma', sig: 'bool_ext μ ν (h : μ true = ν true) : μ = ν', en: 'Proved by you in One Coin: two distributions on Bool are the same when they have the same mass at true.', de: 'Von dir bewiesen in „Eine Münze“: Zwei Verteilungen auf Bool sind gleich, wenn sie bei true dieselbe Masse haben.' },
     { name: 'chance', kind: 'rule', sig: 'chance μ : I', en: 'The mass of μ at true, as a number in [0, 1] (what coin takes).', de: 'Die Masse von μ bei true, als Zahl in [0, 1] (was coin nimmt).' },
     { name: 'chance_eq', kind: 'rule', sig: '↑(chance μ) = μ true', en: 'chance μ, as a mass, is the mass at true.', de: 'chance μ, als Masse, ist die Masse bei true.' },
@@ -3080,6 +3081,7 @@
       ...level.funs.map(f => ['build:' + f, funLabel(f), el('div', 'pg-map-sym', FUNS[f].sym)])]
     if (level instanceof Grid) return level.moves.map(m => ['walk:' + m, tr(LABEL0[m]), null])
     if (level instanceof Bools) return level.moves.map(m => ['bool:' + m, tr(MOVESB[m].label), mapPicture(k => String(MOVESB[m].f(k === 'true')))])
+    if (level instanceof LeanOnly) return []
     if (level instanceof Circuit) return level.gates.map(g => ['circuit:' + g, tr(GATES[g].label), el('div', 'pg-map-sym', GATES[g].sym)])
     return r.dataset.moves.split(',').map(x => x.trim()).filter(Boolean).map(spec => {
       const m = parseMove(spec)
