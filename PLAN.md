@@ -15,10 +15,12 @@ Fixed rules (from the discussion):
 
 ## World ∧ — Circuits (board leads, Lean is one or two lines)
 
-The Lean statement of a circuit level is now **your circuit = the target table, as a function by
-cases**, e.g. `(x && y) = (fun | false, false => false | false, true => false | true, false => false
-| true, true => true) x y`. The table on the board and the right side in Lean are the same thing.
-No more `x && y = x && y`.
+The Lean statement of a circuit level is now **your circuit = the target table**, written as a
+decision input after input: `(x && y) = (bif x then (bif y then true else false) else (bif y then
+false else false))`. The table on the board and the right side in Lean are the same thing. No more
+`x && y = x && y`. (First planned as `fun | false, false => … | …`: Lean accepts it, but the proof
+states of the game's Lean server do not know the auxiliary definition that `fun | …` makes, so every
+tactic failed with "unknown name". `bif` has no such definition.)
 
 | # | level | board | Lean | new |
 |---|---|---|---|---|
@@ -34,8 +36,8 @@ No more `x && y = x && y`.
 | 14–16 | numbers, count, majority | toNat, plus | table with numbers | |
 
 (4 and 5 swap: `<;>` comes with one input, then is needed with two.)
-Lean texts added: how to read a statement (`example`, hypotheses, `:`, the goal after `⊢`), why the
-table is written `fun | … => …` (and Lean shows it as `match`).
+Lean texts added: how to read a statement (`example`, hypotheses, `:`, the goal after `⊢`, a tactic),
+how the table reads as `bif`.
 
 Later, not yet (the user's wish): Lean-only levels `x = true ∨ x = false` and the four maps
 `Bool → Bool` at the end of this world.
@@ -48,7 +50,7 @@ with a small histogram (target dashed, output filled) and the masses `p`, `1 - p
 
 | # | level | Lean | new |
 |---|---|---|---|
-| 1 | Where does the mass go? (not) | mass at true: `coin_not_true` | `rw`, `map_true`, `coin_true`, … |
+| 1 | Where does the mass go? (not) | mass at true (no lemma: the boss needs the computation again) | `rw`, `map_true`, `coin_true`, … |
 | 2 | What is not at true (Lean only) | `mass_false` | `mass_total`, `mass_ne_top`, `ENNReal.add_sub_cancel_left`, `exact` |
 | 3 | What is not at false (Lean only) | `mass_true` | `add_comm` |
 | 4 | One bar is enough (Lean only) | `bool_ext` | `ext`, `cases` |
@@ -57,12 +59,13 @@ with a small histogram (target dashed, output filled) and the masses `p`, `1 - p
 | 7 | Surely false | `map_pure`, `rfl` | `rfl`, `map_pure` |
 | 8 | From sides to numbers | `congr`, `funext`, `cases b <;> rfl` | `congr`, `funext`, `<;>` |
 | 9 | Surely zero | | |
-| 10 | Boss: flipping a coin | `coin_not` | |
+| 10 | Boss: flipping a coin | `coin_not`: `bool_ext` and the computation of level 1 (5 lines) | |
 
-## World 2 — Draw, then Compute (Lean leads; boards stay as they are)
+## World 2 — Draw, then Compute (Lean leads)
 
-Monad laws as rules, do-notation explained. The order is already right; the texts get a short
-explanation of `do`, `←` and `>>=` (Lean's way of writing "throw, then …").
+Monad laws as rules, do-notation explained (`do`, `←`, `>>=`, `fun x => …`). The boards are one-coin
+circuits too (as world 1); where the statement has a fixed number of `not`, the first ones are given.
+The boss ends at `coin (σ p)` and needs the boss of world 1, `coin_not`.
 
 ## World 3 — Building with Coins (now as circuits)
 
@@ -93,3 +96,14 @@ Hover does not exist there: a long press on an inventory chip shows its statemen
 
 - every solution only uses what came before (script), every new statement checked in Lean;
 - every level played in the browser with the mouse: board, then proof (`tests/playthrough.mjs`).
+
+## Done on 2026-11-14 (night)
+
+All of the above is built. Checked: every solution in Lean (worlds ∧ to 4); the order of
+introduction by script (nothing used before it comes); every level played in the browser with the
+mouse, desktop for all worlds, phone size for ∧, 3 and 4, and the edition `show` (boards only).
+Bosses: ∧ the majority (hardest board), 1 `coin_not` (5 lines, all of the world), 2 three flips (with
+`coin_not`), 3 the majority (9 lines), 4 three tries.
+
+Open: the Lean-only levels of world ∧ (`x = true ∨ x = false`, the four maps), `focus` per level,
+the monad branch (still the old worlds).
