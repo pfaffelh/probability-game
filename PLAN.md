@@ -29,8 +29,7 @@ tactic failed with "unknown name". `bif` has no such definition.)
 | 3 | Flipped twice | one not given | `!(!x) = x`: `cases x`, `rfl`, `rfl` | `cases`, lemma `Bool.not_not` |
 | 4 | Always true, without always true | x twice | `cases x <;> rfl` | `<;>` |
 | 5 | Both (and) | two inputs | `cases x <;> cases y <;> rfl` | |
-| 6 | De Morgan | or from and, not | `decide +revert` | `decide` |
-| 7–8 | xor, same | | `<;>` or `decide` | |
+| 6 | Exactly one (xor) | two inputs | `decide +revert` | `decide` |
 | 9–11 | bind (and, xor, if-then) | the bind gate | table again | |
 | 12–13 | the map f | f given | `rw [h, h]`; `decide +revert` | `rw` |
 | 14–16 | numbers, count, majority | toNat, plus | table with numbers | |
@@ -114,3 +113,5 @@ Its boards repeated earlier ones (not, a wire, two nots, always T). Its rules no
 `pure_bind` (level 7, `binom p 2`), `bind_pure` (`binom_add`); the do/←/>>= text is in its intro.
 `map_eq_pure_bind` is gone (nothing needed it). Worlds now: ∧, 1 One Coin, 2 Building with Coins,
 3 Coins that Wait.
+
+Circuits, 2026-11-14 evening (user): levels Both, Or without or (De Morgan), The same removed (trivial on board and in Lean); `decide` now comes with Exactly one. 13 levels.
