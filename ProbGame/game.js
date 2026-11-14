@@ -1558,7 +1558,7 @@
     // a gate built of two maps Bool → Bool: `c` chooses the map (the one for true or the one for
     // false), and `v` goes through it: `if c then f v else g v`; the maps are put into its two fields
     // (its inputs: c from the left side, below the fields, decides which field; v on top goes into both)
-    bind: { n: 2, inPos: [[-56, 68, 'left'], [0, 0]], h: 104, slots: 2, sym: 'bind', label: 'bind',
+    bind: { n: 2, inPos: [[-56, 18, 'left'], [0, 0]], h: 104, slots: 2, sym: 'bind', label: 'bind',
       f: ([c, v], gate) => { const m = gate?.maps?.[c ? 0 : 1]; return m ? MAPS[m].f(v) : null },
       lean: ([c, v], gate) => `if ${c} then ${gate?.maps?.[0] ? MAPS[gate.maps[0]].lean(v) : '?'} else ${gate?.maps?.[1] ? MAPS[gate.maps[1]].lean(v) : '?'}` },
     // an unknown map f: one field for one of the four maps, the same in every f on the board
@@ -1652,20 +1652,21 @@
       g.append(svg('text', { class: 'pg-csym pg-csym-f', x, y: y + H / 2 - 12, 'text-anchor': 'middle' }, 'f'))
       return g
     }
-    // the fields side by side, T and F. From v (on top) a fork into both: v goes through the field
-    // chosen. From c (the left side) a line below them, with an arrow up into each, T and F: c chooses
-    // the field. In the row shown (`on`: the value of c) the field not used and its lines fade.
+    // read from top to bottom: first c (the left side, near the top) chooses, a blue line above the
+    // fields with an arrow down into each, T and F; then v (on top) goes down and forks into both
+    // fields, and the field chosen applies its map. In the row shown (`on`: the value of c) the field
+    // not used and its lines fade.
     const g = svg('g'), H = GATES.bind.h, top = y - H / 2
     const off = i => on !== null && on !== undefined && (on ? 1 : 0) === i
-    const cx = i => x + (i ? 28 : -28)
-    g.append(svg('path', { class: 'pg-cbr pg-cbr-v', d: `M ${x} ${top} V ${top + 10}` }))
-    ;[0, 1].forEach(i => g.append(svg('path', { class: 'pg-cbr pg-cbr-v' + (off(i) ? ' pg-cbr-off' : ''), d: `M ${x} ${top + 10} H ${cx(i)} V ${top + 20} M ${cx(i) - 4} ${top + 15} L ${cx(i)} ${top + 20} L ${cx(i) + 4} ${top + 15}` })))
-    g.append(svg('path', { class: 'pg-cbr pg-cbr-c', d: `M ${x - GW / 2} ${top + 68} H ${cx(0)}` }))
-    g.append(svg('path', { class: 'pg-cbr pg-cbr-c' + (off(1) ? ' pg-cbr-off' : ''), d: `M ${cx(0)} ${top + 68} H ${cx(1)}` }))
+    const cx = i => x + (i ? 28 : -28), ax = i => x + (i ? 42 : -42), yc = top + 18, yf = top + 42
+    g.append(svg('path', { class: 'pg-cbr pg-cbr-c', d: `M ${x - GW / 2} ${yc} H ${ax(0)}` }))
+    g.append(svg('path', { class: 'pg-cbr pg-cbr-c' + (off(1) ? ' pg-cbr-off' : ''), d: `M ${ax(0)} ${yc} H ${ax(1)}` }))
+    g.append(svg('path', { class: 'pg-cbr pg-cbr-v', d: `M ${x} ${top} V ${top + 31}` }))
     ;[0, 1].forEach(i => {
-      g.append(svg('path', { class: 'pg-cbr pg-cbr-c' + (off(i) ? ' pg-cbr-off' : ''), d: `M ${cx(i)} ${top + 68} V ${top + 55} M ${cx(i) - 4} ${top + 60} L ${cx(i)} ${top + 55} L ${cx(i) + 4} ${top + 60}` }))
-      g.append(svg('text', { class: 'pg-cbr-label' + (off(i) ? ' pg-cbr-off' : ''), x: cx(i) + 9, y: top + 66, 'text-anchor': 'middle' }, i ? 'F' : 'T'))
-      const x0 = cx(i) - 24, y0 = top + 21, m = maps?.[i] ?? null
+      g.append(svg('path', { class: 'pg-cbr pg-cbr-c' + (off(i) ? ' pg-cbr-off' : ''), d: `M ${ax(i)} ${yc} V ${yf} M ${ax(i) - 4} ${yf - 5} L ${ax(i)} ${yf} L ${ax(i) + 4} ${yf - 5}` }))
+      g.append(svg('text', { class: 'pg-cbr-label' + (off(i) ? ' pg-cbr-off' : ''), x: x + (i ? 50 : -34), y: top + 13, 'text-anchor': 'middle' }, i ? 'F' : 'T'))
+      g.append(svg('path', { class: 'pg-cbr pg-cbr-v' + (off(i) ? ' pg-cbr-off' : ''), d: `M ${x} ${top + 31} H ${cx(i)} V ${yf} M ${cx(i) - 4} ${yf - 5} L ${cx(i)} ${yf} L ${cx(i) + 4} ${yf - 5}` }))
+      const x0 = cx(i) - 24, y0 = yf, m = maps?.[i] ?? null
       g.append(svg('rect', { class: 'pg-cslot' + (m ? ' pg-cslot-full' : '') + (off(i) ? ' pg-cbr-off' : ''), x: x0, y: y0, width: 48, height: 32, rx: 6, 'data-slot': i }))
       g.append(mapGlyph(m, x0, y0, 48, 32))
     })
@@ -1814,15 +1815,15 @@
       const g = svg('g', { class: 'pg-cinput pg-cwait' }), top = a.y - CTLH / 2, w = this.wireTo(x, 0)
       const on = vals && w ? vals[w.from] : null
       const off = i => on !== null && on !== undefined && (on ? 1 : 0) === i
-      const cx = i => a.x + (i ? 36 : -36), yc = a.y + 18
+      const cx = i => a.x + (i ? 36 : -36), ax = i => a.x + (i ? 58 : -58), yc = top + 16, yf = top + 34
       g.append(svg('rect', { class: 'pg-cbody', x: a.x - CTLW / 2, y: top, width: CTLW, height: CTLH, rx: 10 }))
-      g.append(svg('path', { class: 'pg-cbr pg-cbr-c', d: `M ${a.x - CTLW / 2} ${yc} H ${cx(0)}` }))
-      g.append(svg('path', { class: 'pg-cbr pg-cbr-c' + (off(1) ? ' pg-cbr-off' : ''), d: `M ${cx(0)} ${yc} H ${cx(1)}` }))
+      g.append(svg('path', { class: 'pg-cbr pg-cbr-c', d: `M ${a.x - CTLW / 2} ${yc} H ${ax(0)}` }))
+      g.append(svg('path', { class: 'pg-cbr pg-cbr-c' + (off(1) ? ' pg-cbr-off' : ''), d: `M ${ax(0)} ${yc} H ${ax(1)}` }))
       ;[0, 1].forEach(i => {
-        g.append(svg('path', { class: 'pg-cbr pg-cbr-c' + (off(i) ? ' pg-cbr-off' : ''), d: `M ${cx(i)} ${yc} V ${yc - 9} M ${cx(i) - 4} ${yc - 5} L ${cx(i)} ${yc - 9} L ${cx(i) + 4} ${yc - 5}` }))
-        g.append(svg('text', { class: 'pg-cbr-label' + (off(i) ? ' pg-cbr-off' : ''), x: cx(i) + 10, y: yc - 2, 'text-anchor': 'middle' }, i ? 'F' : 'T'))
-        g.append(svg('rect', { class: 'pg-cslot pg-cslot-full' + (off(i) ? ' pg-cbr-off' : ''), x: cx(i) - 32, y: top + 10, width: 64, height: 28, rx: 6 }))
-        g.append(svg('text', { class: 'pg-cfield' + (off(i) ? ' pg-cbr-off' : ''), x: cx(i), y: top + 28, 'text-anchor': 'middle' }, this.leanCoin(this.ctl[k][i])))
+        g.append(svg('path', { class: 'pg-cbr pg-cbr-c' + (off(i) ? ' pg-cbr-off' : ''), d: `M ${ax(i)} ${yc} V ${yf} M ${ax(i) - 4} ${yf - 5} L ${ax(i)} ${yf} L ${ax(i) + 4} ${yf - 5}` }))
+        g.append(svg('text', { class: 'pg-cbr-label' + (off(i) ? ' pg-cbr-off' : ''), x: a.x + (i ? 44 : -44), y: top + 29, 'text-anchor': 'middle' }, i ? 'F' : 'T'))
+        g.append(svg('rect', { class: 'pg-cslot pg-cslot-full' + (off(i) ? ' pg-cbr-off' : ''), x: cx(i) - 32, y: yf, width: 64, height: 28, rx: 6 }))
+        g.append(svg('text', { class: 'pg-cfield' + (off(i) ? ' pg-cbr-off' : ''), x: cx(i), y: yf + 18, 'text-anchor': 'middle' }, this.leanCoin(this.ctl[k][i])))
       })
       // (its name below, and in the row shown its value)
       const v = vals?.[x] ?? null
@@ -1836,7 +1837,7 @@
     // where a port is: outputs below a block, inputs above it
     port(id, kind, i = 0) {
       const k = this.names.indexOf(id)
-      if (k >= 0 && this.random && this.ctl[k]) { const a = this.inputAt(k); return kind === 'in' ? { x: a.x - CTLW / 2, y: a.y + 18, side: 'left' } : { x: a.x, y: a.y + CTLH / 2 } }
+      if (k >= 0 && this.random && this.ctl[k]) { const a = this.inputAt(k); return kind === 'in' ? { x: a.x - CTLW / 2, y: a.y - CTLH / 2 + 16, side: 'left' } : { x: a.x, y: a.y + CTLH / 2 } }
       if (k >= 0) { const a = this.inputAt(k); return kind === 'in' ? { x: a.x, y: a.y - 30 } : { x: a.x, y: a.y + 30 } }
       if (id === 'out') { const b = this.outBox(); return { x: b.x, y: b.top } }
       const g = this.block(id), n = GATES[g.kind].n
