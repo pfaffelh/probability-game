@@ -41,7 +41,7 @@ Spielfeld die Säulen für ein Beispiel-$`p` (der Schieberegler ändert es) und 
 Münze hundertmal geworfen, die Häufigkeiten nahe bei den Massen.
 :::
 
-::::circuit (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : (not <$> coin p) true = σ p") (lemma := "coin_not_true") (new := "rw, coin_true, coin_false, map_true, Bool.not_true, Bool.not_false, Bool.cond_true, Bool.cond_false, zero_add, Bool.not_not") (play := "a=not; x>a.0; a>out")
+::::circuit (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : (not <$> coin p) true = σ p") (new := "rw, coin_true, coin_false, map_true, Bool.not_true, Bool.not_false, Bool.cond_true, Bool.cond_false, zero_add, Bool.not_not") (play := "a=not; x>a.0; a>out")
 :::en
 *Where does the mass go?* The coin `x` is thrown at the top; below, the output with the target:
 `false` with mass $`p`, `true` with $`1 - p`. Put a `not` between them. Then look at `true`: its mass
@@ -70,7 +70,8 @@ The mass at `true` comes from `true` when `f true` is `true`, and from `false` w
 What is left is computing, one rule after another: `Bool.not_true : (!true) = false`,
 `Bool.not_false : (!false) = true`, `Bool.cond_false : (bif false then a else b) = b`,
 `Bool.cond_true : (bif true then a else b) = a`, `zero_add : 0 + a = a`, and
-`coin_false : (coin p) false = ↑(σ p)`. Your result becomes the lemma `coin_not_true`.
+`coin_false : (coin p) false = ↑(σ p)`. Keep this computation in mind: the boss of this world needs it
+again.
 
 *Tip.* `rw [map_true]`, `rw [Bool.not_true, Bool.not_false]`,
 `rw [Bool.cond_false, Bool.cond_true, zero_add]`, `rw [coin_false]` (type it, or tap the inventory,
@@ -94,7 +95,8 @@ wenn es `false` ist.
 Der Rest ist Rechnen, eine Regel nach der anderen: `Bool.not_true : (!true) = false`,
 `Bool.not_false : (!false) = true`, `Bool.cond_false : (bif false then a else b) = b`,
 `Bool.cond_true : (bif true then a else b) = a`, `zero_add : 0 + a = a` und
-`coin_false : (coin p) false = ↑(σ p)`. Dein Ergebnis wird das Lemma `coin_not_true`.
+`coin_false : (coin p) false = ↑(σ p)`. Merk dir diese Rechnung: Der Endgegner dieser Welt braucht sie
+noch einmal.
 
 *Tipp.* `rw [map_true]`, `rw [Bool.not_true, Bool.not_false]`,
 `rw [Bool.cond_false, Bool.cond_true, zero_add]`, `rw [coin_false]`.
@@ -418,34 +420,39 @@ rfl
 :::::only (edition := "main")
 ::::circuit (inputs := "x") (gates := "not, alwaysT, alwaysF, toNat") (coins := "p") (target := "bernoulli 1-p") (context := "Lean/Rules.lean") (proof := "(p : I) : not <$> coin p = coin (σ p)") (lemma := "coin_not") (play := "a=not; x>a.0; a>out")
 :::en
-*The boss: flip the coin.* Not just the bar at `true`: the whole coin.
+*The boss: flip the coin.* Not just the mass at `true`: the whole coin.
 :::
 
 :::de
-*Der Endgegner: Dreh die Münze um.* Nicht nur die Säule bei `true`: die ganze Münze.
+*Der Endgegner: Dreh die Münze um.* Nicht nur die Masse bei `true`: die ganze Münze.
 :::
 
 :::proofen
-Flipping turns the coin `p` into the coin $`1 - p`. Two distributions on `Bool` are the same when
-their bars at `true` are (`bool_ext`, your lemma), and you know the bar at `true` of the flipped
-coin (`coin_not_true`, from *Where does the mass go?*). Your result becomes the lemma `coin_not`, which the next worlds use
-all the time.
+Flipping turns the coin `p` into the coin $`1 - p`: the whole coin, not only its mass at `true`.
+Everything of this world comes together: two distributions on `Bool` are the same when their masses
+at `true` are (`bool_ext`, your lemma), and the mass at `true` of the flipped coin you computed in
+*Where does the mass go?*. Your result becomes the lemma `coin_not`, which the next worlds use all
+the time.
 
-*Tip.* `apply bool_ext`, then `rw` with your lemma and `coin_true`.
+*Tip.* `apply bool_ext`, then the computation of the first level, and at the end `coin_true`.
 :::
 
 :::proofde
-Umdrehen macht aus der Münze $`p` die Münze $`1 - p`. Zwei Verteilungen auf `Bool` sind gleich, wenn
-ihre Säulen bei `true` gleich sind (`bool_ext`, dein Lemma), und die Säule bei `true` der umgedrehten
-Münze kennst du (`coin_not_true`, aus *Wohin geht die Masse?*). Dein Ergebnis wird das Lemma `coin_not`, das die nächsten
-Welten ständig benutzen.
+Umdrehen macht aus der Münze $`p` die Münze $`1 - p`: die ganze Münze, nicht nur ihre Masse bei
+`true`. Alles aus dieser Welt kommt zusammen: Zwei Verteilungen auf `Bool` sind gleich, wenn ihre
+Massen bei `true` gleich sind (`bool_ext`, dein Lemma), und die Masse bei `true` der umgedrehten Münze
+hast du in *Wohin geht die Masse?* ausgerechnet. Dein Ergebnis wird das Lemma `coin_not`, das die
+nächsten Welten ständig benutzen.
 
-*Tipp.* `apply bool_ext`, dann `rw` mit deinem Lemma und `coin_true`.
+*Tipp.* `apply bool_ext`, dann die Rechnung des ersten Levels, und am Ende `coin_true`.
 :::
 :::solution
 ```
 apply bool_ext
-rw [coin_not_true, coin_true]
+rw [map_true]
+rw [Bool.not_true, Bool.not_false]
+rw [Bool.cond_false, Bool.cond_true, zero_add]
+rw [coin_false, coin_true]
 ```
 :::
 ::::

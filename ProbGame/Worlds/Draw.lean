@@ -231,7 +231,7 @@ rw [coin_const]
 :::
 ::::
 
-::::circuit (inputs := "x") (gates := "not") (coins := "p") (target := "bernoulli 1-p") (start := "a=not; b=not; x>a.0; a>b.0") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let y ← (do let x ← coin p; pure (!x)); let z ← pure (!y); pure (!z)) = not <$> coin p") (play := "c=not; b>c.0; c>out")
+::::circuit (inputs := "x") (gates := "not") (coins := "p") (target := "bernoulli 1-p") (start := "a=not; b=not; x>a.0; a>b.0") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let y ← (do let x ← coin p; pure (!x)); let z ← pure (!y); pure (!z)) = coin (σ p)") (play := "c=not; b>c.0; c>out")
 :::en
 *The boss: three flips.* Flip the coin three times; two `not` are there already.
 :::
@@ -241,23 +241,26 @@ rw [coin_const]
 :::
 
 :::proofen
-A `do` block in a `do` block, and a sure draw after it: all the rules of this world. In the end, the
-`do` block is a move again.
+A `do` block in a `do` block, and a sure draw after it: all the rules of this world, and the boss of
+*One Coin*. In the end, the `do` block is a gate again (`map_eq_pure_bind` from right to left), and the
+flipped coin is the coin $`1 - p`.
 
-*Tip.* `rw [bind_assoc]`, `simp only [pure_bind, Bool.not_not]`, `rw [map_eq_pure_bind]`.
+*Tip.* `rw [bind_assoc]`, `simp only [pure_bind, Bool.not_not]`, `rw [← map_eq_pure_bind]`, `rw [coin_not]`.
 :::
 
 :::proofde
-Ein `do`-Block in einem `do`-Block und danach ein sicheres Ziehen: alle Regeln dieser Welt. Am Ende
-ist der `do`-Block wieder ein Zug.
+Ein `do`-Block in einem `do`-Block und danach ein sicheres Ziehen: alle Regeln dieser Welt, und der
+Endgegner von *Eine Münze*. Am Ende ist der `do`-Block wieder ein Baustein (`map_eq_pure_bind` von rechts
+nach links), und die umgedrehte Münze ist die Münze $`1 - p`.
 
-*Tipp.* `rw [bind_assoc]`, `simp only [pure_bind, Bool.not_not]`, `rw [map_eq_pure_bind]`.
+*Tipp.* `rw [bind_assoc]`, `simp only [pure_bind, Bool.not_not]`, `rw [← map_eq_pure_bind]`, `rw [coin_not]`.
 :::
 :::solution
 ```
 rw [bind_assoc]
 simp only [pure_bind, Bool.not_not]
-rw [map_eq_pure_bind]
+rw [← map_eq_pure_bind]
+rw [coin_not]
 ```
 :::
 ::::

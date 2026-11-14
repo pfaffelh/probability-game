@@ -134,7 +134,7 @@ header .pg-langs { align-self: center; margin: 0 0.8em 0 0.5em; flex-shrink: 0; 
 .pg-proof-lines li { padding: 0.1em 0; color: #1f6b27; }
 .pg-goals { display: flex; flex-direction: column; gap: 0.4rem; margin: 0.4rem 0; }
 .pg-goal { background: #fffaf0; border: 1px solid #e3d5bb; border-radius: 8px; padding: 0.3em 0.6em; overflow-x: auto; }
-.pg-goal pre { margin: 0; font-size: 0.86em; line-height: 1.35; }
+.pg-goal pre { margin: 0; font-size: 0.86em; line-height: 1.35; white-space: pre-wrap; overflow-wrap: anywhere; }
 .pg-goal-later { opacity: 0.7; }
 .pg-goal-later summary { cursor: pointer; }
 .pg-goal-no { font-size: 0.75em; color: #8f7a55; font-family: var(--verso-structure-font-family, sans-serif); }
