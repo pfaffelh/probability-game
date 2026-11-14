@@ -12,25 +12,23 @@ number := false
 %%%
 
 :::en
-Maps with several inputs, built from gates, as circuits are. The inputs `x`, `y` are above, the
-output below. Drag gates from the side onto the board (or tap them), and draw wires: from an output,
+Maps built from gates, as circuits are. The input `x` is above, the output below. Drag gates from the side onto the board (or tap them), and draw wires: from an output,
 the dot below a block, to an input, the circle above one (tap the one and then the other, or drag).
 The target is a *truth table*: the output for every row of inputs. Tap a row, and its coins are on
 the board.
 
-Each level has a second half in Lean: there your circuit is a function of `x` and `y`, and the
+Each level has a second half in Lean: there your circuit is a function of its input, and the
 statement says that it is the target table. The Lean half is short here; it grows in the worlds that
 follow.
 :::
 
 :::de
-Abbildungen mit mehreren Eingängen, gebaut aus Bausteinen, wie Schaltungen. Die Eingänge `x`, `y`
-sind oben, der Ausgang unten. Zieh Bausteine vom Rand aufs Spielfeld (oder tippe sie an) und ziehe
+Abbildungen, gebaut aus Bausteinen, wie Schaltungen. Der Eingang `x` ist oben, der Ausgang unten. Zieh Bausteine vom Rand aufs Spielfeld (oder tippe sie an) und ziehe
 Drähte: von einem Ausgang, dem Punkt unter einem Baustein, zu einem Eingang, dem Kreis darüber (tippe
 den einen und dann den anderen an, oder zieh). Das Ziel ist eine *Wahrheitstafel*: der Ausgang für
 jede Zeile der Eingänge. Tippe eine Zeile an, und ihre Münzen liegen auf dem Spielfeld.
 
-Jedes Level hat eine zweite Hälfte in Lean: Dort ist deine Schaltung eine Funktion von `x` und `y`,
+Jedes Level hat eine zweite Hälfte in Lean: Dort ist deine Schaltung eine Funktion ihres Eingangs,
 und die Aussage sagt, dass sie die Zieltafel ist. Die Lean-Hälfte ist hier kurz; sie wächst in den
 Welten danach.
 :::
@@ -183,69 +181,6 @@ Entscheidung geschrieben: `bif x then true else true` ist `true`, wenn `x` `true
 :::solution
 ```
 cases x <;> rfl
-```
-:::
-::::
-
-::::circuit (inputs := "x y") (gates := "and, or, not") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : ((x || y) && !(x && y)) = (bif x then (bif y then false else true) else (bif y then true else false))") (new := "decide") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out")
-:::en
-*Exactly one.* Two inputs now, and four rows: one for each pair of values. `true` when exactly one
-input is `true`: at least one, but not both. In Lean this is `xor`, written `x ^^ y`.
-:::
-
-:::de
-*Genau eines.* Jetzt zwei Eingänge und vier Zeilen: eine für jedes Paar von Werten. `true`, wenn
-genau ein Eingang `true` ist: mindestens einer, aber nicht beide. In Lean ist das `xor`, geschrieben
-`x ^^ y`.
-:::
-
-:::proofen
-The table has four rows now, one for each pair of values: first `x` decides, then `y`, a `bif` in
-each branch of a `bif`. `cases x` makes two goals; in each, `cases y` makes two more: four goals, the
-four rows. With `<;>` in one line: `cases x <;> cases y <;> rfl`. The tactic `decide` does that for
-you: it reduces a statement about `Bool` until it is `true` or `false`. `decide +revert` first takes
-the variables into the statement, here `∀ x y, …`, and so checks every row.
-
-*Tip.* `cases x <;> cases y <;> rfl`, or `decide +revert`.
-:::
-
-:::proofde
-Die Tafel hat jetzt vier Zeilen, eine für jedes Paar von Werten: erst entscheidet `x`, dann `y`, ein
-`bif` in jedem Zweig eines `bif`. `cases x` macht zwei Ziele; in jedem macht `cases y` zwei weitere:
-vier Ziele, die vier Zeilen. Mit `<;>` in einer Zeile: `cases x <;> cases y <;> rfl`. Die Taktik
-`decide` macht das für dich: Sie reduziert eine Aussage über `Bool`, bis sie `true` oder `false` ist.
-`decide +revert` nimmt zuerst die Variablen in die Aussage, hier `∀ x y, …`, und prüft so jede Zeile.
-
-*Tipp.* `cases x <;> cases y <;> rfl`, oder `decide +revert`.
-:::
-:::solution
-```
-decide +revert
-```
-:::
-::::
-
-::::circuit (size := "big") (inputs := "x y z") (gates := "and, or") (table := "00010111") (goal := "decide (2 ≤ x.toNat + y.toNat + z.toNat)") (proof := "(x y z : Bool) : ((x && y) || (x && z) || (y && z)) = (bif x then (bif y then (bif z then true else true) else (bif z then true else false)) else (bif y then (bif z then true else false) else (bif z then false else false)))") (play := "a=and; b=and; c=and; d=or; e=or; x>a.0; y>a.1; x>b.0; z>b.1; y>c.0; z>c.1; a>d.0; b>d.1; d>e.0; c>e.1; e>out")
-:::en
-*The boss: the majority of three.* `true` when at least two of the three inputs are. Eight rows.
-In Lean the target counts: `x.toNat` is `1` for `true` and `0` for `false`.
-:::
-
-:::de
-*Der Endgegner: die Mehrheit von dreien.* `true`, wenn mindestens zwei der drei Eingänge es sind.
-Acht Zeilen. In Lean zählt das Ziel: `x.toNat` ist `1` für `true` und `0` für `false`.
-:::
-
-:::proofen
-*Tip.* `decide +revert`: eight rows.
-:::
-
-:::proofde
-*Tipp.* `decide +revert`: acht Zeilen.
-:::
-:::solution
-```
-decide +revert
 ```
 :::
 ::::

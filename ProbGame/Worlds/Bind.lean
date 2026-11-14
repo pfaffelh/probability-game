@@ -73,10 +73,18 @@ darauf an. In Lean:
 :::
 
 :::proofen
+Two inputs now, so the table has four rows, one for each pair of values: first `x` decides, then
+`y`, a `bif` in each branch of a `bif`. By hand: `cases x <;> cases y <;> rfl`, the four rows; or
+`decide +revert` (from *Maps*), which checks them all.
+
 *Tip.* `decide +revert`.
 :::
 
 :::proofde
+Jetzt zwei Eingänge, also hat die Tafel vier Zeilen, eine für jedes Paar von Werten: erst entscheidet
+`x`, dann `y`, ein `bif` in jedem Zweig eines `bif`. Von Hand: `cases x <;> cases y <;> rfl`, die
+vier Zeilen; oder `decide +revert` (aus *Abbildungen*), das alle prüft.
+
 *Tipp.* `decide +revert`.
 :::
 :::solution
