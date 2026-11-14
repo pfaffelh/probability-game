@@ -1616,17 +1616,35 @@
     'Wire the Output: tap the last gate, then Output.': 'Verdrahte den Ausgang: tippe den letzten Baustein an, dann den Ausgang.', 'Drag gates onto the board, or tap them.': 'Zieh Bausteine aufs Spielfeld, oder tippe sie an.',
     'Task: build a circuit whose output is the target, in every row.': 'Aufgabe: Bau eine Schaltung, deren Ausgang in jeder Zeile das Ziel ist.',
     'Task: build a circuit whose output has the distribution of the target.': 'Aufgabe: Bau eine Schaltung, deren Ausgang die Verteilung des Ziels hat.',
-    'Tap a row to see its coins on the board.': 'Tippe eine Zeile an, um ihre Münzen auf dem Spielfeld zu sehen.',
+    'Tap a row to see its coins on the board.': 'Tippe eine Zeile an, um ihre Münzen auf dem Spielfeld zu sehen.', 'Drag the coin into a field, T or F.': 'Zieh die Münze in ein Feld, T oder F.', 'Fill {y}: drag a coin into the field T and one into F (or tap a field).': 'Füll {y}: zieh eine Münze ins Feld T und eine ins Feld F (oder tippe ein Feld an).',
     'P(row)': 'P(Zeile)', 'thrown': 'geworfen', '{n} throws': '{n} Würfe', 'a coin: true with probability': 'eine Münze: true mit Wahrscheinlichkeit', 'The mass of each output: the sum of P over its rows.': 'Die Masse jedes Ausgangs: die Summe von P über seine Zeilen.',
   })
   // the bin: one for the page, shown while a gate is dragged
   const trashCan = () => document.querySelector('body > .pg-bin') ?? document.body.appendChild(el('div', 'pg-bin', '🗑'))
   const CW = 480, CH = 620, GW = 112, GH2 = 60
   // (a coin that waits: a bind box, its two fields hold the coins for true and for false)
-  const CTLW = 150, CTLH = 82
+  const CTLW = 160, CTLH = 104
+  // the distributions a field of a waiting coin can take, and their picture: a small histogram (false,
+  // true, for the p of the picture) and the name
+  const DISTS = ['p', '1-p', '1', '0']
+  const distName = c => c === 'p' ? 'coin p' : c === '1-p' ? 'coin (σ p)' : c === '0' ? 'pure false' : c === '1' ? 'pure true' : `coin (${c})`
+  function distGlyph(c, x0, y0, w, h) {
+    const g = svg('g', { class: 'pg-dglyph' })
+    if (c === null || c === undefined) { g.append(svg('text', { class: 'pg-cfield pg-cfield-empty', x: x0 + w / 2, y: y0 + h / 2 + 4, 'text-anchor': 'middle' }, '?')); return g }
+    const t = parsePoly(c).value(P), base = y0 + h - 13, hh = h - 18, bw = 9
+    g.append(svg('line', { class: 'pg-dbase', x1: x0 + w / 2 - 16, y1: base, x2: x0 + w / 2 + 16, y2: base }))
+    ;[[1 - t, -8, 'f'], [t, 8, 't']].forEach(([m, dx, k]) => g.append(svg('rect', { class: 'pg-dbar pg-dbar-' + k, x: x0 + w / 2 + dx - bw / 2, y: base - m * hh, width: bw, height: Math.max(0.5, m * hh) })))
+    g.append(svg('text', { class: 'pg-cfield', x: x0 + w / 2, y: y0 + h - 3, 'text-anchor': 'middle' }, distName(c)))
+    return g
+  }
   // a gate as it lies on the board (box, sign, name, its inputs above, its output below), for the
   // buttons beside the board, the ＋ list and the gate being dragged
   const gateIcon = kind => {
+    if (kind.startsWith('dist:')) {
+      const c = kind.slice(5), s = svg('svg', { viewBox: '0 0 72 50', class: 'pg-gate-icon pg-map-icon pg-dist-icon' })
+      s.append(svg('rect', { class: 'pg-cslot pg-cslot-full', x: 2, y: 2, width: 68, height: 46, rx: 6 }), distGlyph(c, 2, 2, 68, 46))
+      return s
+    }
     if (kind.startsWith('map:')) {
       const m = kind.slice(4), s = svg('svg', { viewBox: '0 0 64 58', class: 'pg-gate-icon pg-map-icon' })
       s.append(svg('rect', { class: 'pg-cslot pg-cslot-full', x: 7, y: 2, width: 50, height: 34, rx: 6 }), mapGlyph(m, 7, 2, 50, 34))
@@ -1736,8 +1754,10 @@
       this.random = this.coins.length > 0
       // a coin thrown after others, which coin depending on a wire (bind): `q|r` is
       // `if c then coin q else coin r`, with `c` what the player wires into it (`0`, `1`: pure false, true)
-      this.ctl = this.random ? this.coins.map(c => (c.includes('|') ? c.split('|') : null)) : ins.map(t => (t.includes(':') ? t.split(':')[1].split('|') : null))
-      this.binds = this.ctl.some(Boolean)
+      // (`?|?`: the fields are open, the player puts a distribution into each)
+      this.ctl0 = this.random ? this.coins.map(c => (c.includes('|') ? c.split('|') : null)) : ins.map(t => (t.includes(':') ? t.split(':')[1].split('|') : null))
+      this.binds = this.ctl0.some(Boolean)
+      this.openFields = this.ctl0.some(c => c?.includes('?'))
       // (`target := "f bernoulli p"`: the target is the distribution pushed through the map in `f`)
       this.targetF = this.random && /^f\s/.test(d.target)
       this.target0 = this.random ? parseDist(d.target.replace(/^f\s+/, '')) : null
@@ -1754,7 +1774,11 @@
 
     // ---- the circuit: the fixed blocks (inputs, output) and the gates and wires of the player
     // what lies beside the board: the gates, and with bind the four maps for its fields
-    get paletteKinds() { return this.gates.some(k => GATES[k].slots) ? [...this.gates, ...this.allowed.map(m => 'map:' + m)] : this.gates }
+    // the coins of a waiting coin: as the level says, or as the player chose (null: still open)
+    get ctl() { return this.ctl0.map((c, k) => c && c.map((v, i) => (v === '?' ? (this.picks?.[k]?.[i] ?? null) : v))) }
+    get paletteKinds() {
+      if (this.openFields) return [...this.gates, ...DISTS.map(d => 'dist:' + d)]
+      return this.gates.some(k => GATES[k].slots) || this.fixedGates.some(f => GATES[f.kind].slots) ? [...this.gates, ...this.allowed.map(m => 'map:' + m)] : this.gates }
     // the map in f (the same in every f)
     get target() {
       const t = this.target0, m = this.fmap
@@ -1776,6 +1800,7 @@
       this.putFixed()
       this.seq = saved?.seq ?? 1
       this.seen = saved?.seen ?? []       // (with every) the maps f for which the circuit was right
+      this.picks = saved?.picks ?? {}     // the coins in the open fields of waiting coins: { k: [T, F] }
       // (what was saved before the level changed: gates of kinds it has not, wires to what is not there)
       this.gatesOn = this.gatesOn.filter(g => GATES[g.kind] && !this.names.includes(g.id) && g.id !== 'out')
       this.wires = this.wires.filter(w => (this.names.includes(w.from) || this.block(w.from)) && (w.to === 'out' || this.block(w.to) || this.ctl[this.names.indexOf(w.to)]) && w.i < this.inputsOf(w.to))
@@ -1785,10 +1810,10 @@
       for (const f of this.fixedGates) if (!this.block(f.id)) this.gatesOn.unshift({ ...f })
       for (const f of this.fixedWires) if (!this.wires.some(w => w.from === f.from && w.to === f.to && w.i === f.i)) { this.wires = this.wires.filter(w => !(w.to === f.to && w.i === f.i)); this.wires.unshift({ ...f }) }
     }
-    save() { try { localStorage.setItem(this.key + ':circuit', JSON.stringify({ gates: this.gatesOn, wires: this.wires, seq: this.seq, seen: this.seen })) } catch {} }
+    save() { try { localStorage.setItem(this.key + ':circuit', JSON.stringify({ gates: this.gatesOn, wires: this.wires, seq: this.seq, seen: this.seen, picks: this.picks })) } catch {} }
     inputAt(k) {
       // (a coin thrown after others, which coin depending on a wire: on the left, one below the other)
-      if (this.ctl?.[k]) return this.random ? { x: this.CW / 2, y: 180 + 125 * this.ctl.slice(0, k).filter(Boolean).length } : { x: 110, y: 170 + 115 * this.ctl.slice(0, k).filter(Boolean).length }
+      if (this.ctl0?.[k]) return this.random ? { x: this.CW / 2, y: 185 + 140 * this.ctl0.slice(0, k).filter(Boolean).length } : { x: 110, y: 170 + 115 * this.ctl.slice(0, k).filter(Boolean).length }
       const top = this.names.map((_, j) => j).filter(j => !this.ctl?.[j]), r = top.indexOf(k)
       return { x: this.CW * (r + 1) / (top.length + 1), y: 48 }
     }
@@ -1816,18 +1841,21 @@
       const g = svg('g', { class: 'pg-cinput pg-cwait' }), top = a.y - CTLH / 2, w = this.wireTo(x, 0)
       const on = vals && w ? vals[w.from] : null
       const off = i => on !== null && on !== undefined && (on ? 1 : 0) === i
-      const cx = i => a.x + (i ? 36 : -36), yf = top + 26
+      const cx = i => a.x + (i ? 40 : -40), yf = top + 26, fw = 70, fh = 52
       g.append(svg('rect', { class: 'pg-cbody', x: a.x - CTLW / 2, y: top, width: CTLW, height: CTLH, rx: 10 }))
       g.append(svg('path', { class: 'pg-cbr pg-cbr-c', d: `M ${a.x} ${top} V ${top + 10}` }))
       ;[0, 1].forEach(i => {
+        const c = this.ctl[k][i], open = this.ctl0[k][i] === '?'
         g.append(svg('path', { class: 'pg-cbr pg-cbr-c' + (off(i) ? ' pg-cbr-off' : ''), d: `M ${a.x} ${top + 10} H ${cx(i)} V ${yf} M ${cx(i) - 4} ${yf - 5} L ${cx(i)} ${yf} L ${cx(i) + 4} ${yf - 5}` }))
         g.append(svg('text', { class: 'pg-cbr-label' + (off(i) ? ' pg-cbr-off' : ''), x: cx(i) + (i ? 10 : -10), y: top + 22, 'text-anchor': 'middle' }, i ? 'F' : 'T'))
-        g.append(svg('rect', { class: 'pg-cslot pg-cslot-full' + (off(i) ? ' pg-cbr-off' : ''), x: cx(i) - 32, y: yf, width: 64, height: 28, rx: 6 }))
-        g.append(svg('text', { class: 'pg-cfield' + (off(i) ? ' pg-cbr-off' : ''), x: cx(i), y: yf + 18, 'text-anchor': 'middle' }, this.leanCoin(this.ctl[k][i])))
+        const f = svg('g', { class: 'pg-cwfield' + (off(i) ? ' pg-cbr-off' : '') + (open ? ' pg-cwfield-open' : '') })
+        f.append(svg('rect', { class: 'pg-cslot' + (c ? ' pg-cslot-full' : ''), x: cx(i) - fw / 2, y: yf, width: fw, height: fh, rx: 6 }), distGlyph(c, cx(i) - fw / 2, yf, fw, fh))
+        if (open) f.addEventListener('click', ev => { if (this.sel) return; ev.stopPropagation(); this.cycleField(k, i) })
+        g.append(f)
       })
       // (its name below, and in the row shown its value)
       const v = vals?.[x] ?? null
-      g.append(svg('text', { class: 'pg-cname', x: a.x, y: a.y + CTLH / 2 - 8, 'text-anchor': 'middle' }, v === null || v === undefined ? x : `${x} = ${v ? 'T' : 'F'}`))
+      g.append(svg('text', { class: 'pg-cname', x: a.x + CTLW / 2 - 6, y: a.y + CTLH / 2 - 6, 'text-anchor': 'end' }, v === null || v === undefined ? x : `${x} = ${v ? 'T' : 'F'}`))
       addPort(g, x, 'out')
       addPort(g, x, 'in', 0)
       g.addEventListener('click', ev => { if (!ev.target.closest('.pg-cport')) this.tapOut(x) })
@@ -1864,18 +1892,19 @@
       return false
     }
     change(f) {
-      this.history.push(JSON.stringify({ gates: this.gatesOn, wires: this.wires, seq: this.seq }))
+      this.history.push(JSON.stringify({ gates: this.gatesOn, wires: this.wires, seq: this.seq, picks: this.picks }))
       f(); this.save(); this.sel = null; this.selWire = null; this.selBlock = null
       this.render(); this.check()
     }
-    undo() { const h = this.history.pop(); if (!h) return; const o = JSON.parse(h); this.gatesOn = o.gates; this.wires = o.wires; this.seq = o.seq; this.save(); this.render() }
+    undo() { const h = this.history.pop(); if (!h) return; const o = JSON.parse(h); this.gatesOn = o.gates; this.wires = o.wires; this.seq = o.seq; this.picks = o.picks ?? {}; this.save(); this.render() }
     // (something on the board beyond what the level starts with: also after a reload, with no history)
-    get canReset() { return this.gatesOn.length > this.fixedGates.length || this.wires.length > this.fixedWires.length || this.gatesOn.some(g => g.maps?.some(Boolean)) }
-    reset() { if (!this.canReset) return; this.change(() => { this.gatesOn = []; this.wires = []; this.seq = 1; this.seen = []; this.putFixed() }) }
+    get canReset() { return this.gatesOn.length > this.fixedGates.length || this.wires.length > this.fixedWires.length || this.gatesOn.some(g => g.maps?.some(Boolean)) || Object.values(this.picks ?? {}).some(p => p.some(Boolean)) }
+    reset() { if (!this.canReset) return; this.change(() => { this.gatesOn = []; this.wires = []; this.seq = 1; this.seen = []; this.picks = {}; this.putFixed() }) }
     get canUndo() { return this.history.length > 0 }
     // a gate: where it is dropped, or in the first free place
     addGate(kind, at) {
       if (kind.startsWith('map:')) return this.putMap(kind.slice(4), at)
+      if (kind.startsWith('dist:')) return this.putDist(kind.slice(5), at)
       if (!at) {
         const spots = []
         // (one below the other first: a chain of gates runs straight down)
@@ -1886,6 +1915,22 @@
       this.change(() => { this.gatesOn.push({ id: `g${this.seq++}`, kind, x: c.x, y: c.y, ...(GATES[kind].slots ? { maps: GATES[kind].shared ? [this.fmap] : [null, null] } : {}) }) })
     }
     // a map into a field of bind: where it is dropped (the field on that side), or a tap: the first empty field
+    // a distribution into an open field of a waiting coin: where it is dropped, or a tap: the first empty one
+    putDist(c, at) {
+      const ks = this.names.map((_, k) => k).filter(k => this.ctl0[k]?.includes('?'))
+      let k = null, i = 0
+      if (at) {
+        k = ks.find(j => { const a = this.inputAt(j); return Math.abs(at.x - a.x) <= CTLW / 2 + 10 && Math.abs(at.y - a.y) <= CTLH / 2 + 10 }) ?? null
+        if (k !== null) i = at.x > this.inputAt(k).x ? 1 : 0
+      } else {
+        for (const j of ks) { const e = [0, 1].find(f => this.ctl0[j][f] === '?' && !this.picks?.[j]?.[f]); if (e !== undefined) { k = j; i = e; break } }
+      }
+      if (k === null || this.ctl0[k][i] !== '?') { this.flash(tr('Drag the coin into a field, T or F.')); return }
+      this.change(() => { const p = [...(this.picks[k] ?? [null, null])]; p[i] = c; this.picks = { ...this.picks, [k]: p } })
+    }
+    cycleField(k, i) {
+      this.change(() => { const p = [...(this.picks[k] ?? [null, null])]; p[i] = DISTS[(DISTS.indexOf(p[i]) + 1) % DISTS.length]; this.picks = { ...this.picks, [k]: p } })
+    }
     putMap(m, at) {
       const binds = this.gatesOn.filter(g => GATES[g.kind].slots)
       let gate = null, i = 0
@@ -1972,7 +2017,7 @@
       let m = ONE
       for (let k = 0; k < row.length; k++) {
         let q
-        if (this.ctl[k]) { const w = this.wireTo(this.names[k], 0), c = w ? vals[w.from] : null; if (c === null || c === undefined) return null; q = parsePoly(this.ctl[k][c ? 0 : 1]) }
+        if (this.ctl[k]) { const w = this.wireTo(this.names[k], 0), c = w ? vals[w.from] : null; if (c === null || c === undefined) return null; const a = this.ctl[k][c ? 0 : 1]; if (a === null) return null; q = parsePoly(a) }
         else q = parsePoly(this.coins[k] ?? 'p')
         m = m.mul(row[k] ? q : complement(q))
       }
@@ -2043,7 +2088,7 @@
       const n = this.inputsOf(id), ins = [...Array(n).keys()].map(i => { const w = this.wireTo(id, i); return w ? this.leanExpr(w.from) : '?' })
       return id === 'out' ? ins[0] : GATES[this.block(id).kind].lean(ins, this.block(id))
     }
-    leanCoin(c) { return c === 'p' ? 'coin p' : c === '1-p' ? 'coin (σ p)' : c === '0' ? 'pure false' : c === '1' ? 'pure true' : `coin (${c})` }
+    leanCoin(c) { return c === null || c === undefined ? '?' : distName(c) }
     // a dependent input without coins: the values it may take, `if c then {F, T} else {F}`
     setOf(k) {
       const w = this.wireTo(this.names[k], 0), set = a => (a === '*' ? '{F, T}' : a === '1' ? '{T}' : '{F}')
@@ -2081,6 +2126,8 @@
       if (this.sel?.kind === 'out') return tr('Now tap where it goes: a gate, or Output.')
       if (this.sel?.kind === 'in') return tr('Now tap where it comes from: a coin above, or a gate.')
       const loose = this.names.find((x, k) => this.ctl[k] && !this.wireTo(x, 0))
+      const unfilled = this.names.find((x, k) => this.ctl[k]?.some(v => v === null))
+      if (unfilled && !loose) return tr('Fill {y}: drag a coin into the field T and one into F (or tap a field).', { y: unfilled })
       if (loose) return tr('Wire the coin {y}: which coin it is depends on a wire into it, from a coin above or a gate.', { y: loose })
       // (a level without gates: a wire only)
       if (!this.gates.length && !this.wires.length) return tr('Tap {x}, then the Output.', { x: this.names[0] })
@@ -2262,16 +2309,21 @@
         this.makePort(c, id, kind, i)
         g.append(c)
       }
-      // (three coins or more: their names alone above them, and what they are in one line on top)
-      const top = this.names.filter((_, j) => !this.ctl[j])
-      if (this.random && top.length >= 3) {
-        const cs = this.coins.filter((_, j) => !this.ctl[j])
-        s.append(svg('text', { class: 'pg-cname pg-ccaption', x: 10, y: 11 }, cs.every(c => c === cs[0]) ? `${top.join(', ')} ← ${this.leanCoin(cs[0])}` : top.map((x, j) => `${x} ← ${this.leanCoin(cs[j])}`).join(', ')))
-      }
       // the inputs: a coin each, with its value in the row shown
       this.names.forEach((x, k) => {
         const a = this.inputAt(k), g = svg('g', { class: 'pg-cinput' })
         if (this.random && this.ctl[k]) { s.append(this.waitingCoin(x, k, a, shown ? vals : null, addPort)); return }
+        // (a coin on top: the small block of its distribution, with its histogram; its name on the left;
+        // in the row shown its value beside it)
+        if (this.random) {
+          g.append(svg('rect', { class: 'pg-cslot pg-cslot-full pg-cinput-block', x: a.x - 34, y: a.y - 23, width: 68, height: 46, rx: 6 }), distGlyph(this.coins[k], a.x - 34, a.y - 23, 68, 46))
+          g.append(svg('text', { class: 'pg-cname', x: a.x - 40, y: a.y + 5, 'text-anchor': 'end' }, `${x} ←`))
+          if (shown) { const v = row[k], chip = svg('g', { class: 'pg-gchip pg-gchip-' + v }); chip.append(svg('circle', { cx: a.x + 46, cy: a.y + 12, r: 10 }), svg('text', { class: 'pg-gchip-big', x: a.x + 46, y: a.y + 16, 'text-anchor': 'middle' }, v ? 'T' : 'F')); g.append(chip) }
+          g.append(svg('line', { class: 'pg-cinput-stem', x1: a.x, y1: a.y + 23, x2: a.x, y2: a.y + 30 }))
+          addPort(g, x, 'out')
+          g.addEventListener('click', ev => { if (!ev.target.closest('.pg-cport')) this.tapOut(x) })
+          s.append(g); return
+        }
         if (this.ctl[k]) g.append(svg('text', { class: 'pg-cname', x: a.x + 30, y: a.y + 5 }, this.random ? `${x} ← ${this.leanCoinOf(k)}` : `${x} ∈ ${this.setOf(k)}`))
         else g.append(svg('text', { class: 'pg-cname', x: a.x, y: a.y - (this.random && this.names.filter((_, j) => !this.ctl[j]).length < 3 ? 26 : 19), 'text-anchor': 'middle' }, this.random && this.names.filter((_, j) => !this.ctl[j]).length < 3 ? `${x} ← ${this.leanCoin(this.coins[k])}` : x))
         // (as in the table below: a circle of the same size with ?, and in the row shown its value, T or F)
@@ -2326,6 +2378,9 @@
           if (dv !== null) og.append(svg('rect', { class: 'pg-chist-out', x: cx(j) - bw / 2, y: base - dv * hh, width: bw, height: dv * hh }))
           if (tv !== null) og.append(svg('rect', { class: 'pg-chist-target', x: cx(j) - bw / 2, y: base - tv * hh, width: bw, height: tv * hh }))
         })
+        // (a target that is one of the small blocks, a coin or a point mass: that block, on the left)
+        const named = t.space === 'bool' && DISTS.find(c => { const q = parsePoly(c); return sameDist(t, { space: 'bool', mass: new Map([['true', q], ['false', complement(q)]]) }) })
+        if (named) og.append(svg('rect', { class: 'pg-cslot pg-cslot-full pg-ctarget-block', x: x0 + 8, y: b.top + 12, width: 68, height: 46, rx: 6 }), distGlyph(named, x0 + 8, b.top + 12, 68, 46))
         text(x0 + 10, y(0), tr('value'), 'pg-tlabel', 'start')
         text(x0 + 10, y(1), tr('Target'), 'pg-tlabel pg-tlabel-target', 'start')
         text(x0 + 10, y(2), tr('Output'), 'pg-tlabel', 'start')
@@ -2418,21 +2473,11 @@
           side.append(targetChart([{ dist: d }], tr('Output'), 'pg-out-svg'))
         }
         side.append(targetChart([{ dist: this.target }]), el('div', 'pg-truth-note', tr('The mass of each output: the sum of P over its rows.')))
-        // many throws: how often each row came, and so how often each output
-        const throws = el('div', 'pg-throws'), many = el('button', 'pg-tool pg-throw', '🪙 ' + tr('Throw 100 times'))
-        many.type = 'button'; many.addEventListener('click', () => this.throwMany(100))
-        throws.append(many)
-        if (this.thrown && !outs.some(o => o === null)) {
-          const freq = new Map()
-          this.rows.forEach((r, k) => { const v = String(outs[k]); freq.set(v, (freq.get(v) ?? 0) + this.counts[k]) })
-          throws.append(el('span', 'pg-throws-note', `${tr('{n} throws', { n: this.thrown })}: ` +
-            [...freq].sort((a, b) => (a[0] < b[0] ? -1 : 1)).map(([v, c]) => `${tr('Output')} ${v}: ${c}×`).join(', ')))
-        }
         const slider = el('label', 'pg-slider'), input = el('input')
         input.type = 'range'; input.min = '0.05'; input.max = '0.95'; input.step = '0.05'; input.value = String(P)
         input.addEventListener('input', () => { P = Number(input.value); this.counts = this.rows.map(() => 0); this.thrown = 0; try { localStorage.setItem('pg:p', input.value) } catch {}; this.render() })
         slider.append(`${tr('the picture for p =')} ${P.toFixed(2)} `, input)
-        side.append(slider, throws)
+        side.append(slider)
       }
       const rowEl = el('div', 'pg-row pg-crow')
       if (this.random) rowEl.append(s, side)
@@ -2442,7 +2487,7 @@
       const moves = el('div', 'pg-moves')
       for (const kind of this.paletteKinds) {
         const b = el('button', 'pg-move pg-gate-item')
-        b.append(gateIcon(kind)); b.title = tr(kind.startsWith('map:') ? MAPS[kind.slice(4)].label : GATES[kind].label)
+        b.append(gateIcon(kind)); b.title = kind.startsWith('dist:') ? distName(kind.slice(5)) : tr(kind.startsWith('map:') ? MAPS[kind.slice(4)].label : GATES[kind].label)
         b.type = 'button'; b.dataset.move = kind
         this.makePaletteDraggable(b, kind)
         moves.append(b)
@@ -3301,7 +3346,7 @@
       head.append(el('span', 'pg-pop-title', tr('Add a gate')), close)
       for (const kind of l.paletteKinds) {
         const b = el('button', 'pg-move pg-gate-item')
-        b.append(gateIcon(kind)); b.title = tr(kind.startsWith('map:') ? MAPS[kind.slice(4)].label : GATES[kind].label)
+        b.append(gateIcon(kind)); b.title = kind.startsWith('dist:') ? distName(kind.slice(5)) : tr(kind.startsWith('map:') ? MAPS[kind.slice(4)].label : GATES[kind].label)
         b.type = 'button'; b.dataset.move = kind
         l.makePaletteDraggable(b, kind)
         list.append(b)
