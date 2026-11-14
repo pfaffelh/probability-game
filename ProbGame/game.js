@@ -2505,9 +2505,11 @@
       task.append(el('b', '', tr(this.random ? 'Task: build a circuit whose output has the distribution of the target.' : 'Task: build a circuit whose output is the target, in every row.')))
       this.picture = rowEl
       const parts = [task, rowEl, this.info, ...(SHOW ? [] : [ln]), el('div', 'pg-moves-head', tr('Gates')), moves, tools]
-      if (done) {
-        // the proof is about the circuit built (without coins)
-        if (!this.random && this.proof && !this.shape) this.proof.setStatement(this.statement())
+      // the proof is about the circuit built (without coins)
+      if (done && !this.random && this.proof && !this.shape) this.proof.setStatement(this.statement())
+      // (on the stage the status line, the green frame and Next say it: nothing new below the board, so
+      // that nothing moves when the level is solved)
+      if (done && !STAGE) {
         const box = el('div', 'pg-solved')
         box.append(el('div', 'pg-solved-head', 'goals accomplished 🎉'))
         if (!SHOW) {
