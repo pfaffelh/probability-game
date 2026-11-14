@@ -21,8 +21,7 @@ outcome: the mass of each outcome goes to its image, and where several outcomes 
 their masses add up. What comes out is the distribution of $`f(X)`, the *image measure*
 $`P \circ f^{-1}`: $`P(f(X) = b) = P(X \in f^{-1}(\{b\}))`. The output box shows the target and your
 output, as masses and as a small histogram (the target dashed); beside the board the bars for an
-example $`p` (the slider changes it), and *Throw 100 times*: the coin thrown a hundred times, the
-frequencies close to the masses.
+example $`p` (the slider changes it).
 :::
 
 :::de
@@ -37,8 +36,7 @@ eine Abbildung $`f` auf das Ergebnis an: Die Masse jedes Ergebnisses geht zu sei
 Ergebnisse dasselbe Bild haben, addieren sich ihre Massen. Was herauskommt, ist die Verteilung von
 $`f(X)`, das *Bildmaß* $`P \circ f^{-1}`: $`P(f(X) = b) = P(X \in f^{-1}(\{b\}))`. Der Ausgabekasten
 zeigt Ziel und Ausgang, als Massen und als kleines Histogramm (das Ziel gestrichelt); neben dem
-Spielfeld die Säulen für ein Beispiel-$`p` (der Schieberegler ändert es) und *100-mal werfen*: die
-Münze hundertmal geworfen, die Häufigkeiten nahe bei den Massen.
+Spielfeld die Säulen für ein Beispiel-$`p` (der Schieberegler ändert es).
 :::
 
 ::::circuit (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : (not <$> coin p) true = σ p") (new := "rw, coin_true, coin_false, map_true, Bool.not_true, Bool.not_false, Bool.cond_true, Bool.cond_false, zero_add") (play := "a=not; x>a.0; a>out")

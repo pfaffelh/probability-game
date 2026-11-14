@@ -17,7 +17,7 @@ distribution is the target. Each row of the truth table has a mass, the product 
 inputs ($`p` for `true`, $`1 - p` for `false`): with two coins, `true`–`true` has mass $`p^2`,
 `true`–`false` $`p(1 - p)`, and so on. The mass of the output at a value is the sum over the rows
 where the output has that value. The output box below shows the target and your output, as masses and
-as a small histogram (the target dashed); beside the board the bars, and *Throw 100 times*.
+as a small histogram (the target dashed); beside the board the bars.
 
 A coin may go into several gates; then the results depend on each other, and the game takes that into
 account.
@@ -39,8 +39,7 @@ zufällig: Seine Verteilung ist das Ziel. Jede Zeile der Wahrheitstafel hat eine
 Massen ihrer Eingänge ($`p` für `true`, $`1 - p` für `false`): Bei zwei Münzen hat `true`–`true` die
 Masse $`p^2`, `true`–`false` $`p(1 - p)`, und so weiter. Die Masse des Ausgangs bei einem Wert ist die
 Summe über die Zeilen, in denen der Ausgang diesen Wert hat. Der Ausgabekasten unten zeigt Ziel und
-Ausgang, als Massen und als kleines Histogramm (das Ziel gestrichelt); neben dem Spielfeld die Säulen
-und *100-mal werfen*.
+Ausgang, als Massen und als kleines Histogramm (das Ziel gestrichelt); neben dem Spielfeld die Säulen.
 
 Eine Münze darf in mehrere Bausteine gehen; dann hängen die Ergebnisse voneinander ab, und das Spiel
 berücksichtigt das.

@@ -587,3 +587,12 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 .pg-cfield { font: 10.5px var(--verso-code-font-family, monospace); fill: #5a3a0c; pointer-events: none; }
 .pg-cwait .pg-cbody { fill: #fff6e2; stroke: #b0782a; stroke-width: 2; cursor: pointer; }
 .pg-cport-ghost { fill: white; stroke: #8a5a16; stroke-width: 2; pointer-events: none; }
+.pg-dbar-f { fill: #8a7a5c; } .pg-dbar-t { fill: #c9a227; }
+.pg-dbase { stroke: #8a5a16; stroke-width: 1; }
+.pg-cfield-empty { font-size: 16px; fill: #b0782a; }
+.pg-cwfield-open { cursor: pointer; }
+.pg-dist-icon { width: 72px; height: 50px; }
+.pg-ctarget-block { stroke: #2e6fb8 !important; stroke-dasharray: 4 3 !important; }
+.pg-coutput .pg-dbar { stroke: none !important; stroke-dasharray: none !important; }
+.pg-coutput .pg-dbar-f { fill: #8a7a5c !important; } .pg-coutput .pg-dbar-t { fill: #c9a227 !important; }
+.pg-coutput .pg-ctarget-block { fill: white !important; }

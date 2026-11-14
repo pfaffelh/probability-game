@@ -87,6 +87,10 @@ theorem bool_ext (μ ν : DiscreteMeasure Bool) [Prob μ] [Prob ν] (h : μ true
 -- inventory from *Building with Coins* on) knows them.
 attribute [simp] coin_true coin_false pure_true
 
+/-- $`p + (1 - p) = 1`, as masses: computing for `norm_num`. -/
+@[simp] theorem add_symm_eq_one (p : I) : (↑p : ENNReal) + ↑(σ p) = 1 := by
+  rw [← coin_true, ← coin_false, coin_total]
+
 /-- The mass at `true`, as a number in `[0, 1]` (for `coin`). -/
 noncomputable def chance (μ : DiscreteMeasure Bool) [Prob μ] : I :=
   ⟨(μ true).toReal, ENNReal.toReal_nonneg, by

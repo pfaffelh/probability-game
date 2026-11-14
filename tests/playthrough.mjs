@@ -48,8 +48,9 @@ async function playCircuit(play) {
     if ((m = /^(\w+)=(\w+)$/.exec(st))) {
       const before = await ids(); await tapPalette(m[2])
       const after = await ids(); names[m[1]] = after.find(x => !before.includes(x)) ?? m[1]
-    } else if ((m = /^(\w+)\.(\w+)=(\w+)$/.exec(st))) {
-      await tapPalette('map:' + m[3])
+    } else if ((m = /^(\w+)\.(\w+)=([\w-]+)$/.exec(st))) {
+      // (a map into a field of bind, or a coin into a field of a waiting coin)
+      await tapPalette((/^(p|1-p|0|1)$/.test(m[3]) ? 'dist:' : 'map:') + m[3])
     } else if ((m = /^(\w+)>(\w+)(?:\.(\d+))?$/.exec(st))) {
       await port(names[m[1]] ?? m[1], 'out').click({ force: true })
       await port(names[m[2]] ?? m[2], 'in', Number(m[3] ?? 0)).click({ force: true })

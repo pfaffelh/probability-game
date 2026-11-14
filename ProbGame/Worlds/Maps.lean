@@ -25,7 +25,7 @@ Feld an, bis es die richtige ist. Eine Aussage über `f` gilt für jede Abbildun
 vier gilt: Probier sie alle aus.
 :::
 
-::::circuit (inputs := "b") (gates := "f") (table := "f") (shape := "f (f (f b))") (start := "a=f; c=f; d=f; b>a.0; a>c.0; c>d.0; d>out") (proof := "(f : Bool → Bool) (b : Bool) : f (f (f b)) = f b") (lemma := "Bool.apply_apply_apply") (new := "decide") (play := "a.0=id")
+::::circuit (inputs := "b") (gates := "") (table := "f") (shape := "f (f (f b))") (start := "a=f; c=f; d=f; b>a.0; a>c.0; c>d.0; d>out") (proof := "(f : Bool → Bool) (b : Bool) : f (f (f b)) = f b") (lemma := "Bool.apply_apply_apply") (new := "decide") (play := "a.0=id")
 :::en
 *Three times is once.* The circuit `f (f (f b))` is there; the target is `f` itself, once. Choose a
 map in `f`, and then another: for each of the four, three times is the same as once.
@@ -66,7 +66,7 @@ decide +revert
 :::
 ::::
 
-::::circuit (inputs := "x") (gates := "f") (coins := "p") (target := "f bernoulli p") (start := "a=f; c=f; d=f; x>a.0; a>c.0; c>d.0; d>out") (context := "Lean/Rules.lean") (proof := "(f : Bool → Bool) (p : I) : f <$> (f <$> (f <$> coin p)) = f <$> coin p") (new := "map_map") (play := "a.0=id")
+::::circuit (inputs := "x") (gates := "") (coins := "p") (target := "f bernoulli p") (start := "a=f; c=f; d=f; x>a.0; a>c.0; c>d.0; d>out") (context := "Lean/Rules.lean") (proof := "(f : Bool → Bool) (p : I) : f <$> (f <$> (f <$> coin p)) = f <$> coin p") (new := "map_map") (play := "a.0=id")
 :::en
 *Three times is once, with a coin.* The same circuit, now on a coin `x ← coin p`; the target is the
 distribution of `f x`, once. Choose a map in `f`, and then another.
