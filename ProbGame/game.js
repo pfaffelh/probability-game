@@ -2503,6 +2503,9 @@
     { name: 'decide', kind: 'tactic', insert: 'decide', sig: 'decide   decide +revert',
       en: 'Decides a statement about Bool by computing it: (!true) = false, not ∘ not = id. With +revert it first takes the variables (b, f, h) into the statement, for every value, and checks every case.',
       de: 'Entscheidet eine Aussage über Bool, indem es sie ausrechnet: (!true) = false, not ∘ not = id. Mit +revert nimmt es zuerst die Variablen (b, f, h) in die Aussage, für jeden Wert, und prüft jeden Fall.' },
+    { name: 'norm_num', kind: 'tactic', insert: 'norm_num', sig: 'norm_num   norm_num [h₁, h₂, …]',
+      en: 'Computes: numbers and masses (p * 1, a + 0, bif true then a else b, coin p true = p, pure masses, taking away a finite mass). With [h] it also uses your rules h.',
+      de: 'Rechnet: Zahlen und Massen (p * 1, a + 0, bif true then a else b, coin p true = p, Punktmassen, Wegnehmen einer endlichen Masse). Mit [h] benutzt es auch deine Regeln h.' },
     { name: 'simp only', kind: 'tactic', insert: 'simp only []', sig: 'simp only [h₁, h₂, …]',
       en: 'Rewrites with the given rules everywhere, also inside do blocks, as often as it can; closes the goal when both sides become the same.',
       de: 'Schreibt mit den angegebenen Regeln überall um, auch in do-Blöcken, so oft es geht; schließt das Ziel, wenn beide Seiten gleich werden.' },
@@ -2741,7 +2744,7 @@
       if (parts.length > 1 && !this.available(INVENTORY.find(i => i.name === '<;>'))) return tr('This tactic is not in your inventory: {x}', { x: '<;>' })
       for (let t of parts) {
         t = t.trim()
-        const tac = /^(rw|simp only|rfl|decide|congr|funext|ext|cases|induction'|exists|intro|have|apply|exact|constructor)(?=\s|\[|$)/.exec(t)?.[1]
+        const tac = /^(rw|simp only|norm_num|rfl|decide|congr|funext|ext|cases|induction'|exists|intro|have|apply|exact|constructor)(?=\s|\[|$)/.exec(t)?.[1]
         const item = INVENTORY.find(i => i.name === tac)
         if (!item || !this.available(item)) return tr('This tactic is not in your inventory: {x}', { x: t.split(/\s/)[0] || t })
         // the rules: in brackets, or the term of `have h := rule args`
@@ -2835,16 +2838,18 @@
         case 'have': return this.put(`have ${this.fresh('h2', 'h3', 'h4')} := `)
         case 'rw': return this.put('rw [')
         case 'simp only': return this.put('simp only [')
+        case 'norm_num': return this.put('norm_num')
         case 'apply': case 'exists': return this.put(it.name + ' ')
         default: return this.put(it.insert.trim())
       }
     }
-    // a tapped rule: into the open brackets of rw/simp only, after apply, else as rw [rule]
+    // a tapped rule: into the open brackets of rw/simp only/norm_num, after apply, into norm_num, else as rw [rule]
     tapRule(it) {
       const v = this.input?.value ?? ''
       this.choice = null
       if (/\[[^\]]*$/.test(v)) { this.input.value = this.typed = (/\[\s*$/.test(v) ? v.replace(/\s*$/, '') : v.replace(/\s*$/, '') + ', ') + it.name; this.render(); this.input.focus({ preventScroll: true }); return }
       if (/^(apply|exact)\s*$/.test(v)) return this.put(`${v.trim()} ${it.name}`)
+      if (/^norm_num\s*$/.test(v)) return this.put(`norm_num [${it.name}]`)
       // (rw [a] there: b goes into its brackets, rw [a, b])
       if (/\[[^\]]*\S[^\]]*\]\s*$/.test(v)) { this.input.value = this.typed = v.replace(/\s*\]\s*$/, `, ${it.name}]`); this.render(); this.input.focus({ preventScroll: true }); return }
       if (/:=\s*$/.test(v) || /^exists\s*$/.test(v)) { this.input.value = this.typed = v.replace(/\s*$/, ' ') + it.name + ' '; this.render(); this.input.focus({ preventScroll: true }); return }

@@ -117,3 +117,5 @@ Its boards repeated earlier ones (not, a wire, two nots, always T). Its rules no
 Circuits, 2026-11-14 evening (user): levels Both, Or without or (De Morgan), The same removed (trivial); then toNat levels out, f-levels out into a new world *Maps* (after One Coin: f (f (f b)) = f b, lemma Bool.apply_apply_apply; and f <$> f <$> f <$> coin p = f <$> coin p with map_map), the three bind levels moved to the start of *Coins that Wait* as deterministic training. Circuits: 6 levels. rw now comes in One Coin 1.
 
 Then (user): the majority out; Exactly one (xor) is the boss of Circuits (cases x <;> cases y <;> rfl): Circuits = 5 levels; `decide` comes in Maps 1. The button "Show the values row by row" is gone: tap a table row or a column of the output box.
+
+norm_num (user, 2026-11-14): in the inventory from Building with Coins 1 on; coin_true, coin_false, pure_true are simp in Lean/Rules.lean, so after the structural rule (rw [bind_true]) a bare `norm_num` computes. Bare norm_num solves no level (checked).

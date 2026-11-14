@@ -56,7 +56,7 @@ und `fun x => …` ist diese Funktion. Die Beweise lernen die Regeln der `do`-Bl
 *Monadengesetze*, eine nach der anderen, wenn ein Level sie braucht.
 :::
 
-::::circuit (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:p^2 false:1-p^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && y)) = coin (p * p)") (new := "coin_and") (play := "a=and; x>a.0; y>a.1; a>out")
+::::circuit (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:p^2 false:1-p^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && y)) = coin (p * p)") (new := "coin_and, norm_num") (play := "a=and; x>a.0; y>a.1; a>out")
 :::en
 *Both `true`.* Two coins, and `true` only when both show `true`.
 :::
@@ -70,6 +70,11 @@ Your circuit, read from top to bottom, is a `do` block: `let x ← coin p`
 throws a coin and calls its result `x`, and `pure` at the end is the result. Now there are two
 throws, and each `←` is a new throw, independent of the others. The new rule is independence itself:
 `coin_and : (do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)`.
+
+New from now on: `norm_num` does the computing for you. It computes with numbers and masses (`p * 1`,
+`a + 0`, `bif true then a else b`, the masses `coin p true = p` and `(pure b) true`, and taking away
+a finite mass), and with `norm_num [h]` also with a rule `h` of yours. What is left to you are the
+rules of the game.
 :::
 
 :::proofde
@@ -77,6 +82,11 @@ Dein Schaltplan, von oben nach unten gelesen, ist ein `do`-Block: `let x ← coi
 Ergebnis. Jetzt gibt es zwei Würfe, und jedes `←` ist ein neuer Wurf, unabhängig von den anderen. Die
 neue Regel ist die Unabhängigkeit selbst:
 `coin_and : (do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)`.
+
+Neu ab jetzt: `norm_num` rechnet für dich. Es rechnet mit Zahlen und Massen (`p * 1`, `a + 0`,
+`bif true then a else b`, die Massen `coin p true = p` und `(pure b) true`, und das Wegnehmen einer
+endlichen Masse), und mit `norm_num [h]` auch mit einer Regel `h` von dir. Was dir bleibt, sind die
+Regeln des Spiels.
 :::
 :::solution
 ```

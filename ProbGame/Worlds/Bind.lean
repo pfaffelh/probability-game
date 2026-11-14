@@ -143,7 +143,7 @@ decide +revert
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "and, or, not") (coins := "p p|0") (target := "bool true:p^2 false:1-p^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then coin p else pure false); pure y) true = (↑p * ↑p : ENNReal)") (new := "bind_true, mul_zero") (play := "x>y.0; y>out")
+::::circuit (inputs := "x y") (gates := "and, or, not") (coins := "p p|0") (target := "bool true:p^2 false:1-p^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then coin p else pure false); pure y) true = (↑p * ↑p : ENNReal)") (new := "bind_true") (play := "x>y.0; y>out")
 :::en
 *Only after true.* `y` is a coin when `x` showed `true`, and surely `false` otherwise. Wire `x` into
 `y`, and `y` to the output. Compare with *Both `true`* of *Building with Coins*: the same distribution,
@@ -158,32 +158,28 @@ ohne ein `and`.
 
 :::proofen
 `let y ← m; pure y` is just `m` (Lean drops it already when it reads the statement). `rw [bind_true]`
-splits the mass at `true` into the two ways, `Bool.cond_true` and `Bool.cond_false` choose the coin of
-each way, and the rest is computing: `pure_true`, `Bool.cond_false`, and the new rule
-`mul_zero : a * 0 = 0`, then `add_zero` and `coin_true`.
+splits the mass at `true` into the two ways. What is left is computing: which coin each way takes, its
+mass at `true`, products and sums. `norm_num` (from *Building with Coins*) does all that.
 
-*Tip.* `rw [bind_true, Bool.cond_true, Bool.cond_false]`, then
-`rw [pure_true, Bool.cond_false, mul_zero, add_zero, coin_true]`.
+*Tip.* `rw [bind_true]`, then `norm_num`.
 :::
 
 :::proofde
 `let y ← m; pure y` ist einfach `m` (Lean lässt es schon beim Lesen der Aussage weg). `rw [bind_true]`
-teilt die Masse bei `true` in die zwei Wege, `Bool.cond_true` und `Bool.cond_false` wählen die Münze
-jedes Wegs, und der Rest ist Rechnen: `pure_true`, `Bool.cond_false` und die neue Regel
-`mul_zero : a * 0 = 0`, dann `add_zero` und `coin_true`.
+teilt die Masse bei `true` in die zwei Wege. Was bleibt, ist Rechnen: welche Münze jeder Weg nimmt, ihre
+Masse bei `true`, Produkte und Summen. `norm_num` (aus *Bauen mit Münzen*) erledigt das.
 
-*Tipp.* `rw [bind_true, Bool.cond_true, Bool.cond_false]`, dann
-`rw [pure_true, Bool.cond_false, mul_zero, add_zero, coin_true]`.
+*Tipp.* `rw [bind_true]`, dann `norm_num`.
 :::
 :::solution
 ```
-rw [bind_true, Bool.cond_true, Bool.cond_false]
-rw [pure_true, Bool.cond_false, mul_zero, add_zero, coin_true]
+rw [bind_true]
+norm_num
 ```
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "and, or, not") (coins := "p 1|0") (target := "bernoulli p") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else pure false); pure y) true = (↑p : ENNReal)") (new := "mul_one") (play := "x>y.0; y>out")
+::::circuit (inputs := "x y") (gates := "and, or, not") (coins := "p 1|0") (target := "bernoulli p") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else pure false); pure y) true = (↑p : ENNReal)") (play := "x>y.0; y>out")
 :::en
 *Copying.* `y` is surely `true` after `true`, and surely `false` after `false`: it copies `x`. The
 output `y` has the distribution of the coin `x`.
@@ -195,22 +191,20 @@ Der Ausgang `y` hat die Verteilung der Münze `x`.
 :::
 
 :::proofen
-As before; now both ways end in a point mass. New: `mul_one : a * 1 = a`.
+As before; now both ways end in a point mass, `pure true` and `pure false`.
 
-*Tip.* `rw [bind_true, Bool.cond_true, Bool.cond_false]`, then
-`rw [pure_true, pure_true, Bool.cond_true, Bool.cond_false, mul_one, mul_zero, add_zero, coin_true]`.
+*Tip.* `rw [bind_true]`, `norm_num`.
 :::
 
 :::proofde
-Wie eben; jetzt enden beide Wege in einer Punktmasse. Neu: `mul_one : a * 1 = a`.
+Wie eben; jetzt enden beide Wege in einer Punktmasse, `pure true` und `pure false`.
 
-*Tipp.* `rw [bind_true, Bool.cond_true, Bool.cond_false]`, dann
-`rw [pure_true, pure_true, Bool.cond_true, Bool.cond_false, mul_one, mul_zero, add_zero, coin_true]`.
+*Tipp.* `rw [bind_true]`, `norm_num`.
 :::
 :::solution
 ```
-rw [bind_true, Bool.cond_true, Bool.cond_false]
-rw [pure_true, pure_true, Bool.cond_true, Bool.cond_false, mul_one, mul_zero, add_zero, coin_true]
+rw [bind_true]
+norm_num
 ```
 :::
 ::::
@@ -231,20 +225,18 @@ zweite Münze wird nur geworfen, wenn sie gebraucht wird.
 :::proofen
 The way through `true` has mass $`p \cdot 1`, the way through `false` mass $`(1 - p) \cdot p`.
 
-*Tip.* `rw [bind_true, Bool.cond_true, Bool.cond_false]`, then
-`rw [pure_true, Bool.cond_true, mul_one, coin_true, coin_false]`.
+*Tip.* `rw [bind_true]`, `norm_num`.
 :::
 
 :::proofde
 Der Weg über `true` hat die Masse $`p \cdot 1`, der Weg über `false` die Masse $`(1 - p) \cdot p`.
 
-*Tipp.* `rw [bind_true, Bool.cond_true, Bool.cond_false]`, dann
-`rw [pure_true, Bool.cond_true, mul_one, coin_true, coin_false]`.
+*Tipp.* `rw [bind_true]`, `norm_num`.
 :::
 :::solution
 ```
-rw [bind_true, Bool.cond_true, Bool.cond_false]
-rw [pure_true, Bool.cond_true, mul_one, coin_true, coin_false]
+rw [bind_true]
+norm_num
 ```
 :::
 ::::
@@ -261,22 +253,22 @@ $`1 - p`: Der zweite Wurf wiederholt eher den ersten.
 :::
 
 :::proofen
-Two coins in the two ways now, and `coin_true` is needed twice: `rw` rewrites one form at a time, here
-first `(coin p) true` (everywhere), then `(coin (σ p)) true`.
+Two different coins in the two ways now, `coin p` and `coin (σ p)`; `norm_num` knows the masses of
+both.
 
-*Tip.* `rw [bind_true, Bool.cond_true, Bool.cond_false]`, then `rw [coin_true, coin_true, coin_false]`.
+*Tip.* `rw [bind_true]`, `norm_num`.
 :::
 
 :::proofde
-Jetzt zwei Münzen in den zwei Wegen, und `coin_true` wird zweimal gebraucht: `rw` schreibt eine Form
-nach der anderen um, hier erst `(coin p) true` (überall), dann `(coin (σ p)) true`.
+Jetzt zwei verschiedene Münzen in den zwei Wegen, `coin p` und `coin (σ p)`; `norm_num` kennt die
+Massen beider.
 
-*Tipp.* `rw [bind_true, Bool.cond_true, Bool.cond_false]`, dann `rw [coin_true, coin_true, coin_false]`.
+*Tipp.* `rw [bind_true]`, `norm_num`.
 :::
 :::solution
 ```
-rw [bind_true, Bool.cond_true, Bool.cond_false]
-rw [coin_true, coin_true, coin_false]
+rw [bind_true]
+norm_num
 ```
 :::
 ::::
@@ -293,33 +285,26 @@ for `y`. `false` only when all three tries fail: $`(1 - p)^3`.
 :::
 
 :::proofen
-`bind_true` twice. After the first, the way through `true` is
-`(do let y ← (bif true then pure true else coin p); …) true`: with `Bool.cond_true` it becomes
-`(do let y ← pure true; …)`, and `pure_bind` (from *Building with Coins*) throws the point mass away:
-`(bif true then pure true else coin p) true`. The way through `false` is a bind again: `bind_true`
-once more.
+`bind_true` twice. After the first, the way through `false` is a bind again, inside the computation,
+where `rw` would have to pick the right place: give the rule to `norm_num` instead,
+`norm_num [bind_true]`, and it uses it wherever it fits. (The way through `true` starts with
+`pure true`; `pure_bind` throws it away, and `norm_num` knows that rule by itself.)
 
-*Tip.* `rw [bind_true, Bool.cond_true, Bool.cond_false, pure_bind, Bool.cond_true, pure_true, Bool.cond_true, mul_one]`,
-then `rw [bind_true, Bool.cond_true, Bool.cond_false, pure_true, Bool.cond_true, mul_one]`, then
-`rw [coin_true, coin_false]`.
+*Tip.* `rw [bind_true]`, then `norm_num [bind_true]`.
 :::
 
 :::proofde
-Zweimal `bind_true`. Nach dem ersten ist der Weg über `true`
-`(do let y ← (bif true then pure true else coin p); …) true`: Mit `Bool.cond_true` wird daraus
-`(do let y ← pure true; …)`, und `pure_bind` (aus *Bauen mit Münzen*) wirft die Punktmasse weg:
-`(bif true then pure true else coin p) true`. Der Weg über `false` ist wieder ein bind: noch einmal
-`bind_true`.
+Zweimal `bind_true`. Nach dem ersten ist der Weg über `false` wieder ein bind, mitten in der Rechnung,
+wo `rw` die richtige Stelle treffen müsste: Gib die Regel stattdessen `norm_num`,
+`norm_num [bind_true]`, und es benutzt sie, wo sie passt. (Der Weg über `true` beginnt mit
+`pure true`; `pure_bind` wirft es weg, und diese Regel kennt `norm_num` von selbst.)
 
-*Tipp.* `rw [bind_true, Bool.cond_true, Bool.cond_false, pure_bind, Bool.cond_true, pure_true, Bool.cond_true, mul_one]`,
-dann `rw [bind_true, Bool.cond_true, Bool.cond_false, pure_true, Bool.cond_true, mul_one]`, dann
-`rw [coin_true, coin_false]`.
+*Tipp.* `rw [bind_true]`, dann `norm_num [bind_true]`.
 :::
 :::solution
 ```
-rw [bind_true, Bool.cond_true, Bool.cond_false, pure_bind, Bool.cond_true, pure_true, Bool.cond_true, mul_one]
-rw [bind_true, Bool.cond_true, Bool.cond_false, pure_true, Bool.cond_true, mul_one]
-rw [coin_true, coin_false]
+rw [bind_true]
+norm_num [bind_true]
 ```
 :::
 ::::
