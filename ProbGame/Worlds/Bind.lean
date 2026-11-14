@@ -14,7 +14,7 @@ htmlSplit := .never
 Until now all coins were thrown at once, independently. Now a coin waits: it is thrown *after* the
 coin `x`, and **which** coin it is depends on a wire. The coin `y` on the left has an input of its
 own: wire `x` into it, and `y` becomes `bif x then coin q else coin r`, the coin `q` when `x` showed
-`true`, the coin `r` when it showed `false`. This is the `bind` gate of the world *Circuits*, now
+`true`, the coin `r` when it showed `false`. This is the `bind` gate of the first three levels, now
 with distributions in its two fields: first throw `x`, then, depending on what came, throw the one or
 the other coin. In Lean: `do let x ← coin p; let y ← (bif x then coin q else coin r); …`, that is
 `coin p >>= fun x => …`.
@@ -27,8 +27,8 @@ the wire chose.
 Bisher wurden alle Münzen auf einmal geworfen, unabhängig. Jetzt wartet eine Münze: Sie wird *nach*
 der Münze `x` geworfen, und **welche** Münze es ist, hängt an einem Draht. Die Münze `y` links hat einen
 eigenen Eingang: Verdrahte `x` mit ihm, und `y` wird zu `bif x then coin q else coin r`, die Münze `q`,
-wenn `x` `true` zeigte, die Münze `r`, wenn es `false` zeigte. Das ist der Baustein `bind` der Welt
-*Schaltungen*, jetzt mit Verteilungen in seinen zwei Feldern: erst `x` werfen, dann, je nachdem was kam,
+wenn `x` `true` zeigte, die Münze `r`, wenn es `false` zeigte. Das ist der Baustein `bind` der ersten drei
+Level, jetzt mit Verteilungen in seinen zwei Feldern: erst `x` werfen, dann, je nachdem was kam,
 die eine oder die andere Münze. In Lean: `do let x ← coin p; let y ← (bif x then coin q else coin r); …`,
 also `coin p >>= fun x => …`.
 
@@ -49,6 +49,93 @@ Die Aussagen handeln von der Masse bei `true`: Das Spielfeld zeigt die ganze Ver
 `bind_true : (μ >>= f) true = μ true * f true true + μ false * f false true` geht beide Wege: über
 `true` (die Masse `μ true`, dann die Masse von `f true` bei `true`) und über `false`.
 :::
+
+::::circuit (inputs := "x y") (gates := "bind") (table := "0001") (goal := "x && y") (proof := "(x y : Bool) : (if x then y else false) = (bif x then (bif y then true else false) else (bif y then false else false))") (play := "a=bind; a.T=id; a.F=false; x>a.0; y>a.1; a>out")
+:::en
+*A gate of your own.* First without coins, as in *Circuits*. There are four maps `Bool → Bool`:
+`id`, `not`, always `T`, always `F` (see *Maps*). New gate: `bind`. It has two fields, `T` and `F`, and you put a map into each (drag it in, or tap the
+field until it is the one you want). What happens depends on one value only, the one at the input on
+the left side: it chooses one of the two fields, `T` or `F` (the blue arrows). The value at the input
+on top goes into both fields; the field chosen applies its map to it. In Lean:
+`c >>= fun b => if b then f v else g v`. Build `and`: when `x` is `true`, `y` itself; when `x` is
+`false`, always `F`. (Show the values row by row: the field not used fades.)
+:::
+
+:::de
+*Ein eigener Baustein.* Zuerst ohne Münzen, wie in *Schaltungen*. Es gibt vier Abbildungen
+`Bool → Bool`: `id`, `not`, immer `T`, immer `F` (siehe *Abbildungen*). Neuer Baustein: `bind`. Er hat zwei Felder, `T` und `F`, und in jedes legst du eine
+Abbildung (hineinziehen, oder das Feld antippen, bis es die richtige ist). Was passiert, hängt nur von
+einem Wert ab, dem am Eingang an der linken Seite: Er wählt eines der beiden Felder, `T` oder `F` (die
+blauen Pfeile). Der Wert am Eingang oben geht in beide Felder; das gewählte Feld wendet seine Abbildung
+darauf an. In Lean:
+`c >>= fun b => if b then f v else g v`. Bau `and`: ist `x` `true`, `y` selbst; ist `x` `false`, immer
+`F`. (Zeig die Werte Zeile für Zeile: Das Feld, das nicht benutzt wird, verblasst.)
+:::
+
+:::proofen
+*Tip.* `decide +revert`.
+:::
+
+:::proofde
+*Tipp.* `decide +revert`.
+:::
+:::solution
+```
+decide +revert
+```
+:::
+::::
+
+::::circuit (inputs := "x y") (gates := "bind") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : (if x then !y else y) = (bif x then (bif y then false else true) else (bif y then true else false))") (play := "a=bind; a.T=not; a.F=id; x>a.0; y>a.1; a>out")
+:::en
+*xor, built yourself.* `true` when exactly one input is. With `bind`: for `x = true` one map of `y`,
+for `x = false` another. Four maps for each field: sixteen gates with two inputs, all of them.
+:::
+
+:::de
+*xor, selbst gebaut.* `true`, wenn genau ein Eingang es ist. Mit `bind`: für `x = true` eine
+Abbildung von `y`, für `x = false` eine andere. Vier Abbildungen für jedes Feld: sechzehn Bausteine mit
+zwei Eingängen, alle.
+:::
+
+:::proofen
+*Tip.* `decide +revert`.
+:::
+
+:::proofde
+*Tipp.* `decide +revert`.
+:::
+:::solution
+```
+decide +revert
+```
+:::
+::::
+
+::::circuit (inputs := "x y") (gates := "bind") (table := "1101") (goal := "!x || y") (proof := "(x y : Bool) : (if x then y else true) = (bif x then (bif y then true else false) else (bif y then true else true))") (play := "a=bind; a.T=id; a.F=true; x>a.0; y>a.1; a>out")
+:::en
+*If x, then y.* The implication: `false` only when `x` is `true` and `y` is `false`. In Lean
+`!x || y`.
+:::
+
+:::de
+*Wenn x, dann y.* Die Implikation: `false` nur, wenn `x` `true` ist und `y` `false`. In Lean
+`!x || y`.
+:::
+
+:::proofen
+*Tip.* `decide +revert`.
+:::
+
+:::proofde
+*Tipp.* `decide +revert`.
+:::
+:::solution
+```
+decide +revert
+```
+:::
+::::
 
 ::::circuit (inputs := "x y") (gates := "and, or, not") (coins := "p p|0") (target := "bool true:p^2 false:1-p^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then coin p else pure false); pure y) true = (↑p * ↑p : ENNReal)") (new := "bind_true, mul_zero") (play := "x>y.0; y>out")
 :::en

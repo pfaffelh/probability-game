@@ -41,7 +41,7 @@ Spielfeld die Säulen für ein Beispiel-$`p` (der Schieberegler ändert es) und 
 Münze hundertmal geworfen, die Häufigkeiten nahe bei den Massen.
 :::
 
-::::circuit (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : (not <$> coin p) true = σ p") (new := "coin_true, coin_false, map_true, Bool.not_true, Bool.not_false, Bool.cond_true, Bool.cond_false, zero_add") (play := "a=not; x>a.0; a>out")
+::::circuit (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : (not <$> coin p) true = σ p") (new := "rw, coin_true, coin_false, map_true, Bool.not_true, Bool.not_false, Bool.cond_true, Bool.cond_false, zero_add") (play := "a=not; x>a.0; a>out")
 :::en
 *Where does the mass go?* The coin `x` is thrown at the top; below, the output with the target:
 `false` with mass $`p`, `true` with $`1 - p`. Put a `not` between them. Then look at `true`: its mass
@@ -62,7 +62,8 @@ distribution `μ`. `p : I` says that $`p` lies in the unit interval $`I = [0, 1]
 and `↑p` is the number $`p` as a mass. Below is the *goal*, what is to be shown, and above it the
 hypotheses (here only `p`).
 
-The rule of gates (maps):
+A rule `h : a = b` is used with `rw [h]`: it rewrites `a` into `b` in the goal (`rw [← h]` the other way
+round), and several at once with `rw [h, k]`. The rule of gates (maps):
 `map_true : (f <$> μ) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)`.
 The mass at `true` comes from `true` when `f true` is `true`, and from `false` when `f false` is
 `true`; `bif c then a else b` is `a` when `c` is `true`, and `b` when it is `false`.
@@ -86,7 +87,8 @@ Verteilung `μ`. `p : I` sagt, dass $`p` im Einheitsintervall $`I = [0, 1]` lieg
 $`1 - p`, und `↑p` ist die Zahl $`p` als Masse. Unten steht das *Ziel*, also das, was zu zeigen ist,
 und darüber die Annahmen (hier nur `p`).
 
-Die Regel der Bausteine (Abbildungen):
+Eine Regel `h : a = b` benutzt man mit `rw [h]`: Sie schreibt `a` im Ziel zu `b` um (`rw [← h]`
+andersherum), mehrere auf einmal mit `rw [h, k]`. Die Regel der Bausteine (Abbildungen):
 `map_true : (f <$> μ) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)`.
 Die Masse bei `true` kommt von `true`, wenn `f true` gleich `true` ist, und von `false`, wenn
 `f false` gleich `true` ist; `bif c then a else b` ist `a`, wenn `c` gleich `true` ist, und `b`,
