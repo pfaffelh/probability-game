@@ -50,7 +50,7 @@ def readContext (path : String) : DocElabM String := do
 A level names what it brings into the inventory (`(new := "bool_ext, apply")`) and the lemma it
 becomes (`(lemma := "coin_not")`); it has no number. In the traverse pass each level is entered in
 `ProbGame.levels`, in the order of the document, with its group (`chance`, `bool` or `walk`: each
-group has an inventory of its own). When a level is rendered, its inventory is what the levels of its
+group has an inventory of its own; the chance group also keeps what the bool group brought). When a level is rendered, its inventory is what the levels of its
 group before it brought, and what it brings itself: so a level can be moved or removed alone. -/
 
 /-- The world of a level: the module it is in (`ProbGame.Worlds.OneCoin`), for the tests. -/
@@ -81,7 +81,8 @@ def inventoryOf (id : InternalId) (st : Manual.TraverseState) : String × String
   let me := levels[i]!
   let mut inv : Array String := #[]
   for l in levels.extract 0 i do
-    if str l "group" == str me "group" then
+    -- (the chance worlds come after the circuits and keep what was earned there)
+    if str l "group" == str me "group" || (str l "group" == "bool" && str me "group" == "chance") then
       inv := inv ++ namesIn (str l "new") ++ namesIn (str l "lemma")
   let new := namesIn (str me "new")
   return ((toJson (inv ++ new)).compress, (toJson new).compress)
