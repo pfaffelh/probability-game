@@ -57,14 +57,14 @@ Die Schaltung, von oben nach unten gelesen, ist ein `do`-Block in Lean: jede Mü
 :::
 
 :::proofen
-Your circuit, read from left to right, is a `do` block, as in *Draw, then Compute*: `let x ← coin p`
+Your circuit, read from top to bottom, is a `do` block, as in *Draw, then Compute*: `let x ← coin p`
 throws a coin and calls its result `x`, and `pure` at the end is the result. Now there are two
 throws, and each `←` is a new throw, independent of the others. The new rule is independence itself:
 `coin_and : (do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)`.
 :::
 
 :::proofde
-Dein Schaltplan, von links nach rechts gelesen, ist ein `do`-Block, wie in *Erst ziehen, dann
+Dein Schaltplan, von oben nach unten gelesen, ist ein `do`-Block, wie in *Erst ziehen, dann
 rechnen*: `let x ← coin p` wirft eine Münze und nennt ihr Ergebnis `x`, und `pure` am Ende ist das
 Ergebnis. Jetzt gibt es zwei Würfe, und jedes `←` ist ein neuer Wurf, unabhängig von den anderen. Die
 neue Regel ist die Unabhängigkeit selbst:

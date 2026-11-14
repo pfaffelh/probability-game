@@ -31,6 +31,14 @@ instance (p : I) : Prob (coin p) := ⟨MeasureTheory.DiscreteMeasure.hasSum_coin
 instance {α β : Type} (μ : DiscreteMeasure α) [h : Prob μ] (f : α → β) : Prob (f <$> μ) :=
   ⟨MeasureTheory.DiscreteMeasure.hasSum_map h.hasSum f⟩
 instance {α : Type} (a : α) : Prob (pure a : DiscreteMeasure α) := ⟨MeasureTheory.DiscreteMeasure.hasSum_pure a⟩
+instance {α β : Type} (μ : DiscreteMeasure α) [h : Prob μ] (f : α → DiscreteMeasure β) [hf : ∀ a, Prob (f a)] :
+    Prob (μ >>= f) :=
+  ⟨MeasureTheory.DiscreteMeasure.hasSum_bind h.hasSum (fun a _ => (hf a).hasSum)⟩
+instance {α : Type} (c : Bool) (μ ν : DiscreteMeasure α) [h : Prob μ] [h' : Prob ν] :
+    Prob (bif c then μ else ν) := by
+  cases c
+  · exact h'
+  · exact h
 
 /-- The mass of a coin at `true`. -/
 theorem coin_true (p : I) : coin p true = p := MeasureTheory.DiscreteMeasure.coin_apply_true p
