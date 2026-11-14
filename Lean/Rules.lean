@@ -83,6 +83,10 @@ theorem bool_ext (μ ν : DiscreteMeasure Bool) [Prob μ] [Prob ν] (h : μ true
   · rw [mass_not μ false, mass_not ν false, Bool.not_false, h]
   · exact h
 
+-- The masses of coins and point masses are computing, not rules of the game: `norm_num` (in the
+-- inventory from *Building with Coins* on) knows them.
+attribute [simp] coin_true coin_false pure_true
+
 /-- The mass at `true`, as a number in `[0, 1]` (for `coin`). -/
 noncomputable def chance (μ : DiscreteMeasure Bool) [Prob μ] : I :=
   ⟨(μ true).toReal, ENNReal.toReal_nonneg, by
