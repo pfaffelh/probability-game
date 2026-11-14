@@ -25,7 +25,7 @@ Feld an, bis es die richtige ist. Eine Aussage über `f` gilt für jede Abbildun
 vier gilt: Probier sie alle aus.
 :::
 
-::::circuit (inputs := "b") (gates := "f") (table := "f") (shape := "f (f (f b))") (start := "a=f; c=f; d=f; b>a.0; a>c.0; c>d.0; d>out") (proof := "(f : Bool → Bool) (b : Bool) : f (f (f b)) = f b") (lemma := "Bool.apply_apply_apply") (play := "a.0=id")
+::::circuit (inputs := "b") (gates := "f") (table := "f") (shape := "f (f (f b))") (start := "a=f; c=f; d=f; b>a.0; a>c.0; c>d.0; d>out") (proof := "(f : Bool → Bool) (b : Bool) : f (f (f b)) = f b") (lemma := "Bool.apply_apply_apply") (new := "decide") (play := "a.0=id")
 :::en
 *Three times is once.* The circuit `f (f (f b))` is there; the target is `f` itself, once. Choose a
 map in `f`, and then another: for each of the four, three times is the same as once.
@@ -38,7 +38,9 @@ eine Abbildung in `f`, und dann eine andere: Für jede der vier ist dreimal dass
 
 :::proofen
 No rule says what `f` does. But there are only four maps `Bool → Bool`, the four you tried, and with
-the two values of `b` these are eight cases. `decide +revert` checks them all, as the board did. With
+the two values of `b` these are eight cases. The new tactic `decide` reduces a statement about finitely
+many cases until it is `true` or `false`; `decide +revert` first takes the variables into the
+statement, here `∀ f b, …`, and so checks every case, as the board did. With
 coins this no longer works: a coin `coin p` is a different distribution for every number `p` between
 0 and 1, infinitely many cases. There, the rules do the work, and this lemma: it is unlocked as
 `Bool.apply_apply_apply`.
@@ -48,8 +50,10 @@ coins this no longer works: a coin `coin p` is a different distribution for ever
 
 :::proofde
 Keine Regel sagt, was `f` tut. Aber es gibt nur vier Abbildungen `Bool → Bool`, die vier, die du
-ausprobiert hast, und mit den zwei Werten von `b` sind das acht Fälle. `decide +revert` prüft sie
-alle, wie das Spielfeld. Mit Münzen geht das nicht mehr: Eine Münze `coin p` ist für jede Zahl `p`
+ausprobiert hast, und mit den zwei Werten von `b` sind das acht Fälle. Die neue Taktik `decide`
+reduziert eine Aussage über endlich viele Fälle, bis sie `true` oder `false` ist; `decide +revert`
+nimmt zuerst die Variablen in die Aussage, hier `∀ f b, …`, und prüft so jeden Fall, wie das
+Spielfeld. Mit Münzen geht das nicht mehr: Eine Münze `coin p` ist für jede Zahl `p`
 zwischen 0 und 1 eine andere Verteilung, unendlich viele Fälle. Dort machen die Regeln die Arbeit, und
 dieses Lemma: Es wird als `Bool.apply_apply_apply` freigeschaltet.
 
