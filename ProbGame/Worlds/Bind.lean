@@ -13,8 +13,8 @@ htmlSplit := .never
 :::en
 Until now all coins were thrown at once, independently. Now a coin waits: it is thrown *after* the
 coin `x`, and **which** coin it is depends on a wire. The coin `y` is the `bind` gate of the first
-three levels, now with a coin in each of its two fields, `T` and `F`, and no input on top: the coin
-in the field chosen is what is thrown. Wire `x` into its left side, and `y` becomes
+three levels, now with a coin in each of its two fields, `T` and `F`, and no input at the side: the coin
+in the field chosen is what is thrown. Wire `x` into it from above, and `y` becomes
 `bif x then coin q else coin r`, the coin `q` when `x` showed `true`, the coin `r` when it showed
 `false`: first throw `x`, then, depending on what came, the one or the other coin. In Lean: `do let x ← coin p; let y ← (bif x then coin q else coin r); …`, that is
 `coin p >>= fun x => …`.
@@ -27,8 +27,8 @@ the wire chose.
 Bisher wurden alle Münzen auf einmal geworfen, unabhängig. Jetzt wartet eine Münze: Sie wird *nach*
 der Münze `x` geworfen, und **welche** Münze es ist, hängt an einem Draht. Die Münze `y` ist der
 Baustein `bind` der ersten drei Level, jetzt mit einer Münze in jedem seiner zwei Felder, `T` und `F`,
-und ohne Eingang oben: Geworfen wird die Münze im gewählten Feld. Verdrahte `x` mit seiner linken
-Seite, und `y` wird zu `bif x then coin q else coin r`, die Münze `q`, wenn `x` `true` zeigte, die Münze
+und ohne Eingang an der Seite: Geworfen wird die Münze im gewählten Feld. Verdrahte `x` von oben mit
+ihr, und `y` wird zu `bif x then coin q else coin r`, die Münze `q`, wenn `x` `true` zeigte, die Münze
 `r`, wenn es `false` zeigte: erst `x` werfen, dann, je nachdem was kam, die eine oder die andere Münze. In Lean: `do let x ← coin p; let y ← (bif x then coin q else coin r); …`,
 also `coin p >>= fun x => …`.
 
@@ -54,9 +54,9 @@ Die Aussagen handeln von der Masse bei `true`: Das Spielfeld zeigt die ganze Ver
 :::en
 *A gate of your own.* First without coins, as in *Circuits*. There are four maps `Bool → Bool`:
 `id`, `not`, always `T`, always `F` (see *Maps*). New gate: `bind`. It has two fields, `T` and `F`, and you put a map into each (drag it in, or tap the
-field until it is the one you want). What happens depends on one value only, the one at the input on
-the left side: it chooses one of the two fields, `T` or `F` (the blue arrows). The value at the input
-on top goes into both fields; the field chosen applies its map to it. In Lean:
+field until it is the one you want). Read it from top to bottom: the input on top chooses
+one of the two fields, `T` or `F` (the blue arrows). The value at the input on the right side goes
+into both fields (the two circles, joined below them); the field chosen applies its map to it. In Lean:
 `c >>= fun b => if b then f v else g v`. Build `and`: when `x` is `true`, `y` itself; when `x` is
 `false`, always `F`. (Tap a column of the output box: the field not used fades.)
 :::
@@ -64,10 +64,10 @@ on top goes into both fields; the field chosen applies its map to it. In Lean:
 :::de
 *Ein eigener Baustein.* Zuerst ohne Münzen, wie in *Schaltungen*. Es gibt vier Abbildungen
 `Bool → Bool`: `id`, `not`, immer `T`, immer `F` (siehe *Abbildungen*). Neuer Baustein: `bind`. Er hat zwei Felder, `T` und `F`, und in jedes legst du eine
-Abbildung (hineinziehen, oder das Feld antippen, bis es die richtige ist). Was passiert, hängt nur von
-einem Wert ab, dem am Eingang an der linken Seite: Er wählt eines der beiden Felder, `T` oder `F` (die
-blauen Pfeile). Der Wert am Eingang oben geht in beide Felder; das gewählte Feld wendet seine Abbildung
-darauf an. In Lean:
+Abbildung (hineinziehen, oder das Feld antippen, bis es die richtige ist). Lies ihn von oben nach unten: Der
+Eingang oben wählt eines der beiden Felder, `T` oder `F` (die blauen Pfeile). Der Wert am Eingang
+rechts geht in beide Felder (die zwei Kreise, unten verbunden); das gewählte Feld wendet seine
+Abbildung darauf an. In Lean:
 `c >>= fun b => if b then f v else g v`. Bau `and`: ist `x` `true`, `y` selbst; ist `x` `false`, immer
 `F`. (Tippe eine Spalte des Ausgabekastens an: Das Feld, das nicht benutzt wird, verblasst.)
 :::
