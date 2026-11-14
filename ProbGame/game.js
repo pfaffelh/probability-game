@@ -2620,6 +2620,7 @@
     [/could not unify the conclusion of `@funext`/, 'funext needs a goal g = h between functions (first congr 1?).', 'funext braucht ein Ziel g = h zwischen Funktionen (vorher congr 1?).'],
     [/must not contain free variables/, 'decide does not know the variables of the goal; decide +revert takes them into the statement.', 'decide kennt die Variablen des Ziels nicht; decide +revert nimmt sie in die Aussage.'],
     [/Tactic `decide` proved that the proposition/, 'The statement is false, at least in one case.', 'Die Aussage ist falsch, mindestens in einem Fall.'],
+    [/abortTactic/, 'A tactic after <;> failed on one of the goals: for example rfl on a goal that is not true by computing alone (is a cases missing?).', 'Eine Taktik nach <;> ist an einem der Ziele gescheitert: zum Beispiel rfl an einem Ziel, das nicht schon durch Ausrechnen stimmt (fehlt ein cases?).'],
     [/Tactic `rfl` failed/, 'The two sides are not the same, not even after computing.', 'Die beiden Seiten sind nicht gleich, auch nicht nach Ausrechnen.'],
     [/[Nn]o goals/, 'There is no goal left.', 'Es ist kein Ziel mehr übrig.'],
     [/Unknown (identifier|constant)/, 'Lean does not know this name.', 'Diesen Namen kennt Lean nicht.'],
@@ -2714,7 +2715,11 @@
       const bad = r.steps.flatMap(s => s.diags.filter(d => d.severity === 1).map(d => d.message.text))
       if (bad.length) {
         this.error = bad[0]
-        if (quiet) { this.lines = lines.slice(0, Math.max(0, r.steps.length - 1)); this.goals = r.steps[r.steps.length - 1].goals.map(g => g.goal.text) }
+        // (restoring saved lines: keep those before the first that fails; step i is the state after line i - 1)
+        if (quiet) {
+          const i = r.steps.findIndex(st => st.diags.some(d => d.severity === 1)), k = Math.max(1, i < 0 ? r.steps.length : i)
+          this.lines = lines.slice(0, k - 1); this.goals = r.steps[k - 1].goals.map(g => g.goal.text)
+        }
         return false
       }
       this.lines = lines; this.error = ''
