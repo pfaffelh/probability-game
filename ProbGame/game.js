@@ -2648,6 +2648,139 @@
   // number of the level, `"2.3"`) and the lemmas proved in earlier levels; a line that uses anything
   // else is refused before Lean sees it.
 
+  // The box of a chip under the mouse: one for the page, over everything, below the chip (above it
+  // when there is no room below); gone when the mouse leaves the chip or the inventory is drawn anew.
+  let HOVER = null
+  function hoverShow(chip, sig, text) {
+    hoverHide()
+    HOVER = document.createElement('div'); HOVER.className = 'pg-chip-peek pg-chip-hover'
+    const c = document.createElement('code'); c.className = 'pg-inv-sig'; c.textContent = sig
+    const d = document.createElement('div'); d.textContent = text ?? ''
+    HOVER.append(c, d); HOVER.chip = chip; document.body.append(HOVER)
+    const r = chip.getBoundingClientRect(), w = HOVER.offsetWidth, h = HOVER.offsetHeight
+    HOVER.style.left = Math.max(8, Math.min(r.left, innerWidth - w - 8)) + 'px'
+    HOVER.style.top = (r.bottom + 6 + h < innerHeight ? r.bottom + 6 : Math.max(8, r.top - 6 - h)) + 'px'
+  }
+  function hoverHide() { HOVER?.remove(); HOVER = null }
+  // LEAN_SIGS begin (written by tests/sigs.py)
+  const LEAN_SIGS = {
+    "mass_total": "theorem mass_total (μ : DiscreteMeasure Bool) [hμ : Prob μ] : μ true + μ false = 1",
+    "mass_ne_top": "theorem mass_ne_top {μ : DiscreteMeasure Bool} [Prob μ] {b : Bool} : μ b ≠ ⊤",
+    "ENNReal.add_sub_cancel_left": "theorem ENNReal.add_sub_cancel_left {a b : ENNReal} (ha : a ≠ ⊤) : a + b - a = b",
+    "bind_true": "theorem bind_true (μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (μ >>= f) true = μ true * (f true) true + μ false * (f false) true",
+    "mul_one": "theorem mul_one {M : Type u_2} [MulOneClass M] (a : M) : a * 1 = a",
+    "mul_zero": "theorem mul_zero {M₀ : Type u} [self : MulZeroClass M₀] (a : M₀) : a * 0 = 0",
+    "add_comm": "theorem add_comm {G : Type u_1} [AddCommMagma G] (a b : G) : a + b = b + a",
+    "mass_not": "theorem mass_not (μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b = 1 - μ !b",
+    "bool_ext": "theorem bool_ext (μ ν : DiscreteMeasure Bool) [Prob μ] [Prob ν] (h : μ true = ν true) : μ = ν",
+    "coin_true": "theorem coin_true (p : I) : (coin p) true = ↑p",
+    "coin_false": "theorem coin_false (p : I) : (coin p) false = ↑(σ p)",
+    "map_true": "theorem map_true (f : Bool → Bool) (μ : DiscreteMeasure Bool) : (f <$> μ) true = (bif f true then μ true else 0) + bif f false then μ false else 0",
+    "map_apply": "theorem map_apply {α : Type} [Fintype α] (f : α → Bool) (μ : DiscreteMeasure α) (b : Bool) : (f <$> μ) b = ∑ a, bif f a == b then μ a else 0",
+    "Fintype.sum_bool": "theorem Fintype.sum_bool {α : Type u_1} [AddCommMonoid α] (f : Bool → α) : ∑ b, f b = f true + f false",
+    "beq_true": "theorem beq_true (b : Bool) : (b == true) = b",
+    "Bool.not_true": "theorem Bool.not_true : (!true) = false",
+    "Bool.not_false": "theorem Bool.not_false : (!false) = true",
+    "Bool.cond_true": "theorem Bool.cond_true {α : Sort u} {a b : α} : (bif true then a else b) = a",
+    "Bool.cond_false": "theorem Bool.cond_false {α : Sort u} {a b : α} : (bif false then a else b) = b",
+    "zero_add": "theorem zero_add {M : Type u_2} [AddZeroClass M] (a : M) : 0 + a = a",
+    "coin_not_true": "theorem coin_not_true (p : I) : (not <$> coin p) true = ↑(σ p)",
+    "coin_not": "theorem coin_not (p : I) : not <$> coin p = coin (σ p)",
+    "coin_total": "theorem coin_total (p : I) : (coin p) true + (coin p) false = 1",
+    "pure_true": "theorem pure_true (b : Bool) : (pure b) true = bif b then 1 else 0",
+    "coin_const": "theorem coin_const (p : I) (b : Bool) : (fun x => b) <$> coin p = pure b",
+    "map_pure": "theorem map_pure {f : Type u → Type v} {inst✝ : Applicative f} [self : LawfulApplicative f] {α β : Type u} (g : α → β) (x : α) : g <$> pure x = pure (g x)",
+    "map_map": "theorem map_map {α β γ : Type} (μ : DiscreteMeasure α) (f : α → β) (g : β → γ) : g <$> f <$> μ = (fun x => g (f x)) <$> μ",
+    "coin_and": "theorem coin_and (p q : I) : (do let x ← coin p let y ← coin q pure (x && y)) = coin (p * q)",
+    "bind_map_left": "theorem bind_map_left {m : Type u_1 → Type u_2} {α β γ : Type u_1} [Monad m] [LawfulMonad m] (f : α → β) (x : m α) (g : β → m γ) : (do let b ← f <$> x g b) = do let a ← x g (f a)",
+    "map_bind": "theorem map_bind {m : Type u_1 → Type u_2} {β γ α : Type u_1} [Monad m] [LawfulMonad m] (f : β → γ) (x : m α) (g : α → m β) : f <$> (x >>= g) = do let a ← x f <$> g a",
+    "coin_unused": "theorem coin_unused {β : Type} (p : I) (ν : DiscreteMeasure β) : (do let _ ← coin p ν) = ν",
+    "binom_zero": "theorem binom_zero (p : I) : binom p 0 = pure 0",
+    "binom_succ": "theorem binom_succ (p : I) (n : ℕ) : binom p (n + 1) = do let X ← coin p let Y ← binom p n pure (X.toNat + Y)",
+    "bind_assoc": "theorem bind_assoc {m : Type u → Type v} {inst✝ : Monad m} [self : LawfulMonad m] {α β γ : Type u} (x : m α) (f : α → m β) (g : β → m γ) : x >>= f >>= g = x >>= fun x => f x >>= g",
+    "pure_bind": "theorem pure_bind {m : Type u → Type v} {inst✝ : Monad m} [self : LawfulMonad m] {α β : Type u} (x : α) (f : α → m β) : pure x >>= f = f x",
+    "add_zero": "theorem add_zero {M : Type u_2} [AddZeroClass M] (a : M) : a + 0 = a",
+    "add_assoc": "theorem add_assoc {G : Type u_1} [AddSemigroup G] (a b c : G) : a + b + c = a + (b + c)",
+    "map_eq_pure_bind": "theorem map_eq_pure_bind {m : Type u_1 → Type u_2} {α β : Type u_1} [Monad m] [LawfulMonad m] (f : α → β) (x : m α) : f <$> x = do let a ← x pure (f a)",
+    "bind_pure": "theorem bind_pure {m : Type u_1 → Type u_2} {α : Type u_1} [Monad m] [LawfulMonad m] (x : m α) : x >>= pure = x",
+    "Bool.not_not": "theorem Bool.not_not (b : Bool) : (!!b) = b",
+    "Bool.apply_apply_apply": "theorem Bool.apply_apply_apply (f : Bool → Bool) (x : Bool) : f (f (f x)) = f x",
+    "Function.comp_apply": "theorem Function.comp_apply {β : Sort u_1} {δ : Sort u_2} {α : Sort u_3} {f : β → δ} {g : α → β} {x : α} : (f ∘ g) x = f (g x)",
+    "id_eq": "theorem id_eq {α : Sort u_1} (a : α) : id a = a",
+    "Nat.bodd_succ": "theorem Nat.bodd_succ (n : ℕ) : n.succ.bodd = !n.bodd",
+    "mass_mul": "theorem mass_mul (p q : I) : ↑(p * q) = ↑p * ↑q",
+    "coin_bind_apply": "theorem coin_bind_apply {β : Type} (p : I) (f : Bool → DiscreteMeasure β) (x : β) : (coin p >>= f) x = ↑p * (f true) x + ↑(σ p) * (f false) x",
+    "pure_self": "theorem pure_self {α : Type} (a : α) : (pure a) a = 1",
+    "pure_zero_succ": "theorem pure_zero_succ (k : ℕ) : (pure 0) (k + 1) = 0",
+    "shift_succ": "theorem shift_succ (μ : DiscreteMeasure ℕ) (k : ℕ) : (do let Y ← μ pure (1 + Y)) (k + 1) = μ k",
+    "shift_zero": "theorem shift_zero (μ : DiscreteMeasure ℕ) : (do let Y ← μ pure (1 + Y)) 0 = 0",
+    "Bool.toNat_true": "theorem Bool.toNat_true : true.toNat = 1",
+    "Bool.toNat_false": "theorem Bool.toNat_false : false.toNat = 0",
+    "pow_zero": "theorem pow_zero {M : Type u_2} [Monoid M] (a : M) : a ^ 0 = 1",
+    "pow_succ": "theorem pow_succ {M : Type u_2} [Monoid M] (a : M) (n : ℕ) : a ^ (n + 1) = a ^ n * a",
+    "mul_comm": "theorem mul_comm {G : Type u_1} [CommMagma G] (a b : G) : a * b = b * a",
+    "one_mul": "theorem one_mul {M : Type u_2} [MulOneClass M] (a : M) : 1 * a = a",
+    "add_right_comm": "theorem add_right_comm {G : Type u_3} [AddCommSemigroup G] (a b c : G) : a + b + c = a + c + b",
+    "Nat.choose_self": "theorem Nat.choose_self (n : ℕ) : n.choose n = 1",
+    "Nat.choose_zero_right": "theorem Nat.choose_zero_right (n : ℕ) : n.choose 0 = 1",
+    "Nat.cast_add": "theorem Nat.cast_add {R : Type u_1} [AddMonoidWithOne R] (m n : ℕ) : ↑(m + n) = ↑m + ↑n",
+    "Nat.cast_one": "theorem Nat.cast_one {R : Type u_1} [AddMonoidWithOne R] : ↑1 = 1",
+    "seq_zero": "theorem seq_zero {α : Type} (μ : DiscreteMeasure α) : iidSequence 0 μ = pure []",
+    "seq_succ": "theorem seq_succ {α : Type} (μ : DiscreteMeasure α) (n : ℕ) : iidSequence (n + 1) μ = do let y ← μ let l ← iidSequence n μ pure (y :: l)",
+    "seq_succ_apply": "theorem seq_succ_apply {α : Type} [DecidableEq α] (μ : DiscreteMeasure α) (n : ℕ) (a : α) (l : List α) : (iidSequence (n + 1) μ) (a :: l) = μ a * (iidSequence n μ) l",
+    "seq_zero_nil": "theorem seq_zero_nil {α : Type} (μ : DiscreteMeasure α) : (iidSequence 0 μ) [] = 1",
+    "count_true_cons": "theorem count_true_cons (y : Bool) (l : List Bool) : List.count true (y :: l) = y.toNat + List.count true l",
+    "binom_eq_count": "theorem binom_eq_count (p : I) (n : ℕ) : binom p n = (fun l => List.count true l) <$> iidSequence n (coin p)",
+    "frac_zero": "theorem frac_zero (b : ℕ) : frac 0 b = 0",
+    "frac_white": "theorem frac_white (w : ℕ) : frac (w + 1) 0 = 1",
+    "coin_zero": "theorem coin_zero : coin 0 = pure false",
+    "coin_one": "theorem coin_one : coin 1 = pure true",
+    "cond_same": "theorem cond_same {α : Type} (c : Bool) (a : α) : (bif c then a else a) = a",
+    "Nat.add_sub_cancel": "theorem Nat.add_sub_cancel (n m : ℕ) : n + m - m = n",
+    "hyper_zero": "theorem hyper_zero (w b : ℕ) : hyper w b 0 = pure 0",
+    "hyper_succ": "theorem hyper_succ (w b n : ℕ) : hyper w b (n + 1) = do let X ← coin (frac w b) bif X then do let Y ← hyper (w - 1) b n pure (1 + Y) else hyper w (b - 1) n",
+    "hyper_black": "theorem hyper_black (b n : ℕ) : hyper 0 b n = pure 0",
+    "hyper_white": "theorem hyper_white (w : ℕ) : hyper w 0 w = pure w",
+    "hyper_all": "theorem hyper_all (w b : ℕ) : hyper w b (w + b) = pure w",
+    "or_eq": "theorem or_eq (x y : Bool) : (x || y) = !(!x && !y)",
+    "Bool.and_not_self": "theorem Bool.and_not_self (x : Bool) : (x && !x) = false",
+    "Bool.or_not_self": "theorem Bool.or_not_self (x : Bool) : (x || !x) = true",
+    "binom_add": "theorem binom_add (p : I) (n m : ℕ) : (do let X ← binom p n let Y ← binom p m pure (X + Y)) = binom p (n + m)",
+    "coin_bind_binom": "theorem coin_bind_binom (p q : I) : (do let C ← coin p binom q C.toNat) = do let B ← coin (p * q) pure B.toNat",
+    "binom_thin": "theorem binom_thin (p q : I) (n : ℕ) : (do let X ← binom p n binom q X) = binom (p * q) n",
+    "binom_symm": "theorem binom_symm (p : I) (k m : ℕ) : (binom (σ p) (k + m)) m = (binom p (k + m)) k",
+    "geom_formula": "theorem geom_formula (p : I) (k : ℕ) : (geom p) k = ↑(σ p) ^ k * ↑p",
+    "geom_memoryless": "theorem geom_memoryless (p : I) (k m : ℕ) : (geom p) (k + m) = ↑(σ p) ^ k * (geom p) m",
+    "bind_comm": "theorem bind_comm {α β γ : Type} (μ : DiscreteMeasure α) (ν : DiscreteMeasure β) (f : α → β → DiscreteMeasure γ) : (do let x ← μ let y ← ν f x y) = do let y ← ν let x ← μ f x y",
+    "symm_twice": "theorem symm_twice (p : I) : σ (σ p) = p",
+    "Nat.choose_symm_add": "theorem Nat.choose_symm_add {a b : ℕ} : (a + b).choose a = (a + b).choose b",
+    "mul_assoc": "theorem mul_assoc {G : Type u_1} [Semigroup G] (a b c : G) : a * b * c = a * (b * c)",
+    "ENNReal.tsum_geometric": "theorem ENNReal.tsum_geometric (r : ENNReal) : ∑' (n : ℕ), r ^ n = (1 - r)⁻¹",
+    "one_sub_symm": "theorem one_sub_symm (p : I) : 1 - ↑(σ p) = ↑p",
+    "ENNReal.tsum_mul_right": "theorem ENNReal.tsum_mul_right {α : Type u_1} {a : ENNReal} {f : α → ENNReal} : ∑' (i : α), f i * a = (∑' (i : α), f i) * a",
+    "ENNReal.inv_mul_cancel": "theorem ENNReal.inv_mul_cancel {a : ENNReal} (h0 : a ≠ 0) (ht : a ≠ ⊤) : a⁻¹ * a = 1",
+    "mass_ne_zero": "theorem mass_ne_zero {p : ↑I} (h : p ≠ 0) : ↑p ≠ 0",
+    "mass_finite": "theorem mass_finite (p : I) : ↑p ≠ ⊤",
+    "bind_false": "theorem bind_false (μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (μ >>= f) false = μ true * (f true) false + μ false * (f false) false",
+    "prob_unused": "theorem prob_unused {β : Type} (μ : DiscreteMeasure Bool) [h : Prob μ] (ν : DiscreteMeasure β) : (do let _ ← μ ν) = ν",
+    "mass_eq_ofReal": "theorem mass_eq_ofReal (p : I) : ↑p = ENNReal.ofReal ↑p",
+    "mass_mul_real": "theorem mass_mul_real (p q : I) : ↑p * ↑q = ENNReal.ofReal (↑p * ↑q)",
+    "ENNReal.ofReal_add": "theorem ENNReal.ofReal_add {p q : ℝ} (hp : 0 ≤ p) (hq : 0 ≤ q) : ENNReal.ofReal (p + q) = ENNReal.ofReal p + ENNReal.ofReal q",
+    "real_mul_nonneg": "theorem real_mul_nonneg (p q : I) : 0 ≤ ↑p * ↑q",
+    "symm_real": "theorem symm_real (p : I) : ↑(σ p) = 1 - ↑p",
+    "coin_stays": "theorem coin_stays (p q r : I) (h : (1 - ↑p) * ↑r = ↑p * (1 - ↑q)) : (do let x ← coin p bif x then coin q else coin r) = coin p",
+    "coin_thin": "theorem coin_thin (p q : I) : (do let x ← coin p bif x then coin q else pure false) = coin (p * q)",
+    "binom_succ_zero": "theorem binom_succ_zero (p : I) (n : ℕ) : (binom p (n + 1)) 0 = ↑(σ p) * (binom p n) 0",
+    "binom_succ_succ": "theorem binom_succ_succ (p : I) (n k : ℕ) : (binom p (n + 1)) (k + 1) = ↑p * (binom p n) k + ↑(σ p) * (binom p n) (k + 1)",
+    "binom_all_false": "theorem binom_all_false (p : I) (n : ℕ) : (binom p n) 0 = ↑(σ p) ^ n",
+    "binom_above": "theorem binom_above (p : I) (n k : ℕ) : (binom p n) (n + k + 1) = 0",
+    "binom_diag": "theorem binom_diag (p : I) (n : ℕ) : (binom p n) n = ↑p ^ n",
+    "binom_formula": "theorem binom_formula (p : I) (k m : ℕ) : (binom p (k + m)) k = ↑p ^ k * ↑(σ p) ^ m * ↑((k + m).choose k)",
+    "geom_zero": "theorem geom_zero (p : I) : (geom p) 0 = ↑p",
+    "geom_succ": "theorem geom_succ (p : I) (k : ℕ) : (geom p) (k + 1) = ↑(σ p) * (geom p) k",
+    "geom_first": "theorem geom_first (p : I) : geom p = do let x ← coin p bif x then pure 0 else do let Y ← geom p pure (1 + Y)"
+    }
+  // LEAN_SIGS end
   const INVENTORY = [
     { name: 'rw', kind: 'tactic', insert: 'rw []', sig: 'rw [h]   rw [← h]   rw [h₁, h₂]',
       en: 'Rewrites the goal with the equation h: its left side becomes its right side (with ←, the other way round). Closes the goal when it then reads a = a. It does not rewrite where names bound in a do block occur; there, use simp only.',
@@ -3192,6 +3325,7 @@
     }
 
     render() {
+      if (HOVER && this.box.contains(HOVER.chip)) hoverHide()
       if (this.box.hidden) return
       const head = el('h3', 'pg-proof-head', tr('Proof'))
       const stmt = el('pre', 'pg-proof-statement', `${this.lemma ? `theorem ${this.lemma}` : 'example'} ${this.statement}`)
@@ -3321,13 +3455,18 @@
       ihead.append(' ', st)
       inv.append(ihead)
       const sigOf = item => (this.world0 && item.sig0) || item.sig || ''
+      // (a theorem: its whole statement in Lean, as Lean prints it; a tactic: how it is written)
+      const fullOf = item => (!this.world0 && LEAN_SIGS[item.name]) || sigOf(item)
       const textOf = item => this.world0 && item.en0 ? (LANG === 'de' ? item.de0 : item.en0) : this.worldB && item.enb ? (LANG === 'de' ? item.deb : item.enb) : (LANG === 'de' ? item.de : item.en)
       for (const [kind, title] of [['tactic', tr('Tactics')], ['rule', tr('Theorems')]]) {
         const group = el('div', 'pg-inv-group')
         group.append(el('span', 'pg-inv-title', title + ':'))
         for (const item of INVENTORY.filter(i => (kind === 'tactic' ? i.kind === 'tactic' : i.kind !== 'tactic') && this.available(i))) {
           const b = el('button', 'pg-chip' + (item.kind === 'lemma' ? ' pg-chip-lemma' : '') + (this.isNew(item) ? ' pg-chip-new' : '') + (this.busy || this.done ? ' pg-chip-off' : '') + (this.peek === item.name ? ' pg-chip-on' : ''), item.name)
-          b.type = 'button'; b.title = sigOf(item)
+          b.type = 'button'
+          // (a mouse: on hover what it says, as the long press on a phone shows it, in a box over the page)
+          b.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') hoverShow(b, fullOf(item), textOf(item)) })
+          b.addEventListener('pointerleave', hoverHide)
           // a long press shows what it says (a phone has no hover); a tap puts it into the input
           let timer = null
           const stop = () => { clearTimeout(timer); timer = null }
@@ -3341,7 +3480,7 @@
           if (sigs) { const r = el('div', 'pg-inv-row'); r.append(b, el('code', 'pg-inv-sig', sigOf(item))); group.append(r) } else group.append(b)
           if (this.peek === item.name) {
             const pk = el('div', 'pg-chip-peek')
-            pk.append(el('code', 'pg-inv-sig', sigOf(item)), el('div', '', textOf(item) ?? ''))
+            pk.append(el('code', 'pg-inv-sig', fullOf(item)), el('div', '', textOf(item) ?? ''))
             const x = el('button', 'pg-chip-x', '✕'); x.type = 'button'; x.addEventListener('click', () => { this.peek = null; this.render() })
             pk.append(x)
             group.append(pk)

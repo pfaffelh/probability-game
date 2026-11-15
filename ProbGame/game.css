@@ -736,3 +736,7 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 @media (min-width: 701px) { .pg-stage-top .pg-dots { margin-left: auto; } }
 .pg-stage-top .pg-tabs { font-size: 1.1rem; }
 .pg-stage-top .pg-tab { padding: 0.35em 1.1em; }
+
+/* a chip under the mouse: what it says, as on a phone after a long press, over the page */
+.pg-chip-hover { position: fixed; z-index: 50; max-width: min(36rem, calc(100vw - 16px)); margin: 0; padding: 0.45rem 0.7rem; box-shadow: 0 4px 14px rgba(0,0,0,0.15); pointer-events: none; font-family: var(--verso-structure-font-family, sans-serif); color: #3a2a10; }
+.pg-chip-hover .pg-inv-sig { font: 0.95em var(--verso-code-font-family, monospace); white-space: pre-wrap; }
