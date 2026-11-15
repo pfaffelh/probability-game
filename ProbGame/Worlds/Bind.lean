@@ -321,6 +321,147 @@ norm_num
 :::
 ::::
 
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (do let x ← μ; let y ← pure (!x); pure (!y)) = μ") (new := "pure_bind, bind_pure")
+:::en
+*Flip, and flip back.* A *Markov chain* goes step by step; each step depends only on where it is. The simplest one on `Bool`: every step flips. After two steps it is back where it started: whatever the start `μ`, the distribution is `μ` again.
+:::
+
+:::de
+*Umdrehen, und zurück.* Eine *Markov-Kette* geht Schritt für Schritt; jeder Schritt hängt nur davon ab, wo sie gerade ist. Die einfachste auf `Bool`: Jeder Schritt dreht um. Nach zwei Schritten ist sie wieder am Anfang: Was auch immer der Start `μ` ist, die Verteilung ist wieder `μ`.
+:::
+
+:::proofen
+Each step is sure: `pure_bind : (do let x ← pure a; f x) = f a`. Then your lemma from *Circuits*, `Bool.not_not : (!(!b)) = b`, and `bind_pure : (do let x ← μ; pure x) = μ`. All under the `do`: `simp only`.
+
+*Tip.* `simp only [pure_bind, Bool.not_not, bind_pure]`.
+:::
+
+:::proofde
+Jeder Schritt ist sicher: `pure_bind : (do let x ← pure a; f x) = f a`. Dann dein Lemma aus *Schaltungen*, `Bool.not_not : (!(!b)) = b`, und `bind_pure : (do let x ← μ; pure x) = μ`. Alles unter dem `do`: `simp only`.
+
+*Tipp.* `simp only [pure_bind, Bool.not_not, bind_pure]`.
+:::
+:::solution
+```
+simp only [pure_bind, Bool.not_not, bind_pure]
+```
+:::
+::::
+
+::::leanonly (proof := "(p q r : I) : (do let x ← coin p; bif x then coin q else coin r) true = (↑p * ↑q + ↑(σ p) * ↑r : ENNReal)")
+:::en
+*One step forward.* A chain starts with `coin p`. From `true` the next step is `coin q`, from `false` it is `coin r`. The start distribution is carried one step forward: at `true` arrives $`p q + (1 - p) r`.
+:::
+
+:::de
+*Ein Schritt nach vorn.* Eine Kette startet mit `coin p`. Von `true` aus ist der nächste Schritt `coin q`, von `false` aus `coin r`. Die Startverteilung wird einen Schritt nach vorn getragen: Bei `true` kommt $`p q + (1 - p) r` an.
+:::
+
+:::proofen
+`bind_true`, the two branches, and the masses of the coins.
+
+*Tip.* `rw [bind_true, Bool.cond_true, Bool.cond_false]`, `rw [coin_true, coin_true, coin_true, coin_false]`.
+:::
+
+:::proofde
+`bind_true`, die zwei Zweige, und die Massen der Münzen.
+
+*Tipp.* `rw [bind_true, Bool.cond_true, Bool.cond_false]`, `rw [coin_true, coin_true, coin_true, coin_false]`.
+:::
+:::solution
+```
+rw [bind_true, Bool.cond_true, Bool.cond_false]
+rw [coin_true, coin_true, coin_true, coin_false]
+```
+:::
+::::
+
+::::leanonly (proof := "(p q r : I) : (do let x ← coin p; bif x then coin q else coin r) false = (↑p * ↑(σ q) + ↑(σ p) * ↑(σ r) : ENNReal)") (new := "bind_false")
+:::en
+*...and at false.* The rest of the distribution after the step: at `false` arrives $`p (1 - q) + (1 - p)(1 - r)`. Now the whole distribution after one step is known.
+:::
+
+:::de
+*...und bei false.* Der Rest der Verteilung nach dem Schritt: Bei `false` kommt $`p (1 - q) + (1 - p)(1 - r)` an. Jetzt ist die ganze Verteilung nach einem Schritt bekannt.
+:::
+
+:::proofen
+`bind_false : (μ >>= f) false = μ true * f true false + μ false * f false false`.
+
+*Tip.* `rw [bind_false, Bool.cond_true, Bool.cond_false]`, `rw [coin_true, coin_false, coin_false, coin_false]`.
+:::
+
+:::proofde
+`bind_false : (μ >>= f) false = μ true * f true false + μ false * f false false`.
+
+*Tipp.* `rw [bind_false, Bool.cond_true, Bool.cond_false]`, `rw [coin_true, coin_false, coin_false, coin_false]`.
+:::
+:::solution
+```
+rw [bind_false, Bool.cond_true, Bool.cond_false]
+rw [coin_true, coin_false, coin_false, coin_false]
+```
+:::
+::::
+
+::::leanonly (proof := "(p q r : I) (h : ↑p * ↑q + ↑(σ p) * ↑r = (↑p : ENNReal)) : (do let x ← coin p; bif x then coin q else coin r) = coin p")
+:::en
+*A distribution that stays.* When does the step carry `coin p` to itself? When the mass at `true` after the step is $`p` again: $`p = p q + (1 - p) r`. Then `coin p` is *stationary*: the chain started there stays there, step after step.
+:::
+
+:::de
+*Eine Verteilung, die bleibt.* Wann trägt der Schritt `coin p` zu sich selbst? Wenn die Masse bei `true` nach dem Schritt wieder $`p` ist: $`p = p q + (1 - p) r`. Dann ist `coin p` *stationär*: Die dort gestartete Kette bleibt dort, Schritt für Schritt.
+:::
+
+:::proofen
+Two distributions on `Bool` with the same mass at `true` are the same: `apply bool_ext`. Then the computation of *One step forward*, and the hypothesis `h`.
+
+*Tip.* `apply bool_ext`, `rw [bind_true, Bool.cond_true, Bool.cond_false]`, `rw [coin_true, coin_true, coin_true, coin_false]`, `exact h`.
+:::
+
+:::proofde
+Zwei Verteilungen auf `Bool` mit derselben Masse bei `true` sind gleich: `apply bool_ext`. Dann die Rechnung aus *Ein Schritt nach vorn*, und die Annahme `h`.
+
+*Tipp.* `apply bool_ext`, `rw [bind_true, Bool.cond_true, Bool.cond_false]`, `rw [coin_true, coin_true, coin_true, coin_false]`, `exact h`.
+:::
+:::solution
+```
+apply bool_ext
+rw [bind_true, Bool.cond_true, Bool.cond_false]
+rw [coin_true, coin_true, coin_true, coin_false]
+exact h
+```
+:::
+::::
+
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (q : I) : (do let x ← μ; bif x then coin q else coin q) = coin q") (new := "cond_same, prob_unused")
+:::en
+*A chain that forgets.* If the next step does not depend on where the chain is (`q = r`), one step is enough to forget the start: whatever `μ` was, after the step it is `coin q`.
+:::
+
+:::de
+*Eine Kette, die vergisst.* Hängt der nächste Schritt nicht davon ab, wo die Kette ist (`q = r`), genügt ein Schritt, um den Start zu vergessen: Was auch immer `μ` war, nach dem Schritt ist es `coin q`.
+:::
+
+:::proofen
+`cond_same : (bif c then a else a) = a` (under the `do`: `simp only`), and `prob_unused : (do let _ ← μ; ν) = ν` for a distribution `μ` (`[Prob μ]`).
+
+*Tip.* `simp only [cond_same]`, `rw [prob_unused]`.
+:::
+
+:::proofde
+`cond_same : (bif c then a else a) = a` (unter dem `do`: `simp only`), und `prob_unused : (do let _ ← μ; ν) = ν` für eine Verteilung `μ` (`[Prob μ]`).
+
+*Tipp.* `simp only [cond_same]`, `rw [prob_unused]`.
+:::
+:::solution
+```
+simp only [cond_same]
+rw [prob_unused]
+```
+:::
+::::
+
 ::::circuit (inputs := "x y z") (gates := "") (coins := "p ?|? ?|?") (target := "bool true:3p-3p^2+p^3 false:(1-p)^3") (start := "x>y.0; y>z.0; z>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else coin p); let z ← (bif y then pure true else coin p); pure z) true = (↑p + ↑(σ p) * (↑p + ↑(σ p) * ↑p) : ENNReal)") (play := "y.T=1; y.F=p; z.T=1; z.F=p")
 :::en
 *Boss: three tries.* Throw until `true` comes, at most three times. `y` waits for `x`, and `z` waits

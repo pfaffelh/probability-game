@@ -191,3 +191,9 @@ Wait boards 1–3, 5–8, Binomial thinning (coin_bind_binom, binom_thin) and th
 Geometric formula, memoryless, total mass. All of it is at the git tag `before-prune-2026-11-15`.
 Then (user: "too much"): all 29 levels back (instructive and easy entry levels stay); Hypergeometric
 stays. The backward-dependency list is only a guide now.
+
+Coins that Wait, a Markov chain on Bool (user): before the boss five Lean-only levels: flip and flip
+back (Bool.not_not again; pure_bind, bind_pure), one step forward from coin p (true → coin q,
+false → coin r) at true and (bind_false) at false, a distribution that stays (stationary:
+p = pq + (1-p)r), a chain that forgets (q = r; cond_same, prob_unused). cond_same moved here from
+Hypergeometric.

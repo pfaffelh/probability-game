@@ -455,6 +455,19 @@ theorem hyper_all (w b : ℕ) : hyper w b (w + b) = pure w := by
   simp only [cond_same]
   rw [coin_unused]
 
+/-! Markov chains on `Bool` (Coins that Wait, 2026-11-15). -/
+
+/-- The mass of a bind at `false`: through `true` and through `false`. -/
+theorem bind_false (μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) :
+    (μ >>= f) false = μ true * f true false + μ false * f false false := by
+  rw [← MeasureTheory.DiscreteMeasure.bind_eq_bind, MeasureTheory.DiscreteMeasure.bind_apply,
+    tsum_fintype, Fintype.sum_bool]
+
+/-- A draw whose outcome is not used changes nothing. -/
+theorem prob_unused {β : Type} (μ : DiscreteMeasure Bool) [h : Prob μ] (ν : DiscreteMeasure β) :
+    (do let _ ← μ; ν) = ν :=
+  MeasureTheory.DiscreteMeasure.bind_const_of_hasSum h.hasSum ν
+
 end ProbGame
 
 open ProbGame
