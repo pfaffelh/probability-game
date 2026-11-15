@@ -2772,6 +2772,11 @@
   const advice = m => { const a = ADVICE.find(([r]) => r.test(m)); return a ? (LANG === 'de' ? a[2] : a[1]) : '' }
   Object.assign(DE, { 'What Lean says': 'Was Lean sagt' })
 
+  // On a phone the proof is played without the keyboard (it would cover the screen): the input line is
+  // put together by taps (inventory, names of the goal, ⌫), unless the player asks for the keyboard (⌨).
+  const PHONE = () => matchMedia('(max-width: 700px)').matches
+  const TOUCH = () => matchMedia('(pointer: coarse)').matches || PHONE()
+  let KEYBOARD = false
   let SOL_OPEN = null  // the solution beside the proof: open or folded, as the player left it
   class Proof {
     constructor(level, onChange) {
@@ -2938,6 +2943,7 @@
     }
     // (the goals now and the input in view, below the steps that grow)
     reveal() {
+      if (STAGE && PHONE()) { const m = this.box.querySelector('.pg-proof-main'); if (m) m.scrollTop = m.scrollHeight; return }
       const to = this.input?.isConnected ? this.input.closest('.pg-proof-input') : this.box.querySelector('.pg-proof-done')
       to?.scrollIntoView({ block: 'nearest' })
     }
@@ -3030,6 +3036,34 @@
       if (/\[[^\]]*\S[^\]]*\]\s*$/.test(v)) { this.input.value = this.typed = v.replace(/\s*\]\s*$/, `, ${it.name}]`); this.render(); this.input.focus({ preventScroll: true }); return }
       if (/:=\s*$/.test(v) || /^exists\s*$/.test(v)) { this.input.value = this.typed = v.replace(/\s*$/, ' ') + it.name + ' '; this.render(); this.input.focus({ preventScroll: true }); return }
       this.put(`rw [${it.name}]`)
+    }
+
+    // A name into the input: after a word with a space (rw [mass_not μ false]), after [ or ← right away.
+    putTerm(t) {
+      const v = this.input?.value ?? ''
+      this.choice = null
+      this.input.value = this.typed = /(^|[\[(,]|←)\s*$/.test(v) ? v.replace(/\s*$/, t === '←' ? '' : (/[,←]\s*$/.test(v) ? ' ' : '')) + t + (t === '←' ? ' ' : '') : v.replace(/\s*$/, ' ') + t
+      this.render()
+    }
+    // the last word (or sign) of the input away
+    erase() {
+      const v = (this.input?.value ?? '').replace(/\s+$/, '')
+      this.choice = null
+      this.input.value = this.typed = v.replace(/(<;>|[\w.'₀-₉!?]+|.)$/u, '').replace(/\s+$/, v.endsWith(' ') ? ' ' : '')
+      this.render()
+    }
+    // The keys of a phone, under the input: the names of the goal (its variables and hypotheses),
+    // true, false, ←, and ⌫, clear, ⌨ (the keyboard after all).
+    keys() {
+      const box = el('div', 'pg-keys')
+      const key = (label, title, f, cls = '') => { const b = el('button', 'pg-key' + cls, label); b.type = 'button'; b.title = title; b.setAttribute('aria-label', title); b.disabled = this.busy; b.addEventListener('click', f); box.append(b); return b }
+      const names = [...new Set(this.vars().map(v => v.name).filter(n => !/^inst/.test(n) && !/†/.test(n)))]
+      for (const n of [...names, 'true', 'false']) key(n, n, () => this.putTerm(n), ' pg-key-name')
+      key('←', tr('backwards (in rw)'), () => this.putTerm('←'), ' pg-key-name')
+      key('⌫', tr('Delete the last word'), () => this.erase(), ' pg-key-op')
+      key('✕', tr('Clear the input'), () => { this.choice = null; this.input.value = this.typed = ''; this.render() }, ' pg-key-op')
+      key('⌨', tr(KEYBOARD ? 'No keyboard' : 'Keyboard'), () => { KEYBOARD = !KEYBOARD; this.render(); if (KEYBOARD) this.input?.focus() }, ' pg-key-op' + (KEYBOARD ? ' pg-on' : ''))
+      return box
     }
 
     render() {
@@ -3139,6 +3173,8 @@
       this.input = el('input'); this.input.type = 'text'; this.input.spellcheck = false; this.input.autocapitalize = 'off'; this.input.autocomplete = 'off'; this.input.enterKeyHint = 'go'; this.input.setAttribute('autocorrect', 'off')
       this.input.placeholder = this.world0 ? tr('a tactic, e.g. rw [pure_bind]') : this.worldB ? tr('a tactic, e.g. rfl') : tr('a tactic, e.g. rw [coin_true]')
       this.input.value = this.typed ?? ''
+      // (on a phone: no keyboard, unless asked for with ⌨)
+      if (TOUCH() && !KEYBOARD) { this.input.readOnly = true; this.input.inputMode = 'none' }
       // (the abbreviations of Lean's editors: \l becomes ←, once a space, a bracket or a comma follows)
       this.input.addEventListener('input', () => {
         const i = this.input, at = i.selectionStart ?? i.value.length, before = i.value.slice(0, at), now = unabbrev(before, false)
@@ -3211,15 +3247,23 @@
         inv.append(group)
       }
       parts.push(hist, goals, err)
-      if (!this.done) parts.push(row)
+      const below = STAGE && PHONE()
+      if (!this.done && !below) parts.push(row)
       if (!STAGE) parts.push(tools)
       // the board's solution below what to do (the statement, the goals, the input)
       if (sol) parts.push(sol)
       // on the stage: the proof on the left, the inventory in a column on the right (below on phones)
       if (STAGE) {
         const main = el('div', 'pg-proof-main'), side = el('div', 'pg-proof-side')
-        main.append(...parts); side.append(inv)
+        main.append(...parts)
+        // (a phone: below a fixed line the input, the keys and the inventory; above it the proof)
+        if (below && !this.done) side.append(row, this.keys())
+        side.append(inv)
+        // (where the proof was scrolled to stays, after a tap)
+        const old = this.box.querySelector('.pg-proof-main'), top = old?.scrollTop, oldInv = this.box.querySelector('.pg-proof-side .pg-inventory')?.scrollTop
         this.box.replaceChildren(main, side)
+        if (old) main.scrollTop = top
+        if (oldInv) inv.scrollTop = oldInv
         this.level.onRendered?.()
         return
       }
@@ -3261,6 +3305,8 @@
     'no goals': 'keine Ziele', '+ {n} more': '+ {n} weitere', 'the statement': 'die Aussage', 'goal 1 of {n}': 'Ziel 1 von {n}',
     '→ {n} goals': '→ {n} Ziele', '✓ goal closed, {n} left': '✓ Ziel geschlossen, noch {n}', 'Remove the proof from this line on': 'Den Beweis ab dieser Zeile entfernen',
     'goal 1 of {n}: the next line works on this one': 'Ziel 1 von {n}: die nächste Zeile arbeitet an diesem',
+    'backwards (in rw)': 'rückwärts (in rw)', 'Delete the last word': 'Das letzte Wort löschen', 'Clear the input': 'Die Eingabe leeren',
+    'Keyboard': 'Tastatur', 'No keyboard': 'Keine Tastatur',
     'Zoom in': 'Vergrößern', 'Zoom out': 'Verkleinern', 'Whole board': 'Ganzes Spielfeld',
     'New in this level': 'Neu in diesem Level', 'New in this proof': 'Neu in diesem Beweis', 'Solve the board first.': 'Erst das Spielfeld lösen.',
   })
