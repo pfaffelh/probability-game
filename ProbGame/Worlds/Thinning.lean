@@ -11,11 +11,11 @@ htmlSplit := .never
 %%%
 
 :::en
-A coin is *thinned* when each `true` is kept only with probability $`q`, decided by a second coin. In Lean only.
+A coin is *thinned* when each `true` is kept only with probability $`q`, decided by a second coin. In Lean only. This way is picked up again in *Binomial*.
 :::
 
 :::de
-Eine Münze wird *ausgedünnt*, wenn jedes `true` nur mit Wahrscheinlichkeit $`q` behalten wird; eine zweite Münze entscheidet. Nur in Lean.
+Eine Münze wird *ausgedünnt*, wenn jedes `true` nur mit Wahrscheinlichkeit $`q` behalten wird; eine zweite Münze entscheidet. Nur in Lean. Dieser Weg wird in *Binomial* wieder aufgegriffen.
 :::
 
 ::::leanonly (proof := "(p q : I) : coin (p * q) true = (↑p * ↑q : ENNReal)") (new := "mass_mul")

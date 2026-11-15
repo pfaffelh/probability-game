@@ -43,7 +43,6 @@ Monadengesetze (`bind_assoc`, `pure_bind`) bringen ihn in die Form des Spielfeld
 einmal brauchst du *Induktion*, wie im Natural Number Game.
 :::
 
-:::::only (edition := "show")
 ::::circuit (height := "440") (route := "count") (inputs := "x") (gates := "not, toNat") (coins := "p") (target := "nat 0:1-p 1:p") (context := "Lean/Rules.lean") (proof := "(p : I) : Bool.toNat <$> coin p = (fun b => if b then 1 else 0) <$> coin p") (play := "a=toNat; x>a.0; a>out")
 :::en
 *From sides to numbers.* `Bool.toNat` counts `true` as $`1` and `false` as $`0`: the distribution
@@ -72,10 +71,15 @@ dann erledigt, wie in *Schaltungen*, `cases b <;> rfl` beide Fälle in einer Zei
 
 *Tipp.* `congr 1`, `funext b`, `cases b <;> rfl`.
 :::
+:::solution
+```
+congr 1
+funext b
+cases b <;> rfl
+```
+:::
 ::::
-:::::
 
-:::::only (edition := "show")
 ::::circuit (height := "540") (route := "count") (inputs := "x") (gates := "not, alwaysT, alwaysF, toNat") (coins := "p") (target := "pure 0") (context := "Lean/Rules.lean") (proof := "(p : I) : Bool.toNat <$> ((fun _ => false) <$> coin p) = pure 0") (play := "a=alwaysF; b=toNat; x>a.0; a>b.0; b>out")
 :::en
 *Surely zero.* A point mass on the numbers, however you get there.
@@ -92,8 +96,13 @@ As in *Surely `false`* (of *One Coin*) and *From sides to numbers*, now with a n
 :::proofde
 Wie in *Sicher `false`* (aus *Eine Münze*) und *Von Seiten zu Zahlen*, jetzt mit einer Zahl.
 :::
+:::solution
+```
+rw [coin_const, map_pure]
+rfl
+```
+:::
 ::::
-:::::
 
 ::::leanonly (proof := "(p : I) : binom p 0 = pure 0") (lemma := "binom_zero") (group := "chance.count")
 :::en
@@ -248,7 +257,6 @@ rw [add_zero]
 :::
 ::::
 
-:::::only (edition := "show")
 ::::circuit (route := "count") (inputs := "x y") (gates := "toNat, plus, and, or, not") (coins := "p p") (target := "nat 0:(1-p)^2 1:2p(1-p) 2:p^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x.toNat + y.toNat)) = binom p 2") (play := "a=toNat; b=toNat; c=plus; x>a.0; y>b.0; a>c.0; b>c.1; c>out")
 :::en
 *The number of `true`.* From coins to numbers ($`0` and $`1`), and add them: the binomial distribution $`B(2, p)`.
@@ -281,8 +289,13 @@ und `add_zero : n + 0 = n`.
 
 *Tipp.* `rw [binom_succ, binom_succ, binom_zero]`, dann `simp only [bind_assoc, pure_bind, add_zero]`.
 :::
+:::solution
+```
+rw [binom_succ, binom_succ, binom_zero]
+simp only [bind_assoc, pure_bind, add_zero]
+```
+:::
 ::::
-:::::
 
 ::::leanonly (proof := "(x y z : Bool) : x.toNat + y.toNat + z.toNat = x.toNat + (y.toNat + z.toNat)") (new := "add_assoc") (group := "chance.count")
 :::en
@@ -311,7 +324,6 @@ rw [add_assoc]
 :::
 ::::
 
-:::::only (edition := "show")
 ::::circuit (height := "660") (route := "count") (size := "big") (inputs := "x y z") (gates := "toNat, plus") (coins := "p p p") (target := "nat 0:(1-p)^3 1:3p(1-p)^2 2:3p^2(1-p) 3:p^3") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; let z ← coin p; pure (x.toNat + y.toNat + z.toNat)) = binom p 3") (play := "a=toNat; b=toNat; c=toNat; d=plus; e=plus; x>a.0; y>b.0; z>c.0; a>d.0; b>d.1; d>e.0; c>e.1; e>out")
 :::en
 *Three coins.* Count the `true`s among three coins. Throw $`n` coins and count how often `true`
@@ -336,8 +348,13 @@ Drei Würfe sind `binom p 3`. Neu: `add_assoc : a + b + c = a + (b + c)`.
 
 *Tipp.* Wie in *Die Anzahl `true`*, und `add_assoc` im `simp only`.
 :::
+:::solution
+```
+rw [binom_succ, binom_succ, binom_succ, binom_zero]
+simp only [bind_assoc, pure_bind, add_zero, add_assoc]
+```
+:::
 ::::
-:::::
 
 ::::circuit (route := "count") (inputs := "x y z") (gates := "toNat, plus") (coins := "p p p") (target := "nat 0:(1-p)^3 1:3p(1-p)^2 2:3p^2(1-p) 3:p^3") (start := "a=toNat@120,160; b=toNat@240,160; c=plus@180,270; x>a.0; y>b.0; a>c.0; b>c.1") (context := "Lean/Rules.lean") (proof := "(p : I) (n : ℕ) : (do let X ← binom p n; let Y ← coin p; pure (X + Y.toNat)) = binom p (n + 1)") (lemma := "binom_succ'") (new := "induction'") (play := "d=toNat; e=plus; z>d.0; c>e.0; d>e.1; e>out")
 :::en
@@ -410,8 +427,7 @@ rw [bind_pure]
 :::
 ::::
 
-:::::only (edition := "show")
-::::circuit (height := "540") (route := "count") (inputs := "x y z w") (gates := "plus") (coins := "p p p p") (target := "nat 0:(1-p)^4 1:4p(1-p)^3 2:6p^2(1-p)^2 3:4p^3(1-p) 4:p^4") (start := "a=toNat@62,150; b=toNat@176,150; c=plus@119,255; d=toNat@304,150; e=toNat@418,150; f=plus@361,255; x>a.0; y>b.0; a>c.0; b>c.1; z>d.0; w>e.0; d>f.0; e>f.1") (context := "Lean/Rules.lean") (proof := "(p : I) (n m : ℕ) : (do let X ← binom p n; let Y ← binom p m; pure (X + Y)) = binom p (n + m)") (play := "g=plus; c>g.0; f>g.1; g>out")
+::::circuit (height := "540") (route := "count") (inputs := "x y z w") (gates := "plus") (coins := "p p p p") (target := "nat 0:(1-p)^4 1:4p(1-p)^3 2:6p^2(1-p)^2 3:4p^3(1-p) 4:p^4") (start := "a=toNat@62,150; b=toNat@176,150; c=plus@119,255; d=toNat@304,150; e=toNat@418,150; f=plus@361,255; x>a.0; y>b.0; a>c.0; b>c.1; z>d.0; w>e.0; d>f.0; e>f.1") (context := "Lean/Rules.lean") (proof := "(p : I) (n m : ℕ) : (do let X ← binom p n; let Y ← binom p m; pure (X + Y)) = binom p (n + m)") (lemma := "binom_add") (play := "g=plus; c>g.0; f>g.1; g>out")
 :::en
 *$`B(2, p) * B(2, p) = B(4, p)`.* Two independent binomials, both already built: add them. The sum
 of independent random numbers has the *convolution* $`*` of their distributions as its distribution.
@@ -445,8 +461,16 @@ Fall $`m + 1`: schreibe `binom p (m + 1)` mit `← binom_succ' p m` um, dann `n 
 `n + m + 1` (`← add_assoc`) und das wieder mit `← binom_succ' p (n + m)`; jetzt `← ih`, und räume auf
 mit `simp only [bind_assoc, pure_bind, add_assoc]`.
 :::
+:::solution
+```
+induction' m with m ih
+rw [binom_zero]
+simp only [pure_bind, add_zero, bind_pure]
+rw [← binom_succ' p m, ← add_assoc, ← binom_succ' p (n + m), ← ih]
+simp only [bind_assoc, pure_bind, add_assoc]
+```
+:::
 ::::
-:::::
 
 ::::circuit (height := "660") (route := "count") (size := "big") (inputs := "x y z") (gates := "and, or") (coins := "p p p") (target := "bool true:3p^2-2p^3 false:1-3p^2+2p^3") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; let z ← coin p; pure ((x && y) || (x && z) || (y && z))) = (fun n => decide (2 ≤ n)) <$> binom p 3") (play := "a=and; b=and; c=and; d=or; e=or; x>a.0; y>a.1; x>b.0; z>b.1; y>c.0; z>c.1; a>d.0; b>d.1; d>e.0; c>e.1; e>out")
 :::en

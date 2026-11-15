@@ -189,3 +189,5 @@ scratchpad). Removed 29 levels: One Coin 1 and 12 (boards), Building with Coins 
 or_eq, and/or_not_self, boards), Counting boards 1, 2, 8, 10 and B(2,p)*B(2,p) (binom_add), Coins that
 Wait boards 1–3, 5–8, Binomial thinning (coin_bind_binom, binom_thin) and the encore binom_symm,
 Geometric formula, memoryless, total mass. All of it is at the git tag `before-prune-2026-11-15`.
+Then (user: "too much"): all 29 levels back (instructive and easy entry levels stay); Hypergeometric
+stays. The backward-dependency list is only a guide now.
