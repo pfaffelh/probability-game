@@ -2796,6 +2796,27 @@
     { name: 'hyper_black', kind: 'lemma', sig: 'hyper 0 b n = pure 0', en: 'Proved by you in Hypergeometric: only black.', de: 'Von dir bewiesen in „Hypergeometrisch“: nur schwarze.' },
     { name: 'hyper_white', kind: 'lemma', sig: 'hyper w 0 w = pure w', en: 'Proved by you in Hypergeometric: only white.', de: 'Von dir bewiesen in „Hypergeometrisch“: nur weiße.' },
     { name: 'hyper_all', kind: 'lemma', sig: 'hyper w b (w + b) = pure w', en: 'Proved by you in Hypergeometric: drawing all the balls.', de: 'Von dir bewiesen in „Hypergeometrisch“: alle Kugeln ziehen.' },
+    { name: 'or_eq', kind: 'lemma', sig: '(x || y) = !(!x && !y)', en: 'Proved by you in Building with Coins: De Morgan: or is and with three nots.', de: 'Von dir bewiesen in „Bauen mit Münzen“: De Morgan: or ist and mit drei not.' },
+    { name: 'Bool.and_not_self', kind: 'lemma', sig: '(x && !x) = false', en: 'Proved by you in Building with Coins: x and not x is never true.', de: 'Von dir bewiesen in „Bauen mit Münzen“: x und nicht x ist nie true.' },
+    { name: 'Bool.or_not_self', kind: 'lemma', sig: '(x || !x) = true', en: 'Proved by you in Building with Coins: x or not x is always true.', de: 'Von dir bewiesen in „Bauen mit Münzen“: x oder nicht x ist immer true.' },
+    { name: 'binom_add', kind: 'lemma', sig: '(do let X ← binom p n; let Y ← binom p m; pure (X + Y)) = binom p (n + m)', en: 'Proved by you in Building with Coins.', de: 'Von dir bewiesen in „Bauen mit Münzen“.' },
+    { name: 'coin_bind_binom', kind: 'lemma', sig: '(do let C ← coin p; binom q C.toNat) = (do let B ← coin (p * q); pure B.toNat)', en: 'Proved by you in Binomial: a coin p, then as many coins q as it shows.', de: 'Von dir bewiesen in „Binomial“: eine Münze p, dann so viele Münzen q, wie sie zeigt.' },
+    { name: "coin_bind_binom'", kind: 'lemma', sig: '(do let C ← coin p; let U ← binom q C.toNat; f U) = (do let B ← coin (p * q); f B.toNat)', en: 'Proved by you in Binomial: the same, with something after it.', de: 'Von dir bewiesen in „Binomial“: dasselbe, mit etwas danach.' },
+    { name: 'binom_thin', kind: 'lemma', sig: '(do let X ← binom p n; binom q X) = binom (p * q) n', en: 'Proved by you in Binomial: thinning a binomial.', de: 'Von dir bewiesen in „Binomial“: eine Binomialverteilung ausdünnen.' },
+    { name: 'binom_symm', kind: 'lemma', sig: 'binom (σ p) (k + m) m = binom p (k + m) k', en: 'Proved by you in Binomial: true and false swapped.', de: 'Von dir bewiesen in „Binomial“: true und false getauscht.' },
+    { name: 'geom_formula', kind: 'lemma', sig: 'geom p k = ↑(σ p) ^ k * ↑p', en: 'Proved by you in Geometric: the masses of the geometric distribution.', de: 'Von dir bewiesen in „Geometrisch“: die Massen der geometrischen Verteilung.' },
+    { name: 'geom_memoryless', kind: 'lemma', sig: 'geom p (k + m) = ↑(σ p) ^ k * geom p m', en: 'Proved by you in Geometric: without memory.', de: 'Von dir bewiesen in „Geometrisch“: ohne Gedächtnis.' },
+    { name: 'bind_comm', kind: 'rule', sig: '(do let x ← μ; let y ← ν; f x y) = (do let y ← ν; let x ← μ; f x y)', en: 'Two independent draws, in the other order.', de: 'Zwei unabhängige Ziehungen, in der anderen Reihenfolge.' },
+    { name: 'symm_twice', kind: 'rule', sig: 'σ (σ p) = p', en: '1 - (1 - p) = p.', de: '1 - (1 - p) = p.' },
+    { name: 'Nat.choose_symm_add', kind: 'rule', sig: '(m + k).choose m = (m + k).choose k', en: 'Choosing m of m + k is leaving out k.', de: 'm aus m + k wählen heißt k weglassen.' },
+    { name: "pow_succ'", kind: 'rule', sig: 'a ^ (n + 1) = a * a ^ n', en: 'One factor more, at the front.', de: 'Ein Faktor mehr, vorne.' },
+    { name: 'mul_assoc', kind: 'rule', sig: 'a * b * c = a * (b * c)', en: 'Brackets in a product.', de: 'Klammern in einem Produkt.' },
+    { name: 'ENNReal.tsum_geometric', kind: 'rule', sig: "∑' k, r ^ k = (1 - r)⁻¹", en: 'The geometric series.', de: 'Die geometrische Reihe.' },
+    { name: 'one_sub_symm', kind: 'rule', sig: '1 - ↑(σ p) = ↑p', en: '1 - (1 - p) = p, as masses.', de: '1 - (1 - p) = p, als Massen.' },
+    { name: 'ENNReal.tsum_mul_right', kind: 'rule', sig: "∑' k, f k * a = (∑' k, f k) * a", en: 'Factoring out of a sum.', de: 'Aus einer Summe ausklammern.' },
+    { name: 'ENNReal.inv_mul_cancel', kind: 'rule', sig: 'a ≠ 0 → a ≠ ⊤ → a⁻¹ * a = 1', en: 'One over a, times a.', de: 'Eins durch a, mal a.' },
+    { name: 'mass_ne_zero', kind: 'rule', sig: 'p ≠ 0 → ↑p ≠ 0', en: 'A number ≠ 0 is a mass ≠ 0.', de: 'Eine Zahl ≠ 0 ist eine Masse ≠ 0.' },
+    { name: 'mass_finite', kind: 'rule', sig: '↑p ≠ ⊤', en: 'A number in [0, 1] is a finite mass.', de: 'Eine Zahl in [0, 1] ist eine endliche Masse.' },
     { name: 'coin_thin', kind: 'lemma', sig: '(do let x ← coin p; bif x then coin q else pure false) = coin (p * q)', en: 'Proved by you in Thinning: a coin p, kept with probability q.', de: 'Von dir bewiesen in „Ausdünnen“: eine Münze p, behalten mit Wahrscheinlichkeit q.' },
     { name: 'binom_succ_zero', kind: 'lemma', sig: 'binom p (n + 1) 0 = ↑(σ p) * binom p n 0', en: 'Proved by you in Binomial: no true in n + 1 throws.', de: 'Von dir bewiesen in „Binomial“: kein true in n + 1 Würfen.' },
     { name: 'binom_succ_succ', kind: 'lemma', sig: 'binom p (n + 1) (k + 1) = ↑p * binom p n k + ↑(σ p) * binom p n (k + 1)', en: 'Proved by you in Binomial: the first throw true or false.', de: 'Von dir bewiesen in „Binomial“: der erste Wurf true oder false.' },
@@ -3767,7 +3788,7 @@
   // the worlds on a side way: which world they come after (not the one above them on the map)
   const SIDE_WAYS = { 'Coins-that-Wait': 'Building-with-Coins', 'Sequences': 'Counting', 'Hypergeometric': 'Binomial' }
   // (a world that also comes from another one, besides the one before it: Binomial needs Counting too)
-  const JOINS = {}
+  const JOINS = { 'Binomial': 'Thinning' }
   const fetched = new Set()
   function worldMap() {
     const toc = document.querySelector('#toc'), worlds = worldLinks()

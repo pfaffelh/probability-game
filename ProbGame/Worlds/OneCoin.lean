@@ -39,7 +39,6 @@ zeigt Ziel und Ausgang, als Massen und als kleines Histogramm (das Ziel gestrich
 Spielfeld die Säulen für ein Beispiel-$`p` (der Schieberegler ändert es).
 :::
 
-:::::only (edition := "show")
 ::::circuit (height := "440") (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : (not <$> coin p) true = σ p") (play := "a=not; x>a.0; a>out")
 :::en
 *Where does the mass go?* The coin `x` is thrown at the top; below, the output with the target:
@@ -73,8 +72,15 @@ anderen: `Bool.not_true`, `Bool.not_false`, `Bool.cond_false`, `Bool.cond_true`,
 *Tipp.* `rw [map_true]`, `rw [Bool.not_true, Bool.not_false]`,
 `rw [Bool.cond_false, Bool.cond_true, zero_add]`, `rw [coin_false]`.
 :::
+:::solution
+```
+rw [map_true]
+rw [Bool.not_true, Bool.not_false]
+rw [Bool.cond_false, Bool.cond_true, zero_add]
+rw [coin_false]
+```
+:::
 ::::
-:::::
 
 ::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (h : μ true = 0) : μ false = 1") (new := "mass_total")
 :::en
@@ -436,7 +442,6 @@ rw [map_pure, Bool.not_true]
 :::
 ::::
 
-:::::only (edition := "show")
 ::::circuit (height := "540") (inputs := "x") (gates := "not, alwaysT") (coins := "p") (target := "pure false") (context := "Lean/Rules.lean") (proof := "(p : I) : not <$> ((fun _ => true) <$> coin p) = pure false") (play := "a=alwaysT; b=not; x>a.0; a>b.0; b>out")
 :::en
 *Surely `false`, but there is no “always `false`”.* Two gates one after the other: the image measure of
@@ -463,8 +468,14 @@ den Punkt. Dann `rfl` aus *Schaltungen*: Beide Seiten sind nach Ausrechnen gleic
 *Tipp.* `rw [coin_const]`, dann `rw [map_pure]` (oder beides auf einmal: `rw [coin_const, map_pure]`),
 dann `rfl`.
 :::
+:::solution
+```
+rw [coin_const]
+rw [map_pure]
+rfl
+```
+:::
 ::::
-:::::
 
 ::::circuit (height := "440") (inputs := "x") (gates := "not, alwaysT, alwaysF") (coins := "p") (target := "bernoulli 1-p") (context := "Lean/Rules.lean") (proof := "(p : I) : not <$> coin p = coin (σ p)") (lemma := "coin_not") (play := "a=not; x>a.0; a>out")
 :::en
@@ -478,25 +489,21 @@ dann `rfl`.
 :::proofen
 Flipping turns the coin `p` into the coin $`1 - p`: the whole coin, not only its mass at `true`.
 Everything of this world comes together: two distributions on `Bool` are the same when their masses
-at `true` are (`bool_ext`, your lemma). The mass at `true` of the flipped coin is computed with the
-rules of *Masses*: `map_true` (where the mass goes), then `Bool.not_true`, `Bool.not_false`,
-`Bool.cond_false`, `Bool.cond_true`, `zero_add`, and `coin_false`. Your result becomes the lemma
-`coin_not`, which the next worlds use.
+at `true` are (`bool_ext`, your lemma), and the mass at `true` of the flipped coin you computed in
+*Where does the mass go?*. Your result becomes the lemma `coin_not`, which the next worlds use all
+the time.
 
-*Tip.* `apply bool_ext`, `rw [map_true]`, `rw [Bool.not_true, Bool.not_false]`,
-`rw [Bool.cond_false, Bool.cond_true, zero_add]`, `rw [coin_false, coin_true]`.
+*Tip.* `apply bool_ext`, then the computation of the first level, and at the end `coin_true`.
 :::
 
 :::proofde
 Umdrehen macht aus der Münze $`p` die Münze $`1 - p`: die ganze Münze, nicht nur ihre Masse bei
 `true`. Alles aus dieser Welt kommt zusammen: Zwei Verteilungen auf `Bool` sind gleich, wenn ihre
-Massen bei `true` gleich sind (`bool_ext`, dein Lemma). Die Masse bei `true` der umgedrehten Münze
-rechnest du mit den Regeln aus *Massen* aus: `map_true` (wohin die Masse geht), dann `Bool.not_true`,
-`Bool.not_false`, `Bool.cond_false`, `Bool.cond_true`, `zero_add` und `coin_false`. Dein Ergebnis wird
-das Lemma `coin_not`, das die nächsten Welten benutzen.
+Massen bei `true` gleich sind (`bool_ext`, dein Lemma), und die Masse bei `true` der umgedrehten Münze
+hast du in *Wohin geht die Masse?* ausgerechnet. Dein Ergebnis wird das Lemma `coin_not`, das die
+nächsten Welten ständig benutzen.
 
-*Tipp.* `apply bool_ext`, `rw [map_true]`, `rw [Bool.not_true, Bool.not_false]`,
-`rw [Bool.cond_false, Bool.cond_true, zero_add]`, `rw [coin_false, coin_true]`.
+*Tipp.* `apply bool_ext`, dann die Rechnung des ersten Levels, und am Ende `coin_true`.
 :::
 :::solution
 ```
