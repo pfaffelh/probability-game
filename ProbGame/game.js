@@ -3130,7 +3130,7 @@
         return f
       }
       const sts = this.states ?? []
-      const toggle = k => { this.view = this.view === k ? null : k; this.render() }
+      const toggle = k => { this.view = this.view === k ? null : k; this.keepScroll = true; this.render(); this.keepScroll = false }
       if (this.lines.length && sts[0]) {
         const li = el('li', 'pg-step pg-step-start' + (this.view === 0 ? ' pg-step-open' : ''))
         const head = el('div', 'pg-step-head'); head.append(el('span', 'pg-step-no', '0'), el('span', 'pg-step-start-label', tr('the statement')))
@@ -3288,7 +3288,13 @@
         // (where the proof and the inventory were scrolled to stays, after a tap)
         const top = this.box.querySelector('.pg-proof-scroll')?.scrollTop, oldInv = this.box.querySelector('.pg-side-scroll, .pg-proof-side .pg-inventory')?.scrollTop, oldSide = this.box.querySelector('.pg-proof-side')?.scrollTop
         this.box.replaceChildren(main, side)
-        if (top) scroll.scrollTop = top
+        // (the proof scrolled to its end, so that the goal now is in view; only a step opened or
+        // closed keeps the place; again when the proof comes into view, or its space changes)
+        const end = () => { scroll.scrollTop = scroll.scrollHeight }
+        if (this.keepScroll && top) scroll.scrollTop = top; else { end(); requestAnimationFrame(end) }
+        new ResizeObserver(() => { if (scroll.clientHeight && !this.keptAt) end() }).observe(scroll)
+        scroll.addEventListener('scroll', () => { this.keptAt = scroll.scrollTop + scroll.clientHeight < scroll.scrollHeight - 4 }, { passive: true })
+        this.keptAt = false
         if (oldInv) (side.querySelector('.pg-side-scroll') ?? inv).scrollTop = oldInv
         if (oldSide) side.scrollTop = oldSide
         this.level.onRendered?.()
