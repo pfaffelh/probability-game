@@ -468,6 +468,28 @@ theorem prob_unused {β : Type} (μ : DiscreteMeasure Bool) [h : Prob μ] (ν : 
     (do let _ ← μ; ν) = ν :=
   MeasureTheory.DiscreteMeasure.bind_const_of_hasSum h.hasSum ν
 
+/-! Real numbers: from masses to `ℝ` (2026-11-15). -/
+
+theorem mass_eq_ofReal (p : I) : (↑p : ENNReal) = ENNReal.ofReal (p : ℝ) := rfl
+
+theorem mass_mul_real (p q : I) : (↑p : ENNReal) * ↑q = ENNReal.ofReal ((p : ℝ) * q) :=
+  (ENNReal.ofReal_mul p.2.1).symm
+
+theorem real_mul_nonneg (p q : I) : 0 ≤ (p : ℝ) * q := mul_nonneg p.2.1 q.2.1
+
+theorem symm_real (p : I) : ((σ p : I) : ℝ) = 1 - p := unitInterval.coe_symm_eq p
+
+/-- Real numbers, the boss: a coin that stays, from the balance of what flows. -/
+theorem coin_stays (p q r : I) (h : (1 - (p : ℝ)) * r = p * (1 - q)) :
+    (do let x ← coin p; bif x then coin q else coin r) = coin p := by
+  apply bool_ext
+  rw [bind_true, Bool.cond_true, Bool.cond_false]
+  rw [coin_true, coin_true, coin_true, coin_false]
+  rw [mass_mul_real, mass_mul_real, ← ENNReal.ofReal_add (real_mul_nonneg p q) (real_mul_nonneg (σ p) r),
+    symm_real, mass_eq_ofReal]
+  congr 1
+  linear_combination h
+
 end ProbGame
 
 open ProbGame

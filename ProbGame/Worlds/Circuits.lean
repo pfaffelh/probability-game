@@ -34,7 +34,7 @@ und die Aussage sagt, dass sie die Zieltafel ist. Die Lean-Hälfte ist hier kurz
 Welten danach.
 :::
 
-::::circuit (height := "300") (inputs := "x") (gates := "") (table := "01") (goal := "x") (shape := "x") (proof := "(x : Bool) : x = x") (new := "rfl") (play := "x>out")
+::::circuit (height := "300") (inputs := "x") (gates := "") (table := "01") (goal := "x") (shape := "x") (proof := "(x : Bool) : x = x") (new := "rfl") (play := "x>out") (uses := "-")
 :::en
 *A wire.* The output is to be the input itself. Wire `x` to the output: tap `x`, then the output.
 :::
@@ -72,7 +72,7 @@ rfl
 :::
 ::::
 
-::::circuit (height := "400") (inputs := "true") (gates := "not") (table := "0") (goal := "false") (shape := "!true") (proof := ": (!true) = false") (lemma := "Bool.not_true") (play := "a=not; true>a.0; a>out")
+::::circuit (height := "400") (inputs := "true") (gates := "not") (table := "0") (goal := "false") (shape := "!true") (proof := ": (!true) = false") (lemma := "Bool.not_true") (play := "a=not; true>a.0; a>out") (uses := "-")
 :::en
 *Not true.* The input is `true` itself, the target `false`. Drag `not` onto the board, then wire
 `true` to it and it to the output.
@@ -114,7 +114,7 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := ": (!false) = true") (lemma := "Bool.not_false") (context := "Lean/WorldBool.lean") (group := "bool")
+::::leanonly (proof := ": (!false) = true") (lemma := "Bool.not_false") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "-")
 :::en
 *Not false.* The other half of `not`, in Lean only: the level before proved `(!true) = false`, the
 rule `Bool.not_true`.
@@ -144,7 +144,7 @@ rfl
 :::
 ::::
 
-::::circuit (height := "500") (inputs := "x") (gates := "not") (table := "01") (goal := "x") (shape := "!(!x)") (start := "a=not; x>a.0") (proof := "(x : Bool) : (!(!x)) = x") (lemma := "Bool.not_not") (new := "cases") (play := "b=not; a>b.0; b>out")
+::::circuit (height := "500") (inputs := "x") (gates := "not") (table := "01") (goal := "x") (shape := "!(!x)") (start := "a=not; x>a.0") (proof := "(x : Bool) : (!(!x)) = x") (lemma := "Bool.not_not") (new := "cases") (play := "b=not; a>b.0; b>out") (uses := "-")
 :::en
 *Flipped twice.* One `not` is already on the board and stays there. Add a second one, so that the output is the input again.
 :::
@@ -181,7 +181,7 @@ rfl
 :::
 ::::
 
-::::circuit (height := "500") (inputs := "x") (gates := "not, or") (table := "11") (goal := "true") (proof := "(x : Bool) : (x || !x) = (bif x then true else true)") (new := "<;>") (play := "a=not; b=or; x>a.0; x>b.0; a>b.1; b>out")
+::::circuit (height := "500") (inputs := "x") (gates := "not, or") (table := "11") (goal := "true") (proof := "(x : Bool) : (x || !x) = (bif x then true else true)") (new := "<;>") (play := "a=not; b=or; x>a.0; x>b.0; a>b.1; b>out") (uses := "-")
 :::en
 *Always true, without always true.* An output can feed several inputs: wire `x` twice.
 :::
@@ -216,7 +216,7 @@ cases x <;> rfl
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "and, or, not") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : ((x || y) && !(x && y)) = (bif x then (bif y then false else true) else (bif y then true else false))") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out")
+::::circuit (inputs := "x y") (gates := "and, or, not") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : ((x || y) && !(x && y)) = (bif x then (bif y then false else true) else (bif y then true else false))") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out") (uses := "-")
 :::en
 *The boss: exactly one.* Two inputs now, and four rows: one for each pair of values. `true` when exactly one
 input is `true`: at least one, but not both. In Lean this is `xor`, written `x ^^ y`.

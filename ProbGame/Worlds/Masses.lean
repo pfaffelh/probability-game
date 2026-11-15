@@ -30,7 +30,7 @@ $`p` ist `coin p`. Ein Zug wird `f <$> μ` geschrieben: die Abbildung `f`, angew
 `μ`, ihr Bildmaß.
 :::
 
-::::leanonly (proof := "(a b : ENNReal) : (bif true then a else b) = a") (lemma := "Bool.cond_true")
+::::leanonly (proof := "(a b : ENNReal) : (bif true then a else b) = a") (lemma := "Bool.cond_true") (uses := "-")
 :::en
 *bif with true.* `bif c then a else b` is `a` when `c` is `true`, and `b` when it is `false`: an
 if-then-else for a `Bool`. *One Coin* needs it to say where the mass of a move goes.
@@ -61,7 +61,7 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(a b : ENNReal) : (bif false then a else b) = b") (lemma := "Bool.cond_false")
+::::leanonly (proof := "(a b : ENNReal) : (bif false then a else b) = b") (lemma := "Bool.cond_false") (uses := "-")
 :::en
 *bif with false.* The other case: the second.
 :::
@@ -84,7 +84,7 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : coin p true = p") (lemma := "coin_true")
+::::leanonly (proof := "(p : I) : coin p true = p") (lemma := "coin_true") (uses := "-")
 :::en
 *The mass at true.* The coin `coin p` has the mass $`p` at `true`.
 :::
@@ -149,7 +149,7 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : coin p false = σ p") (lemma := "coin_false")
+::::leanonly (proof := "(p : I) : coin p false = σ p") (lemma := "coin_false") (uses := "-")
 :::en
 *The mass at false.* At `false` the coin has the rest, $`1 - p`.
 :::
@@ -176,7 +176,7 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : 0 + coin p true = p") (new := "rw, zero_add")
+::::leanonly (proof := "(p : I) : 0 + coin p true = p") (new := "rw, zero_add") (uses := "zero_add, coin_true")
 :::en
 *Zero plus.* Not every rule is a definition: `zero_add : 0 + a = a` is a rule of arithmetic, given
 here (it is proved in Mathlib, not by `rfl`). A rule is used by rewriting with it.
@@ -211,7 +211,7 @@ rw [coin_true]
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) : ((fun _ => true) <$> μ) true = μ true + μ false") (new := "map_true")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) : ((fun _ => true) <$> μ) true = μ true + μ false") (new := "map_true") (uses := "map_true, Bool.cond_true")
 :::en
 *Where the mass goes.* The move *always `true`*, `fun _ => true`, sends both points to `true`; so all
 the mass of `μ` comes to `true`. This is the rule of the gates, given (it is proved from the definition

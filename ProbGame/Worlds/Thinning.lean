@@ -18,7 +18,7 @@ A coin is *thinned* when each `true` is kept only with probability $`q`, decided
 Eine Münze wird *ausgedünnt*, wenn jedes `true` nur mit Wahrscheinlichkeit $`q` behalten wird; eine zweite Münze entscheidet. Nur in Lean. Dieser Weg wird in *Binomial* wieder aufgegriffen.
 :::
 
-::::leanonly (proof := "(p q : I) : coin (p * q) true = (↑p * ↑q : ENNReal)") (new := "mass_mul")
+::::leanonly (proof := "(p q : I) : coin (p * q) true = (↑p * ↑q : ENNReal)") (new := "mass_mul") (uses := "coin_true, mass_mul")
 :::en
 *A product of chances.* `p * q` is again a number in $`[0, 1]`, and as a mass it is the product of the masses.
 :::
@@ -45,7 +45,7 @@ rw [coin_true, mass_mul]
 :::
 ::::
 
-::::leanonly (proof := "(p q : I) : (do let x ← coin p; bif x then coin q else pure false) = coin (p * q)") (lemma := "coin_thin") (new := "mul_zero, add_zero")
+::::leanonly (proof := "(p q : I) : (do let x ← coin p; bif x then coin q else pure false) = coin (p * q)") (lemma := "coin_thin") (new := "mul_zero, add_zero") (uses := "bool_ext, bind_true, Bool.cond_true, Bool.cond_false, pure_true, mul_zero, add_zero, coin_true, mass_mul")
 :::en
 *Keeping with probability q.* A coin `p` is thrown; a `true` is kept with probability $`q` (a second coin `q` decides), a `false` stays `false`. What is left is a coin `p * q`: the coin is *thinned*.
 :::
@@ -75,7 +75,7 @@ rw [coin_true, coin_true, coin_true, mass_mul]
 :::
 ::::
 
-::::leanonly (proof := "(p q : I) : (do let x ← coin p; bif x then coin q else pure false) = (do let x ← coin q; bif x then coin p else pure false)") (new := "mul_comm")
+::::leanonly (proof := "(p q : I) : (do let x ← coin p; bif x then coin q else pure false) = (do let x ← coin q; bif x then coin p else pure false)") (new := "mul_comm") (uses := "coin_thin, mul_comm")
 :::en
 *Which first?* First `p`, then `q`, or first `q`, then `p`: the same coin.
 :::
@@ -102,7 +102,7 @@ rw [coin_thin, coin_thin, mul_comm]
 :::
 ::::
 
-::::leanonly (proof := "(p q r : I) : (do let x ← coin p; let y ← (bif x then coin q else pure false); bif y then coin r else pure false) = coin (p * q * r)") (new := "bind_assoc")
+::::leanonly (proof := "(p q r : I) : (do let x ← coin p; let y ← (bif x then coin q else pure false); bif y then coin r else pure false) = coin (p * q * r)") (new := "bind_assoc") (uses := "bind_assoc, coin_thin")
 :::en
 *Boss: thinning twice.* Thinned with $`q`, and the rest thinned again with $`r`.
 :::

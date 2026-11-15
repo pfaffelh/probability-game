@@ -55,7 +55,7 @@ und `fun x => …` ist diese Funktion. Die Beweise lernen die Regeln der `do`-Bl
 *Monadengesetze*, eine nach der anderen, wenn ein Level sie braucht.
 :::
 
-::::circuit (height := "440") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:p^2 false:1-p^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && y)) = coin (p * p)") (new := "coin_and, norm_num") (play := "a=and; x>a.0; y>a.1; a>out")
+::::circuit (height := "440") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:p^2 false:1-p^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && y)) = coin (p * p)") (new := "coin_and, norm_num") (play := "a=and; x>a.0; y>a.1; a>out") (uses := "coin_and")
 :::en
 *Both `true`.* Two coins, and `true` only when both show `true`.
 :::
@@ -94,7 +94,7 @@ rw [coin_and]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (f : Bool → DiscreteMeasure Bool) : (not <$> coin p) >>= f = coin p >>= (fun x => f (!x))") (new := "bind_map_left")
+::::leanonly (proof := "(p : I) (f : Bool → DiscreteMeasure Bool) : (not <$> coin p) >>= f = coin p >>= (fun x => f (!x))") (new := "bind_map_left") (uses := "bind_map_left")
 :::en
 *A move before a draw.* Drawing from a moved coin is drawing from the coin and moving the result.
 :::
@@ -121,7 +121,7 @@ rw [bind_map_left]
 :::
 ::::
 
-::::circuit (height := "540") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:p(1-p) false:1-p(1-p)") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && !y)) = coin (p * σ p)") (new := "simp only") (play := "a=not; b=and; y>a.0; x>b.0; a>b.1; b>out")
+::::circuit (height := "540") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:p(1-p) false:1-p(1-p)") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && !y)) = coin (p * σ p)") (new := "simp only") (play := "a=not; b=and; y>a.0; x>b.0; a>b.1; b>out") (uses := "coin_and, coin_not, bind_map_left")
 :::en
 *First `true`, then `false`.*
 :::
@@ -164,7 +164,7 @@ simp only [bind_map_left]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (f : Bool → DiscreteMeasure Bool) : not <$> (coin p >>= f) = coin p >>= (fun x => not <$> f x)") (new := "map_bind")
+::::leanonly (proof := "(p : I) (f : Bool → DiscreteMeasure Bool) : not <$> (coin p >>= f) = coin p >>= (fun x => not <$> f x)") (new := "map_bind") (uses := "map_bind")
 :::en
 *A move after a draw.* A move at the end can go into the `do` block.
 :::
@@ -191,7 +191,7 @@ rw [map_bind]
 :::
 ::::
 
-::::leanonly (proof := "(x y : Bool) : (x || y) = !(!x && !y)") (lemma := "or_eq")
+::::leanonly (proof := "(x y : Bool) : (x || y) = !(!x && !y)") (lemma := "or_eq") (uses := "-")
 :::en
 *De Morgan.* `or` is `and` with three `not`s; the next level builds it so.
 :::
@@ -218,7 +218,7 @@ cases x <;> cases y <;> rfl
 :::
 ::::
 
-::::circuit (height := "440") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:2p-p^2 false:(1-p)^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x || y)) = coin (σ (σ p * σ p))") (play := "a=or; x>a.0; y>a.1; a>out")
+::::circuit (height := "440") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:2p-p^2 false:(1-p)^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x || y)) = coin (σ (σ p * σ p))") (play := "a=or; x>a.0; y>a.1; a>out") (uses := "coin_not, coin_and, bind_map_left, map_bind, map_pure, or_eq")
 :::en
 *At least one `true`.* `false` only when both show `false`: $`(1 - p)^2`.
 :::
@@ -255,7 +255,7 @@ simp only [bind_map_left, map_bind, map_pure, or_eq]
 :::
 ::::
 
-::::leanonly (proof := "(x : Bool) : (x && !x) = false") (lemma := "Bool.and_not_self")
+::::leanonly (proof := "(x : Bool) : (x && !x) = false") (lemma := "Bool.and_not_self") (uses := "-")
 :::en
 *Never both.* `x` and not `x` is never `true`.
 :::
@@ -282,7 +282,7 @@ cases x <;> rfl
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : (do let _ ← coin p; pure true) = (pure true : DiscreteMeasure Bool)") (new := "coin_unused")
+::::leanonly (proof := "(p : I) : (do let _ ← coin p; pure true) = (pure true : DiscreteMeasure Bool)") (new := "coin_unused") (uses := "coin_unused")
 :::en
 *An unused coin.* A coin whose outcome is not used changes nothing.
 :::
@@ -309,7 +309,7 @@ rw [coin_unused]
 :::
 ::::
 
-::::circuit (height := "540") (inputs := "x") (gates := "and, or, not") (coins := "p") (target := "pure false") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; pure (x && !x)) = pure false") (play := "a=not; b=and; x>a.0; x>b.0; a>b.1; b>out")
+::::circuit (height := "540") (inputs := "x") (gates := "and, or, not") (coins := "p") (target := "pure false") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; pure (x && !x)) = pure false") (play := "a=not; b=and; x>a.0; x>b.0; a>b.1; b>out") (uses := "Bool.and_not_self, coin_unused")
 :::en
 *Surely `false`, with a single coin.* A coin that goes into two functions is the same coin in both:
 the results depend on each other.
@@ -342,7 +342,7 @@ rw [coin_unused]
 :::
 ::::
 
-::::leanonly (proof := "(x : Bool) : (x || !x) = true") (lemma := "Bool.or_not_self")
+::::leanonly (proof := "(x : Bool) : (x || !x) = true") (lemma := "Bool.or_not_self") (uses := "-")
 :::en
 *Always one of them.* `x` or not `x` is always `true`.
 :::
@@ -369,7 +369,7 @@ cases x <;> rfl
 :::
 ::::
 
-::::circuit (height := "540") (inputs := "x") (gates := "and, or, not") (coins := "p") (target := "pure true") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; pure (x || !x)) = pure true") (play := "a=not; b=or; x>a.0; x>b.0; a>b.1; b>out")
+::::circuit (height := "540") (inputs := "x") (gates := "and, or, not") (coins := "p") (target := "pure true") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; pure (x || !x)) = pure true") (play := "a=not; b=or; x>a.0; x>b.0; a>b.1; b>out") (uses := "Bool.or_not_self, coin_unused")
 :::en
 *Surely `true`, with a single coin.* As before, now with `or`: the coin or its flip shows `true`.
 :::
@@ -398,7 +398,7 @@ rw [coin_unused]
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:2p(1-p) false:p^2+(1-p)^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure ((x || y) && !(x && y))) = (do let x ← coin p; let y ← coin p; pure (xor x y))") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out")
+::::circuit (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:2p(1-p) false:p^2+(1-p)^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure ((x || y) && !(x && y))) = (do let x ← coin p; let y ← coin p; pure (xor x y))") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out") (uses := "-")
 :::en
 *Boss: exactly one `true`*, without a function for it: at least one, but not both.
 :::
