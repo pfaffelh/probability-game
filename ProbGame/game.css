@@ -298,13 +298,14 @@ html.pg-playing .prev-next-buttons { display: none !important; }
 .pg-worlds { padding: 0.4em 0.2em 1em; font-family: var(--verso-structure-font-family, sans-serif); }
 .pg-worlds-title { font-weight: bold; margin: 0 0 0.3em 0.4em; }
 .pg-map { width: 100%; max-width: 250px; height: auto; display: block; }
-.pg-map-edge { stroke: #d8c7a8; stroke-width: 3; }
+.pg-map-edge { stroke: #d8c7a8; stroke-width: 3; fill: none; }
+.pg-map-edge.pg-map-edge-done { stroke: #6fbf73; }
 .pg-map-disc { fill: white; stroke: #c9b48f; stroke-width: 2; }
 .pg-map-ring { fill: none; stroke: #2e8b37; stroke-width: 5; stroke-linecap: round; }
 .pg-map-done .pg-map-disc { fill: #2e8b37; stroke: #2e8b37; }
 .pg-map-done .pg-map-n { fill: white; }
 .pg-map-here .pg-map-disc { stroke: #b0782a; stroke-width: 4; }
-.pg-map-n { font-size: 17px; font-weight: bold; fill: #5c3d0e; }
+.pg-map-n { font-size: 15px; font-weight: bold; fill: #5c3d0e; }
 .pg-map-name { font-size: 12.5px; fill: #333; font-weight: 600; }
 .pg-map-count { font-size: 10.5px; fill: #777; }
 .pg-map-world:hover .pg-map-disc { stroke: #b0782a; }
