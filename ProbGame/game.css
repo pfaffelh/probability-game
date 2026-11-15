@@ -692,3 +692,19 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
   .pg-stage .pg-proof-scroll, .pg-stage .pg-proof-main, .pg-stage .pg-proof-side, .pg-stage .pg-level.pg-view-proof .pg-proof:not([hidden]) { flex: none; height: auto; min-height: 0; }
   .pg-stage .pg-level.pg-view-proof:not([hidden]) { flex: none; }
 }
+
+/* a phone: the proof only as high as it needs (at most 42%), the input right below it, the rest for
+   the keys and the inventory */
+@media (max-width: 700px) and (min-height: 501px) {
+  .pg-stage .pg-proof-main { flex: 0 1 auto; max-height: 42%; }
+  .pg-stage .pg-proof-scroll { flex: 0 1 auto; }
+  .pg-stage .pg-proof-side { flex: 1 1 0; height: auto; min-height: 0; }
+  .pg-keys { gap: 4px; margin: 0.1rem 0 0.3rem; }
+  .pg-key { min-width: 2.1em; height: 2em; padding: 0 0.45em; font-size: 14px; border-radius: 7px; }
+  .pg-stage .pg-proof-side .pg-proof-input input { padding: 0.3em 0.5em; }
+  .pg-stage .pg-proof-side .pg-check { padding-block: 0.3em; }
+}
+@media (max-width: 700px) {
+  .pg-stage .pg-side-scroll { flex: 1 1 0; min-height: 0; overflow-y: auto; }
+  .pg-stage .pg-side-scroll .pg-inventory { flex: none; overflow: visible; }
+}

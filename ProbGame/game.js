@@ -3089,7 +3089,8 @@
       const stmt = el('pre', 'pg-proof-statement', `${this.lemma ? `theorem ${this.lemma}` : 'example'} ${this.statement}`)
       const parts = STAGE ? [head, stmt] : [head, ...this.texts, stmt]
       // on the stage: the board's solution beside the proof (a picture, not to play with)
-      const pic = STAGE && this.level.picture
+      // (not on a phone: there the space is for the proof and the inventory)
+      const pic = STAGE && !PHONE() && this.level.picture
       let sol = null
       if (pic) {
         sol = el('details', 'pg-proof-sol'); const sum = el('summary', '', '▦ ' + tr('Your solution on the board'))
@@ -3276,15 +3277,16 @@
         const main = el('div', 'pg-proof-main'), scroll = el('div', 'pg-proof-scroll'), side = el('div', 'pg-proof-side')
         scroll.append(...parts)
         const foot = el('div', 'pg-proof-foot')
-        if (!this.done) { foot.append(row); if (TOUCH()) foot.append(this.keys()) }
+        if (!this.done) { foot.append(row); if (TOUCH() && !below) foot.append(this.keys()) }
         main.append(scroll)
-        if (below) side.append(foot); else if (!this.done) main.append(foot)
-        side.append(inv)
+        // (a phone: only the input stays; the keys scroll with the inventory under it)
+        if (below) { const rest = el('div', 'pg-side-scroll'); if (!this.done) rest.append(this.keys()); rest.append(inv); side.append(foot, rest) }
+        else { if (!this.done) main.append(foot); side.append(inv) }
         // (where the proof and the inventory were scrolled to stays, after a tap)
-        const top = this.box.querySelector('.pg-proof-scroll')?.scrollTop, oldInv = this.box.querySelector('.pg-proof-side .pg-inventory')?.scrollTop, oldSide = this.box.querySelector('.pg-proof-side')?.scrollTop
+        const top = this.box.querySelector('.pg-proof-scroll')?.scrollTop, oldInv = this.box.querySelector('.pg-side-scroll, .pg-proof-side .pg-inventory')?.scrollTop, oldSide = this.box.querySelector('.pg-proof-side')?.scrollTop
         this.box.replaceChildren(main, side)
         if (top) scroll.scrollTop = top
-        if (oldInv) inv.scrollTop = oldInv
+        if (oldInv) (side.querySelector('.pg-side-scroll') ?? inv).scrollTop = oldInv
         if (oldSide) side.scrollTop = oldSide
         this.level.onRendered?.()
         return
