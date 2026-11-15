@@ -152,45 +152,6 @@ decide +revert
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (μ >>= fun _ => μ) true = μ true * μ true + μ false * μ true") (new := "bind_true") (uses := "bind_true, bind_false")
-:::en
-*Two ways to true.* The mass of a draw at `true`: through `true` and through `false`.
-:::
-
-:::de
-*Zwei Wege zu true.* Die Masse eines Ziehens bei `true`: über `true` und über `false`.
-:::
-
-:::proofen
-`bind_true : (μ >>= f) true = μ true * f true true + μ false * f false true`: the mass at the first step times the mass at `true` of what follows, for both values of the first step. That is the mass of a draw, by the definition of `>>=`:
-
-```
-(μ >>= f) b = ∑' a, μ a * (f a) b
-```
-
-on `Bool` a sum of two summands.
-
-*Tip.* `rw [bind_true]`.
-:::
-
-:::proofde
-`bind_true : (μ >>= f) true = μ true * f true true + μ false * f false true`: die Masse im ersten Schritt mal die Masse bei `true` dessen, was folgt, für beide Werte des ersten Schritts. Das ist die Masse eines Ziehens, nach der Definition von `>>=`:
-
-```
-(μ >>= f) b = ∑' a, μ a * (f a) b
-```
-
-auf `Bool` eine Summe aus zwei Summanden.
-
-*Tipp.* `rw [bind_true]`.
-:::
-:::solution
-```
-rw [bind_true]
-```
-:::
-::::
-
 ::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:p^2 false:1-p^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then coin p else pure false); pure y) true = (↑p * ↑p : ENNReal)") (play := "y.T=p; y.F=0") (uses := "bind_true, bind_false")
 :::en
 *Only after true.* `y` is a coin when `x` showed `true`, and surely `false` otherwise: choose its two

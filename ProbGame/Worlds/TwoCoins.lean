@@ -55,7 +55,84 @@ und `fun x => …` ist diese Funktion. Die Beweise lernen die Regeln der `do`-Bl
 *Monadengesetze*, eine nach der anderen, wenn ein Level sie braucht.
 :::
 
-::::circuit (height := "440") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:p^2 false:1-p^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && y)) = coin (p * p)") (new := "coin_and, norm_num") (play := "a=and; x>a.0; y>a.1; a>out") (uses := "coin_and")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (do let _ ← μ; μ) true = μ true * μ true + μ false * μ true") (new := "bind_true") (uses := "bind_true, bind_false")
+:::en
+*Two ways to true.* `do let x ← μ; …` draws from `μ`, calls the result `x`, and goes on with the
+rest. Lean writes it as `μ >>= fun x => …` (read `>>=` as *bind*: draw, then go on). Its mass at
+`true` comes two ways: the first draw is `true`, or it is `false`.
+:::
+
+:::de
+*Zwei Wege zu true.* `do let x ← μ; …` zieht aus `μ`, nennt das Ergebnis `x` und macht mit dem Rest
+weiter. Lean schreibt das als `μ >>= fun x => …` (lies `>>=` als *bind*: ziehen, dann weiter). Seine
+Masse bei `true` kommt auf zwei Wegen: Der erste Zug ist `true`, oder er ist `false`.
+:::
+
+:::proofen
+`bind_true : (μ >>= f) true = μ true * f true true + μ false * f false true`: the mass at the first
+step times the mass at `true` of what follows, for both values of the first step. That is the
+definition of `>>=`,
+
+```
+(μ >>= f) b = ∑' a, μ a * (f a) b
+```
+
+on `Bool` a sum of two summands. Here what follows is `μ` again, whatever the first draw was.
+
+*Tip.* `rw [bind_true]`.
+:::
+
+:::proofde
+`bind_true : (μ >>= f) true = μ true * f true true + μ false * f false true`: die Masse im ersten
+Schritt mal die Masse bei `true` dessen, was folgt, für beide Werte des ersten Schritts. Das ist die
+Definition von `>>=`,
+
+```
+(μ >>= f) b = ∑' a, μ a * (f a) b
+```
+
+auf `Bool` eine Summe aus zwei Summanden. Hier ist das, was folgt, wieder `μ`, was auch immer der
+erste Zug war.
+
+*Tipp.* `rw [bind_true]`.
+:::
+:::solution
+```
+rw [bind_true]
+```
+:::
+::::
+
+::::leanonly (proof := "(p q : I) : coin (p * q) true = (↑p * ↑q : ENNReal)") (new := "mass_mul") (uses := "coin_true, mass_mul, coin_false, coin_total")
+:::en
+*A product of chances.* `p * q` is again a number in $`[0, 1]`, and as a mass it is the product of
+the masses.
+:::
+
+:::de
+*Ein Produkt von Chancen.* `p * q` ist wieder eine Zahl in $`[0, 1]`, und als Masse ist es das
+Produkt der Massen.
+:::
+
+:::proofen
+`mass_mul : ↑(p * q) = ↑p * ↑q`.
+
+*Tip.* `rw [coin_true, mass_mul]`.
+:::
+
+:::proofde
+`mass_mul : ↑(p * q) = ↑p * ↑q`.
+
+*Tipp.* `rw [coin_true, mass_mul]`.
+:::
+:::solution
+```
+rw [coin_true, mass_mul]
+```
+:::
+::::
+
+::::circuit (height := "440") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:p^2 false:1-p^2") (context := "Lean/Rules.lean") (proof := "(p q : I) : (do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)") (lemma := "coin_and") (new := "norm_num") (play := "a=and; x>a.0; y>a.1; a>out") (uses := "bool_ext, bind_true, mass_mul, bind_false")
 :::en
 *Both `true`.* Two coins, and `true` only when both show `true`.
 :::
@@ -66,30 +143,43 @@ und `fun x => …` ist diese Funktion. Die Beweise lernen die Regeln der `do`-Bl
 
 :::proofen
 Your circuit, read from top to bottom, is a `do` block: `let x ← coin p`
-throws a coin and calls its result `x`, and `pure` at the end is the result. Now there are two
-throws, and each `←` is a new throw, independent of the others. The new rule is independence itself:
-`coin_and : (do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)`.
+throws a coin and calls its result `x`, and `pure` at the end is the result. Each `←` is a new throw,
+independent of the others. Prove it for two coins `p` and `q` (on the board both were `p`): both
+`true` with probability $`p \cdot q`. It becomes your lemma `coin_and`, independence itself.
+
+Two distributions on `Bool` are equal when their masses at `true` are: `apply bool_ext`. Then
+`bind_true`, three times: for the first draw, and for the second draw after `true` and after `false`.
 
 New from now on: `norm_num` does the computing for you. It computes with numbers and masses (`p * 1`,
-`a + 0`, `bif true then a else b`, the masses `coin p true = p` and `(pure b) true`, and taking away
-a finite mass), and with `norm_num [h]` also with a rule `h` of yours. What is left to you are the
-rules of the game.
+`a + 0`, `bif true then a else b`, `true && b`, the masses `coin p true = p` and `(pure b) true`, and
+taking away a finite mass), and with `norm_num [h]` also with a rule `h` of yours. What is left to you
+are the rules of the game.
+
+*Tip.* `apply bool_ext`, `rw [bind_true, bind_true, bind_true]`, `norm_num [mass_mul]`.
 :::
 
 :::proofde
-Dein Schaltplan, von oben nach unten gelesen, ist ein `do`-Block: `let x ← coin p` wirft eine Münze und nennt ihr Ergebnis `x`, und `pure` am Ende ist das
-Ergebnis. Jetzt gibt es zwei Würfe, und jedes `←` ist ein neuer Wurf, unabhängig von den anderen. Die
-neue Regel ist die Unabhängigkeit selbst:
-`coin_and : (do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)`.
+Dein Schaltplan, von oben nach unten gelesen, ist ein `do`-Block: `let x ← coin p` wirft eine Münze
+und nennt ihr Ergebnis `x`, und `pure` am Ende ist das Ergebnis. Jedes `←` ist ein neuer Wurf,
+unabhängig von den anderen. Beweise es für zwei Münzen `p` und `q` (auf dem Spielfeld waren beide
+`p`): beide `true` mit Wahrscheinlichkeit $`p \cdot q`. Es wird dein Lemma `coin_and`, die
+Unabhängigkeit selbst.
+
+Zwei Verteilungen auf `Bool` sind gleich, wenn ihre Massen bei `true` gleich sind: `apply bool_ext`.
+Dann `bind_true`, dreimal: für den ersten Zug, und für den zweiten nach `true` und nach `false`.
 
 Neu ab jetzt: `norm_num` rechnet für dich. Es rechnet mit Zahlen und Massen (`p * 1`, `a + 0`,
-`bif true then a else b`, die Massen `coin p true = p` und `(pure b) true`, und das Wegnehmen einer
-endlichen Masse), und mit `norm_num [h]` auch mit einer Regel `h` von dir. Was dir bleibt, sind die
-Regeln des Spiels.
+`bif true then a else b`, `true && b`, die Massen `coin p true = p` und `(pure b) true`, und das
+Wegnehmen einer endlichen Masse), und mit `norm_num [h]` auch mit einer Regel `h` von dir. Was dir
+bleibt, sind die Regeln des Spiels.
+
+*Tipp.* `apply bool_ext`, `rw [bind_true, bind_true, bind_true]`, `norm_num [mass_mul]`.
 :::
 :::solution
 ```
-rw [coin_and]
+apply bool_ext
+rw [bind_true, bind_true, bind_true]
+norm_num [mass_mul]
 ```
 :::
 ::::

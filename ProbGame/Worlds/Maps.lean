@@ -22,7 +22,7 @@ Abbildungen auf `Bool`, und Züge mit ihnen. Es gibt genau vier Abbildungen `Boo
 unbekannte Abbildung `f : Bool → Bool` gilt für jede Abbildung, wenn sie für jede der vier gilt.
 :::
 
-::::leanonly (proof := "(f : Bool → Bool) (b : Bool) : f (f (f b)) = f b") (lemma := "Bool.apply_apply_apply") (new := "decide") (uses := "-")
+::::leanonly (proof := "(f : Bool → Bool) (b : Bool) : f (f (f b)) = f b") (lemma := "Bool.apply_apply_apply") (new := "decide") (group := "bool") (uses := "-")
 :::en
 *Three times is once.* Whatever map `f : Bool → Bool` is, applied three times it does the same as
 once: `f (f (f b)) = f b`. Check it for `not`: three times `not` is `not`; and for always `true`.
