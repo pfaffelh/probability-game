@@ -2210,6 +2210,7 @@
         const start = this.toSvg(ev), bin = trashCan()
         let moved = false, d = { x: 0, y: 0 }
         const move = e => {
+          if (this.pinched) { if (moved) { moved = false; g.removeAttribute('transform'); bin.classList.remove('pg-bin-shown', 'pg-bin-hot'); this.render() } return }
           const now = this.toSvg(e); d = { x: now.x - start.x, y: now.y - start.y }
           if (!moved && Math.hypot(d.x, d.y) < 6) return
           moved = true
@@ -2232,6 +2233,7 @@
         }
         const up = e => {
           g.removeEventListener('pointermove', move); g.removeEventListener('pointerup', up); g.removeEventListener('pointercancel', up)
+          if (this.pinched) return
           if (!moved) { if (e.type === 'pointerup') { const f = ev.target.closest?.('[data-slot]'); if (f && !this.sel) this.cycleSlot(gate.id, Number(f.dataset.slot)); else this.tapGate(gate.id) } return }
           const hot = bin.classList.contains('pg-bin-hot') && e.type === 'pointerup' && !gate.fixed
           bin.classList.remove('pg-bin-shown', 'pg-bin-hot')
@@ -2252,6 +2254,7 @@
         const a = this.port(id, kind, i), start = { x: ev.clientX, y: ev.clientY }
         let line = null
         const move = e => {
+          if (this.pinched) { line?.remove(); line = null; return }
           if (!line && Math.hypot(e.clientX - start.x, e.clientY - start.y) < 6) return
           if (!line) { line = svg('path', { class: 'pg-cwire pg-cwire-new' }); this.svg.append(line) }
           const b = this.toSvg(e)
@@ -2259,6 +2262,7 @@
         }
         const up = e => {
           c.removeEventListener('pointermove', move); c.removeEventListener('pointerup', up); c.removeEventListener('pointercancel', up)
+          if (this.pinched) { line?.remove(); return }
           if (!line) { if (e.type === 'pointerup') (kind === 'out' ? this.tapOut(id) : this.tapIn(id, i)); return }
           line.remove()
           if (e.type !== 'pointerup') return
@@ -2480,9 +2484,10 @@
         side.append(slider)
       }
       const rowEl = el('div', 'pg-row pg-crow')
-      if (this.random) rowEl.append(s, side)
-      else { const col = el('div', 'pg-cboard-col'); col.append(s); rowEl.append(col) }
-      this.fitting = { s, box: this.random ? s : rowEl.firstChild, bar: null }
+      const zoomed = this.zoomBox(s)
+      if (this.random) rowEl.append(zoomed, side)
+      else { const col = el('div', 'pg-cboard-col'); col.append(zoomed); rowEl.append(col) }
+      this.fitting = { s: zoomed, box: this.random ? zoomed : rowEl.firstChild, bar: null }
 
       const moves = el('div', 'pg-moves')
       for (const kind of this.paletteKinds) {
@@ -2523,8 +2528,62 @@
         parts.push(box)
       }
       showBoard(this, parts)
+      // (zoomed in: where the board was scrolled to stays)
+      if (this.zoomWrap && this.zoomAt) { this.zoomWrap.scrollLeft = this.zoomAt.x; this.zoomWrap.scrollTop = this.zoomAt.y }
       this.fit()
     }
+    // The board in a frame that can be zoomed, as a picture on a phone: two fingers spread it (or ＋
+    // and −), one finger moves it in the frame. The frame keeps its size, so nothing around it moves.
+    zoomBox(s) {
+      const box = el('div', 'pg-czoom-box'), wrap = el('div', 'pg-czoom')
+      this.zoom ??= 1
+      wrap.style.aspectRatio = `${this.CW} / ${this.CH}`
+      wrap.style.setProperty('--pg-zoom', String(this.zoom))
+      wrap.classList.toggle('pg-zoomed', this.zoom > 1)
+      wrap.append(s); this.zoomWrap = wrap
+      wrap.addEventListener('scroll', () => { this.zoomAt = { x: wrap.scrollLeft, y: wrap.scrollTop } })
+      // to the zoom z, the point (cx, cy) of the frame (on the screen) staying where it is
+      const set = (z, cx, cy) => {
+        z = Math.min(4, Math.max(1, z))
+        const r = wrap.getBoundingClientRect()
+        cx ??= r.left + r.width / 2; cy ??= r.top + r.height / 2
+        const ux = (cx - r.left + wrap.scrollLeft) / this.zoom, uy = (cy - r.top + wrap.scrollTop) / this.zoom
+        this.zoom = Math.abs(z - 1) < 0.04 ? 1 : z
+        wrap.style.setProperty('--pg-zoom', String(this.zoom)); wrap.classList.toggle('pg-zoomed', this.zoom > 1)
+        wrap.scrollLeft = ux * this.zoom - (cx - r.left); wrap.scrollTop = uy * this.zoom - (cy - r.top)
+        this.zoomAt = { x: wrap.scrollLeft, y: wrap.scrollTop }
+        out.disabled = this.zoom <= 1; one.hidden = this.zoom <= 1
+      }
+      let pin = null
+      const two = e => { const [a, b] = e.touches; return { d: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY), x: (a.clientX + b.clientX) / 2, y: (a.clientY + b.clientY) / 2 } }
+      wrap.addEventListener('touchstart', e => {
+        if (e.touches.length !== 2) return
+        e.preventDefault(); this.pinching = true
+        pin = { ...two(e), z: this.zoom }
+      }, { capture: true, passive: false })
+      wrap.addEventListener('touchmove', e => {
+        if (!pin || e.touches.length !== 2) return
+        e.preventDefault()
+        const t = two(e)
+        set(pin.z * t.d / pin.d, t.x, t.y)
+        // (and moved, as the two fingers move)
+        wrap.scrollLeft -= t.x - pin.x; wrap.scrollTop -= t.y - pin.y; pin.x = t.x; pin.y = t.y
+        this.zoomAt = { x: wrap.scrollLeft, y: wrap.scrollTop }
+      }, { capture: true, passive: false })
+      const end = e => { if (e.touches.length < 2 && pin) { pin = null; this.pinchedAt = Date.now(); setTimeout(() => { this.pinching = false }, 0) } }
+      wrap.addEventListener('touchend', end, { capture: true }); wrap.addEventListener('touchcancel', end, { capture: true })
+      const btns = el('div', 'pg-zoom-btns')
+      const inn = el('button', 'pg-zoom-btn', '＋'), out = el('button', 'pg-zoom-btn', '−'), one = el('button', 'pg-zoom-btn pg-zoom-one', '1×')
+      for (const [b, t] of [[inn, tr('Zoom in')], [out, tr('Zoom out')], [one, tr('Whole board')]]) { b.type = 'button'; b.title = t; b.setAttribute('aria-label', t) }
+      inn.addEventListener('click', () => set(this.zoom * 1.5)); out.addEventListener('click', () => set(this.zoom / 1.5))
+      one.addEventListener('click', () => set(1))
+      out.disabled = this.zoom <= 1; one.hidden = this.zoom <= 1
+      btns.append(inn, out, one)
+      box.append(wrap, btns)
+      return box
+    }
+    // (a finger of two that spread the board: no drag, no tap)
+    get pinched() { return this.pinching || Date.now() - (this.pinchedAt ?? 0) < 350 }
     // the board as large as fits: its top (the coins) and its bottom (the target) both on the screen,
     // whatever its size; again when the space changes
     fit() {
@@ -2745,7 +2804,7 @@
     // the statement, when the board makes it (a circuit): a new one starts the proof anew
     setStatement(st) {
       if (st === this.statement) return
-      this.statement = st; this.started = false; this.session = null; this.goals = null; this.error = ''
+      this.statement = st; this.started = false; this.session = null; this.goals = null; this.states = null; this.view = null; this.error = ''
       if (!this.box.hidden) this.render()
     }
     status() {
@@ -2800,11 +2859,15 @@
         if (quiet) {
           const i = r.steps.findIndex(st => st.diags.some(d => d.severity === 1)), k = Math.max(1, i < 0 ? r.steps.length : i)
           this.lines = lines.slice(0, k - 1); this.goals = r.steps[k - 1].goals.map(g => g.goal.text)
+          this.states = r.steps.slice(0, k).map(st => st.goals.map(g => g.goal.text))
         }
         return false
       }
       this.lines = lines; this.error = ''
       this.goals = r.steps[r.steps.length - 1].goals.map(g => g.goal.text)
+      // (the goals after each line, for the steps of the proof: states[0] before the first line)
+      this.states = r.steps.map(st => st.goals.map(g => g.goal.text))
+      if (this.view >= this.states.length - 1) this.view = null
       try { localStorage.setItem(this.key, JSON.stringify(lines)) } catch {}
       if (r.completed && !this.proved) {
         try { localStorage.setItem(this.key + 'd', '1') } catch {}
@@ -2853,7 +2916,7 @@
       if (no) { this.error = no; this.render(); return }
       this.busy = true; this.render()
       try { if (await this.check([...this.lines, line])) this.typed = '' } catch (e) { this.error = tr('Lean cannot be reached: {e}', { e: String(e) }) }
-      this.busy = false; this.render(); this.input?.focus({ preventScroll: true })
+      this.busy = false; this.render(); this.input?.focus({ preventScroll: true }); this.reveal()
     }
     async back() {
       if (this.busy || !this.lines.length) return
@@ -2861,7 +2924,39 @@
       await this.check(this.lines.slice(0, -1)); this.done = false
       this.busy = false; this.render()
     }
-    // the proof from the start again: no lines (a proof found stays found)
+    // the proof from line k on removed (✕ at the line): it is in the input again, to change it
+    async cut(k) {
+      if (this.busy || k < 1 || k > this.lines.length) return
+      const line = this.lines[k - 1]
+      this.busy = true; this.error = ''; this.choice = null; this.view = null; this.render()
+      try { if (await this.check(this.lines.slice(0, k - 1))) this.typed = line } catch (e) { this.error = tr('Lean cannot be reached: {e}', { e: String(e) }) }
+      this.done = false
+      this.busy = false; this.render(); this.input?.focus({ preventScroll: true }); this.reveal()
+    }
+    // (the goals now and the input in view, below the steps that grow)
+    reveal() {
+      const to = this.input?.isConnected ? this.input.closest('.pg-proof-input') : this.box.querySelector('.pg-proof-done')
+      to?.scrollIntoView({ block: 'nearest' })
+    }
+    // The steps of the proof, as in the Natural Number Game: each line with the goal after it (the
+    // goal only, folded; a tap shows the whole state there). Each line is indented as in Lean: after a
+    // line that splits the goal (cases), the lines on each new goal one step further in, the first of
+    // each with ·, and with its case. A line that closes a goal while others are left says so.
+    steps() {
+      const st = this.states ?? [], out = []
+      let open = (st[0] ?? []).map(() => ({ depth: 0, fresh: false }))
+      this.lines.forEach((line, j) => {
+        const before = st[j] ?? [], after = st[j + 1] ?? [], g = open[0] ?? { depth: 0, fresh: false }
+        const m = Math.max(0, after.length - before.length + 1)
+        const kids = Array.from({ length: m }, () => ({ depth: m > 1 ? g.depth + 1 : g.depth, fresh: m > 1 }))
+        const tag = /^case\s+(\S+)/.exec(before[0] ?? '')?.[1]
+        out.push({ k: j + 1, line, depth: g.depth, bullet: g.fresh, tag: before.length > 1 || g.depth ? tag : null,
+          of: before.length > 1 ? before.length : 0, before: before.length, after: after.length })
+        open = [...kids, ...open.slice(1)]
+        if (open.length !== after.length) open = after.map((_, i) => open[i] ?? { depth: 0, fresh: false })
+      })
+      return out
+    }
     async restart() {
       if (this.busy || !this.lines.length) return
       this.busy = true; this.error = ''; this.typed = ''; this.render()
@@ -2961,9 +3056,54 @@
         return
       }
 
-      // the lines so far, and the goals now
-      const hist = el('ol', 'pg-proof-lines')
-      this.lines.forEach(l => hist.append(el('li', '', l)))
+      // the lines so far, each with the goal after it, and the goals now
+      const hist = el('ol', 'pg-proof-steps')
+      const goalLine = g => { const t = leanText(g), i = t.indexOf('⊢'); return i < 0 ? t : t.slice(i) }
+      const brief = gs => {
+        const b = el('div', 'pg-step-brief')
+        if (!gs.length) { b.append(el('span', 'pg-step-qed', tr('no goals'))); return b }
+        b.append(el('pre', '', goalLine(gs[0])))
+        if (gs.length > 1) b.append(el('span', 'pg-step-more', tr('+ {n} more', { n: gs.length - 1 })))
+        return b
+      }
+      const full = gs => {
+        const f = el('div', 'pg-step-full')
+        if (!gs.length) f.append(el('span', 'pg-step-qed', tr('no goals')))
+        gs.forEach((g, i) => { const b = el('div', 'pg-goal' + (i ? ' pg-goal-later' : '')); if (gs.length > 1) b.append(el('div', 'pg-goal-no', tr('goal {i} of {n}', { i: i + 1, n: gs.length }))); b.append(el('pre', '', leanText(g))); f.append(b) })
+        return f
+      }
+      const sts = this.states ?? []
+      const toggle = k => { this.view = this.view === k ? null : k; this.render() }
+      if (this.lines.length && sts[0]) {
+        const li = el('li', 'pg-step pg-step-start' + (this.view === 0 ? ' pg-step-open' : ''))
+        const head = el('div', 'pg-step-head'); head.append(el('span', 'pg-step-no', '0'), el('span', 'pg-step-start-label', tr('the statement')))
+        head.addEventListener('click', () => toggle(0))
+        const b0 = this.view === 0 ? full(sts[0]) : brief(sts[0]); b0.addEventListener('click', () => toggle(0)); li.append(head, b0)
+        hist.append(li)
+      }
+      for (const s of this.steps()) {
+        const last = s.k === this.lines.length
+        const li = el('li', 'pg-step' + (last ? ' pg-step-last' : '') + (this.view === s.k ? ' pg-step-open' : ''))
+        li.style.setProperty('--pg-depth', String(s.depth))
+        const head = el('div', 'pg-step-head')
+        head.append(el('span', 'pg-step-no', String(s.k)))
+        const code = el('code', 'pg-step-code', (s.bullet ? '· ' : '') + s.line)
+        head.append(code)
+        // where it worked: on which goal (its case), and what became of the goals
+        if (s.tag) head.append(el('span', 'pg-step-tag', s.tag))
+        else if (s.of) head.append(el('span', 'pg-step-tag', tr('goal 1 of {n}', { n: s.of })))
+        if (s.after > s.before) head.append(el('span', 'pg-step-note', tr('→ {n} goals', { n: s.after })))
+        else if (s.after < s.before && s.after > 0) head.append(el('span', 'pg-step-note pg-step-closed', tr('✓ goal closed, {n} left', { n: s.after })))
+        else if (s.after === 0 && sts.length > s.k) head.append(el('span', 'pg-step-note pg-step-closed', '✓'))
+        const x = el('button', 'pg-step-x', '✕'); x.type = 'button'; x.disabled = this.busy
+        x.title = tr('Remove the proof from this line on'); x.setAttribute('aria-label', x.title)
+        x.addEventListener('click', ev => { ev.stopPropagation(); this.cut(s.k) })
+        head.append(x)
+        li.append(head)
+        // (the last line: its goals are the goals now, below)
+        if (!last && sts[s.k]) { head.addEventListener('click', () => toggle(s.k)); const b = this.view === s.k ? full(sts[s.k]) : brief(sts[s.k]); b.addEventListener('click', () => toggle(s.k)); li.append(b) }
+        hist.append(li)
+      }
       const goals = el('div', 'pg-goals')
       if (this.done) goals.append(el('div', 'pg-proof-done', 'goals accomplished 🎉' + (this.lemma ? ' ' + tr('Your lemma {x} is now in your inventory.', { x: this.lemma }) : '')))
       if (this.done && STAGE) {
@@ -2973,8 +3113,8 @@
       }
       else if (this.goals) this.goals.forEach((g, i) => {
         // the goal now; the others folded, one line each
-        const box = el(i ? 'details' : 'div', 'pg-goal' + (i ? ' pg-goal-later' : ''))
-        if (this.goals.length > 1) box.append(el(i ? 'summary' : 'div', 'pg-goal-no', tr('goal {i} of {n}', { i: i + 1, n: this.goals.length })))
+        const box = el(i ? 'details' : 'div', 'pg-goal' + (i ? ' pg-goal-later' : this.goals.length > 1 ? ' pg-goal-now' : ''))
+        if (this.goals.length > 1) box.append(el(i ? 'summary' : 'div', 'pg-goal-no', i ? tr('goal {i} of {n}', { i: i + 1, n: this.goals.length }) : tr('goal 1 of {n}: the next line works on this one', { n: this.goals.length })))
         box.append(el('pre', '', leanText(g)))
         goals.append(box)
       })
@@ -3115,6 +3255,10 @@
     'Type a tactic, or tap one in the inventory.': 'Tippe eine Taktik ein, oder tippe eine im Inventar an.', 'One goal left.': 'Noch ein Ziel.', '{n} goals left.': 'Noch {n} Ziele.',
     'Tips': 'Tipps', 'Tip': 'Tipp', 'Got it': 'Verstanden', 'Close': 'Schließen', 'Restart': 'Neu', 'Next': 'Weiter', 'Next ›': 'Weiter ›',
     'Next world ›': 'Nächste Welt ›', 'Which?': 'Welche?', 'Show statements': 'Aussagen zeigen', 'Hide statements': 'Aussagen verbergen', 'Tap {x}, then the Output.': 'Tippe {x} an, dann den Ausgang.', 'No variable in this goal to split with cases.': 'In diesem Ziel gibt es keine Variable, die cases aufteilen könnte.', 'No natural number in this goal for induction.': 'In diesem Ziel gibt es keine natürliche Zahl für eine Induktion.', plain: 'ohne', 'This wire belongs to the level; it stays.': 'Diese Leitung gehört zum Level; sie bleibt.', '{x} is wired by the level; it stays so.': '{x} ist vom Level verdrahtet; das bleibt so.', 'World': 'Welt', 'Board': 'Spielfeld', 'Proof ': 'Beweis', 'This world': 'Diese Welt',
+    'no goals': 'keine Ziele', '+ {n} more': '+ {n} weitere', 'the statement': 'die Aussage', 'goal 1 of {n}': 'Ziel 1 von {n}',
+    '→ {n} goals': '→ {n} Ziele', '✓ goal closed, {n} left': '✓ Ziel geschlossen, noch {n}', 'Remove the proof from this line on': 'Den Beweis ab dieser Zeile entfernen',
+    'goal 1 of {n}: the next line works on this one': 'Ziel 1 von {n}: die nächste Zeile arbeitet an diesem',
+    'Zoom in': 'Vergrößern', 'Zoom out': 'Verkleinern', 'Whole board': 'Ganzes Spielfeld',
     'New in this level': 'Neu in diesem Level', 'New in this proof': 'Neu in diesem Beweis', 'Solve the board first.': 'Erst das Spielfeld lösen.',
   })
   // What the moves and building blocks do, for the tips (by kind of board: level, bool, build, src, walk).
