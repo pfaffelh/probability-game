@@ -658,3 +658,19 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
   .pg-stage .pg-czoom-box { flex: none; width: min(100%, var(--pg-fitw, 100%)); max-width: none !important; margin: 0 auto; }
   .pg-stage .pg-czoom { border-radius: 0; }
 }
+
+/* a phone, the proof: above a fixed line the proof (it scrolls), below it the input, the keys and the
+   inventory (put the line together by taps: no keyboard) */
+.pg-keys { display: flex; flex-wrap: wrap; gap: 5px; margin: 0.2rem 0 0.4rem; }
+.pg-key { min-width: 2.4em; height: 2.3em; padding: 0 0.6em; border-radius: 8px; border: 1px solid #c9b48f; background: white; font: 15px var(--verso-code-font-family, monospace); color: #3a2a10; }
+.pg-key-op { background: #f4ecdd; font-family: var(--verso-structure-font-family, sans-serif); }
+.pg-key.pg-on { background: #2e6fb8; color: white; border-color: #2e6fb8; }
+.pg-key:disabled { opacity: 0.4; }
+@media (max-width: 700px) {
+  .pg-stage .pg-level.pg-view-proof .pg-proof:not([hidden]) { overflow: hidden; gap: 0; padding-inline: 12px; }
+  .pg-stage .pg-proof-main { flex: 1 1 0; min-height: 0; overflow-y: auto; padding-bottom: 0.4rem; }
+  .pg-stage .pg-proof-side { flex: 0 0 auto; height: 44%; display: flex; flex-direction: column; border-top: 2px solid #c9b48f; padding-top: 0.4rem; background: #fffdf8; }
+  .pg-stage .pg-proof-side .pg-proof-input { margin: 0 0 0.2rem; }
+  .pg-stage .pg-proof-side .pg-inventory { flex: 1 1 0; min-height: 0; overflow-y: auto; margin: 0; }
+  .pg-stage .pg-proof-input input[readonly] { caret-color: transparent; background: #fffaf0; }
+}

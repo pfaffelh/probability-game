@@ -65,6 +65,8 @@ async function prove(lines) {
   await input.waitFor({ timeout: 30000 }).catch(() => {})
   await idle()
   for (const line of lines) {
+    // (a phone: no keyboard until ⌨ is tapped)
+    if (await input.evaluate(i => i.readOnly)) await page.locator(`${L}.pg-key[aria-label="Keyboard"], ${L}.pg-key[aria-label="Tastatur"]`).first().click()
     await input.click(); await input.fill(line); await input.press('Enter')
     await page.waitForTimeout(80); await idle()
     const err = await page.locator(`${L}.pg-proof-error`).isVisible() ? await page.locator(`${L}.pg-proof-error`).innerText() : ''
