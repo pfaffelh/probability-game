@@ -2596,7 +2596,10 @@
       if (!sc.clientHeight) return
       const top = f.s.getBoundingClientRect().top - sc.getBoundingClientRect().top + sc.scrollTop
       const avail = sc.clientHeight - top - (f.bar ? f.bar.offsetHeight + 8 : 0) - 10
-      f.box.style.maxWidth = `${Math.max(180, Math.min(this.CW, Math.floor(avail * this.CW / this.CH)))}px`
+      const w = Math.max(180, Math.min(this.CW, Math.floor(avail * this.CW / this.CH)))
+      f.box.style.maxWidth = `${w}px`
+      // (on a phone the board goes from edge to edge of the screen, as far as its height allows: game.css)
+      f.s.style.setProperty('--pg-fitw', `${w}px`)
     }
   }
   // a wire, from an output (above) to an input (below)
@@ -3613,6 +3616,8 @@
     return { a, num: tr.querySelector('.num')?.textContent.trim().replace(/\.$/, '') ?? '', path: new URL(a.href).pathname }
   }).filter(w => w && !/\/Lexicon\/$/.test(w.path))
   const levelsKey = path => `pg:levels:${path}`
+  // the worlds on a side way: which world they come after (not the one above them on the map)
+  const SIDE_WAYS = { 'Coins-that-Wait': 'Building-with-Coins' }
   const fetched = new Set()
   function worldMap() {
     const toc = document.querySelector('#toc'), worlds = worldLinks()
@@ -3633,9 +3638,17 @@
       if (!levels) return null
       return [levels.filter((proof, i) => ls(`pg:${w.path}:${i}`) === '1' && (SHOW || !proof || ls(`pg:${w.path}:${i}:proofd`) === '1')).length, levels.length]
     }
-    const W2 = 250, dy = 56, x = 30, y0 = 26, H = y0 + (worlds.length - 1) * dy + 30
+    const W2 = 250, dy = 56, x = 40, y0 = 26, H = y0 + (worlds.length - 1) * dy + 30
     const map = svg('svg', { viewBox: `0 0 ${W2} ${H}`, class: 'pg-map' })
-    for (let i = 1; i < worlds.length; i++) map.append(svg('line', { x1: x, y1: y0 + (i - 1) * dy, x2: x, y2: y0 + i * dy, class: 'pg-map-edge' }))
+    // the way: from each world to the next, or, for a world on a side way (SIDE_WAYS), from the world
+    // it comes after, past the worlds between (a fork: two ways that do not need each other)
+    const slug = w => /([^/]+)\/$/.exec(w.path)?.[1] ?? ''
+    for (let i = 1; i < worlds.length; i++) {
+      const from = worlds.findIndex(w => slug(w) === SIDE_WAYS[slug(worlds[i])])
+      const ya = y0 + (from < 0 ? i - 1 : from) * dy, yb = y0 + i * dy
+      if (from < 0 || from === i - 1) map.append(svg('line', { x1: x, y1: ya, x2: x, y2: yb, class: 'pg-map-edge' }))
+      else map.append(svg('path', { d: `M${x - 12},${ya + 14} C${x - 40},${ya + 36} ${x - 40},${yb - 36} ${x - 12},${yb - 14}`, class: 'pg-map-edge pg-map-fork' }))
+    }
     worlds.forEach((w, i) => {
       const y = y0 + i * dy, r = 18, c = count(w), frac = c && c[1] ? c[0] / c[1] : 0
       const name = w.a.textContent.trim()

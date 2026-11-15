@@ -646,3 +646,15 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 .pg-step-code { flex: 0 1 auto; min-width: 0; }
 .pg-step-tag, .pg-step-note, .pg-step-no { flex: none; }
 @media (max-width: 700px) { .pg-step-note { flex: 0 1 auto; min-width: 3em; } .pg-step { margin-left: calc(var(--pg-depth, 0) * 0.7em); } }
+.pg-map-fork { fill: none; }
+/* on a phone the board uses the whole width of the screen: the level reaches from edge to edge (its
+   texts keep a margin), and the board is as wide as its height allows (--pg-fitw, set by fit) */
+@media (max-width: 700px) {
+  .pg-stage > .pg-level, .pg-stage > .pg-level:not([hidden]) { margin-inline: -16px; max-width: none; border-left-width: 0; border-right-width: 0; border-radius: 0; padding-inline: 0; }
+  .pg-stage .pg-main > :not(.pg-crow), .pg-stage .pg-crow > .pg-cside, .pg-stage .pg-proof { padding-inline: 12px; }
+  .pg-stage .pg-crow, .pg-stage .pg-cboard-col { max-width: none !important; }
+  .pg-stage .pg-crow { flex-direction: column; align-items: stretch; }
+  .pg-stage .pg-cboard-col { width: 100%; flex: none; }
+  .pg-stage .pg-czoom-box { flex: none; width: min(100%, var(--pg-fitw, 100%)); max-width: none !important; margin: 0 auto; }
+  .pg-stage .pg-czoom { border-radius: 0; }
+}

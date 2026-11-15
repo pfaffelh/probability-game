@@ -66,7 +66,7 @@ decide +revert
 :::
 ::::
 
-::::circuit (inputs := "x") (gates := "") (coins := "p") (target := "f bernoulli p") (start := "a=f; c=f; d=f; x>a.0; a>c.0; c>d.0; d>out") (context := "Lean/Rules.lean") (proof := "(f : Bool → Bool) (p : I) : f <$> (f <$> (f <$> coin p)) = f <$> coin p") (new := "map_map") (play := "a.0=id")
+::::circuit (inputs := "x") (gates := "") (coins := "p") (target := "f bernoulli p") (start := "a=f; c=f; d=f; x>a.0; a>c.0; c>d.0; d>out") (context := "Lean/Rules.lean") (proof := "(f : Bool → Bool) (p : I) : f <$> (f <$> (f <$> coin p)) = f <$> coin p") (new := "map_map, congr, funext") (play := "a.0=id")
 :::en
 *Three times is once, with a coin.* The same circuit, now on a coin `x ← coin p`; the target is the
 distribution of `f x`, once. Choose a map in `f`, and then another.
@@ -80,8 +80,9 @@ Ziel ist die Verteilung von `f x`, einmal. Wähle eine Abbildung in `f`, und dan
 :::proofen
 Three gates one after the other are one gate: the new rule
 `map_map : g <$> (f <$> μ) = (fun x => g (f x)) <$> μ`, twice. Then both sides move the same coin,
-with two maps; `congr 1` and `funext b` (from *One Coin*) leave the two maps at a point `b`, and that
-is the lemma of the level before: `exact Bool.apply_apply_apply f b`.
+with two maps. Two new tactics: `congr 1` reduces the goal to the two maps being equal, and `funext b`
+to their being equal at every point `b`. That is the lemma of the level before:
+`exact Bool.apply_apply_apply f b`.
 
 *Tip.* `rw [map_map, map_map]`, `congr 1`, `funext b`, `exact Bool.apply_apply_apply f b`.
 :::
@@ -89,9 +90,9 @@ is the lemma of the level before: `exact Bool.apply_apply_apply f b`.
 :::proofde
 Drei Bausteine hintereinander sind ein Baustein: die neue Regel
 `map_map : g <$> (f <$> μ) = (fun x => g (f x)) <$> μ`, zweimal. Dann bewegen beide Seiten dieselbe
-Münze, mit zwei Abbildungen; `congr 1` und `funext b` (aus *Eine Münze*) lassen die beiden Abbildungen
-an einer Stelle `b` übrig, und das ist das Lemma des Levels davor:
-`exact Bool.apply_apply_apply f b`.
+Münze, mit zwei Abbildungen. Zwei neue Taktiken: `congr 1` führt das Ziel darauf zurück, dass die
+beiden Abbildungen gleich sind, und `funext b` darauf, dass sie an jeder Stelle `b` gleich sind. Das
+ist das Lemma des Levels davor: `exact Bool.apply_apply_apply f b`.
 
 *Tipp.* `rw [map_map, map_map]`, `congr 1`, `funext b`, `exact Bool.apply_apply_apply f b`.
 :::

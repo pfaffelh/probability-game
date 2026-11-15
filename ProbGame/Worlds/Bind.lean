@@ -21,6 +21,9 @@ showed. The waiting coin `y` is a `bind` box with a coin in each field: `coin p`
 `bif x then coin q else coin r`: first throw `x`, then, depending on what came, the one or the other
 coin. In Lean: `do let x ← coin p; let y ← (bif x then coin q else coin r); …`, that is
 `coin p >>= fun x => …`.
+
+This world is one of two ways after *Building with Coins*; the other is *Counting*. They do not need
+each other.
 :::
 
 :::de
@@ -34,6 +37,9 @@ ab, was `x` zeigte. Die wartende Münze `y` ist ein `bind`-Kasten mit einer Mün
 `coin p`, `coin (σ p)`, `pure true` oder `pure false`, jede mit ihrem kleinen Histogramm. `y` wird zu
 `bif x then coin q else coin r`: erst `x` werfen, dann, je nachdem was kam, die eine oder die andere
 Münze. In Lean: `do let x ← coin p; let y ← (bif x then coin q else coin r); …`, also
+
+Diese Welt ist einer von zwei Wegen nach *Bauen mit Münzen*; der andere ist *Zählen*. Sie brauchen
+einander nicht.
 `coin p >>= fun x => …`.
 :::
 

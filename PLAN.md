@@ -119,3 +119,16 @@ Circuits, 2026-11-14 evening (user): levels Both, Or without or (De Morgan), The
 Then (user): the majority out; Exactly one (xor) is the boss of Circuits (cases x <;> cases y <;> rfl): Circuits = 5 levels; `decide` comes in Maps 1. The button "Show the values row by row" is gone: tap a table row or a column of the output box.
 
 norm_num (user, 2026-11-14): in the inventory from Building with Coins 1 on; coin_true, coin_false, pure_true are simp in Lean/Rules.lean, so after the structural rule (rw [bind_true]) a bare `norm_num` computes. Bare norm_num solves no level (checked).
+
+## 2026-11-15: Counting, a world of its own; Coins that Wait a side way
+
+(User.) Everything with `toNat` is in the new world *Counting* (4): from One Coin *From sides to
+numbers* and *Surely zero*, from Building with Coins the levels from *The number of `true`* to the
+majority (boss). Building with Coins keeps and/or/not; its boss is now *Exactly one `true`*. `congr`
+and `funext` come in Maps 2 (they were in the toNat level of One Coin). Counting and Coins that Wait
+both come after Building with Coins and do not need each other: the map draws the fork (`SIDE_WAYS` in
+game.js), and Counting's levels have `(route := "count")`, the inventory group `chance.count`, so that
+Coins that Wait (group `chance`, after it in the document) does not get Counting's rules.
+
+Also on 2026-11-15: the proof as in the NNG4 (each line with the goal after it, ✕ per line), the board
+zooms on phones and uses the whole width of the screen there.
