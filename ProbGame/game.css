@@ -597,3 +597,52 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 .pg-coutput .pg-dbar { stroke: none !important; stroke-dasharray: none !important; }
 .pg-coutput .pg-dbar-f { fill: #8a7a5c !important; } .pg-coutput .pg-dbar-t { fill: #c9a227 !important; }
 .pg-coutput .pg-ctarget-block { fill: white !important; }
+
+/* the board in a frame that zooms (two fingers, or + and −); the frame keeps its size */
+.pg-czoom-box { position: relative; flex: 1 1 24rem; max-width: 480px; width: 100%; margin: 0 auto; }
+.pg-cboard-col .pg-czoom-box { flex: none; }
+.pg-czoom { width: 100%; overflow: hidden; border-radius: 10px; touch-action: pan-x pan-y; overscroll-behavior: contain; }
+.pg-czoom.pg-zoomed { overflow: auto; }
+.pg-czoom > .pg-svg.pg-csvg { flex: none; max-width: none; width: calc(var(--pg-zoom, 1) * 100%); margin: 0; touch-action: pan-x pan-y; }
+.pg-zoom-btns { position: absolute; right: 6px; bottom: 6px; display: none; flex-direction: column; gap: 6px; z-index: 2; }
+.pg-zoom-btn { width: 36px; height: 36px; border-radius: 50%; border: 1px solid #b8c4d4; background: rgba(255, 255, 255, 0.92); font-size: 18px; line-height: 1; padding: 0; color: #2e4a6b; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15); }
+.pg-zoom-btn:disabled { opacity: 0.35; }
+.pg-zoom-one { font-size: 13px; font-weight: 600; }
+@media (max-width: 700px), (pointer: coarse) { .pg-zoom-btns { display: flex; } }
+.pg-proof-sol-pic .pg-czoom { overflow: visible; aspect-ratio: auto !important; }
+.pg-proof-sol-pic .pg-czoom > .pg-svg.pg-csvg { width: auto; }
+.pg-proof-sol-pic .pg-czoom-box { flex: none; width: auto; }
+
+/* the steps of the proof (as in the NNG): each line with the goal after it; indented as in Lean */
+.pg-proof-steps { list-style: none; margin: 0.3rem 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.pg-step { margin-left: calc(var(--pg-depth, 0) * 1.1em); border-left: 2px solid transparent; padding-left: 0.3em; }
+.pg-step[style*="--pg-depth: 1"], .pg-step[style*="--pg-depth: 2"], .pg-step[style*="--pg-depth: 3"] { border-left-color: #d9e3ef; }
+.pg-step-head { display: flex; align-items: center; gap: 0.4em; flex-wrap: wrap; cursor: pointer; padding: 0.1em 0; }
+.pg-step-last .pg-step-head { cursor: default; }
+.pg-step-no { font-size: 0.72em; color: #8a96a6; min-width: 1.2em; text-align: right; font-variant-numeric: tabular-nums; }
+.pg-step-code { font-family: var(--verso-code-font-family, monospace); font-size: 0.9em; color: #1f6b27; background: #f0f7f0; border-radius: 4px; padding: 0.05em 0.35em; overflow-wrap: anywhere; }
+.pg-step-start-label { font-size: 0.85em; color: #556; font-style: italic; }
+.pg-step-tag { font-size: 0.72em; color: #2e6fb8; border: 1px solid #b9cde6; border-radius: 999px; padding: 0 0.5em; }
+.pg-step-note { font-size: 0.75em; color: #8f7a55; }
+.pg-step-closed { color: #2e8b37; }
+.pg-step-x { margin-left: auto; border: none; background: none; color: #a33; font-size: 0.85em; line-height: 1; padding: 0.25em 0.45em; border-radius: 4px; cursor: pointer; opacity: 0.55; }
+.pg-step-x:hover, .pg-step-x:focus-visible { opacity: 1; background: #fbeaea; }
+.pg-step-x:disabled { opacity: 0.2; cursor: default; }
+.pg-step-brief { margin: 0 0 0.15em 1.6em; display: flex; align-items: baseline; gap: 0.5em; color: #7a8594; cursor: pointer; }
+.pg-step-brief pre { margin: 0; font-size: 0.78em; white-space: pre-wrap; overflow-wrap: anywhere; }
+.pg-step-more { font-size: 0.72em; white-space: nowrap; }
+.pg-step-qed { font-size: 0.78em; color: #2e8b37; }
+.pg-step-full { margin: 0.1em 0 0.3em 1.6em; display: flex; flex-direction: column; gap: 0.3rem; opacity: 0.85; }
+.pg-step-open > .pg-step-head .pg-step-code { outline: 2px solid #9ec3e6; }
+.pg-goal-now { border-color: #2e6fb8; box-shadow: inset 3px 0 0 #2e6fb8; }
+.pg-goal-now > .pg-goal-no { color: #2e6fb8; font-weight: 600; }
+@media (pointer: coarse) { .pg-step-x { opacity: 0.8; padding: 0.4em 0.6em; } }
+.pg-step { position: relative; }
+.pg-step-head { padding-right: 2em; }
+.pg-step-x { position: absolute; right: 0; top: 0; }
+.pg-step-code { line-height: 1.5; }
+.pg-step-start-label, .pg-step-tag, .pg-step-note, .pg-step-more, .pg-step-qed { font-family: var(--verso-structure-font-family, sans-serif); font-style: normal; }
+.pg-step-head { flex-wrap: nowrap; align-items: baseline; }
+.pg-step-code { flex: 0 1 auto; min-width: 0; }
+.pg-step-tag, .pg-step-note, .pg-step-no { flex: none; }
+@media (max-width: 700px) { .pg-step-note { flex: 0 1 auto; min-width: 3em; } .pg-step { margin-left: calc(var(--pg-depth, 0) * 0.7em); } }
