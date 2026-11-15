@@ -114,6 +114,36 @@ rfl
 :::
 ::::
 
+::::leanonly (proof := ": (!false) = true") (lemma := "Bool.not_false") (context := "Lean/WorldBool.lean") (group := "bool")
+:::en
+*Not false.* The other half of `not`, in Lean only: the level before proved `(!true) = false`, the
+rule `Bool.not_true`.
+:::
+
+:::de
+*Nicht false.* Die andere Hälfte von `not`, nur in Lean: Das Level davor hat `(!true) = false`
+bewiesen, die Regel `Bool.not_true`.
+:::
+
+:::proofen
+`not` is defined by its two cases, and here Lean knows the value: `!false` reduces to `true`.
+
+*Tip.* `rfl`.
+:::
+
+:::proofde
+`not` ist durch seine zwei Fälle definiert, und hier kennt Lean den Wert: `!false` reduziert zu
+`true`.
+
+*Tipp.* `rfl`.
+:::
+:::solution
+```
+rfl
+```
+:::
+::::
+
 ::::circuit (height := "500") (inputs := "x") (gates := "not") (table := "01") (goal := "x") (shape := "!(!x)") (start := "a=not; x>a.0") (proof := "(x : Bool) : (!(!x)) = x") (lemma := "Bool.not_not") (new := "cases") (play := "b=not; a>b.0; b>out")
 :::en
 *Flipped twice.* One `not` is already on the board and stays there. Add a second one, so that the output is the input again.

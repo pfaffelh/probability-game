@@ -53,7 +53,7 @@ Masse kam von `false`.
 :::
 
 :::proofen
-*Now the proof.* Everything it needs you know from *Masses*: `coin p` and its masses, `f <$> μ`, and
+*Now the proof.* Everything it needs you know from *Circuits* and *Masses*: `coin p` and its masses, `f <$> μ`, and
 the rules. First the rule of the gates, `map_true`; then computing, one rule after another:
 `Bool.not_true`, `Bool.not_false`, `Bool.cond_false`, `Bool.cond_true`, `zero_add` and `coin_false`.
 Keep this computation in mind: the boss of this world needs it again.
@@ -64,7 +64,7 @@ and press *Run*).
 :::
 
 :::proofde
-*Jetzt der Beweis.* Alles, was er braucht, kennst du aus *Massen*: `coin p` und seine Massen,
+*Jetzt der Beweis.* Alles, was er braucht, kennst du aus *Schaltungen* und *Massen*: `coin p` und seine Massen,
 `f <$> μ` und die Regeln. Zuerst die Regel der Bausteine, `map_true`; dann Rechnen, eine Regel nach der
 anderen: `Bool.not_true`, `Bool.not_false`, `Bool.cond_false`, `Bool.cond_true`, `zero_add` und
 `coin_false`. Merk dir diese Rechnung: Der Endgegner dieser Welt braucht sie noch einmal.
@@ -207,7 +207,7 @@ one. That is the rule `mass_total μ : μ true + μ false = 1`. So the mass at o
 other side misses to one.
 
 `cases b` (from *Circuits*): the point `b` is `false` or `true`, two goals one after the other
-(`!false` is `true`: `Bool.not_false`, from *Masses*).
+(`!false` is `true`: `Bool.not_false`, from *Circuits*).
 
 Masses are numbers in $`[0, \infty]` (`ENNReal`); taking away is allowed when what is taken away is
 finite: `ENNReal.add_sub_cancel_left (h : a ≠ ⊤) : a + b - a = b`, and `mass_ne_top : μ b ≠ ⊤` says
@@ -228,7 +228,7 @@ Gesamtmasse eins ist. Das ist die Regel `mass_total μ : μ true + μ false = 1`
 der einen Seite das, was der anderen zu eins fehlt.
 
 `cases b` (aus *Schaltungen*): Der Punkt `b` ist `false` oder `true`, zwei Ziele nacheinander
-(`!false` ist `true`: `Bool.not_false`, aus *Massen*).
+(`!false` ist `true`: `Bool.not_false`, aus *Schaltungen*).
 
 Massen sind Zahlen in $`[0, \infty]` (`ENNReal`); wegnehmen darf man, wenn das Weggenommene endlich
 ist: `ENNReal.add_sub_cancel_left (h : a ≠ ⊤) : a + b - a = b`, und `mass_ne_top : μ b ≠ ⊤` sagt,

@@ -2703,7 +2703,7 @@
     { name: 'coin_false', kind: 'lemma', sig: '(coin p) false = ↑(σ p)', en: 'Proved by you in Masses: the mass of the coin at false.', de: 'Von dir bewiesen in „Massen“: die Masse der Münze bei false.' },
     { name: 'map_true', kind: 'rule', sig: '(f <$> μ) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)', en: 'Where the mass of a move goes: to true comes the mass of the points that f sends to true.', de: 'Wohin die Masse eines Zuges geht: Nach true kommt die Masse der Punkte, die f nach true schickt.' },
     { name: 'Bool.not_true', kind: 'lemma', sig: '(!true) = false', en: 'Proved by you in Circuits: not true is false.', de: 'Von dir bewiesen in „Schaltungen“: Nicht true ist false.' },
-    { name: 'Bool.not_false', kind: 'lemma', sig: '(!false) = true', en: 'Proved by you in Masses: not false is true.', de: 'Von dir bewiesen in „Massen“: Nicht false ist true.' },
+    { name: 'Bool.not_false', kind: 'lemma', sig: '(!false) = true', en: 'Proved by you in Circuits: not false is true.', de: 'Von dir bewiesen in „Schaltungen“: Nicht false ist true.' },
     { name: 'Bool.cond_true', kind: 'lemma', sig: '(bif true then a else b) = a', en: 'Proved by you in Masses: bif with true is the first.', de: 'Von dir bewiesen in „Massen“: bif mit true ist das Erste.' },
     { name: 'Bool.cond_false', kind: 'lemma', sig: '(bif false then a else b) = b', en: 'Proved by you in Masses: bif with false is the second.', de: 'Von dir bewiesen in „Massen“: bif mit false ist das Zweite.' },
     { name: 'zero_add', kind: 'rule', sig: '0 + a = a', en: 'Adding to zero.', de: 'Zu null addieren.' },
