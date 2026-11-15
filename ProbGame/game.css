@@ -675,10 +675,11 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
   .pg-stage .pg-proof-input input[readonly] { caret-color: transparent; background: #fffaf0; }
 }
 
-/* the input never scrolls away: the proof scrolls above it, the inventory beside or below it */
+/* the input right below the goal, and never out of sight: the proof only as high as it needs; when it
+   is higher than the space, it scrolls above the input, which then sits at the bottom */
 .pg-stage .pg-level.pg-view-proof .pg-proof:not([hidden]) { overflow: hidden; align-items: stretch; }
 .pg-stage .pg-proof-main { display: flex; flex-direction: column; min-height: 0; }
-.pg-stage .pg-proof-scroll { flex: 1 1 0; min-height: 0; overflow-y: auto; padding-right: 2px; }
+.pg-stage .pg-proof-scroll { flex: 0 1 auto; min-height: 0; overflow-y: auto; padding-right: 2px; }
 .pg-stage .pg-proof-foot { flex: none; background: #fffdf8; }
 .pg-stage .pg-proof-main > .pg-proof-foot { border-top: 2px solid #e3d5bb; padding-top: 0.3rem; }
 .pg-stage .pg-proof-side { position: static; overflow-y: auto; min-height: 0; }
