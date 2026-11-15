@@ -2921,9 +2921,11 @@
       this.choice = null
       if (!line || this.busy || !this.session) return
       const no = this.refuse(line)
-      if (no) { this.error = no; this.render(); return }
+      // (a line that is refused, or that Lean does not take, leaves the input: it is shown with the error)
+      this.failed = null
+      if (no) { this.error = no; this.failed = line; this.typed = ''; this.render(); return }
       this.busy = true; this.render()
-      try { if (await this.check([...this.lines, line])) this.typed = '' } catch (e) { this.error = tr('Lean cannot be reached: {e}', { e: String(e) }) }
+      try { if (!(await this.check([...this.lines, line]))) this.failed = line; this.typed = '' } catch (e) { this.error = tr('Lean cannot be reached: {e}', { e: String(e) }) }
       this.busy = false; this.render(); this.input?.focus({ preventScroll: true }); this.reveal()
     }
     async back() {
@@ -3177,6 +3179,7 @@
       // an error: our sentence, and Lean's message (folded when there is a sentence)
       const err = el('div', 'pg-proof-error')
       err.hidden = !this.error
+      if (this.error && this.failed) err.append(el('code', 'pg-proof-failed', this.failed))
       if (this.error) {
         const msg = leanText(this.error), say = advice(msg)
         if (say) {

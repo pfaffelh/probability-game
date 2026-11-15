@@ -708,3 +708,4 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
   .pg-stage .pg-side-scroll { flex: 1 1 0; min-height: 0; overflow-y: auto; }
   .pg-stage .pg-side-scroll .pg-inventory { flex: none; overflow: visible; }
 }
+.pg-proof-failed { display: block; font-size: 0.85em; color: #8a2f24; text-decoration: line-through; text-decoration-color: rgba(176, 58, 46, 0.5); margin-bottom: 0.2em; overflow-wrap: anywhere; }
