@@ -11,11 +11,11 @@ htmlSplit := .never
 %%%
 
 :::en
-An urn with white and black balls; balls are drawn one after the other, without putting them back. The hypergeometric distribution, the number of white balls drawn, as a `do` block that draws ball by ball. In Lean only.
+An urn with white and black balls; balls are drawn one after the other, without putting them back. The hypergeometric distribution, the number of white balls drawn, as a `do` block that draws ball by ball: each draw is a coin that waits (as in *Coins that Wait*), its chance depending on what was drawn before. In Lean only.
 :::
 
 :::de
-Eine Urne mit weißen und schwarzen Kugeln; Kugeln werden eine nach der anderen gezogen, ohne sie zurückzulegen. Die hypergeometrische Verteilung, die Anzahl der gezogenen weißen Kugeln, als `do`-Block, der Kugel für Kugel zieht. Nur in Lean.
+Eine Urne mit weißen und schwarzen Kugeln; Kugeln werden eine nach der anderen gezogen, ohne sie zurückzulegen. Die hypergeometrische Verteilung, die Anzahl der gezogenen weißen Kugeln, als `do`-Block, der Kugel für Kugel zieht: Jeder Zug ist eine Münze, die wartet (wie in *Münzen, die warten*), ihre Chance hängt davon ab, was vorher gezogen wurde. Nur in Lean.
 :::
 
 ::::leanonly (proof := "(w b : ℕ) : hyper w b 0 = pure 0") (lemma := "hyper_zero") (group := "chance.count")
@@ -206,33 +206,6 @@ Induktion über $`w`. `Nat.add_sub_cancel : n + m - m = n` (eine weiße Kugel he
 induction' w with w ih
 rw [hyper_zero]
 rw [hyper_succ, frac_white, coin_one, pure_bind, Bool.cond_true, Nat.add_sub_cancel, ih, pure_bind, add_comm]
-```
-:::
-::::
-
-::::leanonly (proof := "(c : Bool) (μ : DiscreteMeasure ℕ) : (bif c then μ else μ) = μ") (new := "cond_same") (group := "chance.count")
-:::en
-*Either way.* When both branches are the same, the condition does not matter.
-:::
-
-:::de
-*So oder so.* Wenn beide Zweige gleich sind, spielt die Bedingung keine Rolle.
-:::
-
-:::proofen
-`cond_same : (bif c then a else a) = a`.
-
-*Tip.* `rw [cond_same]`.
-:::
-
-:::proofde
-`cond_same : (bif c then a else a) = a`.
-
-*Tipp.* `rw [cond_same]`.
-:::
-:::solution
-```
-rw [cond_same]
 ```
 :::
 ::::
