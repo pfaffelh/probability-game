@@ -191,7 +191,7 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : 0 + coin p true = p") (new := "rw, zero_add") (uses := "zero_add, coin_true, add_zero, mul_zero, coin_false")
+::::leanonly (proof := "(p : I) : 0 + coin p true = p") (new := "rw, zero_add") (uses := "zero_add, coin_true, add_zero, mul_zero, coin_false, coin_total")
 :::en
 *Zero plus.* Not every rule is a definition: `zero_add : 0 + a = a` is a rule of arithmetic, given
 here (it is proved in Mathlib, not by `rfl`). A rule is used by rewriting with it.
