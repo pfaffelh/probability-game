@@ -2943,7 +2943,7 @@
     }
     // (the goals now and the input in view, below the steps that grow)
     reveal() {
-      if (STAGE && PHONE()) { const m = this.box.querySelector('.pg-proof-main'); if (m) m.scrollTop = m.scrollHeight; return }
+      if (STAGE) { const m = this.box.querySelector('.pg-proof-scroll'); if (m) m.scrollTop = m.scrollHeight; return }
       const to = this.input?.isConnected ? this.input.closest('.pg-proof-input') : this.box.querySelector('.pg-proof-done')
       to?.scrollIntoView({ block: 'nearest' })
     }
@@ -3025,25 +3025,41 @@
         default: return this.put(it.insert.trim())
       }
     }
-    // a tapped rule: into the open brackets of rw/simp only/norm_num, after apply, into norm_num, else as rw [rule]
+    // A tapped rule. In open brackets (rw [, simp only [, norm_num [): right after [ or ←, after a comma
+    // with a space, after a space (␣: an argument of the rule before) right there, else as the next rule
+    // with a comma. After apply, exact or have: there, or as an argument. After rw [a]: into its brackets.
+    // Else it starts a line rw [rule].
     tapRule(it) {
-      const v = this.input?.value ?? ''
+      const v = this.input?.value ?? '', n = it.name, t = v.replace(/\s+$/, '')
       this.choice = null
-      if (/\[[^\]]*$/.test(v)) { this.input.value = this.typed = (/\[\s*$/.test(v) ? v.replace(/\s*$/, '') : v.replace(/\s*$/, '') + ', ') + it.name; this.render(); this.input.focus({ preventScroll: true }); return }
-      if (/^(apply|exact)\s*$/.test(v)) return this.put(`${v.trim()} ${it.name}`)
-      if (/^norm_num\s*$/.test(v)) return this.put(`norm_num [${it.name}]`)
-      // (rw [a] there: b goes into its brackets, rw [a, b])
-      if (/\[[^\]]*\S[^\]]*\]\s*$/.test(v)) { this.input.value = this.typed = v.replace(/\s*\]\s*$/, `, ${it.name}]`); this.render(); this.input.focus({ preventScroll: true }); return }
-      if (/:=\s*$/.test(v) || /^exists\s*$/.test(v)) { this.input.value = this.typed = v.replace(/\s*$/, ' ') + it.name + ' '; this.render(); this.input.focus({ preventScroll: true }); return }
-      this.put(`rw [${it.name}]`)
+      const set = x => { this.input.value = this.typed = x; this.render() }
+      if (/\[[^\]]*$/.test(v)) {
+        if (/[\[←]$/.test(t)) return set(t + (t.endsWith('←') ? ' ' : '') + n)
+        if (/,$/.test(t)) return set(t + ' ' + n)
+        if (/ $/.test(v)) return set(v + n)
+        return set(t + ', ' + n)
+      }
+      if (/^(apply|exact)$/.test(t)) return this.put(`${t} ${n}`)
+      if (/^norm_num$/.test(t)) return this.put(`norm_num [${n}]`)
+      if (/\[[^\]]*\S[^\]]*\]$/.test(t)) return set(t.replace(/\s*\]$/, `, ${n}]`))
+      if (/:=$/.test(t) || /^exists$/.test(t) || /^(apply|exact|have|exists)\b/.test(t)) return set(t + ' ' + n)
+      this.put(`rw [${n}]`)
     }
 
     // A name into the input: after a word with a space (rw [mass_not μ false]), after [ or ← right away.
     putTerm(t) {
-      const v = this.input?.value ?? ''
+      const v = this.input?.value ?? '', r = v.replace(/\s+$/, '')
       this.choice = null
-      this.input.value = this.typed = /(^|[\[(,]|←)\s*$/.test(v) ? v.replace(/\s*$/, t === '←' ? '' : (/[,←]\s*$/.test(v) ? ' ' : '')) + t + (t === '←' ? ' ' : '') : v.replace(/\s*$/, ' ') + t
-      this.render()
+      const set = x => { this.input.value = this.typed = x; this.render() }
+      // ← (backwards, in rw): before the next rule
+      if (t === '←') {
+        if (!r) return set('rw [← ')
+        if (/\[[^\]]*$/.test(v)) return set(/[\[,]$/.test(r) ? r + (r.endsWith(',') ? ' ' : '') + '← ' : r + ', ← ')
+        if (/\]$/.test(r)) return set(r.replace(/\s*\]$/, ', ← '))
+        return
+      }
+      if (t === ' ') return set(r + ' ')
+      set(/(^|[\[(]|←)$/.test(r) ? r + (r.endsWith('←') ? ' ' : '') + t : /,$/.test(r) ? r + ' ' + t : r + ' ' + t)
     }
     // the last word (or sign) of the input away
     erase() {
@@ -3060,6 +3076,7 @@
       const names = [...new Set(this.vars().map(v => v.name).filter(n => !/^inst/.test(n) && !/†/.test(n)))]
       for (const n of [...names, 'true', 'false']) key(n, n, () => this.putTerm(n), ' pg-key-name')
       key('←', tr('backwards (in rw)'), () => this.putTerm('←'), ' pg-key-name')
+      key('␣', tr('a space: what comes next is an argument'), () => this.putTerm(' '), ' pg-key-name')
       key('⌫', tr('Delete the last word'), () => this.erase(), ' pg-key-op')
       key('✕', tr('Clear the input'), () => { this.choice = null; this.input.value = this.typed = ''; this.render() }, ' pg-key-op')
       key('⌨', tr(KEYBOARD ? 'No keyboard' : 'Keyboard'), () => { KEYBOARD = !KEYBOARD; this.render(); if (KEYBOARD) this.input?.focus() }, ' pg-key-op' + (KEYBOARD ? ' pg-on' : ''))
@@ -3254,16 +3271,21 @@
       if (sol) parts.push(sol)
       // on the stage: the proof on the left, the inventory in a column on the right (below on phones)
       if (STAGE) {
-        const main = el('div', 'pg-proof-main'), side = el('div', 'pg-proof-side')
-        main.append(...parts)
-        // (a phone: below a fixed line the input, the keys and the inventory; above it the proof)
-        if (below && !this.done) side.append(row, this.keys())
+        // The proof scrolls; the input stays where it is, below it (with the keys on a touch screen):
+        // on a phone below a fixed line, with the inventory under it; else at the foot of the proof.
+        const main = el('div', 'pg-proof-main'), scroll = el('div', 'pg-proof-scroll'), side = el('div', 'pg-proof-side')
+        scroll.append(...parts)
+        const foot = el('div', 'pg-proof-foot')
+        if (!this.done) { foot.append(row); if (TOUCH()) foot.append(this.keys()) }
+        main.append(scroll)
+        if (below) side.append(foot); else if (!this.done) main.append(foot)
         side.append(inv)
-        // (where the proof was scrolled to stays, after a tap)
-        const old = this.box.querySelector('.pg-proof-main'), top = old?.scrollTop, oldInv = this.box.querySelector('.pg-proof-side .pg-inventory')?.scrollTop
+        // (where the proof and the inventory were scrolled to stays, after a tap)
+        const top = this.box.querySelector('.pg-proof-scroll')?.scrollTop, oldInv = this.box.querySelector('.pg-proof-side .pg-inventory')?.scrollTop, oldSide = this.box.querySelector('.pg-proof-side')?.scrollTop
         this.box.replaceChildren(main, side)
-        if (old) main.scrollTop = top
+        if (top) scroll.scrollTop = top
         if (oldInv) inv.scrollTop = oldInv
+        if (oldSide) side.scrollTop = oldSide
         this.level.onRendered?.()
         return
       }
@@ -3305,7 +3327,7 @@
     'no goals': 'keine Ziele', '+ {n} more': '+ {n} weitere', 'the statement': 'die Aussage', 'goal 1 of {n}': 'Ziel 1 von {n}',
     '→ {n} goals': '→ {n} Ziele', '✓ goal closed, {n} left': '✓ Ziel geschlossen, noch {n}', 'Remove the proof from this line on': 'Den Beweis ab dieser Zeile entfernen',
     'goal 1 of {n}: the next line works on this one': 'Ziel 1 von {n}: die nächste Zeile arbeitet an diesem',
-    'backwards (in rw)': 'rückwärts (in rw)', 'Delete the last word': 'Das letzte Wort löschen', 'Clear the input': 'Die Eingabe leeren',
+    'backwards (in rw)': 'rückwärts (in rw)', 'a space: what comes next is an argument': 'ein Leerzeichen: was danach kommt, ist ein Argument', 'Delete the last word': 'Das letzte Wort löschen', 'Clear the input': 'Die Eingabe leeren',
     'Keyboard': 'Tastatur', 'No keyboard': 'Keine Tastatur',
     'Zoom in': 'Vergrößern', 'Zoom out': 'Verkleinern', 'Whole board': 'Ganzes Spielfeld',
     'New in this level': 'Neu in diesem Level', 'New in this proof': 'Neu in diesem Beweis', 'Solve the board first.': 'Erst das Spielfeld lösen.',
