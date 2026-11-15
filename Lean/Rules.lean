@@ -102,6 +102,15 @@ theorem chance_eq (μ : DiscreteMeasure Bool) [Prob μ] : (chance μ : ENNReal) 
   show ENNReal.ofReal (μ true).toReal = μ true
   exact ENNReal.ofReal_toReal mass_ne_top
 
+/-- The definition of a move, as the game writes it: the mass of `f <$> μ` at `b` is the sum of the
+masses `μ a` over the points `a` with `f a = b` (a finite sum: finitely many points). -/
+theorem map_apply {α : Type} [Fintype α] (f : α → Bool) (μ : DiscreteMeasure α) (b : Bool) :
+    (f <$> μ) b = ∑ a, (bif f a == b then μ a else 0) := by
+  rw [← MeasureTheory.DiscreteMeasure.map_eq_map, MeasureTheory.DiscreteMeasure.map_apply_eq_tsum_mul,
+    tsum_fintype]
+  congr 1; funext a
+  cases h : f a <;> cases b <;> simp [Set.indicator]
+
 /-- Where the mass of a move goes: the mass of `f <$> μ` at `true` is the mass of `μ` at the points
 that `f` sends to `true` (`bif c then a else b` is `a` when `c` is `true`, else `b`). -/
 theorem map_true (f : Bool → Bool) (μ : DiscreteMeasure Bool) :

@@ -226,43 +226,143 @@ rw [coin_true]
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) : ((fun _ => true) <$> μ) true = μ true + μ false") (new := "map_true") (uses := "map_true, Bool.cond_true, Bool.cond_false")
+::::leanonly (proof := "(x y : ENNReal) : ∑ a, (bif a then x else y) = x + y") (new := "Fintype.sum_bool") (uses := "Fintype.sum_bool, Bool.cond_true, Bool.cond_false")
 :::en
-*Where the mass goes.* The move *always `true`*, `fun _ => true`, sends both points to `true`; so all
-the mass of `μ` comes to `true`. This is the rule of the gates, given (it is proved from the definition
-of `<$>`, but not by `rfl`):
+*A sum over Bool.* A move collects masses: it adds up the masses of all points that go to the same
+place. So we need sums. `∑ a, g a` is the sum of `g a` over all points `a` of a finite type; over `Bool`
+there are two, and the rule (from Mathlib) is
 
-`map_true : (f <$> μ) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)`.
-
-To `true` comes the mass at `true` when `f true` is `true`, and the mass at `false` when `f false` is
-`true`. That is what the definition of a move says on `Bool`:
-
-```
-def map (f : α → β) (μ : DiscreteMeasure α) : DiscreteMeasure β where
-  weight := fun b => ∑' a, (f⁻¹' {b}).indicator μ.weight a
-```
-
-The mass at `b` is the sum of the masses `μ a` over the points `a` with `f a = b` (the preimage
-`f⁻¹' {b}`; `indicator` is zero outside it). On `Bool` the sum has two summands.
+`Fintype.sum_bool : ∑ a, g a = g true + g false`.
 :::
 
 :::de
-*Wohin die Masse geht.* Der Zug *immer `true`*, `fun _ => true`, schickt beide Punkte nach `true`;
-also kommt die ganze Masse von `μ` nach `true`. Das ist die Regel der Bausteine, gegeben (sie folgt aus
-der Definition von `<$>`, aber nicht mit `rfl`):
+*Eine Summe über Bool.* Ein Zug sammelt Massen: Er addiert die Massen aller Punkte, die an dieselbe
+Stelle gehen. Wir brauchen also Summen. `∑ a, g a` ist die Summe der `g a` über alle Punkte `a` eines
+endlichen Typs; über `Bool` sind es zwei, und die Regel (aus Mathlib) ist
 
-`map_true : (f <$> μ) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)`.
+`Fintype.sum_bool : ∑ a, g a = g true + g false`.
+:::
 
-Nach `true` kommt die Masse bei `true`, wenn `f true` gleich `true` ist, und die Masse bei `false`,
-wenn `f false` gleich `true` ist. Das sagt die Definition eines Zuges auf `Bool`:
+:::proofen
+Here `g a` is `bif a then x else y`. After `rw [Fintype.sum_bool]` you have `bif true …` and `bif false …`.
+
+*Tip.* `rw [Fintype.sum_bool, Bool.cond_true, Bool.cond_false]`.
+:::
+
+:::proofde
+Hier ist `g a` gleich `bif a then x else y`. Nach `rw [Fintype.sum_bool]` stehen da `bif true …` und
+`bif false …`.
+
+*Tipp.* `rw [Fintype.sum_bool, Bool.cond_true, Bool.cond_false]`.
+:::
+:::solution
+```
+rw [Fintype.sum_bool, Bool.cond_true, Bool.cond_false]
+```
+:::
+::::
+
+::::leanonly (proof := "(c : Bool) : (c == true) = c") (lemma := "beq_true") (uses := "-")
+:::en
+*Equal to true.* `c == b` is `true` when `c` and `b` are equal, else `false`: a test, itself a
+`Bool`. Testing `c == true` gives back `c` itself.
+:::
+
+:::de
+*Gleich true.* `c == b` ist `true`, wenn `c` und `b` gleich sind, sonst `false`: ein Test, selbst ein
+`Bool`. Der Test `c == true` gibt `c` selbst zurück.
+:::
+
+:::proofen
+Two cases, as in *Circuits*: `c` is `true` or `false`, and in each Lean computes both sides.
+
+*Tip.* `cases c <;> rfl`.
+:::
+
+:::proofde
+Zwei Fälle, wie in *Schaltungen*: `c` ist `true` oder `false`, und in jedem rechnet Lean beide Seiten
+aus.
+
+*Tipp.* `cases c <;> rfl`.
+:::
+:::solution
+```
+cases c <;> rfl
+```
+:::
+::::
+
+::::leanonly (proof := "(f : Bool → Bool) (μ : DiscreteMeasure Bool) : (f <$> μ) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)") (new := "map_apply") (lemma := "map_true") (uses := "map_apply, Fintype.sum_bool, beq_true")
+:::en
+*Where the mass goes.* A move `f <$> μ` takes each point `a` with its mass `μ a` to `f a`. So the
+mass at `b` afterwards is the sum of the masses `μ a` of the points with `f a = b`. Lean defines it
+so:
 
 ```
 def map (f : α → β) (μ : DiscreteMeasure α) : DiscreteMeasure β where
   weight := fun b => ∑' a, (f⁻¹' {b}).indicator μ.weight a
 ```
 
-Die Masse bei `b` ist die Summe der Massen `μ a` über die Punkte `a` mit `f a = b` (das Urbild
-`f⁻¹' {b}`; `indicator` ist außerhalb davon null). Auf `Bool` hat die Summe zwei Summanden.
+(`f⁻¹' {b}` are the points `a` with `f a = b`; `indicator` is `μ a` there and `0` elsewhere; `∑'`
+is a sum over possibly infinitely many points.) On a finite type, as `Bool`, it is a finite sum `∑`,
+and the game writes the definition as the rule
+
+`map_apply : (f <$> μ) b = ∑ a, (bif f a == b then μ a else 0)`.
+
+From it you prove the rule of the gates, `map_true`: to `true` comes the mass at `true` when `f true`
+is `true`, and the mass at `false` when `f false` is `true`.
+:::
+
+:::de
+*Wohin die Masse geht.* Ein Zug `f <$> μ` bringt jeden Punkt `a` mit seiner Masse `μ a` nach `f a`.
+Die Masse bei `b` danach ist also die Summe der Massen `μ a` der Punkte mit `f a = b`. Lean definiert
+es so:
+
+```
+def map (f : α → β) (μ : DiscreteMeasure α) : DiscreteMeasure β where
+  weight := fun b => ∑' a, (f⁻¹' {b}).indicator μ.weight a
+```
+
+(`f⁻¹' {b}` sind die Punkte `a` mit `f a = b`; `indicator` ist dort `μ a` und sonst `0`; `∑'` ist
+eine Summe über möglicherweise unendlich viele Punkte.) Auf einem endlichen Typ, wie `Bool`, ist es
+eine endliche Summe `∑`, und das Spiel schreibt die Definition als Regel
+
+`map_apply : (f <$> μ) b = ∑ a, (bif f a == b then μ a else 0)`.
+
+Daraus beweist du die Regel der Bausteine, `map_true`: Nach `true` kommt die Masse bei `true`, wenn
+`f true` gleich `true` ist, und die Masse bei `false`, wenn `f false` gleich `true` ist.
+:::
+
+:::proofen
+`rw [map_apply]` writes the mass as a sum, `rw [Fintype.sum_bool]` as its two summands. Then the tests
+`f true == true` and `f false == true`: your rule `beq_true`, twice.
+
+*Tip.* `rw [map_apply, Fintype.sum_bool]`, then `rw [beq_true, beq_true]`.
+:::
+
+:::proofde
+`rw [map_apply]` schreibt die Masse als Summe, `rw [Fintype.sum_bool]` als ihre zwei Summanden. Dann die
+Tests `f true == true` und `f false == true`: deine Regel `beq_true`, zweimal.
+
+*Tipp.* `rw [map_apply, Fintype.sum_bool]`, dann `rw [beq_true, beq_true]`.
+:::
+:::solution
+```
+rw [map_apply, Fintype.sum_bool]
+rw [beq_true, beq_true]
+```
+:::
+::::
+
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) : ((fun _ => true) <$> μ) true = μ true + μ false") (uses := "map_true, Bool.cond_true, Bool.cond_false")
+:::en
+*All to true.* The move *always `true`*, `fun _ => true`, sends both points to `true`; so all the
+mass of `μ` comes to `true`. Your rule `map_true` says so.
+:::
+
+:::de
+*Alles nach true.* Der Zug *immer `true`*, `fun _ => true`, schickt beide Punkte nach `true`; also
+kommt die ganze Masse von `μ` nach `true`. Deine Regel `map_true` sagt das.
 :::
 
 :::proofen
