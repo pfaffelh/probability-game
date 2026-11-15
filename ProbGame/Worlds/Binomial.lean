@@ -11,11 +11,11 @@ htmlSplit := .never
 %%%
 
 :::en
-`binom p n` is the number of `true` in $`n` throws of a coin `p`, defined by recursion on $`n` (in *Counting*). Here its masses: by induction, Pascal's triangle with masses, up to the binomial formula. And thinning comes back: a thinned binomial is binomial. In Lean only.
+`binom p n` is the number of `true` in $`n` throws of a coin `p`, defined by recursion on $`n` (in *Counting*). Here its masses: by induction, Pascal's triangle with masses, up to the binomial formula. And thinning comes back: a thinned binomial is binomial.
 :::
 
 :::de
-`binom p n` ist die Anzahl der `true` in $`n` Würfen einer Münze `p`, durch Rekursion über $`n` definiert (in *Zählen*). Hier ihre Massen: durch Induktion, das Pascalsche Dreieck mit Massen, bis zur Binomialformel. Und das Ausdünnen kommt zurück: Eine ausgedünnte Binomialverteilung ist binomial. Nur in Lean.
+`binom p n` ist die Anzahl der `true` in $`n` Würfen einer Münze `p`, durch Rekursion über $`n` definiert (in *Zählen*). Hier ihre Massen: durch Induktion, das Pascalsche Dreieck mit Massen, bis zur Binomialformel. Und das Ausdünnen kommt zurück: Eine ausgedünnte Binomialverteilung ist binomial.
 :::
 
 ::::leanonly (proof := "{β : Type} (p : I) (f : Bool → DiscreteMeasure β) (x : β) : (coin p >>= f) x = ↑p * f true x + ↑(σ p) * f false x") (lemma := "coin_bind_apply") (group := "chance.count") (uses := "bind_apply, Fintype.sum_bool, coin_true, coin_false, coin_total")
@@ -246,13 +246,17 @@ rw [shift_succ]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (n : ℕ) : binom p n 0 = ↑(σ p) ^ n") (lemma := "binom_all_false") (new := "pow_zero, pow_succ") (group := "chance.count") (uses := "binom_zero, pure_self, pow_zero, binom_succ_zero, pow_succ, mul_comm, binom_succ, pure_zero_succ, binom_succ_succ")
+::::circuit (height := "600") (route := "count") (inputs := "x y z") (gates := "and, or, not") (coins := "p p p") (target := "bool true:(1-p)^3 false:1-(1-p)^3") (context := "Lean/Rules.lean") (proof := "(p : I) (n : ℕ) : binom p n 0 = ↑(σ p) ^ n") (lemma := "binom_all_false") (new := "pow_zero, pow_succ") (play := "a=or; b=or; c=not; x>a.0; y>a.1; a>b.0; z>b.1; b>c.0; c>out") (uses := "binom_zero, pure_self, pow_zero, binom_succ_zero, pow_succ, mul_comm, binom_succ, pure_zero_succ, binom_succ_succ")
 :::en
 *All false.* $`n` throws, all `false`: mass $`(1 - p)^n`.
+
+On the board, three throws: build `true` exactly when all three are `false`.
 :::
 
 :::de
 *Alle false.* $`n` Würfe, alle `false`: Masse $`(1 - p)^n`.
+
+Auf dem Spielfeld drei Würfe: Bau `true` genau dann, wenn alle drei `false` sind.
 :::
 
 :::proofen
@@ -333,13 +337,17 @@ rw [binom_succ_succ, ih, binom_above p n 0, mul_zero, add_zero, pow_succ, mul_co
 :::
 ::::
 
-::::leanonly (proof := "(p q : I) : (do let C ← coin p; binom q C.toNat) = (do let B ← coin (p * q); pure B.toNat)") (lemma := "coin_bind_binom") (group := "chance.count") (uses := "coin_thin, bind_assoc, Bool.toNat_false, binom_zero, Bool.cond_false, pure_bind, Bool.toNat_true, Bool.cond_true, binom_succ, add_zero, bind_pure, zero_add")
+::::circuit (height := "640") (route := "count") (inputs := "x y") (gates := "toNat") (coins := "p ?|?") (target := "nat 0:1-p^2 1:p^2") (start := "x>y.0") (context := "Lean/Rules.lean") (proof := "(p q : I) : (do let C ← coin p; binom q C.toNat) = (do let B ← coin (p * q); pure B.toNat)") (lemma := "coin_bind_binom") (play := "y.T=p; y.F=0; a=toNat; y>a.0; a>out") (uses := "coin_thin, bind_assoc, Bool.toNat_false, binom_zero, Bool.cond_false, pure_bind, Bool.toNat_true, Bool.cond_true, binom_succ, add_zero, bind_pure, zero_add")
 :::en
 *Thinning comes back.* A coin `p`, and then as many coins `q` as it shows (one or none), counted: that is your thinned coin from *Thinning*, counted.
+
+On the board with `q = p`: the coin `p`, thinned by a coin that waits, then counted.
 :::
 
 :::de
 *Das Ausdünnen kommt zurück.* Eine Münze `p`, und dann so viele Münzen `q`, wie sie zeigt (eine oder keine), gezählt: Das ist deine ausgedünnte Münze aus *Ausdünnen*, gezählt.
+
+Auf dem Spielfeld mit `q = p`: die Münze `p`, ausgedünnt durch eine Münze, die wartet, dann gezählt.
 :::
 
 :::proofen
@@ -395,13 +403,17 @@ simp only [pure_bind]
 :::
 ::::
 
-::::leanonly (proof := "(p q : I) (n : ℕ) : (do let X ← binom p n; binom q X) = binom (p * q) n") (lemma := "binom_thin") (new := "bind_comm") (group := "chance.count") (uses := "binom_zero, pure_bind, binom_succ, bind_assoc, binom_add, bind_comm, coin_bind_binom', bind_pure")
+::::circuit (height := "660") (size := "big") (route := "count") (inputs := "x y z w") (gates := "toNat, plus") (coins := "p ?|? p ?|?") (target := "nat 0:(1-p^2)^2 1:2p^2(1-p^2) 2:p^4") (start := "x>y.0; z>w.0") (context := "Lean/Rules.lean") (proof := "(p q : I) (n : ℕ) : (do let X ← binom p n; binom q X) = binom (p * q) n") (lemma := "binom_thin") (new := "bind_comm") (play := "y.T=p; y.F=0; w.T=p; w.F=0; a=toNat; b=toNat; c=plus; y>a.0; w>b.0; a>c.0; b>c.1; c>out") (uses := "binom_zero, pure_bind, binom_succ, bind_assoc, binom_add, bind_comm, coin_bind_binom', bind_pure")
 :::en
 *Thinning a binomial.* Of $`n` throws with $`p`, each `true` is kept with probability $`q`. The number kept is binomial with $`p q`.
+
+On the board with $`n = 2` and `q = p`: two throws, each thinned, and the kept ones counted. The target is binomial with $`p^2`.
 :::
 
 :::de
 *Eine Binomialverteilung ausdünnen.* Von $`n` Würfen mit $`p` wird jedes `true` mit Wahrscheinlichkeit $`q` behalten. Die Anzahl der behaltenen ist binomial mit $`p q`.
+
+Auf dem Spielfeld mit $`n = 2` und `q = p`: zwei Würfe, jeder ausgedünnt, und die behaltenen gezählt. Das Ziel ist binomial mit $`p^2`.
 :::
 
 :::proofen
@@ -461,13 +473,17 @@ ring
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (k m : ℕ) : binom (σ p) (k + m) m = binom p (k + m) k") (lemma := "binom_symm") (new := "symm_twice, Nat.choose_symm_add") (group := "chance.count") (uses := "add_comm, binom_formula, symm_twice, Nat.choose_symm_add, add_assoc")
+::::circuit (height := "700") (size := "big") (route := "count") (inputs := "x y z") (gates := "not, toNat, plus") (coins := "p p p") (target := "nat 0:p^3 1:3p^2(1-p) 2:3p(1-p)^2 3:(1-p)^3") (context := "Lean/Rules.lean") (proof := "(p : I) (k m : ℕ) : binom (σ p) (k + m) m = binom p (k + m) k") (lemma := "binom_symm") (new := "symm_twice, Nat.choose_symm_add") (play := "a=not; b=not; c=not; d=toNat; e=toNat; f=toNat; g=plus; h=plus; x>a.0; y>b.0; z>c.0; a>d.0; b>e.0; c>f.0; d>g.0; e>g.1; g>h.0; f>h.1; h>out") (uses := "add_comm, binom_formula, symm_twice, Nat.choose_symm_add, add_assoc")
 :::en
 *Encore: true and false swapped.* $`m` times `true` with the coin $`1 - p` is as likely as $`k` times `true` with the coin $`p`: count the `false` instead of the `true`. With your formula, this is computing.
+
+On the board, three throws of the coin `p`: count the `false`. The target is binomial with $`1 - p`.
 :::
 
 :::de
 *Zugabe: true und false getauscht.* $`m`-mal `true` mit der Münze $`1 - p` ist so wahrscheinlich wie $`k`-mal `true` mit der Münze $`p`: Zähl die `false` statt der `true`. Mit deiner Formel ist das Rechnen.
+
+Auf dem Spielfeld drei Würfe der Münze `p`: Zähl die `false`. Das Ziel ist binomial mit $`1 - p`.
 :::
 
 :::proofen
