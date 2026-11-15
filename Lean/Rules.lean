@@ -51,6 +51,13 @@ theorem coin_total (p : I) : coin p true + coin p false = 1 := by
   have := (MeasureTheory.DiscreteMeasure.hasSum_coin p).tsum_eq
   rw [tsum_fintype, Fintype.sum_bool] at this; exact this
 
+/-- The definition of a point mass, as the game writes it: mass one at its point, zero elsewhere. -/
+theorem pure_apply {α : Type} [DecidableEq α] (a b : α) :
+    (pure a : DiscreteMeasure α) b = bif a == b then 1 else 0 := by
+  by_cases h : a = b
+  · subst h; simp; exact MeasureTheory.DiscreteMeasure.pure_apply_self
+  · simp [h]; exact MeasureTheory.DiscreteMeasure.pure_apply_nonself (Ne.symm h)
+
 /-- The mass of a point mass at `true`: one if it sits there, else zero. -/
 theorem pure_true (b : Bool) : (pure b : DiscreteMeasure Bool) true = bif b then 1 else 0 := by
   cases b
@@ -119,7 +126,13 @@ theorem map_true (f : Bool → Bool) (μ : DiscreteMeasure Bool) :
     tsum_fintype, Fintype.sum_bool]
   cases f true <;> cases f false <;> simp [Set.indicator]
 
-/-- The mass of a bind at `true`: through `true` and through `false` (Coins that wait). -/
+/-- The definition of a bind, as the game writes it for a finite first step: the mass of `μ >>= f` at
+`b` is the sum over the first steps `a` of the mass `μ a` times the mass of `f a` at `b`. -/
+theorem bind_apply {α β : Type} [Fintype α] (μ : DiscreteMeasure α) (f : α → DiscreteMeasure β) (b : β) :
+    (μ >>= f) b = ∑ a, μ a * f a b := by
+  rw [← MeasureTheory.DiscreteMeasure.bind_eq_bind, MeasureTheory.DiscreteMeasure.bind_apply, tsum_fintype]
+
+/-- The mass of a bind at `true`: through `true` and through `false` (Building with coins). -/
 theorem bind_true (μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) :
     (μ >>= f) true = μ true * f true true + μ false * f false true := by
   rw [← MeasureTheory.DiscreteMeasure.bind_eq_bind, MeasureTheory.DiscreteMeasure.bind_apply, tsum_fintype, Fintype.sum_bool]
@@ -217,7 +230,7 @@ theorem coin_bind_apply {β : Type} (p : I) (f : Bool → DiscreteMeasure β) (x
     tsum_fintype, Fintype.sum_bool, coin_true, coin_false]
 
 /-- A point mass at its point. -/
-theorem pure_self {α : Type} (a : α) : (pure a : DiscreteMeasure α) a = 1 :=
+theorem pure_self {α : Type} [DecidableEq α] (a : α) : (pure a : DiscreteMeasure α) a = 1 :=
   MeasureTheory.DiscreteMeasure.pure_apply_self
 
 /-- The point mass at `0`, elsewhere. -/

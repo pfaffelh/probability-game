@@ -18,23 +18,56 @@ htmlSplit := .never
 `binom p n` ist die Anzahl der `true` in $`n` Würfen einer Münze `p`, durch Rekursion über $`n` definiert (in *Zählen*). Hier ihre Massen: durch Induktion, das Pascalsche Dreieck mit Massen, bis zur Binomialformel. Und das Ausdünnen kommt zurück: Eine ausgedünnte Binomialverteilung ist binomial. Nur in Lean.
 :::
 
-::::leanonly (proof := "(p : I) (μ ν : DiscreteMeasure ℕ) (k : ℕ) : (do let x ← coin p; bif x then μ else ν) k = ↑p * μ k + ↑(σ p) * ν k") (new := "coin_bind_apply") (group := "chance.count") (uses := "coin_bind_apply, Bool.cond_true, Bool.cond_false")
+::::leanonly (proof := "{β : Type} (p : I) (f : Bool → DiscreteMeasure β) (x : β) : (coin p >>= f) x = ↑p * f true x + ↑(σ p) * f false x") (lemma := "coin_bind_apply") (group := "chance.count") (uses := "bind_apply, Fintype.sum_bool, coin_true, coin_false, coin_total")
 :::en
-*A coin first.* A draw that starts with a coin `p`: the mass at `k` comes through `true` (mass $`p`) and through `false` (mass $`1 - p`). That is `bind_true` again, now at any point `k`.
+*A coin first.* A draw that starts with a coin `p`: the mass at any point `x` comes through `true`
+(mass $`p`) and through `false` (mass $`1 - p`). That is `bind_true` again, now at any point.
 :::
 
 :::de
-*Erst eine Münze.* Ein Ziehen, das mit einer Münze `p` beginnt: Die Masse bei `k` kommt über `true` (Masse $`p`) und über `false` (Masse $`1 - p`). Das ist wieder `bind_true`, jetzt an jedem Punkt `k`.
+*Erst eine Münze.* Ein Ziehen, das mit einer Münze `p` beginnt: Die Masse an jedem Punkt `x` kommt
+über `true` (Masse $`p`) und über `false` (Masse $`1 - p`). Das ist wieder `bind_true`, jetzt an jedem
+Punkt.
 :::
 
 :::proofen
-`coin_bind_apply : (coin p >>= f) x = ↑p * f true x + ↑(σ p) * f false x`.
+As for `bind_true`: `bind_apply : (μ >>= f) b = ∑ a, μ a * f a b` and the two summands of a sum over
+`Bool`, then the masses of the coin. What you prove is unlocked as `coin_bind_apply`.
+
+*Tip.* `rw [bind_apply, Fintype.sum_bool, coin_true, coin_false]`.
+:::
+
+:::proofde
+Wie bei `bind_true`: `bind_apply : (μ >>= f) b = ∑ a, μ a * f a b` und die zwei Summanden einer
+Summe über `Bool`, dann die Massen der Münze. Was du beweist, wird als `coin_bind_apply`
+freigeschaltet.
+
+*Tipp.* `rw [bind_apply, Fintype.sum_bool, coin_true, coin_false]`.
+:::
+:::solution
+```
+rw [bind_apply, Fintype.sum_bool, coin_true, coin_false]
+```
+:::
+::::
+
+::::leanonly (proof := "(p : I) (μ ν : DiscreteMeasure ℕ) (k : ℕ) : (do let x ← coin p; bif x then μ else ν) k = ↑p * μ k + ↑(σ p) * ν k") (group := "chance.count") (uses := "coin_bind_apply, Bool.cond_true, Bool.cond_false")
+:::en
+*Two branches.* After the coin, one of two distributions: `μ` after `true`, `ν` after `false`.
+:::
+
+:::de
+*Zwei Zweige.* Nach der Münze eine von zwei Verteilungen: `μ` nach `true`, `ν` nach `false`.
+:::
+
+:::proofen
+`coin_bind_apply : (coin p >>= f) x = ↑p * f true x + ↑(σ p) * f false x`, from the last level.
 
 *Tip.* `rw [coin_bind_apply, Bool.cond_true, Bool.cond_false]`.
 :::
 
 :::proofde
-`coin_bind_apply : (coin p >>= f) x = ↑p * f true x + ↑(σ p) * f false x`.
+`coin_bind_apply : (coin p >>= f) x = ↑p * f true x + ↑(σ p) * f false x`, aus dem letzten Level.
 
 *Tipp.* `rw [coin_bind_apply, Bool.cond_true, Bool.cond_false]`.
 :::
@@ -45,7 +78,36 @@ rw [coin_bind_apply, Bool.cond_true, Bool.cond_false]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : binom p 0 0 = 1") (new := "pure_self") (group := "chance.count") (uses := "binom_zero, pure_self, binom_succ, pure_zero_succ")
+::::leanonly (proof := "{α : Type} [DecidableEq α] (a : α) : (pure a : DiscreteMeasure α) a = 1") (new := "beq_self_eq_true") (lemma := "pure_self") (group := "chance.count") (uses := "pure_apply, beq_self_eq_true, Bool.cond_true, Bool.cond_false")
+:::en
+*At its point.* A point mass has mass one at its point, now on any type.
+:::
+
+:::de
+*An ihrem Punkt.* Eine Punktmasse hat an ihrem Punkt die Masse eins, jetzt auf jedem Typ.
+:::
+
+:::proofen
+`pure_apply : (pure a) b = bif a == b then 1 else 0`, from *One Coin*; and
+`beq_self_eq_true : (a == a) = true`. What you prove is unlocked as `pure_self`.
+
+*Tip.* `rw [pure_apply, beq_self_eq_true, Bool.cond_true]`.
+:::
+
+:::proofde
+`pure_apply : (pure a) b = bif a == b then 1 else 0`, aus *Eine Münze*; und
+`beq_self_eq_true : (a == a) = true`. Was du beweist, wird als `pure_self` freigeschaltet.
+
+*Tipp.* `rw [pure_apply, beq_self_eq_true, Bool.cond_true]`.
+:::
+:::solution
+```
+rw [pure_apply, beq_self_eq_true, Bool.cond_true]
+```
+:::
+::::
+
+::::leanonly (proof := "(p : I) : binom p 0 0 = 1") (group := "chance.count") (uses := "binom_zero, pure_self, binom_succ, pure_zero_succ")
 :::en
 *No throw.* With no throw, surely no `true`.
 :::
@@ -55,13 +117,13 @@ rw [coin_bind_apply, Bool.cond_true, Bool.cond_false]
 :::
 
 :::proofen
-`pure_self : (pure a) a = 1`.
+`pure_self : (pure a) a = 1`, from the last level.
 
 *Tip.* `rw [binom_zero, pure_self]`.
 :::
 
 :::proofde
-`pure_self : (pure a) a = 1`.
+`pure_self : (pure a) a = 1`, aus dem letzten Level.
 
 *Tipp.* `rw [binom_zero, pure_self]`.
 :::
