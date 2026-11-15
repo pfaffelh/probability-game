@@ -1911,7 +1911,13 @@
     undo() { const h = this.history.pop(); if (!h) return; const o = JSON.parse(h); this.gatesOn = o.gates; this.wires = o.wires; this.seq = o.seq; this.picks = o.picks ?? {}; this.save(); this.render() }
     // (something on the board beyond what the level starts with: also after a reload, with no history)
     get canReset() { return this.gatesOn.length > this.fixedGates.length || this.wires.length > this.fixedWires.length || this.gatesOn.some(g => g.maps?.some(Boolean)) || Object.values(this.picks ?? {}).some(p => p.some(Boolean)) }
-    reset() { if (!this.canReset) return; this.change(() => { this.gatesOn = []; this.wires = []; this.seq = 1; this.seen = []; this.picks = {}; this.putFixed() }) }
+    // (the level from scratch: what is stored of it goes too, also that it was solved)
+    reset() {
+      if (!this.canReset) return
+      this.change(() => { this.gatesOn = []; this.wires = []; this.seq = 1; this.seen = []; this.picks = {}; this.putFixed() })
+      try { localStorage.removeItem(this.key) } catch {}
+      this.render(); this.onSolved?.(false)
+    }
     get canUndo() { return this.history.length > 0 }
     // a gate: where it is dropped, or in the first free place
     addGate(kind, at) {
@@ -3942,7 +3948,8 @@
   // its levels done (board solved, and proof proved where there is one), and lines along the way.
   // How many levels a world has, and which have a proof, is kept when its page is shown, and
   // fetched from its page once otherwise.
-  Object.assign(DE, { Worlds: 'Welten', 'Lexicon': 'Lexikon', '📖 Lexicon': '📖 Lexikon', '▶ Start': '▶ Start', '▶ Continue': '▶ Weiterspielen',
+  Object.assign(DE, { 'Start the game over': 'Spiel neu beginnen', 'Yes, delete': 'Ja, löschen', No: 'Nein',
+    'Delete all progress in this browser?': 'Allen Fortschritt in diesem Browser löschen?', Worlds: 'Welten', 'Lexicon': 'Lexikon', '📖 Lexicon': '📖 Lexikon', '▶ Start': '▶ Start', '▶ Continue': '▶ Weiterspielen',
     'or start from the beginning': 'oder von vorn beginnen', 'Continue: {w}': 'Weiter: {w}' })
   const siteRoot = () => new URL('.', document.baseURI).pathname
   const worldLinks = () => [...document.querySelectorAll('#toc .split-toc.book tr')].map(tr => {
@@ -4021,6 +4028,24 @@
       t.href = lex.getAttribute('href').replace(/#.*$/, '')
       box.append(t)
     }
+    // the whole game from scratch: all that this browser stored of it (the levels solved, the boards, the
+    // proofs) goes; the settings (language, tips, the p of the picture) stay. Asked on the page first.
+    const wipe = el('div', 'pg-map-reset'), ask = () => {
+      const b = el('button', 'pg-map-reset-button', '⟲ ' + tr('Start the game over')); b.type = 'button'
+      b.addEventListener('click', () => {
+        const yes = el('button', 'pg-map-reset-yes', tr('Yes, delete')), no = el('button', 'pg-map-reset-no', tr('No'))
+        yes.type = no.type = 'button'
+        yes.addEventListener('click', () => {
+          const root = siteRoot()
+          try { for (const k of Object.keys(localStorage)) if (k.startsWith(`pg:${root}`) || k === `pg:last:${root}`) localStorage.removeItem(k) } catch {}
+          location.href = root
+        })
+        no.addEventListener('click', ask)
+        wipe.replaceChildren(el('div', 'pg-map-reset-q', tr('Delete all progress in this browser?')), yes, ' ', no)
+      })
+      wipe.replaceChildren(b)
+    }
+    ask(); box.append(wipe)
     ;(toc.querySelector('.first') ?? toc).prepend(box)
     toc.classList.add('pg-has-map')
   }
