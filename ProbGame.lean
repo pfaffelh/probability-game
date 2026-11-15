@@ -1,5 +1,6 @@
 import VersoManual
 import ProbGame.Level
+import ProbGame.Worlds.Masses
 import ProbGame.Worlds.OneCoin
 import ProbGame.Worlds.Maps
 import ProbGame.Worlds.TwoCoins
@@ -31,7 +32,7 @@ point goes to its image; the new distribution is the *image measure* (pushforwar
 on the board, then you prove it in Lean, for every probability $`p`, with the tactics and theorems of
 your inventory. Each lemma you prove is unlocked for the levels after it. Lean runs on the server;
 your progress stays in your browser.
-One world comes before chance: circuits of `true` and `false`. Then a coin with probability $`p`, what it is and where its mass
+One world comes before chance: circuits of `true` and `false`; then how Lean writes a distribution. Then a coin with probability $`p`, what it is and where its mass
 goes; the maps `Bool → Bool`, on values and on coins; circuits of coins, read as `do` blocks, and counting; and coins that wait for
 others (bind). The board leads at first; Lean grows from world to world.
 :::
@@ -43,7 +44,7 @@ Abbildung auf sie an. Die Masse jedes Punkts geht zu seinem Bild; die neue Verte
 auf dem Spielfeld, dann beweist du sie in Lean, für jede Wahrscheinlichkeit $`p`, mit den Taktiken und
 Sätzen deines Inventars. Jedes Lemma, das du beweist, wird für die Level danach freigeschaltet. Lean
 läuft auf dem Server; dein Fortschritt bleibt in deinem Browser.
-Eine Welt kommt vor dem Zufall: Schaltungen aus `true` und `false`.
+Eine Welt kommt vor dem Zufall: Schaltungen aus `true` und `false`; dann, wie Lean eine Verteilung schreibt.
 Dann eine Münze mit Wahrscheinlichkeit $`p`, was
 sie ist und wohin ihre Masse geht; die Abbildungen `Bool → Bool`, auf Werten und auf Münzen; Schaltungen aus Münzen, gelesen als `do`-Blöcke, und
 Zählen; und Münzen, die auf andere warten (bind). Am Anfang führt das Spielfeld; Lean wächst von Welt zu
@@ -51,6 +52,8 @@ Welt.
 :::
 
 {include 1 ProbGame.Worlds.Circuits}
+
+{include 1 ProbGame.Worlds.Masses}
 
 {include 1 ProbGame.Worlds.OneCoin}
 

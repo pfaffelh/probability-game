@@ -132,3 +132,12 @@ Coins that Wait (group `chance`, after it in the document) does not get Counting
 
 Also on 2026-11-15: the proof as in the NNG4 (each line with the goal after it, ✕ per line), the board
 zooms on phones and uses the whole width of the screen there.
+
+## 2026-11-15: world *Masses* (μ) between Circuits and One Coin
+
+(User.) One Coin 1 brought nine rules at once. Now a world of seven Lean-only levels before it, one
+per rule that One Coin needs, the definitional ones proved by `rfl` (and then lemmas of the player):
+`coin_true`, `coin_false`, `Bool.not_false`, `Bool.cond_true`, `Bool.cond_false`; `Bool.not_true` is
+the lemma of Circuits 2 (`(!true) = false`, `rfl`). The given rules get a level that uses them once:
+`zero_add` (with `rw`), `map_true`. Its intro says what `DiscreteMeasure`, `coin p`, `μ x`, `f <$> μ`
+are. Map sign μ (no number, so One Coin stays 1).

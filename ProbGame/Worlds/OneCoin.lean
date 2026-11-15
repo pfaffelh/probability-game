@@ -39,7 +39,7 @@ zeigt Ziel und Ausgang, als Massen und als kleines Histogramm (das Ziel gestrich
 Spielfeld die Säulen für ein Beispiel-$`p` (der Schieberegler ändert es).
 :::
 
-::::circuit (height := "440") (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : (not <$> coin p) true = σ p") (new := "rw, coin_true, coin_false, map_true, Bool.not_true, Bool.not_false, Bool.cond_true, Bool.cond_false, zero_add") (play := "a=not; x>a.0; a>out")
+::::circuit (height := "440") (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : (not <$> coin p) true = σ p") (play := "a=not; x>a.0; a>out")
 :::en
 *Where does the mass go?* The coin `x` is thrown at the top; below, the output with the target:
 `false` with mass $`p`, `true` with $`1 - p`. Put a `not` between them. Then look at `true`: its mass
@@ -53,24 +53,10 @@ Masse kam von `false`.
 :::
 
 :::proofen
-*Now the proof.* In Lean a distribution is a measure: `μ : DiscreteMeasure Bool` gives each point
-of `Bool` its mass, and `μ x` is the mass of `μ` at `x`, the height of its bar. The coin is
-`coin p`, and `f <$> μ` is the image measure of `μ` under `f`: the move `f` applied to the
-distribution `μ`. `p : I` says that $`p` lies in the unit interval $`I = [0, 1]`, `σ p` is $`1 - p`,
-and `↑p` is the number $`p` as a mass. Below is the *goal*, what is to be shown, and above it the
-hypotheses (here only `p`).
-
-A rule `h : a = b` is used with `rw [h]`: it rewrites `a` into `b` in the goal (`rw [← h]` the other way
-round), and several at once with `rw [h, k]`. The rule of gates (maps):
-`map_true : (f <$> μ) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)`.
-The mass at `true` comes from `true` when `f true` is `true`, and from `false` when `f false` is
-`true`; `bif c then a else b` is `a` when `c` is `true`, and `b` when it is `false`.
-
-What is left is computing, one rule after another: `Bool.not_true : (!true) = false`,
-`Bool.not_false : (!false) = true`, `Bool.cond_false : (bif false then a else b) = b`,
-`Bool.cond_true : (bif true then a else b) = a`, `zero_add : 0 + a = a`, and
-`coin_false : (coin p) false = ↑(σ p)`. Keep this computation in mind: the boss of this world needs it
-again.
+*Now the proof.* Everything it needs you know from *Masses*: `coin p` and its masses, `f <$> μ`, and
+the rules. First the rule of the gates, `map_true`; then computing, one rule after another:
+`Bool.not_true`, `Bool.not_false`, `Bool.cond_false`, `Bool.cond_true`, `zero_add` and `coin_false`.
+Keep this computation in mind: the boss of this world needs it again.
 
 *Tip.* `rw [map_true]`, `rw [Bool.not_true, Bool.not_false]`,
 `rw [Bool.cond_false, Bool.cond_true, zero_add]`, `rw [coin_false]` (type it, or tap the inventory,
@@ -78,25 +64,10 @@ and press *Run*).
 :::
 
 :::proofde
-*Jetzt der Beweis.* In Lean ist eine Verteilung ein Maß: `μ : DiscreteMeasure Bool` gibt jedem
-Punkt von `Bool` seine Masse, und `μ x` ist die Masse von `μ` in `x`, die Höhe seiner Säule. Die
-Münze ist `coin p`, und `f <$> μ` ist das Bildmaß von `μ` unter `f`: der Baustein `f`, angewandt auf die
-Verteilung `μ`. `p : I` sagt, dass $`p` im Einheitsintervall $`I = [0, 1]` liegt, `σ p` ist
-$`1 - p`, und `↑p` ist die Zahl $`p` als Masse. Unten steht das *Ziel*, also das, was zu zeigen ist,
-und darüber die Annahmen (hier nur `p`).
-
-Eine Regel `h : a = b` benutzt man mit `rw [h]`: Sie schreibt `a` im Ziel zu `b` um (`rw [← h]`
-andersherum), mehrere auf einmal mit `rw [h, k]`. Die Regel der Bausteine (Abbildungen):
-`map_true : (f <$> μ) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)`.
-Die Masse bei `true` kommt von `true`, wenn `f true` gleich `true` ist, und von `false`, wenn
-`f false` gleich `true` ist; `bif c then a else b` ist `a`, wenn `c` gleich `true` ist, und `b`,
-wenn es `false` ist.
-
-Der Rest ist Rechnen, eine Regel nach der anderen: `Bool.not_true : (!true) = false`,
-`Bool.not_false : (!false) = true`, `Bool.cond_false : (bif false then a else b) = b`,
-`Bool.cond_true : (bif true then a else b) = a`, `zero_add : 0 + a = a` und
-`coin_false : (coin p) false = ↑(σ p)`. Merk dir diese Rechnung: Der Endgegner dieser Welt braucht sie
-noch einmal.
+*Jetzt der Beweis.* Alles, was er braucht, kennst du aus *Massen*: `coin p` und seine Massen,
+`f <$> μ` und die Regeln. Zuerst die Regel der Bausteine, `map_true`; dann Rechnen, eine Regel nach der
+anderen: `Bool.not_true`, `Bool.not_false`, `Bool.cond_false`, `Bool.cond_true`, `zero_add` und
+`coin_false`. Merk dir diese Rechnung: Der Endgegner dieser Welt braucht sie noch einmal.
 
 *Tipp.* `rw [map_true]`, `rw [Bool.not_true, Bool.not_false]`,
 `rw [Bool.cond_false, Bool.cond_true, zero_add]`, `rw [coin_false]`.
@@ -128,7 +99,7 @@ one. That is the rule `mass_total μ : μ true + μ false = 1`. So the mass at o
 other side misses to one.
 
 `cases b` (from *Circuits*): the point `b` is `false` or `true`, two goals one after the other
-(`!false` is `true`: `Bool.not_false`, from level 1).
+(`!false` is `true`: `Bool.not_false`, from *Masses*).
 
 Masses are numbers in $`[0, \infty]` (`ENNReal`); taking away is allowed when what is taken away is
 finite: `ENNReal.add_sub_cancel_left (h : a ≠ ⊤) : a + b - a = b`, and `mass_ne_top : μ b ≠ ⊤` says
@@ -149,7 +120,7 @@ Gesamtmasse eins ist. Das ist die Regel `mass_total μ : μ true + μ false = 1`
 der einen Seite das, was der anderen zu eins fehlt.
 
 `cases b` (aus *Schaltungen*): Der Punkt `b` ist `false` oder `true`, zwei Ziele nacheinander
-(`!false` ist `true`: `Bool.not_false`, aus Level 1).
+(`!false` ist `true`: `Bool.not_false`, aus *Massen*).
 
 Massen sind Zahlen in $`[0, \infty]` (`ENNReal`); wegnehmen darf man, wenn das Weggenommene endlich
 ist: `ENNReal.add_sub_cancel_left (h : a ≠ ⊤) : a + b - a = b`, und `mass_ne_top : μ b ≠ ⊤` sagt,

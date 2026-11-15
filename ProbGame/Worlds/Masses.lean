@@ -1,0 +1,253 @@
+import VersoManual
+import ProbGame.Level
+
+open Verso.Genre Manual
+open ProbGame
+
+#doc (Manual) "Masses" =>
+
+%%%
+htmlSplit := .never
+number := false
+%%%
+
+:::en
+Before the first coin: how Lean writes a distribution, and the rules that *One Coin* needs, each in a
+level of its own. Most of them hold by definition, and the proof is `rfl`.
+
+A distribution on `Bool` is, in Lean, `μ : DiscreteMeasure Bool`: it gives each of the two points its
+*mass*, `μ true` and `μ false`, the heights of its two bars. The coin with probability $`p` is
+`coin p`. A move is written `f <$> μ`: the map `f` applied to the distribution `μ`, its image measure.
+:::
+
+:::de
+Vor der ersten Münze: wie Lean eine Verteilung schreibt, und die Regeln, die *Eine Münze* braucht,
+jede in einem eigenen Level. Die meisten gelten nach Definition, und der Beweis ist `rfl`.
+
+Eine Verteilung auf `Bool` ist in Lean `μ : DiscreteMeasure Bool`: Sie gibt jedem der beiden Punkte
+seine *Masse*, `μ true` und `μ false`, die Höhen ihrer beiden Säulen. Die Münze mit Wahrscheinlichkeit
+$`p` ist `coin p`. Ein Zug wird `f <$> μ` geschrieben: die Abbildung `f`, angewandt auf die Verteilung
+`μ`, ihr Bildmaß.
+:::
+
+::::leanonly (proof := "(p : I) : coin p true = p") (lemma := "coin_true")
+:::en
+*The mass at true.* The coin `coin p` has the mass $`p` at `true`.
+:::
+
+:::de
+*Die Masse bei true.* Die Münze `coin p` hat bei `true` die Masse $`p`.
+:::
+
+:::proofen
+`p : I` says that $`p` lies in the unit interval $`I = [0, 1]`. `(coin p) true` is the mass of the coin
+at `true`, and `↑p` is the number $`p` as a mass (a mass is a number in $`[0, \infty]`, `ENNReal`). The
+coin is defined by its two masses, so Lean computes the left side to `↑p`: `rfl`, as in *Circuits*.
+The statement is the rule `coin_true`; once proved, it is in your inventory.
+
+*Tip.* `rfl`.
+:::
+
+:::proofde
+`p : I` sagt, dass $`p` im Einheitsintervall $`I = [0, 1]` liegt. `(coin p) true` ist die Masse der
+Münze bei `true`, und `↑p` ist die Zahl $`p` als Masse (eine Masse ist eine Zahl in $`[0, \infty]`,
+`ENNReal`). Die Münze ist durch ihre zwei Massen definiert, also rechnet Lean die linke Seite zu `↑p`
+aus: `rfl`, wie in *Schaltungen*. Die Aussage ist die Regel `coin_true`; bewiesen, ist sie in deinem
+Inventar.
+
+*Tipp.* `rfl`.
+:::
+:::solution
+```
+rfl
+```
+:::
+::::
+
+::::leanonly (proof := "(p : I) : coin p false = σ p") (lemma := "coin_false")
+:::en
+*The mass at false.* At `false` the coin has the rest, $`1 - p`.
+:::
+
+:::de
+*Die Masse bei false.* Bei `false` hat die Münze den Rest, $`1 - p`.
+:::
+
+:::proofen
+`σ p` is $`1 - p`, again in $`I`, and `↑(σ p)` is it as a mass. Again by definition.
+
+*Tip.* `rfl`.
+:::
+
+:::proofde
+`σ p` ist $`1 - p`, wieder in $`I`, und `↑(σ p)` ist das als Masse. Wieder nach Definition.
+
+*Tipp.* `rfl`.
+:::
+:::solution
+```
+rfl
+```
+:::
+::::
+
+::::leanonly (proof := ": (!false) = true") (lemma := "Bool.not_false")
+:::en
+*Not false.* The other half of `not`: in *Circuits* you proved `(!true) = false`, the rule
+`Bool.not_true`.
+:::
+
+:::de
+*Nicht false.* Die andere Hälfte von `not`: In *Schaltungen* hast du `(!true) = false` bewiesen, die
+Regel `Bool.not_true`.
+:::
+
+:::proofen
+`not` is defined by its two cases, and here Lean knows the value: `!false` reduces to `true`.
+
+*Tip.* `rfl`.
+:::
+
+:::proofde
+`not` ist durch seine zwei Fälle definiert, und hier kennt Lean den Wert: `!false` reduziert zu
+`true`.
+
+*Tipp.* `rfl`.
+:::
+:::solution
+```
+rfl
+```
+:::
+::::
+
+::::leanonly (proof := "(a b : ENNReal) : (bif true then a else b) = a") (lemma := "Bool.cond_true")
+:::en
+*bif with true.* `bif c then a else b` is `a` when `c` is `true`, and `b` when it is `false`: an
+if-then-else for a `Bool`. *One Coin* needs it to say where the mass of a move goes.
+:::
+
+:::de
+*bif mit true.* `bif c then a else b` ist `a`, wenn `c` gleich `true` ist, und `b`, wenn es `false`
+ist: ein Wenn-dann-sonst für ein `Bool`. *Eine Münze* braucht es, um zu sagen, wohin die Masse eines
+Zuges geht.
+:::
+
+:::proofen
+`a b : ENNReal` are two masses. `bif` is defined by the two cases of `c`; here `c` is `true`.
+
+*Tip.* `rfl`.
+:::
+
+:::proofde
+`a b : ENNReal` sind zwei Massen. `bif` ist durch die zwei Fälle von `c` definiert; hier ist `c`
+gleich `true`.
+
+*Tipp.* `rfl`.
+:::
+:::solution
+```
+rfl
+```
+:::
+::::
+
+::::leanonly (proof := "(a b : ENNReal) : (bif false then a else b) = b") (lemma := "Bool.cond_false")
+:::en
+*bif with false.* The other case: the second.
+:::
+
+:::de
+*bif mit false.* Der andere Fall: das Zweite.
+:::
+
+:::proofen
+*Tip.* `rfl`.
+:::
+
+:::proofde
+*Tipp.* `rfl`.
+:::
+:::solution
+```
+rfl
+```
+:::
+::::
+
+::::leanonly (proof := "(p : I) : 0 + coin p true = p") (new := "rw, zero_add")
+:::en
+*Zero plus.* Not every rule is a definition: `zero_add : 0 + a = a` is a rule of arithmetic, given
+here (it is proved in Mathlib, not by `rfl`). A rule is used by rewriting with it.
+:::
+
+:::de
+*Null plus.* Nicht jede Regel ist eine Definition: `zero_add : 0 + a = a` ist eine Rechenregel, hier
+gegeben (sie ist in Mathlib bewiesen, nicht mit `rfl`). Eine Regel benutzt man, indem man mit ihr
+umschreibt.
+:::
+
+:::proofen
+A rule `h : a = b` is used with `rw [h]`: it rewrites `a` into `b` in the goal (`rw [← h]` the other
+way round), several at once with `rw [h, k]`. When the goal then reads `x = x`, it is closed.
+`rw [zero_add]` takes the `0 + ` away; then your rule `coin_true` from level 1.
+
+*Tip.* `rw [zero_add]`, then `rw [coin_true]` (or both at once: `rw [zero_add, coin_true]`).
+:::
+
+:::proofde
+Eine Regel `h : a = b` benutzt man mit `rw [h]`: Sie schreibt `a` im Ziel zu `b` um (`rw [← h]`
+andersherum), mehrere auf einmal mit `rw [h, k]`. Lautet das Ziel danach `x = x`, ist es geschlossen.
+`rw [zero_add]` nimmt das `0 + ` weg; dann deine Regel `coin_true` aus Level 1.
+
+*Tipp.* `rw [zero_add]`, dann `rw [coin_true]` (oder beides auf einmal: `rw [zero_add, coin_true]`).
+:::
+:::solution
+```
+rw [zero_add]
+rw [coin_true]
+```
+:::
+::::
+
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) : ((fun _ => true) <$> μ) true = μ true + μ false") (new := "map_true")
+:::en
+*Where the mass goes.* The move *always `true`*, `fun _ => true`, sends both points to `true`; so all
+the mass of `μ` comes to `true`. This is the rule of the gates, given (it is proved from the definition
+of `<$>`, but not by `rfl`):
+
+`map_true : (f <$> μ) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)`.
+
+To `true` comes the mass at `true` when `f true` is `true`, and the mass at `false` when `f false` is
+`true`.
+:::
+
+:::de
+*Wohin die Masse geht.* Der Zug *immer `true`*, `fun _ => true`, schickt beide Punkte nach `true`;
+also kommt die ganze Masse von `μ` nach `true`. Das ist die Regel der Bausteine, gegeben (sie folgt aus
+der Definition von `<$>`, aber nicht mit `rfl`):
+
+`map_true : (f <$> μ) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)`.
+
+Nach `true` kommt die Masse bei `true`, wenn `f true` gleich `true` ist, und die Masse bei `false`,
+wenn `f false` gleich `true` ist.
+:::
+
+:::proofen
+After `rw [map_true]` both conditions read `true`: your rule `Bool.cond_true`, twice.
+
+*Tip.* `rw [map_true]`, then `rw [Bool.cond_true, Bool.cond_true]`.
+:::
+
+:::proofde
+Nach `rw [map_true]` lauten beide Bedingungen `true`: deine Regel `Bool.cond_true`, zweimal.
+
+*Tipp.* `rw [map_true]`, dann `rw [Bool.cond_true, Bool.cond_true]`.
+:::
+:::solution
+```
+rw [map_true]
+rw [Bool.cond_true, Bool.cond_true]
+```
+:::
+::::
