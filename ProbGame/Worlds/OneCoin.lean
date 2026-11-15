@@ -39,6 +39,43 @@ zeigt Ziel und Ausgang, als Massen und als kleines Histogramm (das Ziel gestrich
 Spielfeld die Säulen für ein Beispiel-$`p` (der Schieberegler ändert es).
 :::
 
+:::::only (edition := "show")
+::::circuit (height := "440") (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : (not <$> coin p) true = σ p") (play := "a=not; x>a.0; a>out")
+:::en
+*Where does the mass go?* The coin `x` is thrown at the top; below, the output with the target:
+`false` with mass $`p`, `true` with $`1 - p`. Put a `not` between them. Then look at `true`: its mass
+came from `false`.
+:::
+
+:::de
+*Wohin geht die Masse?* Oben wird die Münze `x` geworfen; unten der Ausgang mit dem Ziel: `false`
+mit Masse $`p`, `true` mit $`1 - p`. Setz ein `nicht` dazwischen. Dann sieh dir `true` an: Seine
+Masse kam von `false`.
+:::
+
+:::proofen
+*Now the proof.* Everything it needs you know from *Circuits* and *Masses*: `coin p` and its masses, `f <$> μ`, and
+the rules. First the rule of the gates, `map_true`; then computing, one rule after another:
+`Bool.not_true`, `Bool.not_false`, `Bool.cond_false`, `Bool.cond_true`, `zero_add` and `coin_false`.
+Keep this computation in mind: the boss of this world needs it again.
+
+*Tip.* `rw [map_true]`, `rw [Bool.not_true, Bool.not_false]`,
+`rw [Bool.cond_false, Bool.cond_true, zero_add]`, `rw [coin_false]` (type it, or tap the inventory,
+and press *Run*).
+:::
+
+:::proofde
+*Jetzt der Beweis.* Alles, was er braucht, kennst du aus *Schaltungen* und *Massen*: `coin p` und seine Massen,
+`f <$> μ` und die Regeln. Zuerst die Regel der Bausteine, `map_true`; dann Rechnen, eine Regel nach der
+anderen: `Bool.not_true`, `Bool.not_false`, `Bool.cond_false`, `Bool.cond_true`, `zero_add` und
+`coin_false`. Merk dir diese Rechnung: Der Endgegner dieser Welt braucht sie noch einmal.
+
+*Tipp.* `rw [map_true]`, `rw [Bool.not_true, Bool.not_false]`,
+`rw [Bool.cond_false, Bool.cond_true, zero_add]`, `rw [coin_false]`.
+:::
+::::
+:::::
+
 ::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (h : μ true = 0) : μ false = 1") (new := "mass_total")
 :::en
 *The whole mass.* A distribution has the total mass one. If nothing lies at `true`, everything lies at `false`.
@@ -398,6 +435,36 @@ rw [map_pure, Bool.not_true]
 ```
 :::
 ::::
+
+:::::only (edition := "show")
+::::circuit (height := "540") (inputs := "x") (gates := "not, alwaysT") (coins := "p") (target := "pure false") (context := "Lean/Rules.lean") (proof := "(p : I) : not <$> ((fun _ => true) <$> coin p) = pure false") (play := "a=alwaysT; b=not; x>a.0; a>b.0; b>out")
+:::en
+*Surely `false`, but there is no “always `false`”.* Two gates one after the other: the image measure of
+the image measure is the image measure of the composition, $`(P \circ f^{-1}) \circ g^{-1} = P \circ (g \circ f)^{-1}`.
+:::
+
+:::de
+*Sicher `false`, aber es gibt kein „immer `false`“.* Zwei Bausteine nacheinander: Das Bildmaß des Bildmaßes ist
+das Bildmaß der Verkettung, $`(P \circ f^{-1}) \circ g^{-1} = P \circ (g \circ f)^{-1}`.
+:::
+
+:::proofen
+A new rule: `map_pure : f <$> pure a = pure (f a)`: a gate on a point mass moves the point. Then
+`rfl` from *Circuits*: the two sides are the same after computing, `!true` is `false`.
+
+*Tip.* `rw [coin_const]`, then `rw [map_pure]` (or both at once: `rw [coin_const, map_pure]`), then
+`rfl`.
+:::
+
+:::proofde
+Eine neue Regel: `map_pure : f <$> pure a = pure (f a)`: Ein Baustein auf einer Punktmasse verschiebt
+den Punkt. Dann `rfl` aus *Schaltungen*: Beide Seiten sind nach Ausrechnen gleich, `!true` ist `false`.
+
+*Tipp.* `rw [coin_const]`, dann `rw [map_pure]` (oder beides auf einmal: `rw [coin_const, map_pure]`),
+dann `rfl`.
+:::
+::::
+:::::
 
 ::::circuit (height := "440") (inputs := "x") (gates := "not, alwaysT, alwaysF") (coins := "p") (target := "bernoulli 1-p") (context := "Lean/Rules.lean") (proof := "(p : I) : not <$> coin p = coin (σ p)") (lemma := "coin_not") (play := "a=not; x>a.0; a>out")
 :::en

@@ -191,6 +191,37 @@ rw [map_bind]
 :::
 ::::
 
+:::::only (edition := "show")
+::::circuit (height := "440") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:2p-p^2 false:(1-p)^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x || y)) = coin (σ (σ p * σ p))") (play := "a=or; x>a.0; y>a.1; a>out")
+:::en
+*At least one `true`.* `false` only when both show `false`: $`(1 - p)^2`.
+:::
+
+:::de
+*Mindestens einmal `true`.* `false` nur, wenn beide `false` zeigen: $`(1 - p)^2`.
+:::
+
+:::proofen
+At least one `true` is: not both `false`, with probability $`1 - (1 - p)^2`. Two new rules: De
+Morgan, `or_eq : (x || y) = !(!x && !y)`, and `map_bind : f <$> (do let x ← μ; g x) = (do let x ← μ; f <$> g x)`:
+a move after a `do` block goes into it.
+
+*Tip.* On the right side, backwards: `rw [← coin_not]`, `rw [← coin_and]`, `rw [← coin_not]`; then
+`simp only [bind_map_left, map_bind, map_pure, or_eq]`.
+:::
+
+:::proofde
+Mindestens einmal `true` heißt: nicht beide `false`, mit Wahrscheinlichkeit $`1 - (1 - p)^2`. Zwei
+neue Regeln: De Morgan, `or_eq : (x || y) = !(!x && !y)`, und
+`map_bind : f <$> (do let x ← μ; g x) = (do let x ← μ; f <$> g x)`: Ein Zug nach einem `do`-Block
+wandert in ihn hinein.
+
+*Tipp.* Auf der rechten Seite, rückwärts: `rw [← coin_not]`, `rw [← coin_and]`, `rw [← coin_not]`;
+dann `simp only [bind_map_left, map_bind, map_pure, or_eq]`.
+:::
+::::
+:::::
+
 ::::leanonly (proof := "(p : I) : (do let _ ← coin p; pure true) = (pure true : DiscreteMeasure Bool)") (new := "coin_unused")
 :::en
 *An unused coin.* A coin whose outcome is not used changes nothing.
@@ -217,6 +248,60 @@ rw [coin_unused]
 ```
 :::
 ::::
+
+:::::only (edition := "show")
+::::circuit (height := "540") (inputs := "x") (gates := "and, or, not") (coins := "p") (target := "pure false") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; pure (x && !x)) = pure false") (play := "a=not; b=and; x>a.0; x>b.0; a>b.1; b>out")
+:::en
+*Surely `false`, with a single coin.* A coin that goes into two functions is the same coin in both:
+the results depend on each other.
+:::
+
+:::de
+*Sicher `false`, mit einer einzigen Münze.* Eine Münze, die in zwei Funktionen geht, ist in beiden
+dieselbe: Die Ergebnisse hängen voneinander ab.
+:::
+
+:::proofen
+Two new rules: `Bool.and_not_self : (x && !x) = false`, and
+`coin_unused : (do let _ ← coin p; ν) = ν`: a coin whose result is not used changes nothing.
+
+*Tip.* `simp only [Bool.and_not_self]`, then `rw [coin_unused]`.
+:::
+
+:::proofde
+Zwei neue Regeln: `Bool.and_not_self : (x && !x) = false`, und
+`coin_unused : (do let _ ← coin p; ν) = ν`: Eine Münze, deren Ergebnis nicht benutzt wird, ändert
+nichts.
+
+*Tipp.* `simp only [Bool.and_not_self]`, dann `rw [coin_unused]`.
+:::
+::::
+:::::
+
+:::::only (edition := "show")
+::::circuit (height := "540") (inputs := "x") (gates := "and, or, not") (coins := "p") (target := "pure true") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; pure (x || !x)) = pure true") (play := "a=not; b=or; x>a.0; x>b.0; a>b.1; b>out")
+:::en
+*Surely `true`, with a single coin.* As before, now with `or`: the coin or its flip shows `true`.
+:::
+
+:::de
+*Sicher `true`, mit einer einzigen Münze.* Wie eben, jetzt mit `or`: Die Münze oder ihre Umkehrung
+zeigt `true`.
+:::
+
+:::proofen
+The new rule `Bool.or_not_self : (x || !x) = true`; the rest as in the level before.
+
+*Tip.* `simp only [Bool.or_not_self]`, then `rw [coin_unused]`.
+:::
+
+:::proofde
+Die neue Regel `Bool.or_not_self : (x || !x) = true`; der Rest wie im Level davor.
+
+*Tipp.* `simp only [Bool.or_not_self]`, dann `rw [coin_unused]`.
+:::
+::::
+:::::
 
 ::::circuit (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:2p(1-p) false:p^2+(1-p)^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure ((x || y) && !(x && y))) = (do let x ← coin p; let y ← coin p; pure (xor x y))") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out")
 :::en
