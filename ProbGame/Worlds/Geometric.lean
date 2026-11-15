@@ -150,6 +150,89 @@ rw [add_right_comm, geom_succ, ih, ← mul_assoc, ← pow_succ']
 :::
 ::::
 
+::::leanonly (proof := "(p : I) : ∑' k, (↑(σ p) : ENNReal) ^ k = (↑p)⁻¹") (new := "ENNReal.tsum_geometric, one_sub_symm") (group := "chance.count")
+:::en
+*A geometric series.* $`\sum_k (1 - p)^k = 1 / p`. `∑' k, a k` is the sum over all $`k`, as a mass (it may be $`\infty`: for $`p = 0`).
+:::
+
+:::de
+*Eine geometrische Reihe.* $`\sum_k (1 - p)^k = 1 / p`. `∑' k, a k` ist die Summe über alle $`k`, als Masse (sie darf $`\infty` sein: für $`p = 0`).
+:::
+
+:::proofen
+`ENNReal.tsum_geometric : ∑' k, r ^ k = (1 - r)⁻¹`, and `one_sub_symm : 1 - ↑(σ p) = ↑p`.
+
+*Tip.* `rw [ENNReal.tsum_geometric, one_sub_symm]`.
+:::
+
+:::proofde
+`ENNReal.tsum_geometric : ∑' k, r ^ k = (1 - r)⁻¹` und `one_sub_symm : 1 - ↑(σ p) = ↑p`.
+
+*Tipp.* `rw [ENNReal.tsum_geometric, one_sub_symm]`.
+:::
+:::solution
+```
+rw [ENNReal.tsum_geometric, one_sub_symm]
+```
+:::
+::::
+
+::::leanonly (proof := "(p : I) : ∑' k, (↑(σ p) : ENNReal) ^ k * ↑p = (↑p : ENNReal)⁻¹ * ↑p") (new := "ENNReal.tsum_mul_right") (group := "chance.count")
+:::en
+*Factoring out.* A factor that does not depend on $`k` comes out of the sum.
+:::
+
+:::de
+*Ausklammern.* Ein Faktor, der nicht von $`k` abhängt, kommt aus der Summe heraus.
+:::
+
+:::proofen
+`ENNReal.tsum_mul_right : ∑' k, f k * a = (∑' k, f k) * a`.
+
+*Tip.* `rw [ENNReal.tsum_mul_right, ENNReal.tsum_geometric, one_sub_symm]`.
+:::
+
+:::proofde
+`ENNReal.tsum_mul_right : ∑' k, f k * a = (∑' k, f k) * a`.
+
+*Tipp.* `rw [ENNReal.tsum_mul_right, ENNReal.tsum_geometric, one_sub_symm]`.
+:::
+:::solution
+```
+rw [ENNReal.tsum_mul_right, ENNReal.tsum_geometric, one_sub_symm]
+```
+:::
+::::
+
+::::leanonly (proof := "(p : I) (h : p ≠ 0) : ∑' k, geom p k = 1") (new := "ENNReal.inv_mul_cancel, mass_ne_zero, mass_finite") (group := "chance.count")
+:::en
+*Total mass one.* If $`p \neq 0`, the first `true` comes for sure: the masses add up to one. (For $`p = 0` it never comes, and all masses are $`0`.)
+:::
+
+:::de
+*Gesamtmasse eins.* Wenn $`p \neq 0`, kommt das erste `true` sicher: Die Massen ergeben zusammen eins. (Für $`p = 0` kommt es nie, und alle Massen sind $`0`.)
+:::
+
+:::proofen
+Your formula under the sum (`simp only`, it rewrites under `∑'`), the last level, and `ENNReal.inv_mul_cancel (h₀ : a ≠ 0) (h₁ : a ≠ ⊤) : a⁻¹ * a = 1`, with `mass_ne_zero h : ↑p ≠ 0` and `mass_finite p : ↑p ≠ ⊤`.
+
+*Tip.* `simp only [geom_formula]`, `rw [ENNReal.tsum_mul_right, ENNReal.tsum_geometric, one_sub_symm]`, `rw [ENNReal.inv_mul_cancel (mass_ne_zero h) (mass_finite p)]`.
+:::
+
+:::proofde
+Deine Formel unter der Summe (`simp only`, es schreibt unter `∑'` um), das letzte Level, und `ENNReal.inv_mul_cancel (h₀ : a ≠ 0) (h₁ : a ≠ ⊤) : a⁻¹ * a = 1`, mit `mass_ne_zero h : ↑p ≠ 0` und `mass_finite p : ↑p ≠ ⊤`.
+
+*Tipp.* `simp only [geom_formula]`, `rw [ENNReal.tsum_mul_right, ENNReal.tsum_geometric, one_sub_symm]`, `rw [ENNReal.inv_mul_cancel (mass_ne_zero h) (mass_finite p)]`.
+:::
+:::solution
+```
+simp only [geom_formula]
+rw [ENNReal.tsum_mul_right, ENNReal.tsum_geometric, one_sub_symm]
+rw [ENNReal.inv_mul_cancel (mass_ne_zero h) (mass_finite p)]
+```
+:::
+::::
+
 ::::leanonly (proof := "(p : I) : geom p = (do let x ← coin p; bif x then pure 0 else (do let Y ← geom p; pure (1 + Y)))") (lemma := "geom_first") (group := "chance.count")
 :::en
 *Boss: waiting for the first true.* Throw once: on `true` it is $`0`; on `false`, start again, and add one. The geometric distribution is the one that does this: it is defined by its masses, and here it is a `do` block that calls itself.
