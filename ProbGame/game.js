@@ -49,7 +49,7 @@
   // Headings of the site, which come from Verso.
   const DE_TITLES = {
     'The Probability Game': 'Das Wahrscheinlichkeits\u00ADspiel',  // (a soft hyphen, for phones)
-    'Masses': 'Massen', 'Rows and masses': 'Zeilen und Massen', 'One Coin': 'Eine Münze', 'Maps': 'Abbildungen', 'Draw, then Compute': 'Erst ziehen, dann rechnen', 'Building with Coins': 'Bauen mit Münzen',
+    'Thinning': 'Ausdünnen', 'Binomial': 'Binomial', 'Geometric': 'Geometrisch', 'Masses': 'Massen', 'Rows and masses': 'Zeilen und Massen', 'One Coin': 'Eine Münze', 'Maps': 'Abbildungen', 'Draw, then Compute': 'Erst ziehen, dann rechnen', 'Building with Coins': 'Bauen mit Münzen',
     'Counting': 'Zählen', 'Walking on the Grid': 'Gehen auf dem Gitter', 'True and False': 'Wahr und falsch', 'Circuits with Coins': 'Schaltungen mit Münzen', 'Coins that Wait': 'Münzen, die warten', 'Circuits': 'Schaltungen', 'Lexicon': 'Lexikon', 'Table of Contents': 'Inhalt', 'Contents': 'Inhalt',
   }
   function translatePage() {
@@ -2764,6 +2764,43 @@
     { name: 'odd_bind_step', kind: 'lemma', sig: 'odd <$> (μ >>= step) = not <$> (odd <$> μ)', en: 'Proved by you in Walking on the Grid.', de: 'Von dir bewiesen in „Gehen auf dem Gitter“.' },
     { name: 'odd_walk', kind: 'lemma', sig: 'odd <$> walk n = pure n.bodd', en: 'Proved by you: the boss of Walking on the Grid.', de: 'Von dir bewiesen: der Endgegner von „Gehen auf dem Gitter“.' },
     { name: 'binom_add', kind: 'lemma', sig: '(do let X ← binom p n; let Y ← binom p m; pure (X + Y)) = binom p (n + m)', en: 'Proved by you in Building with Coins.', de: 'Von dir bewiesen in „Bauen mit Münzen“.' },
+    { name: 'ring', kind: 'tactic', insert: 'ring', sig: 'ring', en: 'Proves an equation that holds by computing with + and * alone (commutative, associative, distributive, powers), whatever the letters are.', de: 'Beweist eine Gleichung, die allein durch Rechnen mit + und * gilt (kommutativ, assoziativ, distributiv, Potenzen), was auch immer die Buchstaben sind.' },
+    { name: 'mass_mul', kind: 'rule', sig: '↑(p * q) = ↑p * ↑q', en: 'A product of numbers in [0, 1], as a mass.', de: 'Ein Produkt von Zahlen in [0, 1], als Masse.' },
+    { name: 'coin_bind_apply', kind: 'rule', sig: '(coin p >>= f) x = ↑p * f true x + ↑(σ p) * f false x', en: 'A draw that starts with a coin, at any point: through true and through false.', de: 'Ein Ziehen, das mit einer Münze beginnt, an jedem Punkt: über true und über false.' },
+    { name: 'pure_self', kind: 'rule', sig: '(pure a) a = 1', en: 'A point mass at its point.', de: 'Eine Punktmasse an ihrem Punkt.' },
+    { name: 'pure_zero_succ', kind: 'rule', sig: '(pure 0) (k + 1) = 0', en: 'The point mass at 0 has nothing at k + 1.', de: 'Die Punktmasse bei 0 hat bei k + 1 nichts.' },
+    { name: 'shift_succ', kind: 'rule', sig: '(do let Y ← μ; pure (1 + Y)) (k + 1) = μ k', en: 'One more: the mass at k + 1 is the old mass at k.', de: 'Eins mehr: Die Masse bei k + 1 ist die alte Masse bei k.' },
+    { name: 'shift_zero', kind: 'rule', sig: '(do let Y ← μ; pure (1 + Y)) 0 = 0', en: 'One more is never 0.', de: 'Eins mehr ist nie 0.' },
+    { name: 'Bool.toNat_true', kind: 'rule', sig: 'true.toNat = 1', en: 'true counts 1.', de: 'true zählt 1.' },
+    { name: 'Bool.toNat_false', kind: 'rule', sig: 'false.toNat = 0', en: 'false counts 0.', de: 'false zählt 0.' },
+    { name: 'pow_zero', kind: 'rule', sig: 'a ^ 0 = 1', en: 'The zeroth power.', de: 'Die nullte Potenz.' },
+    { name: 'pow_succ', kind: 'rule', sig: 'a ^ (n + 1) = a ^ n * a', en: 'One factor more, at the end.', de: 'Ein Faktor mehr, am Ende.' },
+    { name: "pow_succ'", kind: 'rule', sig: 'a ^ (n + 1) = a * a ^ n', en: 'One factor more, at the front.', de: 'Ein Faktor mehr, vorne.' },
+    { name: 'mul_comm', kind: 'rule', sig: 'a * b = b * a', en: 'Turning a product round.', de: 'Ein Produkt umdrehen.' },
+    { name: 'mul_assoc', kind: 'rule', sig: 'a * b * c = a * (b * c)', en: 'Brackets in a product.', de: 'Klammern in einem Produkt.' },
+    { name: 'one_mul', kind: 'rule', sig: '1 * a = a', en: 'One times.', de: 'Eins mal.' },
+    { name: 'add_right_comm', kind: 'rule', sig: 'a + b + c = a + c + b', en: 'The last two summands swapped.', de: 'Die letzten beiden Summanden getauscht.' },
+    { name: 'Nat.choose_self', kind: 'rule', sig: 'n.choose n = 1', en: 'All of n: one way.', de: 'Alle aus n: eine Möglichkeit.' },
+    { name: 'Nat.choose_zero_right', kind: 'rule', sig: 'n.choose 0 = 1', en: 'None of n: one way.', de: 'Keins aus n: eine Möglichkeit.' },
+    { name: "Nat.choose_succ_succ'", kind: 'rule', sig: '(n + 1).choose (k + 1) = n.choose k + n.choose (k + 1)', en: "Pascal's triangle.", de: 'Das Pascalsche Dreieck.' },
+    { name: 'Nat.cast_add', kind: 'rule', sig: '↑(a + b) = ↑a + ↑b', en: 'A sum of natural numbers, as a mass.', de: 'Eine Summe natürlicher Zahlen, als Masse.' },
+    { name: 'Nat.cast_one', kind: 'rule', sig: '↑1 = 1', en: 'One, as a mass.', de: 'Eins, als Masse.' },
+    { name: 'bind_comm', kind: 'rule', sig: '(do let x ← μ; let y ← ν; f x y) = (do let y ← ν; let x ← μ; f x y)', en: 'Two independent draws, in the other order.', de: 'Zwei unabhängige Ziehungen, in der anderen Reihenfolge.' },
+    { name: 'coin_thin', kind: 'lemma', sig: '(do let x ← coin p; bif x then coin q else pure false) = coin (p * q)', en: 'Proved by you in Thinning: a coin p, kept with probability q.', de: 'Von dir bewiesen in „Ausdünnen“: eine Münze p, behalten mit Wahrscheinlichkeit q.' },
+    { name: 'coin_bind_binom', kind: 'lemma', sig: '(do let C ← coin p; binom q C.toNat) = (do let B ← coin (p * q); pure B.toNat)', en: 'Proved by you in Binomial: a coin p, then as many coins q as it shows.', de: 'Von dir bewiesen in „Binomial“: eine Münze p, dann so viele Münzen q, wie sie zeigt.' },
+    { name: "coin_bind_binom'", kind: 'lemma', sig: '(do let C ← coin p; let U ← binom q C.toNat; f U) = (do let B ← coin (p * q); f B.toNat)', en: 'Proved by you in Binomial: the same, with something after it.', de: 'Von dir bewiesen in „Binomial“: dasselbe, mit etwas danach.' },
+    { name: 'binom_succ_zero', kind: 'lemma', sig: 'binom p (n + 1) 0 = ↑(σ p) * binom p n 0', en: 'Proved by you in Binomial: no true in n + 1 throws.', de: 'Von dir bewiesen in „Binomial“: kein true in n + 1 Würfen.' },
+    { name: 'binom_succ_succ', kind: 'lemma', sig: 'binom p (n + 1) (k + 1) = ↑p * binom p n k + ↑(σ p) * binom p n (k + 1)', en: 'Proved by you in Binomial: the first throw true or false.', de: 'Von dir bewiesen in „Binomial“: der erste Wurf true oder false.' },
+    { name: 'binom_all_false', kind: 'lemma', sig: 'binom p n 0 = ↑(σ p) ^ n', en: 'Proved by you in Binomial: all false.', de: 'Von dir bewiesen in „Binomial“: alle false.' },
+    { name: 'binom_above', kind: 'lemma', sig: 'binom p n (n + k + 1) = 0', en: 'Proved by you in Binomial: never more true than throws.', de: 'Von dir bewiesen in „Binomial“: nie mehr true als Würfe.' },
+    { name: 'binom_diag', kind: 'lemma', sig: 'binom p n n = ↑p ^ n', en: 'Proved by you in Binomial: all true.', de: 'Von dir bewiesen in „Binomial“: alle true.' },
+    { name: 'binom_formula', kind: 'lemma', sig: 'binom p (k + m) k = ↑p ^ k * ↑(σ p) ^ m * ↑((k + m).choose k)', en: 'Proved by you in Binomial: the binomial formula.', de: 'Von dir bewiesen in „Binomial“: die Binomialformel.' },
+    { name: 'binom_thin', kind: 'lemma', sig: '(do let X ← binom p n; binom q X) = binom (p * q) n', en: 'Proved by you in Binomial: thinning a binomial.', de: 'Von dir bewiesen in „Binomial“: eine Binomialverteilung ausdünnen.' },
+    { name: 'geom_zero', kind: 'lemma', sig: 'geom p 0 = ↑p', en: 'Proved by you in Geometric: true at once.', de: 'Von dir bewiesen in „Geometrisch“: sofort true.' },
+    { name: 'geom_succ', kind: 'lemma', sig: 'geom p (k + 1) = ↑(σ p) * geom p k', en: 'Proved by you in Geometric: one false more.', de: 'Von dir bewiesen in „Geometrisch“: ein false mehr.' },
+    { name: 'geom_formula', kind: 'lemma', sig: 'geom p k = ↑(σ p) ^ k * ↑p', en: 'Proved by you in Geometric: the masses of the geometric distribution.', de: 'Von dir bewiesen in „Geometrisch“: die Massen der geometrischen Verteilung.' },
+    { name: 'geom_memoryless', kind: 'lemma', sig: 'geom p (k + m) = ↑(σ p) ^ k * geom p m', en: 'Proved by you in Geometric: without memory.', de: 'Von dir bewiesen in „Geometrisch“: ohne Gedächtnis.' },
+    { name: 'geom_first', kind: 'lemma', sig: 'geom p = do let x ← coin p; bif x then pure 0 else (do let Y ← geom p; pure (1 + Y))', en: 'Proved by you in Geometric: wait for the first true.', de: 'Von dir bewiesen in „Geometrisch“: auf das erste true warten.' },
   ]
   Object.assign(DE, {
     Proof: 'Beweis', 'Run': 'Ausführen', 'Inventory': 'Inventar', Tactics: 'Taktiken', Theorems: 'Sätze',
@@ -2919,7 +2956,7 @@
       if (parts.length > 1 && !this.available(INVENTORY.find(i => i.name === '<;>'))) return tr('This tactic is not in your inventory: {x}', { x: '<;>' })
       for (let t of parts) {
         t = t.trim()
-        const tac = /^(rw|simp only|norm_num|rfl|decide|congr|funext|ext|cases|induction'|exists|intro|have|apply|exact|constructor)(?=\s|\[|$)/.exec(t)?.[1]
+        const tac = /^(rw|simp only|norm_num|ring|rfl|decide|congr|funext|ext|cases|induction'|exists|intro|have|apply|exact|constructor)(?=\s|\[|$)/.exec(t)?.[1]
         const item = INVENTORY.find(i => i.name === tac)
         if (!item || !this.available(item)) return tr('This tactic is not in your inventory: {x}', { x: t.split(/\s/)[0] || t })
         // the rules: in brackets, or the term of `have h := rule args`
@@ -2932,7 +2969,7 @@
           for (const [k, id] of ids.entries()) {
             const it = INVENTORY.find(i => i.name === id)
             if (it && it.kind !== 'tactic' && !this.available(it)) return tr('{x} is not unlocked yet.', { x: id })
-            if (!it && !local.has(id) && (k === 0 || /[._]/.test(id))) return tr('{x} is not in your inventory.', { x: id })
+            if (!it && !local.has(id) && id !== '_' && (k === 0 || /[._]/.test(id))) return tr('{x} is not in your inventory.', { x: id })
           }
         }
       }
@@ -3724,6 +3761,8 @@
   const levelsKey = path => `pg:levels:${path}`
   // the worlds on a side way: which world they come after (not the one above them on the map)
   const SIDE_WAYS = { 'Coins-that-Wait': 'Building-with-Coins' }
+  // (a world that also comes from another one, besides the one before it: Binomial needs Counting too)
+  const JOINS = { 'Binomial': 'Counting' }
   const fetched = new Set()
   function worldMap() {
     const toc = document.querySelector('#toc'), worlds = worldLinks()
@@ -3744,7 +3783,7 @@
       if (!levels) return null
       return [levels.filter((proof, i) => ls(`pg:${w.path}:${i}`) === '1' && (SHOW || !proof || ls(`pg:${w.path}:${i}:proofd`) === '1')).length, levels.length]
     }
-    const W2 = 250, dy = 56, x = 40, y0 = 26, H = y0 + (worlds.length - 1) * dy + 30
+    const W2 = 250, dy = 56, x = 56, y0 = 26, H = y0 + (worlds.length - 1) * dy + 30
     const map = svg('svg', { viewBox: `0 0 ${W2} ${H}`, class: 'pg-map' })
     // the way: from each world to the next, or, for a world on a side way (SIDE_WAYS), from the world
     // it comes after, past the worlds between (a fork: two ways that do not need each other)
@@ -3754,6 +3793,8 @@
       const ya = y0 + (from < 0 ? i - 1 : from) * dy, yb = y0 + i * dy
       if (from < 0 || from === i - 1) map.append(svg('line', { x1: x, y1: ya, x2: x, y2: yb, class: 'pg-map-edge' }))
       else map.append(svg('path', { d: `M${x - 12},${ya + 14} C${x - 40},${ya + 36} ${x - 40},${yb - 36} ${x - 12},${yb - 14}`, class: 'pg-map-edge pg-map-fork' }))
+      const j = worlds.findIndex(w => slug(w) === JOINS[slug(worlds[i])])
+      if (j >= 0) { const yj = y0 + j * dy; map.append(svg('path', { d: `M${x - 14},${yj + 12} C${x - 56},${yj + 40} ${x - 56},${yb - 40} ${x - 14},${yb - 12}`, class: 'pg-map-edge pg-map-fork' })) }
     }
     worlds.forEach((w, i) => {
       const y = y0 + i * dy, r = 18, c = count(w), frac = c && c[1] ? c[0] / c[1] : 0
