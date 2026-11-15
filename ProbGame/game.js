@@ -49,7 +49,7 @@
   // Headings of the site, which come from Verso.
   const DE_TITLES = {
     'The Probability Game': 'Das Wahrscheinlichkeits\u00ADspiel',  // (a soft hyphen, for phones)
-    'Thinning': 'Ausdünnen', 'Binomial': 'Binomial', 'Geometric': 'Geometrisch', 'Masses': 'Massen', 'Rows and masses': 'Zeilen und Massen', 'One Coin': 'Eine Münze', 'Maps': 'Abbildungen', 'Draw, then Compute': 'Erst ziehen, dann rechnen', 'Building with Coins': 'Bauen mit Münzen',
+    'Thinning': 'Ausdünnen', 'Sequences': 'Folgen', 'Binomial': 'Binomial', 'Geometric': 'Geometrisch', 'Masses': 'Massen', 'Rows and masses': 'Zeilen und Massen', 'One Coin': 'Eine Münze', 'Maps': 'Abbildungen', 'Draw, then Compute': 'Erst ziehen, dann rechnen', 'Building with Coins': 'Bauen mit Münzen',
     'Counting': 'Zählen', 'Walking on the Grid': 'Gehen auf dem Gitter', 'True and False': 'Wahr und falsch', 'Circuits with Coins': 'Schaltungen mit Münzen', 'Coins that Wait': 'Münzen, die warten', 'Circuits': 'Schaltungen', 'Lexicon': 'Lexikon', 'Table of Contents': 'Inhalt', 'Contents': 'Inhalt',
   }
   function translatePage() {
@@ -2786,6 +2786,12 @@
     { name: 'Nat.cast_add', kind: 'rule', sig: '↑(a + b) = ↑a + ↑b', en: 'A sum of natural numbers, as a mass.', de: 'Eine Summe natürlicher Zahlen, als Masse.' },
     { name: 'Nat.cast_one', kind: 'rule', sig: '↑1 = 1', en: 'One, as a mass.', de: 'Eins, als Masse.' },
     { name: 'bind_comm', kind: 'rule', sig: '(do let x ← μ; let y ← ν; f x y) = (do let y ← ν; let x ← μ; f x y)', en: 'Two independent draws, in the other order.', de: 'Zwei unabhängige Ziehungen, in der anderen Reihenfolge.' },
+    { name: 'seq_zero', kind: 'rule', sig: 'iidSequence 0 μ = pure []', en: 'No draw: the empty list.', de: 'Kein Ziehen: die leere Liste.' },
+    { name: 'seq_succ', kind: 'rule', sig: 'iidSequence (n + 1) μ = do let y ← μ; let l ← iidSequence n μ; pure (y :: l)', en: 'One draw in front, then n more.', de: 'Ein Ziehen vorne, dann n weitere.' },
+    { name: 'seq_succ_apply', kind: 'rule', sig: 'iidSequence (n + 1) μ (a :: l) = μ a * iidSequence n μ l', en: 'The mass of a list: a product.', de: 'Die Masse einer Liste: ein Produkt.' },
+    { name: 'seq_zero_nil', kind: 'rule', sig: 'iidSequence 0 μ [] = 1', en: 'The empty list, surely.', de: 'Die leere Liste, sicher.' },
+    { name: 'count_true_cons', kind: 'rule', sig: '(y :: l).count true = y.toNat + l.count true', en: 'Counting true in a list.', de: 'true in einer Liste zählen.' },
+    { name: 'binom_eq_count', kind: 'lemma', sig: 'binom p n = (fun l => l.count true) <$> iidSequence n (coin p)', en: 'Proved by you in Sequences: binom counts the true in n coins.', de: 'Von dir bewiesen in „Folgen“: binom zählt die true in n Münzen.' },
     { name: 'coin_thin', kind: 'lemma', sig: '(do let x ← coin p; bif x then coin q else pure false) = coin (p * q)', en: 'Proved by you in Thinning: a coin p, kept with probability q.', de: 'Von dir bewiesen in „Ausdünnen“: eine Münze p, behalten mit Wahrscheinlichkeit q.' },
     { name: 'coin_bind_binom', kind: 'lemma', sig: '(do let C ← coin p; binom q C.toNat) = (do let B ← coin (p * q); pure B.toNat)', en: 'Proved by you in Binomial: a coin p, then as many coins q as it shows.', de: 'Von dir bewiesen in „Binomial“: eine Münze p, dann so viele Münzen q, wie sie zeigt.' },
     { name: "coin_bind_binom'", kind: 'lemma', sig: '(do let C ← coin p; let U ← binom q C.toNat; f U) = (do let B ← coin (p * q); f B.toNat)', en: 'Proved by you in Binomial: the same, with something after it.', de: 'Von dir bewiesen in „Binomial“: dasselbe, mit etwas danach.' },
@@ -3760,9 +3766,9 @@
   }).filter(w => w && !/\/Lexicon\/$/.test(w.path))
   const levelsKey = path => `pg:levels:${path}`
   // the worlds on a side way: which world they come after (not the one above them on the map)
-  const SIDE_WAYS = { 'Coins-that-Wait': 'Building-with-Coins' }
+  const SIDE_WAYS = { 'Coins-that-Wait': 'Building-with-Coins', 'Sequences': 'Counting' }
   // (a world that also comes from another one, besides the one before it: Binomial needs Counting too)
-  const JOINS = { 'Binomial': 'Counting' }
+  const JOINS = { 'Binomial': 'Thinning' }
   const fetched = new Set()
   function worldMap() {
     const toc = document.querySelector('#toc'), worlds = worldLinks()
