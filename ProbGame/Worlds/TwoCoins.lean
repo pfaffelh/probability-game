@@ -55,50 +55,52 @@ und `fun x => …` ist diese Funktion. Die Beweise lernen die Regeln der `do`-Bl
 *Monadengesetze*, eine nach der anderen, wenn ein Level sie braucht.
 :::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (do let _ ← μ; μ) true = μ true * μ true + μ false * μ true") (new := "bind_true") (uses := "bind_true, bind_false")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (μ >>= f) true = μ true * f true true + μ false * f false true") (new := "bind_apply") (lemma := "bind_true") (uses := "bind_apply, Fintype.sum_bool")
 :::en
 *Two ways to true.* `do let x ← μ; …` draws from `μ`, calls the result `x`, and goes on with the
-rest. Lean writes it as `μ >>= fun x => …` (read `>>=` as *bind*: draw, then go on). Its mass at
-`true` comes two ways: the first draw is `true`, or it is `false`.
+rest. Lean writes it as `μ >>= fun x => …` (read `>>=` as *bind*: draw, then go on), in short
+`μ >>= f`, where `f` says how to go on after each first draw. Its mass at `true` comes two ways: the
+first draw is `true`, or it is `false`.
 :::
 
 :::de
 *Zwei Wege zu true.* `do let x ← μ; …` zieht aus `μ`, nennt das Ergebnis `x` und macht mit dem Rest
-weiter. Lean schreibt das als `μ >>= fun x => …` (lies `>>=` als *bind*: ziehen, dann weiter). Seine
-Masse bei `true` kommt auf zwei Wegen: Der erste Zug ist `true`, oder er ist `false`.
+weiter. Lean schreibt das als `μ >>= fun x => …` (lies `>>=` als *bind*: ziehen, dann weiter), kurz
+`μ >>= f`, wobei `f` sagt, wie es nach jedem ersten Zug weitergeht. Seine Masse bei `true` kommt auf
+zwei Wegen: Der erste Zug ist `true`, oder er ist `false`.
 :::
 
 :::proofen
-`bind_true : (μ >>= f) true = μ true * f true true + μ false * f false true`: the mass at the first
-step times the mass at `true` of what follows, for both values of the first step. That is the
-definition of `>>=`,
+The definition of `>>=` sums over the first draw `a`: its mass, times the mass of what follows,
 
 ```
 (μ >>= f) b = ∑' a, μ a * (f a) b
 ```
 
-on `Bool` a sum of two summands. Here what follows is `μ` again, whatever the first draw was.
+On a finite type, `∑'` is the finite sum `∑`, and that is the new rule
+`bind_apply : (μ >>= f) b = ∑ a, μ a * f a b`. On `Bool` it has two summands
+(`Fintype.sum_bool`). What you prove is unlocked as `bind_true`.
 
-*Tip.* `rw [bind_true]`.
+*Tip.* `rw [bind_apply, Fintype.sum_bool]`.
 :::
 
 :::proofde
-`bind_true : (μ >>= f) true = μ true * f true true + μ false * f false true`: die Masse im ersten
-Schritt mal die Masse bei `true` dessen, was folgt, für beide Werte des ersten Schritts. Das ist die
-Definition von `>>=`,
+Die Definition von `>>=` summiert über den ersten Zug `a`: seine Masse, mal die Masse dessen, was
+folgt,
 
 ```
 (μ >>= f) b = ∑' a, μ a * (f a) b
 ```
 
-auf `Bool` eine Summe aus zwei Summanden. Hier ist das, was folgt, wieder `μ`, was auch immer der
-erste Zug war.
+Auf einem endlichen Typ ist `∑'` die endliche Summe `∑`, und das ist die neue Regel
+`bind_apply : (μ >>= f) b = ∑ a, μ a * f a b`. Auf `Bool` hat sie zwei Summanden
+(`Fintype.sum_bool`). Was du beweist, wird als `bind_true` freigeschaltet.
 
-*Tipp.* `rw [bind_true]`.
+*Tipp.* `rw [bind_apply, Fintype.sum_bool]`.
 :::
 :::solution
 ```
-rw [bind_true]
+rw [bind_apply, Fintype.sum_bool]
 ```
 :::
 ::::

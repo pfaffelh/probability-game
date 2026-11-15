@@ -319,41 +319,47 @@ rw [← coin_true, ← coin_false, coin_total]
 :::
 ::::
 
-::::leanonly (proof := ": (pure true : DiscreteMeasure Bool) true = 1") (new := "pure_true") (uses := "pure_true, Bool.cond_true, Bool.cond_false")
+::::leanonly (proof := "(b : Bool) : (pure b : DiscreteMeasure Bool) true = bif b then 1 else 0") (new := "pure_apply") (lemma := "pure_true") (uses := "pure_apply, beq_true")
 :::en
-*Surely true.* `pure b` is the distribution that is surely `b`: all its mass lies at `b`.
+*Surely true.* `pure b` is the distribution that is surely `b`: all its mass lies at `b`. Its mass at
+`true` is one if `b` is `true`, else zero.
 :::
 
 :::de
-*Sicher true.* `pure b` ist die Verteilung, die sicher `b` ist: Ihre ganze Masse liegt bei `b`.
+*Sicher true.* `pure b` ist die Verteilung, die sicher `b` ist: Ihre ganze Masse liegt bei `b`. Ihre
+Masse bei `true` ist eins, wenn `b` gleich `true` ist, sonst null.
 :::
 
 :::proofen
-`pure_true : (pure b) true = bif b then 1 else 0`: one if `b` is `true`, else zero. By the definition,
+By the definition,
 
 ```
 def pure (a : α) : DiscreteMeasure α := ⟨({a} : Set α).indicator 1⟩
 ```
 
-the mass is `1` on the set `{a}` and `0` outside it.
+the mass is `1` on the set `{a}` and `0` outside it. The game writes this as the new rule
+`pure_apply : (pure a) b = bif a == b then 1 else 0`. Then `b == true` is `b` (`beq_true`, from
+*Masses*). What you prove is unlocked as `pure_true`.
 
-*Tip.* `rw [pure_true, Bool.cond_true]`.
+*Tip.* `rw [pure_apply, beq_true]`.
 :::
 
 :::proofde
-`pure_true : (pure b) true = bif b then 1 else 0`: eins, wenn `b` gleich `true` ist, sonst null. Nach der Definition,
+Nach der Definition,
 
 ```
 def pure (a : α) : DiscreteMeasure α := ⟨({a} : Set α).indicator 1⟩
 ```
 
-ist die Masse `1` auf der Menge `{a}` und `0` außerhalb.
+ist die Masse `1` auf der Menge `{a}` und `0` außerhalb. Das Spiel schreibt das als die neue Regel
+`pure_apply : (pure a) b = bif a == b then 1 else 0`. Dann ist `b == true` gleich `b` (`beq_true`,
+aus *Massen*). Was du beweist, wird als `pure_true` freigeschaltet.
 
-*Tipp.* `rw [pure_true, Bool.cond_true]`.
+*Tipp.* `rw [pure_apply, beq_true]`.
 :::
 :::solution
 ```
-rw [pure_true, Bool.cond_true]
+rw [pure_apply, beq_true]
 ```
 :::
 ::::
