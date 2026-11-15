@@ -141,3 +141,11 @@ per rule that One Coin needs, the definitional ones proved by `rfl` (and then le
 the lemma of Circuits 2 (`(!true) = false`, `rfl`). The given rules get a level that uses them once:
 `zero_add` (with `rw`), `map_true`. Its intro says what `DiscreteMeasure`, `coin p`, `μ x`, `f <$> μ`
 are. Map sign μ (no number, so One Coin stays 1).
+
+Then (user, same day): every later rule too gets a short Lean-only level right before the level that
+first needs it (23 levels): One Coin mass_total, mass_ne_top (+exact), ENNReal.add_sub_cancel_left,
+add_comm, chance_eq, coin_total, pure_true, map_pure; Maps map_map; Building with Coins bind_map_left,
+map_bind, or_eq*, Bool.and_not_self*, coin_unused, Bool.or_not_self*; Counting binom_zero*,
+binom_succ*, pure_bind, bind_assoc, add_zero, add_assoc, bind_pure (group chance.count); Coins that
+Wait bind_true (* = proved by the player, `rfl` or `cases … <;> rfl`, then a lemma). coin_and has none:
+Building with Coins 1 is its level already (`rw [coin_and]`).
