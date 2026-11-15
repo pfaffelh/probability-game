@@ -3950,7 +3950,7 @@
   // fetched from its page once otherwise.
   Object.assign(DE, { 'Start the game over': 'Spiel neu beginnen', 'Yes, delete': 'Ja, löschen', No: 'Nein',
     'Delete all progress in this browser?': 'Allen Fortschritt in diesem Browser löschen?', Worlds: 'Welten', 'Lexicon': 'Lexikon', '📖 Lexicon': '📖 Lexikon', '▶ Start': '▶ Start', '▶ Continue': '▶ Weiterspielen',
-    'or start from the beginning': 'oder von vorn beginnen', 'Continue: {w}': 'Weiter: {w}' })
+    'Continue: {w}': 'Weiter: {w}' })
   const siteRoot = () => new URL('.', document.baseURI).pathname
   const worldLinks = () => [...document.querySelectorAll('#toc .split-toc.book tr')].map(tr => {
     const a = tr.querySelector('a'); if (!a) return null
@@ -4028,12 +4028,17 @@
       t.href = lex.getAttribute('href').replace(/#.*$/, '')
       box.append(t)
     }
-    // the whole game from scratch: all that this browser stored of it (the levels solved, the boards, the
-    // proofs) goes; the settings (language, tips, the p of the picture) stay. Asked on the page first.
-    const wipe = el('div', 'pg-map-reset'), ask = () => {
-      const b = el('button', 'pg-map-reset-button', '⟲ ' + tr('Start the game over')); b.type = 'button'
+    ;(toc.querySelector('.first') ?? toc).prepend(box)
+    toc.classList.add('pg-has-map')
+  }
+
+  // The whole game from scratch: all that this browser stored of it (the levels solved, the boards, the
+  // proofs) goes; the settings (language, tips, the p of the picture) stay. Asked on the page first.
+  function resetControl() {
+    const wipe = el('div', 'pg-start-reset'), ask = () => {
+      const b = el('button', 'pg-start-reset-button', '⟲ ' + tr('Start the game over')); b.type = 'button'
       b.addEventListener('click', () => {
-        const yes = el('button', 'pg-map-reset-yes', tr('Yes, delete')), no = el('button', 'pg-map-reset-no', tr('No'))
+        const yes = el('button', 'pg-start-reset-yes', tr('Yes, delete')), no = el('button', 'pg-start-reset-no', tr('No'))
         yes.type = no.type = 'button'
         yes.addEventListener('click', () => {
           const root = siteRoot()
@@ -4041,13 +4046,12 @@
           location.href = root
         })
         no.addEventListener('click', ask)
-        wipe.replaceChildren(el('div', 'pg-map-reset-q', tr('Delete all progress in this browser?')), yes, ' ', no)
+        wipe.replaceChildren(el('div', 'pg-start-reset-q', tr('Delete all progress in this browser?')), yes, ' ', no)
       })
       wipe.replaceChildren(b)
     }
-    ask(); box.append(wipe)
-    ;(toc.querySelector('.first') ?? toc).prepend(box)
-    toc.classList.add('pg-has-map')
+    ask()
+    return wipe
   }
 
   // The front page: one button, which starts at the first world or goes on where one left off.
@@ -4063,9 +4067,7 @@
     box.append(go)
     if (last) {
       box.append(el('div', 'pg-start-where', tr('Continue: {w}', { w: last.title })))
-      const again = el('a', 'pg-start-again', tr('or start from the beginning'))
-      again.href = first.a.getAttribute('href').replace(/#.*$/, '')
-      box.append(again)
+      box.append(resetControl())
     }
     h1.after(box)
     document.documentElement.classList.add('pg-front')
