@@ -16,7 +16,7 @@ PAIRS = [('coin_true', 'coin_false'), ('Bool.cond_true', 'Bool.cond_false'), ('B
          ('hyper_zero', 'hyper_succ'), ('hyper_black', 'hyper_white'), ('coin_zero', 'coin_one'),
          ('frac_zero', 'frac_white'), ('seq_zero', 'seq_succ'), ('Bool.and_not_self', 'Bool.or_not_self'),
          ('coin_unused', 'prob_unused'), ('binom_succ_zero', 'binom_succ_succ'), ('binom_all_false', 'binom_diag'),
-         ('add_comm', 'add_assoc'), ('mass_total', 'coin_total'), ('pure_self', 'pure_zero_succ'),
+         ('add_comm', 'add_assoc'), ('mass_total', 'coin_total'), ('coin_total', 'coin_true'), ('coin_total', 'coin_false'), ('pure_self', 'pure_zero_succ'),
          ('Nat.choose_self', 'Nat.choose_zero_right'), ('Nat.cast_add', 'Nat.cast_one'), ('add_assoc', 'add_right_comm')]
 partners = {}
 for a, b in PAIRS: partners.setdefault(a, []).append(b); partners.setdefault(b, []).append(a)

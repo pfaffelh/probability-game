@@ -66,7 +66,7 @@ simp only [pure_bind]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : iidSequence 2 (coin p) [true, false] = ↑p * ↑(σ p)") (new := "seq_succ_apply, seq_zero_nil, mul_one") (group := "chance.count") (uses := "seq_succ_apply, seq_zero_nil, mul_one, coin_true, coin_false, one_mul")
+::::leanonly (proof := "(p : I) : iidSequence 2 (coin p) [true, false] = ↑p * ↑(σ p)") (new := "seq_succ_apply, seq_zero_nil, mul_one") (group := "chance.count") (uses := "seq_succ_apply, seq_zero_nil, mul_one, coin_true, coin_false, one_mul, coin_total")
 :::en
 *The mass of a sequence.* Independent: the mass of a list is the product of the masses of its entries. First `true`, then `false`: $`p (1 - p)`.
 :::
