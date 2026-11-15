@@ -2875,7 +2875,6 @@
   const PHONE = () => matchMedia('(max-width: 700px)').matches
   const TOUCH = () => matchMedia('(pointer: coarse)').matches || PHONE()
   let KEYBOARD = false
-  let SOL_OPEN = null  // the solution beside the proof: open or folded, as the player left it
   class Proof {
     constructor(level, onChange) {
       const root = level.root
@@ -3194,22 +3193,8 @@
       const head = el('h3', 'pg-proof-head', tr('Proof'))
       const stmt = el('pre', 'pg-proof-statement', `${this.lemma ? `theorem ${this.lemma}` : 'example'} ${this.statement}`)
       const parts = STAGE ? [head, stmt] : [head, ...this.texts, stmt]
-      // on the stage: the board's solution beside the proof (a picture, not to play with)
-      // (not on a phone: there the space is for the proof and the inventory)
-      const pic = STAGE && !PHONE() && this.level.picture
-      let sol = null
-      if (pic) {
-        sol = el('details', 'pg-proof-sol'); const sum = el('summary', '', '▦ ' + tr('Your solution on the board'))
-        sol.open = SOL_OPEN ?? !matchMedia('(max-width: 700px)').matches
-        sol.addEventListener('toggle', () => { SOL_OPEN = sol.open })
-        const c = pic.cloneNode(true)
-        c.removeAttribute('style'); c.querySelectorAll('[style*="max-width"]').forEach(e => { e.style.maxWidth = '' })
-        c.querySelectorAll('button, input, label.pg-slider, .pg-throws').forEach(e => e.remove())
-        for (const e of [c, ...c.querySelectorAll('*')]) for (const at of ['data-block', 'data-slot', 'data-id', 'data-kind', 'data-i', 'id']) e.removeAttribute(at)
-        c.inert = true
-        const fig = el('div', 'pg-proof-sol-pic'); fig.append(c)
-        sol.append(sum, fig)
-      }
+      // (the board's solution is not repeated here: the Board tab at the top shows it)
+      const sol = null
       if (!BACKEND) {
         parts.push(el('div', 'pg-info pg-warn', tr('The proof needs Lean: open the game with ?backend=… (the address of a bridge).')))
         if (sol) parts.push(sol)

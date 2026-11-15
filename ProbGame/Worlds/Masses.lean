@@ -86,17 +86,34 @@ rfl
 
 ::::leanonly (proof := "(p : I) : coin p true = p") (lemma := "coin_true") (uses := "-")
 :::en
-*The mass at true.* The coin `coin p` has the mass $`p` at `true`.
+*The mass at true.* Now the coin. A coin shows `true` (heads) or `false` (tails); `coin p` is the coin
+that shows `true` with probability $`p` and `false` with probability $`1 - p`. As a distribution on
+`Bool` it has two masses: $`p` at `true` and $`1 - p` at `false`, together $`1`.
+
+Here $`p` is a probability, a number between $`0` and $`1`: in Lean `p : I`, with $`I = [0, 1]` the
+unit interval. Its counterpart $`1 - p` is written `σ p` (also in $`I`). A mass is a number in
+$`[0, \infty]` (`ENNReal`); `↑p` is $`p` as a mass. With $`p = 1` the coin always shows `true`, with $`p = 0` always
+`false`; with $`p = 1/2` it is a fair coin.
+
+This level: the mass of `coin p` at `true` is $`p`.
 :::
 
 :::de
-*Die Masse bei true.* Die Münze `coin p` hat bei `true` die Masse $`p`.
+*Die Masse bei true.* Jetzt die Münze. Eine Münze zeigt `true` (Kopf) oder `false` (Zahl); `coin p`
+ist die Münze, die mit Wahrscheinlichkeit $`p` `true` zeigt und mit Wahrscheinlichkeit $`1 - p`
+`false`. Als Verteilung auf `Bool` hat sie zwei Massen: $`p` bei `true` und $`1 - p` bei `false`,
+zusammen $`1`.
+
+Dabei ist $`p` eine Wahrscheinlichkeit, eine Zahl zwischen $`0` und $`1`: in Lean `p : I`, mit
+$`I = [0, 1]` dem Einheitsintervall. Das Gegenstück $`1 - p` schreibt man `σ p` (auch in $`I`). Eine
+Masse ist eine Zahl in $`[0, \infty]` (`ENNReal`); `↑p` ist $`p` als Masse. Mit $`p = 1` zeigt die Münze immer
+`true`, mit $`p = 0` immer `false`; mit $`p = 1/2` ist sie fair.
+
+Dieses Level: Die Masse von `coin p` bei `true` ist $`p`.
 :::
 
 :::proofen
-`p : I` says that $`p` lies in the unit interval $`I = [0, 1]`. `(coin p) true` is the mass of the coin
-at `true`, and `↑p` is the number $`p` as a mass (a mass is a number in $`[0, \infty]`, `ENNReal`). A
-distribution is, in Lean, its masses (its *weight* function):
+`(coin p) true` is the mass of the coin at `true`. A distribution is, in Lean, its masses (its *weight* function):
 
 ```
 structure DiscreteMeasure (α : Type) where
@@ -119,9 +136,7 @@ statement is the rule `coin_true`; once proved, it is in your inventory.
 :::
 
 :::proofde
-`p : I` sagt, dass $`p` im Einheitsintervall $`I = [0, 1]` liegt. `(coin p) true` ist die Masse der
-Münze bei `true`, und `↑p` ist die Zahl $`p` als Masse (eine Masse ist eine Zahl in $`[0, \infty]`,
-`ENNReal`). Eine Verteilung ist in Lean ihre Massen (ihre *Gewichtsfunktion*):
+`(coin p) true` ist die Masse der Münze bei `true`. Eine Verteilung ist in Lean ihre Massen (ihre *Gewichtsfunktion*):
 
 ```
 structure DiscreteMeasure (α : Type) where
