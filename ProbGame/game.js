@@ -49,7 +49,7 @@
   // Headings of the site, which come from Verso.
   const DE_TITLES = {
     'The Probability Game': 'Das Wahrscheinlichkeits\u00ADspiel',  // (a soft hyphen, for phones)
-    'Masses': 'Massen', 'One Coin': 'Eine Münze', 'Maps': 'Abbildungen', 'Draw, then Compute': 'Erst ziehen, dann rechnen', 'Building with Coins': 'Bauen mit Münzen',
+    'Masses': 'Massen', 'Rows and masses': 'Zeilen und Massen', 'One Coin': 'Eine Münze', 'Maps': 'Abbildungen', 'Draw, then Compute': 'Erst ziehen, dann rechnen', 'Building with Coins': 'Bauen mit Münzen',
     'Counting': 'Zählen', 'Walking on the Grid': 'Gehen auf dem Gitter', 'True and False': 'Wahr und falsch', 'Circuits with Coins': 'Schaltungen mit Münzen', 'Coins that Wait': 'Münzen, die warten', 'Circuits': 'Schaltungen', 'Lexicon': 'Lexikon', 'Table of Contents': 'Inhalt', 'Contents': 'Inhalt',
   }
   function translatePage() {
@@ -2464,9 +2464,16 @@
         tr_.addEventListener('click', () => { this.row = this.row === k ? null : k; this.render() })
         table.append(tr_)
       })
-      const side = el('div', 'pg-cside')
+      // (the side: the table, and the target; one above the other beside the board, side by side below it)
+      // (below the board, closed at first: the board, with the target at its bottom, is what counts —
+      // the user)
+      const side = el('details', 'pg-cside'), sideA = el('div', 'pg-cside-a'), sideB = el('div', 'pg-cside-b')
+      side.open = !!this.sideOpen
+      side.addEventListener('toggle', () => { this.sideOpen = side.open; this.fit() })
+      const sideBody = el('div', 'pg-cside-body'); sideBody.append(sideA, sideB)
+      side.append(el('summary', '', tr('Rows and masses')), sideBody)
       // (the values on the board: tap a row of the table, or a column of the output box)
-      if (this.random) side.append(table, el('div', 'pg-truth-note', tr('Tap a row to see its coins on the board.')))
+      if (this.random) sideA.append(table, el('div', 'pg-truth-note', tr('Tap a row to see its coins on the board.')))
       if (this.random) {
         const d = this.dist()
         if (d) {
@@ -2474,16 +2481,16 @@
           // (for each point of the output: the masses of its rows, added up)
           for (const k of axis(d.space, [...d.mass.keys()]).filter(k => d.space === 'bool' ? k === 'true' : true)) {
             const terms = this.rows.filter((r, j) => String(outs[j]) === k).map(r => String(this.mass(r)))
-            side.append(el('div', 'pg-truth-sum', `P(${tr('Output')} = ${k}) = ${terms.length ? terms.join(' + ') : '0'}${terms.length > 1 ? ' = ' + new Poly((d.mass.get(k) ?? ZERO).c) : ''}`))
+            sideB.append(el('div', 'pg-truth-sum', `P(${tr('Output')} = ${k}) = ${terms.length ? terms.join(' + ') : '0'}${terms.length > 1 ? ' = ' + new Poly((d.mass.get(k) ?? ZERO).c) : ''}`))
           }
-          side.append(targetChart([{ dist: d }], tr('Output'), 'pg-out-svg'))
+          sideB.append(targetChart([{ dist: d }], tr('Output'), 'pg-out-svg'))
         }
-        side.append(targetChart([{ dist: this.target }]), el('div', 'pg-truth-note', tr('The mass of each output: the sum of P over its rows.')))
+        sideB.append(targetChart([{ dist: this.target }]), el('div', 'pg-truth-note', tr('The mass of each output: the sum of P over its rows.')))
         const slider = el('label', 'pg-slider'), input = el('input')
         input.type = 'range'; input.min = '0.05'; input.max = '0.95'; input.step = '0.05'; input.value = String(P)
         input.addEventListener('input', () => { P = Number(input.value); this.counts = this.rows.map(() => 0); this.thrown = 0; try { localStorage.setItem('pg:p', input.value) } catch {}; this.render() })
         slider.append(`${tr('the picture for p =')} ${P.toFixed(2)} `, input)
-        side.append(slider)
+        sideB.append(slider)
       }
       const rowEl = el('div', 'pg-row pg-crow')
       const zoomed = this.zoomBox(s)
@@ -2606,13 +2613,21 @@
       const wrap = f.s.querySelector('.pg-czoom')
       if (PHONE() && wrap) {
         const W = f.s.clientWidth || this.CW
-        const h = Math.max(120, Math.min(avail, W * this.CH / this.CW))
+        const sum = f.s.parentElement?.querySelector(':scope > .pg-cside > summary')?.offsetHeight ?? 0
+        const h = Math.max(120, Math.min(avail - (sum ? sum + 34 : 0), W * this.CH / this.CW))
         wrap.style.aspectRatio = 'auto'; wrap.style.height = `${Math.floor(h)}px`
         wrap.style.setProperty('--pg-boardw', `${Math.min(W, Math.floor(h * this.CW / this.CH))}px`)
         f.s.style.setProperty('--pg-fitw', '100%')
       } else {
         if (wrap) { wrap.style.aspectRatio = `${this.CW} / ${this.CH}`; wrap.style.height = ''; wrap.style.removeProperty('--pg-boardw') }
         f.s.style.setProperty('--pg-fitw', `${w}px`)
+        // (the expandable below the board: its first line stays on the screen, below the target)
+        const side = f.s.parentElement?.querySelector(':scope > .pg-cside')
+        if (side) {
+          const sum = side.querySelector('summary')?.offsetHeight ?? 0
+          const w2 = Math.max(180, Math.min(this.CW, Math.floor((avail - sum - 24) * this.CW / this.CH)))
+          f.box.style.maxWidth = `${w2}px`; f.s.style.setProperty('--pg-fitw', `${w2}px`)
+        }
       }
     }
   }
@@ -2684,9 +2699,6 @@
     { name: 'add_comm', kind: 'rule', sig: 'a + b = b + a', en: 'The order of a sum does not matter.', de: 'Die Reihenfolge einer Summe ist egal.' },
     { name: 'mass_not', kind: 'lemma', sig: 'mass_not μ b : μ b = 1 - μ (!b)', en: 'Proved by you in One Coin: what is not at b lies at !b.', de: 'Von dir bewiesen in „Eine Münze“: Was nicht bei b liegt, liegt bei !b.' },
     { name: 'bool_ext', kind: 'lemma', sig: 'bool_ext μ ν (h : μ true = ν true) : μ = ν', en: 'Proved by you in One Coin: two distributions on Bool are the same when they have the same mass at true.', de: 'Von dir bewiesen in „Eine Münze“: Zwei Verteilungen auf Bool sind gleich, wenn sie bei true dieselbe Masse haben.' },
-    { name: 'chance', kind: 'rule', sig: 'chance μ : I', en: 'The mass of μ at true, as a number in [0, 1] (what coin takes).', de: 'Die Masse von μ bei true, als Zahl in [0, 1] (was coin nimmt).' },
-    { name: 'chance_eq', kind: 'rule', sig: '↑(chance μ) = μ true', en: 'chance μ, as a mass, is the mass at true.', de: 'chance μ, als Masse, ist die Masse bei true.' },
-    { name: 'eq_coin', kind: 'lemma', sig: 'eq_coin μ : μ = coin (chance μ)', en: 'Proved by you in One Coin: every distribution on Bool is a coin.', de: 'Von dir bewiesen in „Eine Münze“: Jede Verteilung auf Bool ist eine Münze.' },
     { name: 'coin_true', kind: 'lemma', sig: '(coin p) true = ↑p', en: 'Proved by you in Masses: the mass of the coin at true.', de: 'Von dir bewiesen in „Massen“: die Masse der Münze bei true.' },
     { name: 'coin_false', kind: 'lemma', sig: '(coin p) false = ↑(σ p)', en: 'Proved by you in Masses: the mass of the coin at false.', de: 'Von dir bewiesen in „Massen“: die Masse der Münze bei false.' },
     { name: 'map_true', kind: 'rule', sig: '(f <$> μ) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)', en: 'Where the mass of a move goes: to true comes the mass of the points that f sends to true.', de: 'Wohin die Masse eines Zuges geht: Nach true kommt die Masse der Punkte, die f nach true schickt.' },

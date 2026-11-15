@@ -292,67 +292,6 @@ exact h
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : (chance (coin p) : ENNReal) = p") (new := "chance, chance_eq")
-:::en
-*The chance of a coin.* `chance μ` is the mass of `μ` at `true`, as a number in $`[0, 1]`; for the coin it is $`p`.
-:::
-
-:::de
-*Die Chance einer Münze.* `chance μ` ist die Masse von `μ` bei `true`, als Zahl in $`[0, 1]`; für die Münze ist es $`p`.
-:::
-
-:::proofen
-`chance_eq : ↑(chance μ) = μ true` says it as a mass; then `coin_true`.
-
-*Tip.* `rw [chance_eq, coin_true]`.
-:::
-
-:::proofde
-`chance_eq : ↑(chance μ) = μ true` sagt es als Masse; dann `coin_true`.
-
-*Tipp.* `rw [chance_eq, coin_true]`.
-:::
-:::solution
-```
-rw [chance_eq, coin_true]
-```
-:::
-::::
-
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ = coin (chance μ)") (lemma := "eq_coin") (new := "apply")
-:::en
-*Every distribution is a coin.* Whatever distribution on `Bool`: it is the coin with its mass at
-`true`.
-:::
-
-:::de
-*Jede Verteilung ist eine Münze.* Welche Verteilung auf `Bool` auch immer: Sie ist die Münze mit ihrer
-Masse bei `true`.
-:::
-
-:::proofen
-`coin` takes a number in $`[0, 1]`, a mass is a number in $`[0, \infty]`. `chance μ` is the mass at
-`true` as a number in $`[0, 1]`, and `chance_eq : ↑(chance μ) = μ true`. The tactic `apply bool_ext`
-turns the goal `μ = ν` into what your lemma needs: `μ true = ν true`.
-
-*Tip.* `apply bool_ext`, then `rw [coin_true, chance_eq]`.
-:::
-
-:::proofde
-`coin` nimmt eine Zahl in $`[0, 1]`, eine Masse ist eine Zahl in $`[0, \infty]`. `chance μ` ist die
-Masse bei `true` als Zahl in $`[0, 1]`, und `chance_eq : ↑(chance μ) = μ true`. Die Taktik
-`apply bool_ext` macht aus dem Ziel `μ = ν` das, was dein Lemma braucht: `μ true = ν true`.
-
-*Tipp.* `apply bool_ext`, dann `rw [coin_true, chance_eq]`.
-:::
-:::solution
-```
-apply bool_ext
-rw [coin_true, chance_eq]
-```
-:::
-::::
-
 ::::leanonly (proof := "(p : I) : ↑p + ↑(σ p) = (1 : ENNReal)") (new := "coin_total")
 :::en
 *The coin is whole.* $`p + (1 - p) = 1`: the two masses of the coin add up to one.
@@ -419,7 +358,7 @@ rw [pure_true, Bool.cond_true]
 :::
 ::::
 
-::::circuit (height := "440") (inputs := "x") (gates := "not, alwaysT") (coins := "p") (target := "pure true") (context := "Lean/Rules.lean") (proof := "(p : I) (b : Bool) : (fun _ => b) <$> coin p = pure b") (lemma := "coin_const") (play := "a=alwaysT; x>a.0; a>out")
+::::circuit (height := "440") (inputs := "x") (gates := "not, alwaysT") (coins := "p") (target := "pure true") (context := "Lean/Rules.lean") (proof := "(p : I) (b : Bool) : (fun _ => b) <$> coin p = pure b") (lemma := "coin_const") (play := "a=alwaysT; x>a.0; a>out") (new := "apply")
 :::en
 *Always `true`.* A constant map sends both outcomes to the same point: all the mass goes together.
 The result is sure, a point mass (Dirac measure).
