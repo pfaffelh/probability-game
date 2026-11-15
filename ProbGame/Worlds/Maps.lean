@@ -66,7 +66,34 @@ decide +revert
 :::
 ::::
 
-::::circuit (inputs := "x") (gates := "") (coins := "p") (target := "f bernoulli p") (start := "a=f; c=f; d=f; x>a.0; a>c.0; c>d.0; d>out") (context := "Lean/Rules.lean") (proof := "(f : Bool → Bool) (p : I) : f <$> (f <$> (f <$> coin p)) = f <$> coin p") (new := "map_map, congr, funext") (play := "a.0=id")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) : not <$> (not <$> μ) = (fun x => !(!x)) <$> μ") (new := "map_map")
+:::en
+*Two moves are one.* Two moves one after the other are one move: the composed map.
+:::
+
+:::de
+*Zwei Züge sind einer.* Zwei Züge nacheinander sind ein Zug: die zusammengesetzte Abbildung.
+:::
+
+:::proofen
+`map_map : g <$> (f <$> μ) = (fun x => g (f x)) <$> μ`.
+
+*Tip.* `rw [map_map]`.
+:::
+
+:::proofde
+`map_map : g <$> (f <$> μ) = (fun x => g (f x)) <$> μ`.
+
+*Tipp.* `rw [map_map]`.
+:::
+:::solution
+```
+rw [map_map]
+```
+:::
+::::
+
+::::circuit (inputs := "x") (gates := "") (coins := "p") (target := "f bernoulli p") (start := "a=f; c=f; d=f; x>a.0; a>c.0; c>d.0; d>out") (context := "Lean/Rules.lean") (proof := "(f : Bool → Bool) (p : I) : f <$> (f <$> (f <$> coin p)) = f <$> coin p") (new := "congr, funext") (play := "a.0=id")
 :::en
 *Three times is once, with a coin.* The same circuit, now on a coin `x ← coin p`; the target is the
 distribution of `f x`, once. Choose a map in `f`, and then another.

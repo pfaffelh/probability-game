@@ -82,7 +82,115 @@ rw [coin_false]
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b = 1 - μ (!b)") (lemma := "mass_not") (new := "mass_total, mass_ne_top, ENNReal.add_sub_cancel_left, add_comm, exact")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (h : μ true = 0) : μ false = 1") (new := "mass_total")
+:::en
+*The whole mass.* A distribution has the total mass one. If nothing lies at `true`, everything lies at `false`.
+:::
+
+:::de
+*Die ganze Masse.* Eine Verteilung hat die Gesamtmasse eins. Liegt bei `true` nichts, liegt alles bei `false`.
+:::
+
+:::proofen
+`μ : DiscreteMeasure Bool` is any distribution on `Bool`, and `[Prob μ]` says that its total mass is one: the rule `mass_total μ : μ true + μ false = 1`. `h : μ true = 0` is a hypothesis, a rule of this level only. `rw [← mass_total μ]` rewrites from right to left: the `1` becomes `μ true + μ false`. Then `h`, then `zero_add`.
+
+*Tip.* `rw [← mass_total μ, h, zero_add]` (type `\l` for `←`, or tap ←).
+:::
+
+:::proofde
+`μ : DiscreteMeasure Bool` ist irgendeine Verteilung auf `Bool`, und `[Prob μ]` sagt, dass ihre Gesamtmasse eins ist: die Regel `mass_total μ : μ true + μ false = 1`. `h : μ true = 0` ist eine Annahme, eine Regel nur dieses Levels. `rw [← mass_total μ]` schreibt von rechts nach links um: Die `1` wird zu `μ true + μ false`. Dann `h`, dann `zero_add`.
+
+*Tipp.* `rw [← mass_total μ, h, zero_add]` (`\l` tippen für `←`, oder ← antippen).
+:::
+:::solution
+```
+rw [← mass_total μ, h, zero_add]
+```
+:::
+::::
+
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ true ≠ ⊤") (new := "mass_ne_top, exact")
+:::en
+*Finite.* Masses are numbers in $`[0, \infty]`; the mass of a distribution is finite, `≠ ⊤` (`⊤` is $`\infty`).
+:::
+
+:::de
+*Endlich.* Massen sind Zahlen in $`[0, \infty]`; die Masse einer Verteilung ist endlich, `≠ ⊤` (`⊤` ist $`\infty`).
+:::
+
+:::proofen
+The rule `mass_ne_top : μ b ≠ ⊤` is exactly the goal. `exact h` closes a goal that is exactly `h`.
+
+*Tip.* `exact mass_ne_top`.
+:::
+
+:::proofde
+Die Regel `mass_ne_top : μ b ≠ ⊤` ist genau das Ziel. `exact h` schließt ein Ziel, das genau `h` ist.
+
+*Tipp.* `exact mass_ne_top`.
+:::
+:::solution
+```
+exact mass_ne_top
+```
+:::
+::::
+
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ true + μ false - μ true = μ false") (new := "ENNReal.add_sub_cancel_left")
+:::en
+*Taking away.* What is added and taken away again is gone, when it is finite.
+:::
+
+:::de
+*Wegnehmen.* Was dazukommt und wieder weggenommen wird, ist weg, wenn es endlich ist.
+:::
+
+:::proofen
+`ENNReal.add_sub_cancel_left (h : a ≠ ⊤) : a + b - a = b` (in $`[0, \infty]`, $`\infty - \infty` would make no sense, hence `h`). A rule with a hypothesis gets it in the brackets: here `mass_ne_top`.
+
+*Tip.* `rw [ENNReal.add_sub_cancel_left mass_ne_top]`.
+:::
+
+:::proofde
+`ENNReal.add_sub_cancel_left (h : a ≠ ⊤) : a + b - a = b` (in $`[0, \infty]` ergäbe $`\infty - \infty` keinen Sinn, daher `h`). Eine Regel mit Annahme bekommt sie in die Klammer: hier `mass_ne_top`.
+
+*Tipp.* `rw [ENNReal.add_sub_cancel_left mass_ne_top]`.
+:::
+:::solution
+```
+rw [ENNReal.add_sub_cancel_left mass_ne_top]
+```
+:::
+::::
+
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ false + μ true = 1") (new := "add_comm")
+:::en
+*The other way round.* The total mass, with the summands swapped.
+:::
+
+:::de
+*Andersherum.* Die Gesamtmasse, mit vertauschten Summanden.
+:::
+
+:::proofen
+`add_comm : a + b = b + a` turns a sum round; then it is `mass_total μ`.
+
+*Tip.* `rw [add_comm, mass_total μ]`.
+:::
+
+:::proofde
+`add_comm : a + b = b + a` dreht eine Summe um; dann ist es `mass_total μ`.
+
+*Tipp.* `rw [add_comm, mass_total μ]`.
+:::
+:::solution
+```
+rw [add_comm, mass_total μ]
+```
+:::
+::::
+
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b = 1 - μ (!b)") (lemma := "mass_not")
 :::en
 *The rest of the mass.* Now in Lean only: a statement about *every* distribution on `Bool`, which no
 board can show. What is not at `b` lies at `!b`.
@@ -184,7 +292,34 @@ exact h
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ = coin (chance μ)") (lemma := "eq_coin") (new := "apply, chance, chance_eq")
+::::leanonly (proof := "(p : I) : (chance (coin p) : ENNReal) = p") (new := "chance, chance_eq")
+:::en
+*The chance of a coin.* `chance μ` is the mass of `μ` at `true`, as a number in $`[0, 1]`; for the coin it is $`p`.
+:::
+
+:::de
+*Die Chance einer Münze.* `chance μ` ist die Masse von `μ` bei `true`, als Zahl in $`[0, 1]`; für die Münze ist es $`p`.
+:::
+
+:::proofen
+`chance_eq : ↑(chance μ) = μ true` says it as a mass; then `coin_true`.
+
+*Tip.* `rw [chance_eq, coin_true]`.
+:::
+
+:::proofde
+`chance_eq : ↑(chance μ) = μ true` sagt es als Masse; dann `coin_true`.
+
+*Tipp.* `rw [chance_eq, coin_true]`.
+:::
+:::solution
+```
+rw [chance_eq, coin_true]
+```
+:::
+::::
+
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ = coin (chance μ)") (lemma := "eq_coin") (new := "apply")
 :::en
 *Every distribution is a coin.* Whatever distribution on `Bool`: it is the coin with its mass at
 `true`.
@@ -218,7 +353,61 @@ rw [coin_true, chance_eq]
 :::
 ::::
 
-::::circuit (height := "440") (inputs := "x") (gates := "not, alwaysT") (coins := "p") (target := "pure true") (context := "Lean/Rules.lean") (proof := "(p : I) (b : Bool) : (fun _ => b) <$> coin p = pure b") (lemma := "coin_const") (new := "coin_total, pure_true") (play := "a=alwaysT; x>a.0; a>out")
+::::leanonly (proof := "(p : I) : ↑p + ↑(σ p) = (1 : ENNReal)") (new := "coin_total")
+:::en
+*The coin is whole.* $`p + (1 - p) = 1`: the two masses of the coin add up to one.
+:::
+
+:::de
+*Die Münze ist ganz.* $`p + (1 - p) = 1`: Die beiden Massen der Münze ergeben zusammen eins.
+:::
+
+:::proofen
+`coin_total : coin p true + coin p false = 1`. To use it, first write the masses as masses of the coin: your rules `coin_true` and `coin_false`, from right to left.
+
+*Tip.* `rw [← coin_true, ← coin_false, coin_total]`.
+:::
+
+:::proofde
+`coin_total : coin p true + coin p false = 1`. Um sie zu benutzen, schreib die Massen zuerst als Massen der Münze: deine Regeln `coin_true` und `coin_false`, von rechts nach links.
+
+*Tipp.* `rw [← coin_true, ← coin_false, coin_total]`.
+:::
+:::solution
+```
+rw [← coin_true, ← coin_false, coin_total]
+```
+:::
+::::
+
+::::leanonly (proof := ": (pure true : DiscreteMeasure Bool) true = 1") (new := "pure_true")
+:::en
+*Surely true.* `pure b` is the distribution that is surely `b`: all its mass lies at `b`.
+:::
+
+:::de
+*Sicher true.* `pure b` ist die Verteilung, die sicher `b` ist: Ihre ganze Masse liegt bei `b`.
+:::
+
+:::proofen
+`pure_true : (pure b) true = bif b then 1 else 0`: one if `b` is `true`, else zero.
+
+*Tip.* `rw [pure_true, Bool.cond_true]`.
+:::
+
+:::proofde
+`pure_true : (pure b) true = bif b then 1 else 0`: eins, wenn `b` gleich `true` ist, sonst null.
+
+*Tipp.* `rw [pure_true, Bool.cond_true]`.
+:::
+:::solution
+```
+rw [pure_true, Bool.cond_true]
+```
+:::
+::::
+
+::::circuit (height := "440") (inputs := "x") (gates := "not, alwaysT") (coins := "p") (target := "pure true") (context := "Lean/Rules.lean") (proof := "(p : I) (b : Bool) : (fun _ => b) <$> coin p = pure b") (lemma := "coin_const") (play := "a=alwaysT; x>a.0; a>out")
 :::en
 *Always `true`.* A constant map sends both outcomes to the same point: all the mass goes together.
 The result is sure, a point mass (Dirac measure).
@@ -275,7 +464,34 @@ rw [Bool.cond_true, Bool.cond_true, Bool.cond_true, coin_total]
 :::
 ::::
 
-::::circuit (height := "540") (inputs := "x") (gates := "not, alwaysT") (coins := "p") (target := "pure false") (context := "Lean/Rules.lean") (proof := "(p : I) : not <$> ((fun _ => true) <$> coin p) = pure false") (new := "map_pure") (play := "a=alwaysT; b=not; x>a.0; a>b.0; b>out")
+::::leanonly (proof := ": (not <$> (pure true : DiscreteMeasure Bool)) = pure false") (new := "map_pure")
+:::en
+*A sure thing, moved.* A move applied to a sure value is the sure value of its image.
+:::
+
+:::de
+*Eine sichere Sache, bewegt.* Ein Zug, angewandt auf einen sicheren Wert, ist der sichere Wert seines Bildes.
+:::
+
+:::proofen
+`map_pure : f <$> pure a = pure (f a)`.
+
+*Tip.* `rw [map_pure, Bool.not_true]`.
+:::
+
+:::proofde
+`map_pure : f <$> pure a = pure (f a)`.
+
+*Tipp.* `rw [map_pure, Bool.not_true]`.
+:::
+:::solution
+```
+rw [map_pure, Bool.not_true]
+```
+:::
+::::
+
+::::circuit (height := "540") (inputs := "x") (gates := "not, alwaysT") (coins := "p") (target := "pure false") (context := "Lean/Rules.lean") (proof := "(p : I) : not <$> ((fun _ => true) <$> coin p) = pure false") (play := "a=alwaysT; b=not; x>a.0; a>b.0; b>out")
 :::en
 *Surely `false`, but there is no “always `false`”.* Two gates one after the other: the image measure of
 the image measure is the image measure of the composition, $`(P \circ f^{-1}) \circ g^{-1} = P \circ (g \circ f)^{-1}`.
