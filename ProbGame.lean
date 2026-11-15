@@ -8,6 +8,7 @@ import ProbGame.Worlds.Counting
 import ProbGame.Worlds.Circuits
 import ProbGame.Worlds.Bind
 import ProbGame.Worlds.Thinning
+import ProbGame.Worlds.Sequences
 import ProbGame.Worlds.Binomial
 import ProbGame.Worlds.Geometric
 import ProbGame.Lexicon
@@ -37,7 +38,7 @@ your inventory. Each lemma you prove is unlocked for the levels after it. Lean r
 your progress stays in your browser.
 One world comes before chance: circuits of `true` and `false`; then how Lean writes a distribution. Then a coin with probability $`p`, what it is and where its mass
 goes; the maps `Bool → Bool`, on values and on coins; circuits of coins, read as `do` blocks, and counting; and coins that wait for
-others (bind); thinning; the binomial formula by induction; the geometric distribution. The board leads at first; Lean grows from world to world.
+others (bind); thinning; sequences of coins; the binomial formula by induction; the geometric distribution. The board leads at first; Lean grows from world to world.
 :::
 
 :::de
@@ -50,7 +51,7 @@ läuft auf dem Server; dein Fortschritt bleibt in deinem Browser.
 Eine Welt kommt vor dem Zufall: Schaltungen aus `true` und `false`; dann, wie Lean eine Verteilung schreibt.
 Dann eine Münze mit Wahrscheinlichkeit $`p`, was
 sie ist und wohin ihre Masse geht; die Abbildungen `Bool → Bool`, auf Werten und auf Münzen; Schaltungen aus Münzen, gelesen als `do`-Blöcke, und
-Zählen; und Münzen, die auf andere warten (bind); Ausdünnen; die Binomialformel durch Induktion; die geometrische Verteilung. Am Anfang führt das Spielfeld; Lean wächst von Welt zu
+Zählen; und Münzen, die auf andere warten (bind); Ausdünnen; Folgen von Münzen; die Binomialformel durch Induktion; die geometrische Verteilung. Am Anfang führt das Spielfeld; Lean wächst von Welt zu
 Welt.
 :::
 
@@ -69,6 +70,8 @@ Welt.
 {include 1 ProbGame.Worlds.Bind}
 
 {include 1 ProbGame.Worlds.Thinning}
+
+{include 1 ProbGame.Worlds.Sequences}
 
 {include 1 ProbGame.Worlds.Binomial}
 

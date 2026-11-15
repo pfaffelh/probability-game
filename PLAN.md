@@ -170,6 +170,8 @@ coin_bind_apply, pure_self, pure_zero_succ, shift_succ, shift_zero, geomMass/geo
 - Geometric: geom by its masses (geomMass, recursive); geom_zero, geom_succ (rfl), geom_formula,
   geom_memoryless, boss geom_first (geom p = do x ← coin p; bif x then pure 0 else 1 + geom p).
 
-Next (proposed): Sequences (iidSequence, binom = count true <$> iidSequence, from the journal);
+Sequences (built, 7, a side way from Counting): seq_zero, seq_succ, seq_succ_apply, seq_zero_nil,
+count_true_cons; boss binom_eq_count (binom p n = count true <$> iidSequence n (coin p)).
+Next (proposed):
 Hypergeometric built step by step (an urn, a ball drawn, the urn smaller), its formula by induction
 (Vandermonde); Geometric total mass one (p ≠ 0, geometric series).

@@ -12,7 +12,7 @@ one after another.
 -/
 
 open MeasureTheory (DiscreteMeasure)
-open MeasureTheory.DiscreteMeasure (coin binom)
+open MeasureTheory.DiscreteMeasure (coin binom iidSequence)
 open unitInterval
 
 namespace ProbGame
@@ -331,6 +331,36 @@ theorem geom_first (p : I) :
     mul_one, geom_zero]
   rw [coin_bind_apply, Bool.cond_true, Bool.cond_false, pure_zero_succ, shift_succ, mul_zero,
     zero_add, geom_succ]
+
+/-! Sequences (2026-11-15): `iidSequence n μ` draws `n` times from `μ`, independently, as a list. -/
+
+theorem seq_zero {α : Type} (μ : DiscreteMeasure α) : iidSequence 0 μ = pure [] :=
+  MeasureTheory.DiscreteMeasure.iidSequence_zero μ
+
+theorem seq_succ {α : Type} (μ : DiscreteMeasure α) (n : ℕ) :
+    iidSequence (n + 1) μ = (do let y ← μ; let l ← iidSequence n μ; pure (y :: l)) :=
+  (MeasureTheory.DiscreteMeasure.iidSequence_cons μ).symm
+
+theorem seq_succ_apply {α : Type} [DecidableEq α] (μ : DiscreteMeasure α) (n : ℕ) (a : α) (l : List α) :
+    iidSequence (n + 1) μ (a :: l) = μ a * iidSequence n μ l := by
+  rw [MeasureTheory.DiscreteMeasure.iidSequence, List.replicate_succ,
+    MeasureTheory.DiscreteMeasure.sequence_cons_apply_cons]
+  rfl
+
+theorem seq_zero_nil {α : Type} (μ : DiscreteMeasure α) : iidSequence 0 μ [] = 1 := by
+  rw [seq_zero]; exact MeasureTheory.DiscreteMeasure.pure_apply_self
+
+theorem count_true_cons (y : Bool) (l : List Bool) : (y :: l).count true = y.toNat + l.count true := by
+  cases y <;> simp [add_comm]
+
+/-- Sequences, the boss: `binom p n` counts the `true` in `n` independent coins. -/
+theorem binom_eq_count (p : I) (n : ℕ) :
+    binom p n = (fun l => l.count true) <$> iidSequence n (coin p) := by
+  induction' n with n ih
+  rw [seq_zero, map_pure, binom_zero]
+  rfl
+  rw [binom_succ, seq_succ, ih]
+  simp only [map_bind, map_pure, bind_map_left, count_true_cons]
 
 end ProbGame
 
