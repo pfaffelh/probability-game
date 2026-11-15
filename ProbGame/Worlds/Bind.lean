@@ -12,10 +12,9 @@ htmlSplit := .never
 
 :::en
 Every board is given, and your task is always the same: choose what goes into the fields of the `bind`
-gate, and drag it in. First, without coins, as in *Circuits*: the `bind` gate looks at `x` (on top)
-and chooses a field, `T` or `F`, and the map in that field is applied to `y` (on the right side).
+gate, and drag it in. The `bind` gate looks at `x` (on top) and chooses a field, `T` or `F`.
 
-Then a coin waits: it is thrown *after* the coin `x`, and **which** coin it is depends on what `x`
+A coin waits: it is thrown *after* the coin `x`, and **which** coin it is depends on what `x`
 showed. The waiting coin `y` is a `bind` box with a coin in each field: `coin p`, `coin (σ p)`,
 `pure true` or `pure false`, each with its small histogram. `y` becomes
 `bif x then coin q else coin r`: first throw `x`, then, depending on what came, the one or the other
@@ -28,11 +27,10 @@ each other.
 
 :::de
 Jedes Spielfeld ist gegeben, und deine Aufgabe ist immer dieselbe: Wähle, was in die Felder des
-Bausteins `bind` kommt, und zieh es hinein. Zuerst ohne Münzen, wie in *Schaltungen*: `bind` schaut auf
-`x` (oben) und wählt ein Feld, `T` oder `F`, und die Abbildung in diesem Feld wird auf `y` (rechts)
-angewandt.
+Bausteins `bind` kommt, und zieh es hinein. `bind` schaut auf `x` (oben) und wählt ein Feld, `T` oder
+`F`.
 
-Dann wartet eine Münze: Sie wird *nach* der Münze `x` geworfen, und **welche** Münze es ist, hängt davon
+Eine Münze wartet: Sie wird *nach* der Münze `x` geworfen, und **welche** Münze es ist, hängt davon
 ab, was `x` zeigte. Die wartende Münze `y` ist ein `bind`-Kasten mit einer Münze in jedem Feld:
 `coin p`, `coin (σ p)`, `pure true` oder `pure false`, jede mit ihrem kleinen Histogramm. `y` wird zu
 `bif x then coin q else coin r`: erst `x` werfen, dann, je nachdem was kam, die eine oder die andere
@@ -56,101 +54,6 @@ Die Aussagen handeln von der Masse bei `true`: Das Spielfeld zeigt die ganze Ver
 `bind_true : (μ >>= f) true = μ true * f true true + μ false * f false true` geht beide Wege: über
 `true` (die Masse `μ true`, dann die Masse von `f true` bei `true`) und über `false`.
 :::
-
-::::circuit (height := "540") (inputs := "x y") (gates := "") (table := "0001") (goal := "x && y") (proof := "(x y : Bool) : (if x then y else false) = (bif x then (bif y then true else false) else (bif y then false else false))") (start := "a=bind@240,250; x>a.0; y>a.1; a>out") (play := "a.T=id; a.F=false")
-:::en
-*A gate of your own.* First without coins, as in *Circuits*. There are four maps `Bool → Bool`:
-`id`, `not`, always `T`, always `F` (see *Maps*). New gate: `bind`. It is on the board already, wired;
-it has two fields, `T` and `F`, and your task is to put a map into each (drag it in, or tap the field
-until it is the one you want). Read it from top to bottom: the input on top chooses
-one of the two fields, `T` or `F` (the blue arrows). The value at the input on the right side goes
-into both fields (the two circles, joined below them); the field chosen applies its map to it. In Lean:
-`c >>= fun b => if b then f v else g v`. Make it `and`: when `x` is `true`, `y` itself; when `x` is
-`false`, always `F`. (Tap a column of the output box: the field not used fades.)
-:::
-
-:::de
-*Ein eigener Baustein.* Zuerst ohne Münzen, wie in *Schaltungen*. Es gibt vier Abbildungen
-`Bool → Bool`: `id`, `not`, immer `T`, immer `F` (siehe *Abbildungen*). Neuer Baustein: `bind`. Er liegt
-schon verdrahtet auf dem Spielfeld; er hat zwei Felder, `T` und `F`, und deine Aufgabe ist, in jedes
-eine Abbildung zu legen (hineinziehen, oder das Feld antippen, bis es die richtige ist). Lies ihn von oben nach unten: Der
-Eingang oben wählt eines der beiden Felder, `T` oder `F` (die blauen Pfeile). Der Wert am Eingang
-rechts geht in beide Felder (die zwei Kreise, unten verbunden); das gewählte Feld wendet seine
-Abbildung darauf an. In Lean:
-`c >>= fun b => if b then f v else g v`. Mach daraus `and`: ist `x` `true`, `y` selbst; ist `x` `false`, immer
-`F`. (Tippe eine Spalte des Ausgabekastens an: Das Feld, das nicht benutzt wird, verblasst.)
-:::
-
-:::proofen
-Four rows, as in the boss of *Circuits*: by hand `cases x <;> cases y <;> rfl`, or
-`decide +revert` (from *Maps*), which checks them all.
-
-*Tip.* `decide +revert`.
-:::
-
-:::proofde
-Vier Zeilen, wie beim Endgegner von *Schaltungen*: von Hand `cases x <;> cases y <;> rfl`, oder
-`decide +revert` (aus *Abbildungen*), das alle prüft.
-
-*Tipp.* `decide +revert`.
-:::
-:::solution
-```
-decide +revert
-```
-:::
-::::
-
-::::circuit (height := "540") (inputs := "x y") (gates := "") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : (if x then !y else y) = (bif x then (bif y then false else true) else (bif y then true else false))") (start := "a=bind@240,250; x>a.0; y>a.1; a>out") (play := "a.T=not; a.F=id")
-:::en
-*xor, chosen yourself.* `true` when exactly one input is. With `bind`: for `x = true` one map of `y`,
-for `x = false` another. Four maps for each field: sixteen gates with two inputs, all of them.
-:::
-
-:::de
-*xor, selbst gewählt.* `true`, wenn genau ein Eingang es ist. Mit `bind`: für `x = true` eine
-Abbildung von `y`, für `x = false` eine andere. Vier Abbildungen für jedes Feld: sechzehn Bausteine mit
-zwei Eingängen, alle.
-:::
-
-:::proofen
-*Tip.* `decide +revert`.
-:::
-
-:::proofde
-*Tipp.* `decide +revert`.
-:::
-:::solution
-```
-decide +revert
-```
-:::
-::::
-
-::::circuit (height := "540") (inputs := "x y") (gates := "") (table := "1101") (goal := "!x || y") (proof := "(x y : Bool) : (if x then y else true) = (bif x then (bif y then true else false) else (bif y then true else true))") (start := "a=bind@240,250; x>a.0; y>a.1; a>out") (play := "a.T=id; a.F=true")
-:::en
-*If x, then y.* The implication: `false` only when `x` is `true` and `y` is `false`. In Lean
-`!x || y`.
-:::
-
-:::de
-*Wenn x, dann y.* Die Implikation: `false` nur, wenn `x` `true` ist und `y` `false`. In Lean
-`!x || y`.
-:::
-
-:::proofen
-*Tip.* `decide +revert`.
-:::
-
-:::proofde
-*Tipp.* `decide +revert`.
-:::
-:::solution
-```
-decide +revert
-```
-:::
-::::
 
 ::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (μ >>= fun _ => μ) true = μ true * μ true + μ false * μ true") (new := "bind_true")
 :::en
@@ -187,136 +90,6 @@ auf `Bool` eine Summe aus zwei Summanden.
 :::solution
 ```
 rw [bind_true]
-```
-:::
-::::
-
-::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:p^2 false:1-p^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then coin p else pure false); pure y) true = (↑p * ↑p : ENNReal)") (play := "y.T=p; y.F=0")
-:::en
-*Only after true.* `y` is a coin when `x` showed `true`, and surely `false` otherwise: choose its two
-coins. Compare with *Both `true`* of *Building with Coins*: the same distribution,
-without an `and`.
-:::
-
-:::de
-*Nur nach true.* `y` ist eine Münze, wenn `x` `true` zeigte, und sonst sicher `false`: Wähle seine zwei
-Münzen. Vergleiche mit *Beide `true`* aus *Bauen mit Münzen*: dieselbe Verteilung,
-ohne ein `and`.
-:::
-
-:::proofen
-`let y ← m; pure y` is just `m` (Lean drops it already when it reads the statement). `rw [bind_true]`
-splits the mass at `true` into the two ways. What is left is computing: which coin each way takes, its
-mass at `true`, products and sums. `norm_num` (from *Building with Coins*) does all that.
-
-*Tip.* `rw [bind_true]`, then `norm_num`.
-:::
-
-:::proofde
-`let y ← m; pure y` ist einfach `m` (Lean lässt es schon beim Lesen der Aussage weg). `rw [bind_true]`
-teilt die Masse bei `true` in die zwei Wege. Was bleibt, ist Rechnen: welche Münze jeder Weg nimmt, ihre
-Masse bei `true`, Produkte und Summen. `norm_num` (aus *Bauen mit Münzen*) erledigt das.
-
-*Tipp.* `rw [bind_true]`, dann `norm_num`.
-:::
-:::solution
-```
-rw [bind_true]
-norm_num
-```
-:::
-::::
-
-::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bernoulli p") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else pure false); pure y) true = (↑p : ENNReal)") (play := "y.T=1; y.F=0")
-:::en
-*Copying.* `y` is surely `true` after `true`, and surely `false` after `false`: it copies `x`. The
-output `y` has the distribution of the coin `x`.
-:::
-
-:::de
-*Abschreiben.* `y` ist sicher `true` nach `true` und sicher `false` nach `false`: Es schreibt `x` ab.
-Der Ausgang `y` hat die Verteilung der Münze `x`.
-:::
-
-:::proofen
-As before; now both ways end in a point mass, `pure true` and `pure false`.
-
-*Tip.* `rw [bind_true]`, `norm_num`.
-:::
-
-:::proofde
-Wie eben; jetzt enden beide Wege in einer Punktmasse, `pure true` und `pure false`.
-
-*Tipp.* `rw [bind_true]`, `norm_num`.
-:::
-:::solution
-```
-rw [bind_true]
-norm_num
-```
-:::
-::::
-
-::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:2p-p^2 false:(1-p)^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else coin p); pure y) true = (↑p + ↑(σ p) * ↑p : ENNReal)") (play := "y.T=1; y.F=p")
-:::en
-*One more try.* When `x` showed `true`, that is enough: `y` is surely `true`. When it showed `false`,
-throw again. Compare with *At least one `true`* of *Building with Coins*: the same as `x || y`, but the
-second coin is only thrown when it is needed.
-:::
-
-:::de
-*Noch ein Versuch.* Zeigte `x` `true`, reicht das: `y` ist sicher `true`. Zeigte es `false`, wirf noch
-einmal. Vergleiche mit *Mindestens einmal `true`* aus *Bauen mit Münzen*: dasselbe wie `x || y`, aber die
-zweite Münze wird nur geworfen, wenn sie gebraucht wird.
-:::
-
-:::proofen
-The way through `true` has mass $`p \cdot 1`, the way through `false` mass $`(1 - p) \cdot p`.
-
-*Tip.* `rw [bind_true]`, `norm_num`.
-:::
-
-:::proofde
-Der Weg über `true` hat die Masse $`p \cdot 1`, der Weg über `false` die Masse $`(1 - p) \cdot p`.
-
-*Tipp.* `rw [bind_true]`, `norm_num`.
-:::
-:::solution
-```
-rw [bind_true]
-norm_num
-```
-:::
-::::
-
-::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:1-2p+2p^2 false:2p-2p^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then coin p else coin (σ p)); pure y) true = (↑p * ↑p + ↑(σ p) * ↑(σ p) : ENNReal)") (play := "y.T=p; y.F=1-p")
-:::en
-*A coin that remembers.* After `true` the coin `p` again, after `false` the flipped coin $`1 - p`:
-the second throw tends to repeat the first.
-:::
-
-:::de
-*Eine Münze, die sich erinnert.* Nach `true` wieder die Münze `p`, nach `false` die umgedrehte Münze
-$`1 - p`: Der zweite Wurf wiederholt eher den ersten.
-:::
-
-:::proofen
-Two different coins in the two ways now, `coin p` and `coin (σ p)`; `norm_num` knows the masses of
-both.
-
-*Tip.* `rw [bind_true]`, `norm_num`.
-:::
-
-:::proofde
-Jetzt zwei verschiedene Münzen in den zwei Wegen, `coin p` und `coin (σ p)`; `norm_num` kennt die
-Massen beider.
-
-*Tipp.* `rw [bind_true]`, `norm_num`.
-:::
-:::solution
-```
-rw [bind_true]
-norm_num
 ```
 :::
 ::::

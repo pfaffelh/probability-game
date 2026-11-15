@@ -108,7 +108,7 @@ Ziel ist die Verteilung von `f x`, einmal. Wähle eine Abbildung in `f`, und dan
 Three gates one after the other are one gate: the new rule
 `map_map : g <$> (f <$> μ) = (fun x => g (f x)) <$> μ`, twice. Then both sides move the same coin,
 with two maps. Two new tactics: `congr 1` reduces the goal to the two maps being equal, and `funext b`
-to their being equal at every point `b`. That is the lemma of the level before:
+to their being equal at every point `b`. That is the lemma of the first level of this world:
 `exact Bool.apply_apply_apply f b`.
 
 *Tip.* `rw [map_map, map_map]`, `congr 1`, `funext b`, `exact Bool.apply_apply_apply f b`.
@@ -119,7 +119,7 @@ Drei Bausteine hintereinander sind ein Baustein: die neue Regel
 `map_map : g <$> (f <$> μ) = (fun x => g (f x)) <$> μ`, zweimal. Dann bewegen beide Seiten dieselbe
 Münze, mit zwei Abbildungen. Zwei neue Taktiken: `congr 1` führt das Ziel darauf zurück, dass die
 beiden Abbildungen gleich sind, und `funext b` darauf, dass sie an jeder Stelle `b` gleich sind. Das
-ist das Lemma des Levels davor: `exact Bool.apply_apply_apply f b`.
+ist das Lemma des ersten Levels dieser Welt: `exact Bool.apply_apply_apply f b`.
 
 *Tipp.* `rw [map_map, map_map]`, `congr 1`, `funext b`, `exact Bool.apply_apply_apply f b`.
 :::

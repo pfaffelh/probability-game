@@ -391,6 +391,70 @@ theorem geom_total (p : I) (h : p ≠ 0) : ∑' k, geom p k = 1 := by
   rw [ENNReal.tsum_mul_right, ENNReal.tsum_geometric, one_sub_symm,
     ENNReal.inv_mul_cancel (mass_ne_zero h) (mass_finite p)]
 
+/-! Hypergeometric, drawn ball by ball (2026-11-15). -/
+
+/-- The chance to draw a white ball from an urn with `w` white and `b` black balls (`0` for an empty urn). -/
+noncomputable def frac (w b : ℕ) : I :=
+  ⟨(w : ℝ) / (w + b), div_nonneg (Nat.cast_nonneg _) (by positivity),
+    div_le_one_of_le₀ (by linarith [(Nat.cast_nonneg b : (0:ℝ) ≤ b)]) (by positivity)⟩
+
+/-- The hypergeometric distribution, drawn ball by ball: the number of white balls in `n` draws
+without replacement from an urn with `w` white and `b` black balls. -/
+noncomputable def hyper : ℕ → ℕ → ℕ → DiscreteMeasure ℕ
+  | _, _, 0 => pure 0
+  | w, b, n + 1 => do
+      let X ← coin (frac w b)
+      bif X then (do let Y ← hyper (w - 1) b n; pure (1 + Y)) else hyper w (b - 1) n
+
+theorem hyper_zero (w b : ℕ) : hyper w b 0 = pure 0 := rfl
+
+theorem hyper_succ (w b n : ℕ) : hyper w b (n + 1) = (do
+    let X ← coin (frac w b)
+    bif X then (do let Y ← hyper (w - 1) b n; pure (1 + Y)) else hyper w (b - 1) n) := rfl
+
+theorem frac_zero (b : ℕ) : frac 0 b = 0 := by
+  apply Subtype.ext; simp [frac]
+
+theorem frac_white (w : ℕ) : frac (w + 1) 0 = 1 := by
+  apply Subtype.ext
+  show ((↑(w + 1) : ℝ) / (↑(w + 1) + ↑(0 : ℕ))) = 1
+  rw [Nat.cast_zero, add_zero]
+  exact div_self (by positivity)
+
+theorem coin_zero : coin 0 = pure false := by
+  apply bool_ext; rw [coin_true, pure_true, Bool.cond_false]
+  show ENNReal.ofReal 0 = 0
+  simp
+
+theorem coin_one : coin 1 = pure true := by
+  apply bool_ext; rw [coin_true, pure_true, Bool.cond_true]
+  show ENNReal.ofReal 1 = 1
+  simp
+
+theorem cond_same {α : Type} (c : Bool) (a : α) : (bif c then a else a) = a := by cases c <;> rfl
+
+theorem hyper_black (b n : ℕ) : hyper 0 b n = pure 0 := by
+  induction' n with n ih generalizing b
+  rw [hyper_zero]
+  rw [hyper_succ, frac_zero, coin_zero, pure_bind, Bool.cond_false, ih]
+
+theorem hyper_white (w : ℕ) : hyper w 0 w = pure w := by
+  induction' w with w ih
+  rw [hyper_zero]
+  rw [hyper_succ, frac_white, coin_one, pure_bind, Bool.cond_true, Nat.add_sub_cancel, ih, pure_bind,
+    add_comm]
+
+/-- Hypergeometric, the boss: drawing all the balls, one has all the white ones. -/
+theorem hyper_all (w b : ℕ) : hyper w b (w + b) = pure w := by
+  induction' w with w ih generalizing b
+  rw [zero_add, hyper_black]
+  induction' b with b ih2
+  rw [add_zero, hyper_white]
+  rw [← add_assoc, hyper_succ, Nat.add_sub_cancel, Nat.add_sub_cancel, ih2, add_right_comm, add_assoc,
+    ih, pure_bind, add_comm 1 w]
+  simp only [cond_same]
+  rw [coin_unused]
+
 end ProbGame
 
 open ProbGame
