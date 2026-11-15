@@ -245,9 +245,6 @@ html.pg-playing .prev-next-buttons { display: none !important; }
   .pg-stage .pg-palette { width: auto; }
   .pg-stage .pg-palette .pg-moves, .pg-stage .pg-palette .pg-blocks { flex-direction: row; flex-wrap: wrap; }
   .pg-stage .pg-palette .pg-moves-head { display: none; }
-  /* circuits: the gates behind ＋ in the tool bar (as in the IPM) */
-  .pg-stage .pg-circuit .pg-palette { display: none; }
-  .pg-toolbar .pg-add-button:not([hidden]) { display: flex; }
   .pg-stage > .pg-level:not([hidden]) { padding: 0.3rem 0.5rem; }
   .pg-stage .pg-slider-note { display: none; }
   .pg-toolbar { flex-wrap: nowrap; gap: 3px; }
@@ -711,3 +708,21 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
   .pg-stage .pg-side-scroll .pg-inventory { flex: none; overflow: visible; }
 }
 .pg-proof-failed { display: block; font-size: 0.85em; color: #8a2f24; text-decoration: line-through; text-decoration-color: rgba(176, 58, 46, 0.5); margin-bottom: 0.2em; overflow-wrap: anywhere; }
+
+/* phones: the gates of a circuit fixed below the board, in one row (at most five), as the inventory
+   below a Lean proof; only the board scrolls (on its side: a column left of the board) */
+@media (max-width: 760px) and (min-height: 501px) {
+  .pg-stage .pg-level.pg-circuit .pg-board { overflow: hidden; }
+  .pg-stage .pg-level.pg-circuit .pg-main { flex: 1 1 0; min-height: 0; overflow-y: auto; width: 100%; }
+  .pg-stage .pg-level.pg-circuit .pg-palette { display: block; order: 1; flex: none; width: 100%; box-sizing: border-box; border-top: 1px solid #e6d6b8; padding: 4px 6px 2px; }
+  .pg-stage .pg-level.pg-circuit .pg-palette .pg-moves { display: flex; flex-direction: row; flex-wrap: nowrap; justify-content: center; gap: 6px; overflow-x: auto; }
+  .pg-stage .pg-level.pg-circuit .pg-palette .pg-gate-item { flex: 0 1 72px; min-width: 52px; }
+  .pg-stage .pg-level.pg-circuit .pg-palette .pg-gate-icon { width: 100%; height: 50px; }
+}
+@media (max-height: 500px) {
+  .pg-stage .pg-level.pg-circuit .pg-board { flex-direction: row; overflow: hidden; }
+  .pg-stage .pg-level.pg-circuit .pg-main { flex: 1 1 0; min-width: 0; min-height: 0; overflow-y: auto; }
+  .pg-stage .pg-level.pg-circuit .pg-palette { display: block; order: -1; flex: none; width: 76px; overflow-y: auto; border-right: 1px solid #e6d6b8; padding: 2px 4px 0 0; }
+  .pg-stage .pg-level.pg-circuit .pg-palette .pg-moves { display: flex; flex-direction: column; flex-wrap: nowrap; gap: 4px; }
+  .pg-stage .pg-level.pg-circuit .pg-palette .pg-gate-icon { width: 100%; height: 46px; }
+}
