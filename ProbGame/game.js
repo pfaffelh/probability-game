@@ -1815,7 +1815,17 @@
     save() { try { localStorage.setItem(this.key + ':circuit', JSON.stringify({ gates: this.gatesOn, wires: this.wires, seq: this.seq, seen: this.seen, picks: this.picks })) } catch {} }
     inputAt(k) {
       // (a coin thrown after others, which coin depending on a wire: on the left, one below the other)
-      if (this.ctl0?.[k]) return this.random ? { x: this.CW / 2, y: 185 + 140 * this.ctl0.slice(0, k).filter(Boolean).length } : { x: 110, y: 170 + 115 * this.ctl.slice(0, k).filter(Boolean).length }
+      // (with coins: below the coin it waits on, when that is a coin of the top row and has a column of its
+      // own, as in `p ?|? p ?|?`; else in the middle, one below the other)
+      if (this.ctl0?.[k] && this.random) {
+        const tops = this.names.filter((_, j) => !this.ctl0[j]), from = this.wires?.find(w => w.to === this.names[k])?.from
+        if (tops.length > 1 && tops.includes(from)) {
+          const below = this.names.slice(0, k).filter((x, j) => this.ctl0[j] && this.wires.find(w => w.to === x)?.from === from).length
+          return { x: this.inputAt(this.names.indexOf(from)).x, y: 185 + 140 * below }
+        }
+        return { x: this.CW / 2, y: 185 + 140 * this.ctl0.slice(0, k).filter(Boolean).length }
+      }
+      if (this.ctl0?.[k]) return { x: 110, y: 170 + 115 * this.ctl.slice(0, k).filter(Boolean).length }
       const top = this.names.map((_, j) => j).filter(j => !this.ctl?.[j]), r = top.indexOf(k)
       return { x: this.CW * (r + 1) / (top.length + 1), y: 48 }
     }
@@ -1910,8 +1920,11 @@
       if (!at) {
         const spots = []
         // (one below the other first: a chain of gates runs straight down)
-        for (const x of this.big ? [this.CW / 2, this.CW / 2 - 220, this.CW / 2 + 220] : [this.CW / 2, this.CW / 2 - 135, this.CW / 2 + 135]) for (const y of this.binds ? [265, 345, 420] : this.big ? [170, 280, 385, 490] : [160, 260, 360]) spots.push({ x, y })
-        at = spots.filter(s => s.y + gateH(kind) / 2 + 30 <= this.outBox().top).find(s => !this.gatesOn.some(g => Math.abs(g.x - s.x) < GW && Math.abs(g.y - s.y) < (gateH(g.kind) + gateH(kind)) / 2 + 20)) ?? { x: this.CW / 2, y: this.CH / 2 }
+        for (const x of this.big ? [this.CW / 2, this.CW / 2 - 220, this.CW / 2 + 220] : [this.CW / 2, this.CW / 2 - 135, this.CW / 2 + 135]) for (const y of this.binds ? [265, 345, 420, 500, 580] : this.big ? [170, 280, 385, 490] : [160, 260, 360]) spots.push({ x, y })
+        // (not on a coin that waits, nor right below it: its output stays free)
+        const boxes = this.random ? this.names.map((_, k) => k).filter(k => this.ctl0[k]).map(k => this.inputAt(k)) : []
+        const clear = s => !boxes.some(b => Math.abs(b.x - s.x) < (CTLW + GW) / 2 + 10 && s.y - gateH(kind) / 2 < b.y + CTLH / 2 + 40 && s.y + gateH(kind) / 2 > b.y - CTLH / 2 - 10)
+        at = spots.filter(s => s.y + gateH(kind) / 2 + 30 <= this.outBox().top && clear(s)).find(s => !this.gatesOn.some(g => Math.abs(g.x - s.x) < GW && Math.abs(g.y - s.y) < (gateH(g.kind) + gateH(kind)) / 2 + 20)) ?? { x: this.CW / 2, y: this.CH / 2 }
       }
       const c = this.clamp(at, kind)
       this.change(() => { this.gatesOn.push({ id: `g${this.seq++}`, kind, x: c.x, y: c.y, ...(GATES[kind].slots ? { maps: GATES[kind].shared ? [this.fmap] : [null, null] } : {}) }) })

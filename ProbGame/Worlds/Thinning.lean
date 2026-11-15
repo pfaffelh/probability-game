@@ -11,11 +11,11 @@ htmlSplit := .never
 %%%
 
 :::en
-A coin is *thinned* when each `true` is kept only with probability $`q`, decided by a second coin. In Lean only. This way is picked up again in *Binomial*.
+A coin is *thinned* when each `true` is kept only with probability $`q`, decided by a second coin. This way is picked up again in *Binomial*.
 :::
 
 :::de
-Eine Münze wird *ausgedünnt*, wenn jedes `true` nur mit Wahrscheinlichkeit $`q` behalten wird; eine zweite Münze entscheidet. Nur in Lean. Dieser Weg wird in *Binomial* wieder aufgegriffen.
+Eine Münze wird *ausgedünnt*, wenn jedes `true` nur mit Wahrscheinlichkeit $`q` behalten wird; eine zweite Münze entscheidet. Dieser Weg wird in *Binomial* wieder aufgegriffen.
 :::
 
 ::::leanonly (proof := "(p q : I) : (do let x ← coin p; bif x then coin q else pure false) = coin (p * q)") (lemma := "coin_thin") (new := "mul_zero, add_zero") (uses := "bool_ext, bind_true, Bool.cond_true, Bool.cond_false, pure_true, mul_zero, add_zero, coin_true, mass_mul, bind_false, zero_add, coin_false, coin_total")
@@ -28,13 +28,13 @@ Eine Münze wird *ausgedünnt*, wenn jedes `true` nur mit Wahrscheinlichkeit $`q
 :::
 
 :::proofen
-Two distributions on `Bool` are the same when their masses at `true` are: `apply bool_ext`. Then `bind_true` from *Coins that Wait*, the two `bif`, and `pure_true`. New: `mul_zero : a * 0 = 0` and `add_zero : a + 0 = a`.
+Two distributions on `Bool` are the same when their masses at `true` are: `apply bool_ext`. Then `bind_true` from *Building with Coins*, the two `bif`, and `pure_true`. New: `mul_zero : a * 0 = 0` and `add_zero : a + 0 = a`.
 
 *Tip.* `apply bool_ext`, `rw [bind_true, Bool.cond_true, Bool.cond_false]`, `rw [pure_true, Bool.cond_false, mul_zero, add_zero]`, `rw [coin_true, coin_true, coin_true, mass_mul]`.
 :::
 
 :::proofde
-Zwei Verteilungen auf `Bool` sind gleich, wenn ihre Massen bei `true` gleich sind: `apply bool_ext`. Dann `bind_true` aus *Münzen, die warten*, die zwei `bif` und `pure_true`. Neu: `mul_zero : a * 0 = 0` und `add_zero : a + 0 = a`.
+Zwei Verteilungen auf `Bool` sind gleich, wenn ihre Massen bei `true` gleich sind: `apply bool_ext`. Dann `bind_true` aus *Bauen mit Münzen*, die zwei `bif` und `pure_true`. Neu: `mul_zero : a * 0 = 0` und `add_zero : a + 0 = a`.
 
 *Tipp.* `apply bool_ext`, `rw [bind_true, Bool.cond_true, Bool.cond_false]`, `rw [pure_true, Bool.cond_false, mul_zero, add_zero]`, `rw [coin_true, coin_true, coin_true, mass_mul]`.
 :::
@@ -75,13 +75,17 @@ rw [coin_thin, coin_thin, mul_comm]
 :::
 ::::
 
-::::leanonly (proof := "(p q r : I) : (do let x ← coin p; let y ← (bif x then coin q else pure false); bif y then coin r else pure false) = coin (p * q * r)") (new := "bind_assoc") (uses := "bind_assoc, coin_thin")
+::::circuit (inputs := "x y z") (gates := "") (coins := "p ?|? ?|?") (target := "bernoulli p^3") (start := "x>y.0; y>z.0; z>out") (context := "Lean/Rules.lean") (proof := "(p q r : I) : (do let x ← coin p; let y ← (bif x then coin q else pure false); bif y then coin r else pure false) = coin (p * q * r)") (new := "bind_assoc") (play := "y.T=p; y.F=0; z.T=p; z.F=0") (uses := "bind_assoc, coin_thin")
 :::en
 *Boss: thinning twice.* Thinned with $`q`, and the rest thinned again with $`r`.
+
+On the board all three coins are `p`: a coin `p`, thinned with `p`, and thinned with `p` again. Fill the fields of the two coins that wait.
 :::
 
 :::de
 *Endgegner: zweimal ausdünnen.* Mit $`q` ausgedünnt, und der Rest noch einmal mit $`r`.
+
+Auf dem Spielfeld sind alle drei Münzen `p`: eine Münze `p`, mit `p` ausgedünnt und noch einmal mit `p` ausgedünnt. Füll die Felder der zwei Münzen, die warten.
 :::
 
 :::proofen
