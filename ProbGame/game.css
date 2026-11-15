@@ -729,3 +729,11 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 /* code in a tip (a definition): wrapped, never cut at the edge of a phone */
 .pg-tip-body pre, .pg-tip-body pre code { white-space: pre-wrap; overflow-wrap: anywhere; max-width: 100%; }
 .pg-tip-body pre { font-size: 0.9em; }
+/* the target beside a board of coins: never larger than needed (below the board it would grow) */
+.pg-stage .pg-cside .pg-target-svg { max-width: 260px; }
+/* the rows and masses of a board of coins: an expandable below the board (closed at first) */
+.pg-cside-a, .pg-cside-b { display: flex; flex-direction: column; gap: 0.5rem; align-items: center; }
+.pg-stage .pg-crow:has(> details.pg-cside) { flex-direction: column; flex-wrap: nowrap; align-items: center; }
+.pg-stage details.pg-cside { width: 100%; display: block; box-sizing: border-box; padding-inline: 12px; }
+.pg-stage details.pg-cside > summary { cursor: pointer; color: #8a5a16; font-size: 0.9em; padding: 2px 0; }
+.pg-cside-body { display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 0.3rem 1.2rem; }
