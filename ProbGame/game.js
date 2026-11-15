@@ -3172,7 +3172,8 @@
       key('␣', tr('a space: what comes next is an argument'), () => this.putTerm(' '), ' pg-key-name')
       key('⌫', tr('Delete the last word'), () => this.erase(), ' pg-key-op')
       key('✕', tr('Clear the input'), () => { this.choice = null; this.input.value = this.typed = ''; this.render() }, ' pg-key-op')
-      key('⌨', tr(KEYBOARD ? 'No keyboard' : 'Keyboard'), () => { KEYBOARD = !KEYBOARD; this.render(); if (KEYBOARD) this.input?.focus() }, ' pg-key-op' + (KEYBOARD ? ' pg-on' : ''))
+      // (the keyboard: on a touch screen only; elsewhere one types anyway)
+      if (TOUCH()) key('⌨', tr(KEYBOARD ? 'No keyboard' : 'Keyboard'), () => { KEYBOARD = !KEYBOARD; this.render(); if (KEYBOARD) this.input?.focus() }, ' pg-key-op' + (KEYBOARD ? ' pg-on' : ''))
       return box
     }
 
@@ -3371,11 +3372,12 @@
         const main = el('div', 'pg-proof-main'), scroll = el('div', 'pg-proof-scroll'), side = el('div', 'pg-proof-side')
         scroll.append(...parts)
         const foot = el('div', 'pg-proof-foot')
-        if (!this.done) { foot.append(row); if (TOUCH() && !below) foot.append(this.keys()) }
+        if (!this.done) foot.append(row)
         main.append(scroll)
-        // (a phone: only the input stays; the keys scroll with the inventory under it)
+        // (a phone: only the input stays; the keys scroll with the inventory under it; on a large
+        // screen the keys head the inventory column: the same inventory everywhere, all by clicks)
         if (below) { const rest = el('div', 'pg-side-scroll'); if (!this.done) rest.append(this.keys()); rest.append(inv); side.append(foot, rest) }
-        else { if (!this.done) main.append(foot); side.append(inv) }
+        else { if (!this.done) { main.append(foot); side.append(this.keys()) } side.append(inv) }
         // (where the proof and the inventory were scrolled to stays, after a tap)
         const top = this.box.querySelector('.pg-proof-scroll')?.scrollTop, oldInv = this.box.querySelector('.pg-side-scroll, .pg-proof-side .pg-inventory')?.scrollTop, oldSide = this.box.querySelector('.pg-proof-side')?.scrollTop
         this.box.replaceChildren(main, side)
