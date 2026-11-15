@@ -176,7 +176,7 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : 0 + coin p true = p") (new := "rw, zero_add") (uses := "zero_add, coin_true")
+::::leanonly (proof := "(p : I) : 0 + coin p true = p") (new := "rw, zero_add") (uses := "zero_add, coin_true, add_zero, mul_zero, coin_false")
 :::en
 *Zero plus.* Not every rule is a definition: `zero_add : 0 + a = a` is a rule of arithmetic, given
 here (it is proved in Mathlib, not by `rfl`). A rule is used by rewriting with it.
@@ -211,7 +211,7 @@ rw [coin_true]
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) : ((fun _ => true) <$> μ) true = μ true + μ false") (new := "map_true") (uses := "map_true, Bool.cond_true")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) : ((fun _ => true) <$> μ) true = μ true + μ false") (new := "map_true") (uses := "map_true, Bool.cond_true, Bool.cond_false")
 :::en
 *Where the mass goes.* The move *always `true`*, `fun _ => true`, sends both points to `true`; so all
 the mass of `μ` comes to `true`. This is the rule of the gates, given (it is proved from the definition

@@ -181,7 +181,7 @@ linear_combination h
 :::
 ::::
 
-::::leanonly (proof := "(p q r : I) (h : (1 - (p : ℝ)) * r = p * (1 - q)) : (do let x ← coin p; bif x then coin q else coin r) = coin p") (lemma := "coin_stays") (uses := "bool_ext, bind_true, Bool.cond_true, Bool.cond_false, coin_true, coin_false, mass_mul_real, ENNReal.ofReal_add, real_mul_nonneg, symm_real, mass_eq_ofReal")
+::::leanonly (proof := "(p q r : I) (h : (1 - (p : ℝ)) * r = p * (1 - q)) : (do let x ← coin p; bif x then coin q else coin r) = coin p") (lemma := "coin_stays") (uses := "bool_ext, bind_true, Bool.cond_true, Bool.cond_false, coin_true, coin_false, mass_mul_real, ENNReal.ofReal_add, real_mul_nonneg, symm_real, mass_eq_ofReal, bind_false")
 :::en
 *Boss: a balance that stays.* The chain of *Coins that Wait*: from `true` to `coin q`, from `false` to `coin r`. `coin p` stays when what flows from `false` to `true`, $`(1 - p) r`, is what flows back, $`p (1 - q)`: a balance.
 :::

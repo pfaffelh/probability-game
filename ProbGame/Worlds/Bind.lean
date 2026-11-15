@@ -152,7 +152,7 @@ decide +revert
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (μ >>= fun _ => μ) true = μ true * μ true + μ false * μ true") (new := "bind_true") (uses := "bind_true")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (μ >>= fun _ => μ) true = μ true * μ true + μ false * μ true") (new := "bind_true") (uses := "bind_true, bind_false")
 :::en
 *Two ways to true.* The mass of a draw at `true`: through `true` and through `false`.
 :::
@@ -191,7 +191,7 @@ rw [bind_true]
 :::
 ::::
 
-::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:p^2 false:1-p^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then coin p else pure false); pure y) true = (↑p * ↑p : ENNReal)") (play := "y.T=p; y.F=0") (uses := "bind_true")
+::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:p^2 false:1-p^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then coin p else pure false); pure y) true = (↑p * ↑p : ENNReal)") (play := "y.T=p; y.F=0") (uses := "bind_true, bind_false")
 :::en
 *Only after true.* `y` is a coin when `x` showed `true`, and surely `false` otherwise: choose its two
 coins. Compare with *Both `true`* of *Building with Coins*: the same distribution,
@@ -227,7 +227,7 @@ norm_num
 :::
 ::::
 
-::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bernoulli p") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else pure false); pure y) true = (↑p : ENNReal)") (play := "y.T=1; y.F=0") (uses := "bind_true")
+::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bernoulli p") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else pure false); pure y) true = (↑p : ENNReal)") (play := "y.T=1; y.F=0") (uses := "bind_true, bind_false")
 :::en
 *Copying.* `y` is surely `true` after `true`, and surely `false` after `false`: it copies `x`. The
 output `y` has the distribution of the coin `x`.
@@ -257,7 +257,7 @@ norm_num
 :::
 ::::
 
-::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:2p-p^2 false:(1-p)^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else coin p); pure y) true = (↑p + ↑(σ p) * ↑p : ENNReal)") (play := "y.T=1; y.F=p") (uses := "bind_true")
+::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:2p-p^2 false:(1-p)^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else coin p); pure y) true = (↑p + ↑(σ p) * ↑p : ENNReal)") (play := "y.T=1; y.F=p") (uses := "bind_true, bind_false")
 :::en
 *One more try.* When `x` showed `true`, that is enough: `y` is surely `true`. When it showed `false`,
 throw again. Compare with *At least one `true`* of *Building with Coins*: the same as `x || y`, but the
@@ -289,7 +289,7 @@ norm_num
 :::
 ::::
 
-::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:1-2p+2p^2 false:2p-2p^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then coin p else coin (σ p)); pure y) true = (↑p * ↑p + ↑(σ p) * ↑(σ p) : ENNReal)") (play := "y.T=p; y.F=1-p") (uses := "bind_true")
+::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:1-2p+2p^2 false:2p-2p^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then coin p else coin (σ p)); pure y) true = (↑p * ↑p + ↑(σ p) * ↑(σ p) : ENNReal)") (play := "y.T=p; y.F=1-p") (uses := "bind_true, bind_false")
 :::en
 *A coin that remembers.* After `true` the coin `p` again, after `false` the flipped coin $`1 - p`:
 the second throw tends to repeat the first.
@@ -321,13 +321,46 @@ norm_num
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (do let x ← μ; let y ← pure (!x); pure (!y)) = μ") (new := "pure_bind, bind_pure") (uses := "pure_bind, Bool.not_not, bind_pure")
+::::circuit (inputs := "x y z") (gates := "") (coins := "p ?|? ?|?") (target := "bernoulli p") (start := "x>y.0; y>z.0; z>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure false else pure true); let z ← (bif y then pure false else pure true); pure z) true = (↑p : ENNReal)") (play := "y.T=0; y.F=1; z.T=0; z.F=1") (uses := "bind_true, bind_false")
 :::en
-*Flip, and flip back.* A *Markov chain* goes step by step; each step depends only on where it is. The simplest one on `Bool`: every step flips. After two steps it is back where it started: whatever the start `μ`, the distribution is `μ` again.
+*A chain: flip, and flip back.* A *Markov chain* goes step by step, and each step depends only on
+where the chain is now: `y` waits for `x`, `z` waits for `y`. Make each step flip: from `true` to
+`false`, from `false` to `true`. After two steps, the chain is back at the coin it started with.
 :::
 
 :::de
-*Umdrehen, und zurück.* Eine *Markov-Kette* geht Schritt für Schritt; jeder Schritt hängt nur davon ab, wo sie gerade ist. Die einfachste auf `Bool`: Jeder Schritt dreht um. Nach zwei Schritten ist sie wieder am Anfang: Was auch immer der Start `μ` ist, die Verteilung ist wieder `μ`.
+*Eine Kette: umdrehen, und zurück.* Eine *Markov-Kette* geht Schritt für Schritt, und jeder Schritt
+hängt nur davon ab, wo die Kette gerade ist: `y` wartet auf `x`, `z` wartet auf `y`. Lass jeden Schritt
+umdrehen: von `true` nach `false`, von `false` nach `true`. Nach zwei Schritten ist die Kette wieder bei
+der Münze, mit der sie begann.
+:::
+
+:::proofen
+As in *Boss: three tries*: `bind_true`, and then `norm_num [bind_true]`.
+
+*Tip.* `rw [bind_true]`, then `norm_num [bind_true]`.
+:::
+
+:::proofde
+Wie in *Endgegner: drei Versuche*: `bind_true`, dann `norm_num [bind_true]`.
+
+*Tipp.* `rw [bind_true]`, dann `norm_num [bind_true]`.
+:::
+:::solution
+```
+rw [bind_true]
+norm_num [bind_true]
+```
+:::
+::::
+
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (do let x ← μ; let y ← pure (!x); pure (!y)) = μ") (new := "pure_bind, bind_pure") (uses := "pure_bind, Bool.not_not, bind_pure")
+:::en
+*Flip back, from any start.* The chain of the last board, for every start: whatever the start `μ`, after two flips the distribution is `μ` again.
+:::
+
+:::de
+*Zurückdrehen, von jedem Start.* Die Kette des letzten Spielfelds, für jeden Start: Was auch immer der Start `μ` ist, nach zweimal Umdrehen ist die Verteilung wieder `μ`.
 :::
 
 :::proofen
@@ -348,7 +381,7 @@ simp only [pure_bind, Bool.not_not, bind_pure]
 :::
 ::::
 
-::::leanonly (proof := "(p q r : I) : (do let x ← coin p; bif x then coin q else coin r) true = (↑p * ↑q + ↑(σ p) * ↑r : ENNReal)") (uses := "bind_true, Bool.cond_true, Bool.cond_false, coin_true, coin_false")
+::::leanonly (proof := "(p q r : I) : (do let x ← coin p; bif x then coin q else coin r) true = (↑p * ↑q + ↑(σ p) * ↑r : ENNReal)") (uses := "bind_true, Bool.cond_true, Bool.cond_false, coin_true, coin_false, bind_false")
 :::en
 *One step forward.* A chain starts with `coin p`. From `true` the next step is `coin q`, from `false` it is `coin r`. The start distribution is carried one step forward: at `true` arrives $`p q + (1 - p) r`.
 :::
@@ -376,7 +409,7 @@ rw [coin_true, coin_true, coin_true, coin_false]
 :::
 ::::
 
-::::leanonly (proof := "(p q r : I) : (do let x ← coin p; bif x then coin q else coin r) false = (↑p * ↑(σ q) + ↑(σ p) * ↑(σ r) : ENNReal)") (new := "bind_false") (uses := "bind_false, Bool.cond_true, Bool.cond_false, coin_true, coin_false")
+::::leanonly (proof := "(p q r : I) : (do let x ← coin p; bif x then coin q else coin r) false = (↑p * ↑(σ q) + ↑(σ p) * ↑(σ r) : ENNReal)") (new := "bind_false") (uses := "bind_false, Bool.cond_true, Bool.cond_false, coin_true, coin_false, bind_true")
 :::en
 *...and at false.* The rest of the distribution after the step: at `false` arrives $`p (1 - q) + (1 - p)(1 - r)`. Now the whole distribution after one step is known.
 :::
@@ -404,7 +437,7 @@ rw [coin_true, coin_false, coin_false, coin_false]
 :::
 ::::
 
-::::leanonly (proof := "(p q r : I) (h : ↑p * ↑q + ↑(σ p) * ↑r = (↑p : ENNReal)) : (do let x ← coin p; bif x then coin q else coin r) = coin p") (uses := "bool_ext, bind_true, Bool.cond_true, Bool.cond_false, coin_true, coin_false")
+::::leanonly (proof := "(p q r : I) (h : ↑p * ↑q + ↑(σ p) * ↑r = (↑p : ENNReal)) : (do let x ← coin p; bif x then coin q else coin r) = coin p") (uses := "bool_ext, bind_true, Bool.cond_true, Bool.cond_false, coin_true, coin_false, bind_false")
 :::en
 *A distribution that stays.* When does the step carry `coin p` to itself? When the mass at `true` after the step is $`p` again: $`p = p q + (1 - p) r`. Then `coin p` is *stationary*: the chain started there stays there, step after step.
 :::
@@ -434,23 +467,57 @@ exact h
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (q : I) : (do let x ← μ; bif x then coin q else coin q) = coin q") (new := "cond_same, prob_unused") (uses := "cond_same, prob_unused")
+::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bernoulli 1-p") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then coin (σ p) else coin (σ p)); pure y) true = (↑(σ p) : ENNReal)") (new := "cond_same") (play := "y.T=1-p; y.F=1-p") (uses := "cond_same, coin_unused, coin_true, prob_unused, coin_false")
 :::en
-*A chain that forgets.* If the next step does not depend on where the chain is (`q = r`), one step is enough to forget the start: whatever `μ` was, after the step it is `coin q`.
+*A chain that forgets.* The target is `coin (1 - p)`, whatever `x` shows. Fill both fields of `y`
+with the same coin: then it does not matter where the chain was, and the start is forgotten after
+one step.
 :::
 
 :::de
-*Eine Kette, die vergisst.* Hängt der nächste Schritt nicht davon ab, wo die Kette ist (`q = r`), genügt ein Schritt, um den Start zu vergessen: Was auch immer `μ` war, nach dem Schritt ist es `coin q`.
+*Eine Kette, die vergisst.* Das Ziel ist `coin (1 - p)`, was auch immer `x` zeigt. Füll beide Felder
+von `y` mit derselben Münze: Dann spielt es keine Rolle, wo die Kette war, und der Start ist nach einem
+Schritt vergessen.
 :::
 
 :::proofen
-`cond_same : (bif c then a else a) = a` (under the `do`: `simp only`), and `prob_unused : (do let _ ← μ; ν) = ν` for a distribution `μ` (`[Prob μ]`).
+Both branches are the same: `cond_same : (bif c then a else a) = a` (under the `do`: `simp only`).
+Then the coin `x` is not used: `coin_unused`.
+
+*Tip.* `simp only [cond_same]`, `rw [coin_unused, coin_true]`.
+:::
+
+:::proofde
+Beide Zweige sind gleich: `cond_same : (bif c then a else a) = a` (unter dem `do`: `simp only`).
+Dann wird die Münze `x` nicht benutzt: `coin_unused`.
+
+*Tipp.* `simp only [cond_same]`, `rw [coin_unused, coin_true]`.
+:::
+:::solution
+```
+simp only [cond_same]
+rw [coin_unused, coin_true]
+```
+:::
+::::
+
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (q : I) : (do let x ← μ; bif x then coin q else coin q) = coin q") (new := "prob_unused") (uses := "cond_same, prob_unused, coin_unused")
+:::en
+*Forgetting, from any start.* If the next step does not depend on where the chain is (`q = r`), one step is enough to forget the start: whatever `μ` was, after the step it is `coin q`.
+:::
+
+:::de
+*Vergessen, von jedem Start.* Hängt der nächste Schritt nicht davon ab, wo die Kette ist (`q = r`), genügt ein Schritt, um den Start zu vergessen: Was auch immer `μ` war, nach dem Schritt ist es `coin q`.
+:::
+
+:::proofen
+`cond_same` as on the last board, and `prob_unused : (do let _ ← μ; ν) = ν` for any distribution `μ` (`[Prob μ]`), not only a coin.
 
 *Tip.* `simp only [cond_same]`, `rw [prob_unused]`.
 :::
 
 :::proofde
-`cond_same : (bif c then a else a) = a` (unter dem `do`: `simp only`), und `prob_unused : (do let _ ← μ; ν) = ν` für eine Verteilung `μ` (`[Prob μ]`).
+`cond_same` wie auf dem letzten Spielfeld, und `prob_unused : (do let _ ← μ; ν) = ν` für jede Verteilung `μ` (`[Prob μ]`), nicht nur eine Münze.
 
 *Tipp.* `simp only [cond_same]`, `rw [prob_unused]`.
 :::
@@ -462,7 +529,7 @@ rw [prob_unused]
 :::
 ::::
 
-::::circuit (inputs := "x y z") (gates := "") (coins := "p ?|? ?|?") (target := "bool true:3p-3p^2+p^3 false:(1-p)^3") (start := "x>y.0; y>z.0; z>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else coin p); let z ← (bif y then pure true else coin p); pure z) true = (↑p + ↑(σ p) * (↑p + ↑(σ p) * ↑p) : ENNReal)") (play := "y.T=1; y.F=p; z.T=1; z.F=p") (uses := "bind_true")
+::::circuit (inputs := "x y z") (gates := "") (coins := "p ?|? ?|?") (target := "bool true:3p-3p^2+p^3 false:(1-p)^3") (start := "x>y.0; y>z.0; z>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else coin p); let z ← (bif y then pure true else coin p); pure z) true = (↑p + ↑(σ p) * (↑p + ↑(σ p) * ↑p) : ENNReal)") (play := "y.T=1; y.F=p; z.T=1; z.F=p") (uses := "bind_true, bind_false")
 :::en
 *Boss: three tries.* Throw until `true` comes, at most three times. `y` waits for `x`, and `z` waits
 for `y`. `false` only when all three tries fail: $`(1 - p)^3`.
