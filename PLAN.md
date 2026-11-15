@@ -149,3 +149,6 @@ map_bind, or_eq*, Bool.and_not_self*, coin_unused, Bool.or_not_self*; Counting b
 binom_succ*, pure_bind, bind_assoc, add_zero, add_assoc, bind_pure (group chance.count); Coins that
 Wait bind_true (* = proved by the player, `rfl` or `cases … <;> rfl`, then a lemma). coin_and has none:
 Building with Coins 1 is its level already (`rw [coin_and]`).
+Later (user): `Bool.not_false` moved next to `Bool.not_true` — a Lean-only level right after Circuits 2
+(context WorldBool, group bool); Masses keeps cond_true/false, coin_true/false, zero_add, map_true.
+`chance`, `chance_eq`, `eq_coin` removed (nothing used them).

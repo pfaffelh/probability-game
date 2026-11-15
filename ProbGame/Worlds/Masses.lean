@@ -30,36 +30,6 @@ $`p` ist `coin p`. Ein Zug wird `f <$> μ` geschrieben: die Abbildung `f`, angew
 `μ`, ihr Bildmaß.
 :::
 
-::::leanonly (proof := ": (!false) = true") (lemma := "Bool.not_false")
-:::en
-*Not false.* The other half of `not`: in *Circuits* you proved `(!true) = false`, the rule
-`Bool.not_true`.
-:::
-
-:::de
-*Nicht false.* Die andere Hälfte von `not`: In *Schaltungen* hast du `(!true) = false` bewiesen, die
-Regel `Bool.not_true`.
-:::
-
-:::proofen
-`not` is defined by its two cases, and here Lean knows the value: `!false` reduces to `true`.
-
-*Tip.* `rfl`.
-:::
-
-:::proofde
-`not` ist durch seine zwei Fälle definiert, und hier kennt Lean den Wert: `!false` reduziert zu
-`true`.
-
-*Tipp.* `rfl`.
-:::
-:::solution
-```
-rfl
-```
-:::
-::::
-
 ::::leanonly (proof := "(a b : ENNReal) : (bif true then a else b) = a") (lemma := "Bool.cond_true")
 :::en
 *bif with true.* `bif c then a else b` is `a` when `c` is `true`, and `b` when it is `false`: an
