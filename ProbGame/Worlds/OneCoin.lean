@@ -339,69 +339,7 @@ rfl
 :::
 ::::
 
-::::circuit (inputs := "x") (gates := "not, toNat") (coins := "p") (target := "nat 0:1-p 1:p") (context := "Lean/Rules.lean") (proof := "(p : I) : Bool.toNat <$> coin p = (fun b => if b then 1 else 0) <$> coin p") (new := "congr, funext") (play := "a=toNat; x>a.0; a>out")
-:::en
-*From sides to numbers.* `Bool.toNat` counts `true` as $`1` and `false` as $`0`: the distribution
-moves to the natural numbers. This is how a coin becomes a random number.
-:::
-
-:::de
-*Von Seiten zu Zahlen.* `Bool.toNat` zählt `true` als $`1` und `false` als $`0`: Die Verteilung
-wandert zu den natürlichen Zahlen. So wird aus einer Münze eine Zufallszahl.
-:::
-
-:::proofen
-`Bool.toNat` counts `true` as $`1` and `false` as $`0`. Both sides move the same coin, with two
-maps that agree. Two new tactics: `congr 1` reduces the goal to the two maps being equal;
-`funext b` to their being equal at every `b`. Then, as in *Circuits*, `cases b <;> rfl` does both
-cases in one line.
-
-*Tip.* `congr 1`, `funext b`, `cases b <;> rfl`.
-:::
-
-:::proofde
-`Bool.toNat` zählt `true` als $`1` und `false` als $`0`. Beide Seiten bewegen dieselbe Münze, mit
-zwei Abbildungen, die übereinstimmen. Zwei neue Taktiken: `congr 1` führt das Ziel darauf zurück,
-dass die beiden Abbildungen gleich sind; `funext b` darauf, dass sie an jeder Stelle `b` gleich sind.
-Dann erledigt, wie in *Schaltungen*, `cases b <;> rfl` beide Fälle in einer Zeile.
-
-*Tipp.* `congr 1`, `funext b`, `cases b <;> rfl`.
-:::
-:::solution
-```
-congr 1
-funext b
-cases b <;> rfl
-```
-:::
-::::
-
-::::circuit (inputs := "x") (gates := "not, alwaysT, alwaysF, toNat") (coins := "p") (target := "pure 0") (context := "Lean/Rules.lean") (proof := "(p : I) : Bool.toNat <$> ((fun _ => false) <$> coin p) = pure 0") (play := "a=alwaysF; b=toNat; x>a.0; a>b.0; b>out")
-:::en
-*Surely zero.* A point mass on the numbers, however you get there.
-:::
-
-:::de
-*Sicher null.* Eine Punktmasse auf den Zahlen, egal auf welchem Weg.
-:::
-
-:::proofen
-As in *Surely `false`* and *From sides to numbers*, now with a number.
-:::
-
-:::proofde
-Wie in *Sicher `false`* und *Von Seiten zu Zahlen*, jetzt mit einer Zahl.
-:::
-:::solution
-```
-rw [coin_const, map_pure]
-rfl
-```
-:::
-::::
-
-:::::only (edition := "main")
-::::circuit (inputs := "x") (gates := "not, alwaysT, alwaysF, toNat") (coins := "p") (target := "bernoulli 1-p") (context := "Lean/Rules.lean") (proof := "(p : I) : not <$> coin p = coin (σ p)") (lemma := "coin_not") (play := "a=not; x>a.0; a>out")
+::::circuit (inputs := "x") (gates := "not, alwaysT, alwaysF") (coins := "p") (target := "bernoulli 1-p") (context := "Lean/Rules.lean") (proof := "(p : I) : not <$> coin p = coin (σ p)") (lemma := "coin_not") (play := "a=not; x>a.0; a>out")
 :::en
 *The boss: flip the coin.* Not just the mass at `true`: the whole coin.
 :::
@@ -439,18 +377,3 @@ rw [coin_false, coin_true]
 ```
 :::
 ::::
-:::::
-
-:::::only (edition := "show")
-::::circuit (inputs := "x") (gates := "not, alwaysT, alwaysF, toNat") (coins := "p") (target := "nat 0:p 1:1-p") (context := "Lean/Rules.lean") (play := "a=not; b=toNat; x>a.0; a>b.0; b>out")
-:::en
-*The boss: count the `false`.* $`1` when the coin shows `false`, $`0` when it shows `true`. Two gates
-of this world, one after the other.
-:::
-
-:::de
-*Der Endgegner: Zähl die `false`.* $`1`, wenn die Münze `false` zeigt, $`0`, wenn sie `true` zeigt.
-Zwei Bausteine dieser Welt, einer nach dem anderen.
-:::
-::::
-:::::

@@ -50,7 +50,9 @@ def readContext (path : String) : DocElabM String := do
 A level names what it brings into the inventory (`(new := "bool_ext, apply")`) and the lemma it
 becomes (`(lemma := "coin_not")`); it has no number. In the traverse pass each level is entered in
 `ProbGame.levels`, in the order of the document, with its group (`chance`, `bool` or `walk`: each
-group has an inventory of its own; the chance group also keeps what the bool group brought). When a level is rendered, its inventory is what the levels of its
+group has an inventory of its own; the chance group also keeps what the bool group brought; a side
+route of the chance worlds, `(route := "count")`, is the group `chance.count`: it keeps what `chance`
+brought before it, and the main route does not see what it brings). When a level is rendered, its inventory is what the levels of its
 group before it brought, and what it brings itself: so a level can be moved or removed alone. -/
 
 /-- The world of a level: the module it is in (`ProbGame.Worlds.OneCoin`), for the tests. -/
@@ -81,8 +83,10 @@ def inventoryOf (id : InternalId) (st : Manual.TraverseState) : String × String
   let me := levels[i]!
   let mut inv : Array String := #[]
   for l in levels.extract 0 i do
-    -- (the chance worlds come after the circuits and keep what was earned there)
-    if str l "group" == str me "group" || (str l "group" == "bool" && str me "group" == "chance") then
+    -- (the chance worlds come after the circuits and keep what was earned there; a side route
+    -- `chance.count` keeps what the main route brought before it, not what another side route brought)
+    let lg := str l "group"; let mg := str me "group"
+    if lg == mg || mg.startsWith (lg ++ ".") || (lg == "bool" && mg.startsWith "chance") then
       inv := inv ++ namesIn (str l "new") ++ namesIn (str l "lemma")
   let new := namesIn (str me "new")
   return ((toJson (inv ++ new)).compress, (toJson new).compress)
@@ -299,10 +303,10 @@ def boolean : DirectiveExpanderOf BoolConfig
 -- world (`bool`). With coins (`coins := "p p"`: a coin `coin p` at each input) the target is the
 -- distribution of the output (`target := "bool true:2p(1-p) false:1-2p(1-p)"`), and the group is
 -- that of chance.
-block_extension Block.circuit (inputs gates table goal coins target new proof lemma context world shape maps start size : String) where
+block_extension Block.circuit (inputs gates table goal coins target new proof lemma context world shape maps start size group : String) where
   data := Json.mkObj [("inputs", inputs), ("gates", gates), ("table", table), ("goal", goal), ("coins", coins),
     ("target", target), ("new", new), ("proof", proof), ("lemma", lemma), ("context", context), ("world", world),
-    ("shape", shape), ("maps", maps), ("start", start), ("size", size), ("group", if coins.isEmpty then "bool" else "chance")]
+    ("shape", shape), ("maps", maps), ("start", start), ("size", size), ("group", group)]
   traverse id data _ := do registerLevel id data; pure none
   extraJs := {JS.mk gameJs}
   extraCss := {CSS.mk gameCss}
@@ -331,6 +335,7 @@ structure CircuitConfig where
   maps : String
   start : String
   size : String
+  route : String
 
 instance : FromArgs CircuitConfig DocElabM where
   fromArgs := CircuitConfig.mk <$> .namedD `inputs .string "x y" <*> .named `gates .string false <*>
@@ -338,7 +343,7 @@ instance : FromArgs CircuitConfig DocElabM where
     .namedD `new .string "" <*> .namedD `proof .string "" <*> .namedD `lemma .string "" <*>
     .namedD `context .string "Lean/WorldBool.lean" <*> .namedD `play .string "" <*>
     .namedD `shape .string "" <*> .namedD `maps .string "" <*> .namedD `start .string "" <*>
-    .namedD `size .string ""
+    .namedD `size .string "" <*> .namedD `route .string ""
 
 /-- A circuit: `::::circuit (inputs := "x y") (gates := "and, or, not") (table := "0110") (goal := "x ^^ y")`. -/
 @[directive]
@@ -349,7 +354,8 @@ def circuit : DirectiveExpanderOf CircuitConfig
     let world ← worldOf
     ``(Verso.Doc.Block.other (Block.circuit $(quote cfg.inputs) $(quote cfg.gates) $(quote cfg.table) $(quote cfg.goal)
         $(quote cfg.coins) $(quote cfg.target) $(quote cfg.new) $(quote cfg.proof) $(quote cfg.lemma) $(quote context)
-        $(quote world) $(quote cfg.shape) $(quote cfg.maps) $(quote cfg.start) $(quote cfg.size)) #[$blocks,*])
+        $(quote world) $(quote cfg.shape) $(quote cfg.maps) $(quote cfg.start) $(quote cfg.size)
+        $(quote (if cfg.coins.isEmpty then "bool" else if cfg.route.isEmpty then "chance" else s!"chance.{cfg.route}"))) #[$blocks,*])
 
 -- A level in Lean only, without a board: for a statement the board cannot show (every
 -- distribution, an implication, an existence, an inequality). `group` is whose inventory it shares.

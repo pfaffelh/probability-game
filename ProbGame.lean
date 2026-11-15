@@ -3,6 +3,7 @@ import ProbGame.Level
 import ProbGame.Worlds.OneCoin
 import ProbGame.Worlds.Maps
 import ProbGame.Worlds.TwoCoins
+import ProbGame.Worlds.Counting
 import ProbGame.Worlds.Circuits
 import ProbGame.Worlds.Bind
 import ProbGame.Lexicon
@@ -56,6 +57,8 @@ Welt.
 {include 1 ProbGame.Worlds.Maps}
 
 {include 1 ProbGame.Worlds.TwoCoins}
+
+{include 1 ProbGame.Worlds.Counting}
 
 {include 1 ProbGame.Worlds.Bind}
 
