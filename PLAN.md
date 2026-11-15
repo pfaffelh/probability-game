@@ -152,3 +152,24 @@ Building with Coins 1 is its level already (`rw [coin_and]`).
 Later (user): `Bool.not_false` moved next to `Bool.not_true` — a Lean-only level right after Circuits 2
 (context WorldBool, group bool); Masses keeps cond_true/false, coin_true/false, zero_add, map_true.
 `chance`, `chance_eq`, `eq_coin` removed (nothing used them).
+
+## 2026-11-15 late: Thinning, Binomial, Geometric (Lean only)
+
+(User: Binomial as a highlight, the formula by induction; Geometric; Thinning as a side way of the
+coin, picked up in Binomial.) Map: … 5 Coins that Wait → 6 Thinning → 7 Binomial (also from 4
+Counting: `JOINS` in game.js) → 8 Geometric. New rules in Lean/Rules.lean: mass_mul,
+coin_bind_apply, pure_self, pure_zero_succ, shift_succ, shift_zero, geomMass/geom.
+
+- Thinning (group chance): mass_mul; coin_thin (a coin p, kept with q, is coin (p*q)); order does not
+  matter; boss thinning twice.
+- Binomial (group chance.count): coin_bind_apply, pure_self, pure_zero_succ, shift; binom_succ_zero,
+  binom_succ_succ (Pascal for masses), binom_all_false, binom_above (induction generalizing k),
+  binom_diag; coin_bind_binom, coin_bind_binom', binom_thin (thinning a binomial); boss
+  binom_formula `binom p (k + m) k = p^k (1-p)^m C(k+m, k)` (double induction, Pascal, ring). No
+  `sequence` needed on this way.
+- Geometric: geom by its masses (geomMass, recursive); geom_zero, geom_succ (rfl), geom_formula,
+  geom_memoryless, boss geom_first (geom p = do x ← coin p; bif x then pure 0 else 1 + geom p).
+
+Next (proposed): Sequences (iidSequence, binom = count true <$> iidSequence, from the journal);
+Hypergeometric built step by step (an urn, a ball drawn, the urn smaller), its formula by induction
+(Vandermonde); Geometric total mass one (p ≠ 0, geometric series).

@@ -194,6 +194,144 @@ theorem binom_add (p : I) (n m : ℕ) :
   · rw [← binom_succ' p m, ← add_assoc, ← binom_succ' p (n + m), ← ih]
     simp only [bind_assoc, pure_bind, add_assoc]
 
+/-! Thinning, Binomial, Geometric (2026-11-15). -/
+
+/-- A product of numbers in `[0, 1]`, as a mass. -/
+theorem mass_mul (p q : I) : ((p * q : I) : ENNReal) = (p : ENNReal) * (q : ENNReal) := by
+  show ENNReal.ofReal ((p : ℝ) * q) = ENNReal.ofReal p * ENNReal.ofReal q
+  exact ENNReal.ofReal_mul p.2.1
+
+/-- The mass of a draw that starts with a coin, at any point: through `true` and through `false`. -/
+theorem coin_bind_apply {β : Type} (p : I) (f : Bool → DiscreteMeasure β) (x : β) :
+    (coin p >>= f) x = ↑p * f true x + ↑(σ p) * f false x := by
+  rw [← MeasureTheory.DiscreteMeasure.bind_eq_bind, MeasureTheory.DiscreteMeasure.bind_apply,
+    tsum_fintype, Fintype.sum_bool, coin_true, coin_false]
+
+/-- A point mass at its point. -/
+theorem pure_self {α : Type} (a : α) : (pure a : DiscreteMeasure α) a = 1 :=
+  MeasureTheory.DiscreteMeasure.pure_apply_self
+
+/-- The point mass at `0`, elsewhere. -/
+theorem pure_zero_succ (k : ℕ) : (pure 0 : DiscreteMeasure ℕ) (k + 1) = 0 :=
+  MeasureTheory.DiscreteMeasure.pure_apply_nonself (Nat.succ_ne_zero k)
+
+/-- One more: the mass at `k + 1` is the old mass at `k`. -/
+theorem shift_succ (μ : DiscreteMeasure ℕ) (k : ℕ) : (do let Y ← μ; pure (1 + Y)) (k + 1) = μ k := by
+  rw [← MeasureTheory.DiscreteMeasure.bind_eq_bind, MeasureTheory.DiscreteMeasure.bind_apply,
+    tsum_eq_single k]
+  · rw [add_comm 1 k]; erw [MeasureTheory.DiscreteMeasure.pure_apply_self, mul_one]
+  · intro b hb
+    erw [MeasureTheory.DiscreteMeasure.pure_apply_nonself (by omega), mul_zero]
+
+/-- One more is never `0`. -/
+theorem shift_zero (μ : DiscreteMeasure ℕ) : (do let Y ← μ; pure (1 + Y)) 0 = 0 := by
+  rw [← MeasureTheory.DiscreteMeasure.bind_eq_bind, MeasureTheory.DiscreteMeasure.bind_apply]
+  apply ENNReal.tsum_eq_zero.mpr
+  intro b
+  erw [MeasureTheory.DiscreteMeasure.pure_apply_nonself (by omega), mul_zero]
+
+/-- Thinning, *Keeping with probability q*: a coin `p`, and on `true` a coin `q`. -/
+theorem coin_thin (p q : I) : (do let x ← coin p; bif x then coin q else pure false) = coin (p * q) := by
+  apply bool_ext
+  rw [bind_true, Bool.cond_true, Bool.cond_false, pure_true, Bool.cond_false, mul_zero, add_zero,
+    coin_true, coin_true, coin_true, mass_mul]
+
+/-- Binomial: a coin `p`, then as many coins `q` as it shows. -/
+theorem coin_bind_binom (p q : I) :
+    (do let C ← coin p; binom q C.toNat) = (do let B ← coin (p * q); pure B.toNat) := by
+  rw [← coin_thin]
+  simp only [bind_assoc]
+  congr 1
+  funext x
+  cases x
+  rw [Bool.toNat_false, binom_zero, Bool.cond_false, pure_bind, Bool.toNat_false]
+  rw [Bool.toNat_true, Bool.cond_true, binom_succ, binom_zero]
+  simp only [pure_bind, add_zero]
+
+/-- The same, with something after it. -/
+theorem coin_bind_binom' {β : Type} (p q : I) (f : ℕ → DiscreteMeasure β) :
+    (do let C ← coin p; let U ← binom q C.toNat; f U) = (do let B ← coin (p * q); f B.toNat) := by
+  rw [← bind_assoc, coin_bind_binom, bind_assoc]
+  simp only [pure_bind]
+
+theorem binom_succ_zero (p : I) (n : ℕ) : binom p (n + 1) 0 = ↑(σ p) * binom p n 0 := by
+  rw [binom_succ, coin_bind_apply]
+  simp only [Bool.toNat_true, Bool.toNat_false, zero_add, bind_pure]
+  rw [shift_zero, mul_zero, zero_add]
+
+theorem binom_succ_succ (p : I) (n k : ℕ) :
+    binom p (n + 1) (k + 1) = ↑p * binom p n k + ↑(σ p) * binom p n (k + 1) := by
+  rw [binom_succ, coin_bind_apply]
+  simp only [Bool.toNat_true, Bool.toNat_false, zero_add, bind_pure]
+  rw [shift_succ]
+
+theorem binom_all_false (p : I) (n : ℕ) : binom p n 0 = ↑(σ p) ^ n := by
+  induction' n with n ih
+  rw [binom_zero, pure_self, pow_zero]
+  rw [binom_succ_zero, ih, pow_succ, mul_comm]
+
+theorem binom_above (p : I) (n k : ℕ) : binom p n (n + k + 1) = 0 := by
+  induction' n with n ih generalizing k
+  rw [zero_add, binom_zero, pure_zero_succ]
+  rw [binom_succ_succ, add_right_comm n 1 k, ih, add_assoc n k 1, ih, mul_zero, mul_zero, add_zero]
+
+theorem binom_diag (p : I) (n : ℕ) : binom p n n = ↑p ^ n := by
+  induction' n with n ih
+  rw [binom_zero, pure_self, pow_zero]
+  rw [binom_succ_succ, ih, binom_above p n 0, mul_zero, add_zero, pow_succ, mul_comm]
+
+/-- Binomial, the boss: `k` times `true` and `m` times `false`. -/
+theorem binom_formula (p : I) (k m : ℕ) :
+    binom p (k + m) k = ↑p ^ k * ↑(σ p) ^ m * ((k + m).choose k : ENNReal) := by
+  induction' m with m ih generalizing k
+  rw [add_zero, binom_diag, pow_zero, mul_one, Nat.choose_self, Nat.cast_one, mul_one]
+  induction' k with k ih2
+  rw [zero_add, binom_all_false, pow_zero, one_mul, Nat.choose_zero_right, Nat.cast_one, mul_one]
+  rw [← add_assoc, binom_succ_succ, ih (k + 1), add_right_comm k 1 m, add_assoc k m 1, ih2,
+    Nat.choose_succ_succ', Nat.cast_add]
+  ring
+
+/-- Binomial, thinning: of `binom p n` successes each is kept with probability `q`. -/
+theorem binom_thin (p q : I) (n : ℕ) : (do let X ← binom p n; binom q X) = binom (p * q) n := by
+  induction' n with n ih
+  rw [binom_zero, binom_zero, pure_bind, binom_zero]
+  rw [binom_succ, binom_succ (p * q), ← ih]
+  simp only [bind_assoc, pure_bind]
+  simp only [← binom_add]
+  simp only [bind_comm (binom p n) (binom q _)]
+  rw [coin_bind_binom']
+
+/-- The geometric distribution, by its masses: `p` at `0`, and one step further always `1 - p`
+times as much (the number of `false` before the first `true`). -/
+noncomputable def geomMass (p : I) : ℕ → ENNReal
+  | 0 => ↑p
+  | k + 1 => ↑(σ p) * geomMass p k
+
+noncomputable def geom (p : I) : DiscreteMeasure ℕ := ⟨geomMass p⟩
+
+theorem geom_zero (p : I) : geom p 0 = ↑p := rfl
+
+theorem geom_succ (p : I) (k : ℕ) : geom p (k + 1) = ↑(σ p) * geom p k := rfl
+
+theorem geom_formula (p : I) (k : ℕ) : geom p k = ↑(σ p) ^ k * ↑p := by
+  induction' k with k ih
+  rw [geom_zero, pow_zero, one_mul]
+  rw [geom_succ, ih, ← mul_assoc, ← pow_succ']
+
+theorem geom_memoryless (p : I) (k m : ℕ) : geom p (k + m) = ↑(σ p) ^ k * geom p m := by
+  induction' k with k ih
+  rw [zero_add, pow_zero, one_mul]
+  rw [add_right_comm, geom_succ, ih, ← mul_assoc, ← pow_succ']
+
+theorem geom_first (p : I) :
+    geom p = (do let x ← coin p; bif x then pure 0 else (do let Y ← geom p; pure (1 + Y))) := by
+  ext k
+  cases k
+  rw [coin_bind_apply, Bool.cond_true, Bool.cond_false, pure_self, shift_zero, mul_zero, add_zero,
+    mul_one, geom_zero]
+  rw [coin_bind_apply, Bool.cond_true, Bool.cond_false, pure_zero_succ, shift_succ, mul_zero,
+    zero_add, geom_succ]
+
 end ProbGame
 
 open ProbGame
