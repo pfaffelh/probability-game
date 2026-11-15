@@ -3095,6 +3095,8 @@
       this.choice = null
       this.input.value = this.typed = /<;>\s*$/.test(v) ? v.replace(/\s*$/, ' ') + text : text
       this.render(); this.input?.focus({ preventScroll: true })
+      // (a tactic that closes the goal and needs nothing more, rfl, decide, ring: it runs right away)
+      if (/^(rfl|decide|decide \+revert|ring)$/.test(text)) this.run()
     }
     // (a tactic with nothing to work on here: said so, nothing in the input)
     nothing(text) { this.choice = null; this.error = text; this.render() }
