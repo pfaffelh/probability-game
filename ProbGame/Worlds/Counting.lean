@@ -114,13 +114,31 @@ rfl
 :::
 
 :::proofen
-`binom` is defined by recursion on $`n`, as the natural numbers are: this is its first case.
+`binom` is defined by recursion on $`n`, as the natural numbers are; this is its first case:
+
+```
+def binom (p : I) : ℕ → DiscreteMeasure ℕ
+  | 0 => pure 0
+  | n + 1 => do
+    let X ← coin p
+    let Y ← binom p n
+    pure (X.toNat + Y)
+```
 
 *Tip.* `rfl`.
 :::
 
 :::proofde
-`binom` ist durch Rekursion über $`n` definiert, wie die natürlichen Zahlen: Das ist ihr erster Fall.
+`binom` ist durch Rekursion über $`n` definiert, wie die natürlichen Zahlen; das ist ihr erster Fall:
+
+```
+def binom (p : I) : ℕ → DiscreteMeasure ℕ
+  | 0 => pure 0
+  | n + 1 => do
+    let X ← coin p
+    let Y ← binom p n
+    pure (X.toNat + Y)
+```
 
 *Tipp.* `rfl`.
 :::
