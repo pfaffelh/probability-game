@@ -674,3 +674,21 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
   .pg-stage .pg-proof-side .pg-inventory { flex: 1 1 0; min-height: 0; overflow-y: auto; margin: 0; }
   .pg-stage .pg-proof-input input[readonly] { caret-color: transparent; background: #fffaf0; }
 }
+
+/* the input never scrolls away: the proof scrolls above it, the inventory beside or below it */
+.pg-stage .pg-level.pg-view-proof .pg-proof:not([hidden]) { overflow: hidden; align-items: stretch; }
+.pg-stage .pg-proof-main { display: flex; flex-direction: column; min-height: 0; }
+.pg-stage .pg-proof-scroll { flex: 1 1 0; min-height: 0; overflow-y: auto; padding-right: 2px; }
+.pg-stage .pg-proof-foot { flex: none; background: #fffdf8; }
+.pg-stage .pg-proof-main > .pg-proof-foot { border-top: 2px solid #e3d5bb; padding-top: 0.3rem; }
+.pg-stage .pg-proof-side { position: static; overflow-y: auto; min-height: 0; }
+@media (max-width: 700px) {
+  .pg-stage .pg-proof-main { flex: 1 1 0; overflow: hidden; }
+  .pg-stage .pg-proof-side { overflow: hidden; }
+}
+/* (a phone held sideways: too low for a fixed split; everything scrolls with the page) */
+@media (max-height: 500px) {
+  .pg-stage .pg-level.pg-view-proof .pg-proof:not([hidden]), .pg-stage .pg-proof-main, .pg-stage .pg-proof-scroll, .pg-stage .pg-proof-side { overflow: visible; }
+  .pg-stage .pg-proof-scroll, .pg-stage .pg-proof-main, .pg-stage .pg-proof-side, .pg-stage .pg-level.pg-view-proof .pg-proof:not([hidden]) { flex: none; height: auto; min-height: 0; }
+  .pg-stage .pg-level.pg-view-proof:not([hidden]) { flex: none; }
+}
