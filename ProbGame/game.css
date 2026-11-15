@@ -311,15 +311,6 @@ html.pg-playing .prev-next-buttons { display: none !important; }
 .pg-map-world:hover .pg-map-disc { stroke: #b0782a; }
 .pg-map-lexicon { display: block; margin: 0.6rem 0 0 0.4rem; font-family: var(--verso-structure-font-family, sans-serif); }
 .pg-map-lexicon.pg-map-here { font-weight: bold; }
-/* the whole game from scratch: small, below the Lexicon */
-.pg-map-reset { margin: 1.2rem 0 0 0.4rem; font: 0.85em var(--verso-structure-font-family, sans-serif); }
-.pg-map-reset button { font: inherit; cursor: pointer; border-radius: 6px; padding: 0.15em 0.6em; }
-.pg-map-reset-button { background: none; border: none; padding: 0 !important; color: #8a6d3b; opacity: 0.8; }
-.pg-map-reset-button:hover { opacity: 1; text-decoration: underline; }
-.pg-map-reset-q { margin-bottom: 0.3em; }
-.pg-map-reset-yes { background: #b5482f; color: white; border: 1px solid #b5482f; }
-.pg-map-reset-no { background: none; border: 1px solid #b08a4a; }
-
 /* the front page: the button that starts or goes on; the worlds are in the map (☰ on phones) */
 .pg-start { display: flex; flex-direction: column; align-items: center; gap: 0.4em; margin: 1.2em 0 1.6em; font-family: var(--verso-structure-font-family, sans-serif); }
 .pg-start-button {
@@ -330,7 +321,14 @@ html.pg-playing .prev-next-buttons { display: none !important; }
 @keyframes pg-start-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.04); } }
 @media (prefers-reduced-motion: reduce) { .pg-start-button { animation: none; } }
 .pg-start-where { color: #555; font-size: 0.95em; }
-.pg-start-again { font-size: 0.85em; color: #8a5a16; }
+/* the whole game from scratch, under Continue: small, asked on the page */
+.pg-start-reset { font-size: 0.85em; text-align: center; margin-top: 0.4em; }
+.pg-start-reset button { font: inherit; cursor: pointer; border-radius: 6px; padding: 0.15em 0.6em; }
+.pg-start-reset-button { background: none; border: none; padding: 0 !important; color: #8a5a16; }
+.pg-start-reset-button:hover { text-decoration: underline; }
+.pg-start-reset-q { margin-bottom: 0.3em; }
+.pg-start-reset-yes { background: #b5482f; color: white; border: 1px solid #b5482f; }
+.pg-start-reset-no { background: none; border: 1px solid #b08a4a; }
 html.pg-front main section:has(> ol.section-toc) { display: none; }
 html.pg-front .prev-next-buttons { display: none !important; }
 
