@@ -175,3 +175,17 @@ count_true_cons; boss binom_eq_count (binom p n = count true <$> iidSequence n (
 Next (proposed):
 Hypergeometric built step by step (an urn, a ball drawn, the urn smaller), its formula by induction
 (Vandermonde); Geometric total mass one (p ≠ 0, geometric series).
+
+## 2026-11-15 night: Hypergeometric; the game pruned to what the bosses need
+
+(User.) New world 10 Hypergeometric (side way from Binomial): `hyper w b n` drawn ball by ball as a
+`do` block (coin (frac w b), then a smaller urn); hyper_zero, hyper_succ (rfl), frac_zero/coin_zero,
+hyper_black, frac_white/coin_one, hyper_white, cond_same; boss hyper_all (drawing all balls gives
+all white ones).
+
+Then "this is the whole game": bosses fixed, every level kept only if a later level needs it
+(its lemma, or a rule/tactic it introduces), computed backwards from the bosses (script deps.py in the
+scratchpad). Removed 29 levels: One Coin 1 and 12 (boards), Building with Coins 5–11 (De Morgan,
+or_eq, and/or_not_self, boards), Counting boards 1, 2, 8, 10 and B(2,p)*B(2,p) (binom_add), Coins that
+Wait boards 1–3, 5–8, Binomial thinning (coin_bind_binom, binom_thin) and the encore binom_symm,
+Geometric formula, memoryless, total mass. All of it is at the git tag `before-prune-2026-11-15`.
