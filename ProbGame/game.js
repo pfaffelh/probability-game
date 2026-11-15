@@ -2599,7 +2599,9 @@
       const w = Math.max(180, Math.min(this.CW, Math.floor(avail * this.CW / this.CH)))
       f.box.style.maxWidth = `${w}px`
       // (on a phone the board goes from edge to edge of the screen, as far as its height allows: game.css)
-      f.s.style.setProperty('--pg-fitw', `${w}px`)
+      // (the user: on a phone always the whole width, even when the board is then higher than the
+      // space and scrolls)
+      f.s.style.setProperty('--pg-fitw', PHONE() ? '100%' : `${w}px`)
     }
   }
   // a wire, from an output (above) to an input (below)
