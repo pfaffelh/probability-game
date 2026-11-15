@@ -1611,7 +1611,7 @@
     'Show the values row by row': 'Werte Zeile für Zeile zeigen', 'Or tap a row of the table.': 'Oder tippe eine Zeile der Tafel an.',
     'Now tap where it goes: a gate, or Output.': 'Tippe jetzt an, wohin es geht: einen Baustein oder den Ausgang.',
     'Now tap where it comes from: a coin above, or a gate.': 'Tippe jetzt an, woher es kommt: eine Münze oben oder einen Baustein.',
-    'Take a gate with ＋ Gate.': 'Nimm einen Baustein mit ＋ Baustein.', 'Drag a gate onto the board, or tap it.': 'Zieh einen Baustein aufs Spielfeld, oder tippe ihn an.',
+    'Tap a gate below, or drag it onto the board.': 'Tippe unten einen Baustein an, oder zieh ihn aufs Spielfeld.', 'Drag a gate onto the board, or tap it.': 'Zieh einen Baustein aufs Spielfeld, oder tippe ihn an.',
     'Wire {g}: tap a coin above (or a gate), then {g}. Wires run from a dot ● down to a circle ○.': 'Verdrahte {g}: tippe eine Münze oben (oder einen Baustein) an, dann {g}. Drähte laufen von einem Punkt ● nach unten zu einem Kreis ○.',
     'Wire the Output: tap the last gate, then Output.': 'Verdrahte den Ausgang: tippe den letzten Baustein an, dann den Ausgang.', 'Drag gates onto the board, or tap them.': 'Zieh Bausteine aufs Spielfeld, oder tippe sie an.',
     'Task: build a circuit whose output is the target, in every row.': 'Aufgabe: Bau eine Schaltung, deren Ausgang in jeder Zeile das Ziel ist.',
@@ -2133,7 +2133,7 @@
       if (loose) return tr('Wire the coin {y}: which coin it is depends on a wire into it, from a coin above or a gate.', { y: loose })
       // (a level without gates: a wire only)
       if (!this.gates.length && !this.wires.length) return tr('Tap {x}, then the Output.', { x: this.names[0] })
-      if (!this.gatesOn.length && !this.wires.length) return tr(STAGE && matchMedia('(max-width: 760px), (max-height: 500px)').matches ? 'Take a gate with ＋ Gate.' : 'Drag a gate onto the board, or tap it.')
+      if (!this.gatesOn.length && !this.wires.length) return tr(STAGE && matchMedia('(max-width: 760px), (max-height: 500px)').matches ? 'Tap a gate below, or drag it onto the board.' : 'Drag a gate onto the board, or tap it.')
       const open = this.gatesOn.find(g => [...Array(GATES[g.kind].n).keys()].some(i => !this.wireTo(g.id, i)))
       const empty = this.gatesOn.find(g => GATES[g.kind].slots && [...Array(GATES[g.kind].slots).keys()].some(i => !g.maps?.[i]))
       if (empty && !open) return tr(empty.kind === 'f' ? 'Choose f: drag a map into f, or tap its field.' : 'Fill bind: a map into the field true, one into false (drag it in, or tap the field).')
@@ -3616,7 +3616,8 @@
       else if (nextWorld) location.href = nextWorld.getAttribute('href').replace(/#.*$/, '')
     }
     next.addEventListener('click', goNext)
-    bar.append(add, undo, restart, ...(SHOW ? [] : [lean]), tips, next)
+    // (the Lean line of a board is gone, the user: the inventory of a board are its gates)
+    bar.append(undo, restart, tips, next)
     bar.before(pop)
 
     const refresh = () => {
@@ -3642,7 +3643,7 @@
       add.hidden = !(l instanceof Circuit) || v === 'proof'
       if (add.hidden || pop.dataset.level !== String(current)) { closePop(); pop.dataset.level = String(current) }
       lean.setAttribute('aria-pressed', String(leanOpen))
-      leanBox.hidden = !leanOpen || v === 'proof' || !l.leanParts?.length
+      leanBox.hidden = true
       if (!leanBox.hidden) leanBox.replaceChildren(...l.leanParts)
       tabs.hidden = !l.proof || l instanceof LeanOnly
       tabBoard.textContent = `▦ ${tr('Board')}${l.solved ? ' ✓' : ''}`
