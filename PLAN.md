@@ -197,3 +197,13 @@ back (Bool.not_not again; pure_bind, bind_pure), one step forward from coin p (t
 false → coin r) at true and (bind_false) at false, a distribution that stays (stationary:
 p = pq + (1-p)r), a chain that forgets (q = r; cond_same, prob_unused). cond_same moved here from
 Hypergeometric.
+
+## 2026-11-15 night: Real Numbers; a short inventory per level
+
+World Real Numbers (side way from Coins that Wait): mass_eq_ofReal (rfl), mass_mul_real,
+ENNReal.ofReal_add with real_mul_nonneg (the conditions), symm_real + ring, linear_combination (two
+levels), boss coin_stays (stationary from the balance (1-p) r = p (1-q)).
+
+Inventory (user): the tactics earned stay; the theorems of a level are only those its solution uses:
+`(uses := "…")` on each level, written by `python3 tests/uses.py` from the `:::solution` (a hand-set
+list starts with `!` and is kept; `-` means none). game.js: Proof.available filters theorems by it.

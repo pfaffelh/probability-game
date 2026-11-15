@@ -49,7 +49,7 @@
   // Headings of the site, which come from Verso.
   const DE_TITLES = {
     'The Probability Game': 'Das Wahrscheinlichkeits\u00ADspiel',  // (a soft hyphen, for phones)
-    'Thinning': 'Ausdünnen', 'Hypergeometric': 'Hypergeometrisch', 'Sequences': 'Folgen', 'Binomial': 'Binomial', 'Geometric': 'Geometrisch', 'Masses': 'Massen', 'Rows and masses': 'Zeilen und Massen', 'One Coin': 'Eine Münze', 'Maps': 'Abbildungen', 'Draw, then Compute': 'Erst ziehen, dann rechnen', 'Building with Coins': 'Bauen mit Münzen',
+    'Thinning': 'Ausdünnen', 'Real Numbers': 'Reelle Zahlen', 'Hypergeometric': 'Hypergeometrisch', 'Sequences': 'Folgen', 'Binomial': 'Binomial', 'Geometric': 'Geometrisch', 'Masses': 'Massen', 'Rows and masses': 'Zeilen und Massen', 'One Coin': 'Eine Münze', 'Maps': 'Abbildungen', 'Draw, then Compute': 'Erst ziehen, dann rechnen', 'Building with Coins': 'Bauen mit Münzen',
     'Counting': 'Zählen', 'Walking on the Grid': 'Gehen auf dem Gitter', 'True and False': 'Wahr und falsch', 'Circuits with Coins': 'Schaltungen mit Münzen', 'Coins that Wait': 'Münzen, die warten', 'Circuits': 'Schaltungen', 'Lexicon': 'Lexikon', 'Table of Contents': 'Inhalt', 'Contents': 'Inhalt',
   }
   function translatePage() {
@@ -2819,6 +2819,13 @@
     { name: 'mass_finite', kind: 'rule', sig: '↑p ≠ ⊤', en: 'A number in [0, 1] is a finite mass.', de: 'Eine Zahl in [0, 1] ist eine endliche Masse.' },
     { name: 'bind_false', kind: 'rule', sig: '(μ >>= f) false = μ true * f true false + μ false * f false false', en: 'The mass of a bind at false: through true and through false.', de: 'Die Masse eines bind bei false: über true und über false.' },
     { name: 'prob_unused', kind: 'rule', sig: '(do let _ ← μ; ν) = ν', en: 'A draw whose outcome is not used changes nothing.', de: 'Ein Ziehen, dessen Ergebnis nicht benutzt wird, ändert nichts.' },
+    { name: 'linear_combination', kind: 'tactic', insert: 'linear_combination h', sig: 'linear_combination h', en: 'Proves the goal from the equation h by computing (with ring): goal and h differ only by computing.', de: 'Beweist das Ziel aus der Gleichung h durch Rechnen (mit ring): Ziel und h unterscheiden sich nur durch Rechnen.' },
+    { name: 'mass_eq_ofReal', kind: 'lemma', sig: '↑p = ENNReal.ofReal p', en: 'Proved by you in Real Numbers: a mass is a real number.', de: 'Von dir bewiesen in „Reelle Zahlen“: Eine Masse ist eine reelle Zahl.' },
+    { name: 'mass_mul_real', kind: 'rule', sig: '↑p * ↑q = ENNReal.ofReal (p * q)', en: 'A product of masses, as a real number.', de: 'Ein Produkt von Massen, als reelle Zahl.' },
+    { name: 'ENNReal.ofReal_add', kind: 'rule', sig: '0 ≤ a → 0 ≤ b → ENNReal.ofReal (a + b) = ENNReal.ofReal a + ENNReal.ofReal b', en: 'A sum through ofReal, when both are ≥ 0.', de: 'Eine Summe durch ofReal, wenn beide ≥ 0 sind.' },
+    { name: 'real_mul_nonneg', kind: 'rule', sig: '0 ≤ p * q', en: 'A product of numbers in [0, 1] is ≥ 0.', de: 'Ein Produkt von Zahlen aus [0, 1] ist ≥ 0.' },
+    { name: 'symm_real', kind: 'rule', sig: '↑(σ p) = 1 - ↑p', en: '1 - p, as real numbers.', de: '1 - p, als reelle Zahlen.' },
+    { name: 'coin_stays', kind: 'lemma', sig: '(1 - p) * r = p * (1 - q) → (do let x ← coin p; bif x then coin q else coin r) = coin p', en: 'Proved by you in Real Numbers: a coin that stays.', de: 'Von dir bewiesen in „Reelle Zahlen“: eine Münze, die bleibt.' },
     { name: 'coin_thin', kind: 'lemma', sig: '(do let x ← coin p; bif x then coin q else pure false) = coin (p * q)', en: 'Proved by you in Thinning: a coin p, kept with probability q.', de: 'Von dir bewiesen in „Ausdünnen“: eine Münze p, behalten mit Wahrscheinlichkeit q.' },
     { name: 'binom_succ_zero', kind: 'lemma', sig: 'binom p (n + 1) 0 = ↑(σ p) * binom p n 0', en: 'Proved by you in Binomial: no true in n + 1 throws.', de: 'Von dir bewiesen in „Binomial“: kein true in n + 1 Würfen.' },
     { name: 'binom_succ_succ', kind: 'lemma', sig: 'binom p (n + 1) (k + 1) = ↑p * binom p n k + ↑(σ p) * binom p n (k + 1)', en: 'Proved by you in Binomial: the first throw true or false.', de: 'Von dir bewiesen in „Binomial“: der erste Wurf true oder false.' },
@@ -2877,6 +2884,9 @@
       // what this level may use, and what is new in it (ProbGame/Level.lean: from the levels before it)
       const names = a => { try { return new Set(JSON.parse(root.dataset[a] ?? '[]')) } catch { return new Set() } }
       this.group = root.dataset.group; this.inventory = names('inventory'); this.newHere = names('new')
+      // (the theorems of this level only, if the level names them: the tactics earned stay, the
+      // theorems not needed here are left out, to keep the inventory short and to show the way)
+      this.uses = root.dataset.uses ? new Set(root.dataset.uses.split(',').map(x => x.trim()).filter(Boolean)) : null
       this.context = root.dataset.proofContext ?? ''
       this.key = level.key + ':proof'
       this.lines = []
@@ -2916,7 +2926,7 @@
       return n === 1 ? tr('One goal left.') : tr('{n} goals left.', { n })
     }
     // the inventory at this level: what was introduced up to here; the lemma of this level is not yet
-    available(item) { return !!item && this.inventory.has(item.name) }
+    available(item) { return !!item && this.inventory.has(item.name) && (item.kind === 'tactic' || !this.uses || this.uses.has(item.name)) }
     isNew(item) { return this.newHere.has(item.name) }
     // where an item comes in: world 0 has an inventory of its own (`w0`), the other worlds share one (`at`)
     get world0() { return this.group === 'walk' }
@@ -2984,7 +2994,7 @@
       if (parts.length > 1 && !this.available(INVENTORY.find(i => i.name === '<;>'))) return tr('This tactic is not in your inventory: {x}', { x: '<;>' })
       for (let t of parts) {
         t = t.trim()
-        const tac = /^(rw|simp only|norm_num|ring|rfl|decide|congr|funext|ext|cases|induction'|exists|intro|have|apply|exact|constructor)(?=\s|\[|$)/.exec(t)?.[1]
+        const tac = /^(rw|simp only|norm_num|ring|linear_combination|rfl|decide|congr|funext|ext|cases|induction'|exists|intro|have|apply|exact|constructor)(?=\s|\[|$)/.exec(t)?.[1]
         const item = INVENTORY.find(i => i.name === tac)
         if (!item || !this.available(item)) return tr('This tactic is not in your inventory: {x}', { x: t.split(/\s/)[0] || t })
         // the rules: in brackets, or the term of `have h := rule args`
@@ -3792,8 +3802,8 @@
   // the worlds on a side way: which world they come after (not the one above them on the map)
   // The map as a graph, as in verso-nng: each world with the worlds it needs (else the one before it),
   // a branch in a column of its own, the names to the right of the tree.
-  const PREDS = { 'Coins-that-Wait': ['Building-with-Coins'], 'Sequences': ['Counting'], 'Binomial': ['Sequences', 'Thinning'], 'Geometric': ['Binomial'], 'Hypergeometric': ['Binomial'] }
-  const COLUMN = { 'Coins-that-Wait': 1, 'Thinning': 1, 'Hypergeometric': 1 }
+  const PREDS = { 'Coins-that-Wait': ['Building-with-Coins'], 'Real-Numbers': ['Coins-that-Wait'], 'Thinning': ['Coins-that-Wait'], 'Sequences': ['Counting'], 'Binomial': ['Sequences', 'Thinning'], 'Geometric': ['Binomial'], 'Hypergeometric': ['Binomial'] }
+  const COLUMN = { 'Coins-that-Wait': 1, 'Real-Numbers': 2, 'Thinning': 1, 'Hypergeometric': 1 }
   const fetched = new Set()
   function worldMap() {
     const toc = document.querySelector('#toc'), worlds = worldLinks()

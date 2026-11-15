@@ -99,7 +99,7 @@ def proofAttrs (id : InternalId) (st : Manual.TraverseState) (data : Json) (cont
   #[("data-world", get "world"), ("data-group", get "group")] ++
   if (get "proof").isEmpty then #[] else
     #[("data-proof", get "proof"), ("data-lemma", get "lemma"), ("data-proof-context", context),
-      ("data-inventory", inv), ("data-new", new)]
+      ("data-inventory", inv), ("data-new", new), ("data-uses", get "uses")]
 
 /-- The solution of a level: `:::solution` with the proof as a code block, as a player types it. It
 is not shown (not even in the page): `check-proofs.sh` and the tests read it from the source. -/
@@ -303,10 +303,10 @@ def boolean : DirectiveExpanderOf BoolConfig
 -- world (`bool`). With coins (`coins := "p p"`: a coin `coin p` at each input) the target is the
 -- distribution of the output (`target := "bool true:2p(1-p) false:1-2p(1-p)"`), and the group is
 -- that of chance.
-block_extension Block.circuit (inputs gates table goal coins target new proof lemma context world shape maps start size height group : String) where
+block_extension Block.circuit (inputs gates table goal coins target new proof lemma context world shape maps start size height group uses : String) where
   data := Json.mkObj [("inputs", inputs), ("gates", gates), ("table", table), ("goal", goal), ("coins", coins),
     ("target", target), ("new", new), ("proof", proof), ("lemma", lemma), ("context", context), ("world", world),
-    ("shape", shape), ("maps", maps), ("start", start), ("size", size), ("height", height), ("group", group)]
+    ("shape", shape), ("maps", maps), ("start", start), ("size", size), ("height", height), ("group", group), ("uses", uses)]
   traverse id data _ := do registerLevel id data; pure none
   extraJs := {JS.mk gameJs}
   extraCss := {CSS.mk gameCss}
@@ -338,6 +338,8 @@ structure CircuitConfig where
   -- the height of the board (its width stays): `height := "420"` for a level with few gates
   height : String
   route : String
+  -- the theorems shown in this level (the tactics are all there): `uses := "map_true, coin_true"`
+  uses : String
 
 instance : FromArgs CircuitConfig DocElabM where
   fromArgs := CircuitConfig.mk <$> .namedD `inputs .string "x y" <*> .named `gates .string false <*>
@@ -345,7 +347,7 @@ instance : FromArgs CircuitConfig DocElabM where
     .namedD `new .string "" <*> .namedD `proof .string "" <*> .namedD `lemma .string "" <*>
     .namedD `context .string "Lean/WorldBool.lean" <*> .namedD `play .string "" <*>
     .namedD `shape .string "" <*> .namedD `maps .string "" <*> .namedD `start .string "" <*>
-    .namedD `size .string "" <*> .namedD `height .string "" <*> .namedD `route .string ""
+    .namedD `size .string "" <*> .namedD `height .string "" <*> .namedD `route .string "" <*> .namedD `uses .string ""
 
 /-- A circuit: `::::circuit (inputs := "x y") (gates := "and, or, not") (table := "0110") (goal := "x ^^ y")`. -/
 @[directive]
@@ -357,12 +359,12 @@ def circuit : DirectiveExpanderOf CircuitConfig
     ``(Verso.Doc.Block.other (Block.circuit $(quote cfg.inputs) $(quote cfg.gates) $(quote cfg.table) $(quote cfg.goal)
         $(quote cfg.coins) $(quote cfg.target) $(quote cfg.new) $(quote cfg.proof) $(quote cfg.lemma) $(quote context)
         $(quote world) $(quote cfg.shape) $(quote cfg.maps) $(quote cfg.start) $(quote cfg.size) $(quote cfg.height)
-        $(quote (if cfg.coins.isEmpty then "bool" else if cfg.route.isEmpty then "chance" else s!"chance.{cfg.route}"))) #[$blocks,*])
+        $(quote (if cfg.coins.isEmpty then "bool" else if cfg.route.isEmpty then "chance" else s!"chance.{cfg.route}")) $(quote cfg.uses)) #[$blocks,*])
 
 -- A level in Lean only, without a board: for a statement the board cannot show (every
 -- distribution, an implication, an existence, an inequality). `group` is whose inventory it shares.
-block_extension Block.leanOnly (new proof lemma context world group : String) where
-  data := Json.mkObj [("new", new), ("proof", proof), ("lemma", lemma), ("context", context), ("world", world), ("group", group)]
+block_extension Block.leanOnly (new proof lemma context world group uses : String) where
+  data := Json.mkObj [("new", new), ("proof", proof), ("lemma", lemma), ("context", context), ("world", world), ("group", group), ("uses", uses)]
   traverse id data _ := do registerLevel id data; pure none
   extraJs := {JS.mk gameJs}
   extraCss := {CSS.mk gameCss}
@@ -378,10 +380,11 @@ structure LeanOnlyConfig where
   lemma : String
   context : String
   group : String
+  uses : String
 
 instance : FromArgs LeanOnlyConfig DocElabM where
   fromArgs := LeanOnlyConfig.mk <$> .namedD `new .string "" <*> .named `proof .string false <*>
-    .namedD `lemma .string "" <*> .namedD `context .string "Lean/Rules.lean" <*> .namedD `group .string "chance"
+    .namedD `lemma .string "" <*> .namedD `context .string "Lean/Rules.lean" <*> .namedD `group .string "chance" <*> .namedD `uses .string ""
 
 /-- A level in Lean only: `::::leanonly (proof := "…") (lemma := "…") (new := "…")`. -/
 @[directive]
@@ -391,7 +394,7 @@ def leanonly : DirectiveExpanderOf LeanOnlyConfig
     let context ← readContext cfg.context
     let world ← worldOf
     ``(Verso.Doc.Block.other (Block.leanOnly $(quote cfg.new) $(quote cfg.proof) $(quote cfg.lemma) $(quote context)
-        $(quote world) $(quote cfg.group)) #[$blocks,*])
+        $(quote world) $(quote cfg.group) $(quote cfg.uses)) #[$blocks,*])
 
 -- The lexicon: every move, building block, tactic and rule of the game, which `game.js` writes
 -- into this block (`::::lexicon` with no content), from the same tables as the tips.

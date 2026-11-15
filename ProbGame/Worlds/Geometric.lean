@@ -18,7 +18,7 @@ How long until the first `true`? The geometric distribution, defined by its mass
 Wie lange bis zum ersten `true`? Die geometrische Verteilung, Schritt für Schritt durch ihre Massen definiert; ihre Formel, ihre Gedächtnislosigkeit, und der `do`-Block, der wartet. Nur in Lean.
 :::
 
-::::leanonly (proof := "(p : I) : geom p 0 = ↑p") (lemma := "geom_zero") (group := "chance.count")
+::::leanonly (proof := "(p : I) : geom p 0 = ↑p") (lemma := "geom_zero") (group := "chance.count") (uses := "-")
 :::en
 *True at once.* Throw a coin `p` until it shows `true`; `geom p` is the number of `false` before. Its masses are defined step by step: at once `true`, mass $`p`; one `false` more, $`1 - p` times as much.
 :::
@@ -65,7 +65,7 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (k : ℕ) : geom p (k + 1) = ↑(σ p) * geom p k") (lemma := "geom_succ") (group := "chance.count")
+::::leanonly (proof := "(p : I) (k : ℕ) : geom p (k + 1) = ↑(σ p) * geom p k") (lemma := "geom_succ") (group := "chance.count") (uses := "-")
 :::en
 *One false more.* The second case of the definition.
 :::
@@ -92,7 +92,7 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (k : ℕ) : geom p k = ↑(σ p) ^ k * ↑p") (lemma := "geom_formula") (new := "pow_succ', mul_assoc") (group := "chance.count")
+::::leanonly (proof := "(p : I) (k : ℕ) : geom p k = ↑(σ p) ^ k * ↑p") (lemma := "geom_formula") (new := "pow_succ', mul_assoc") (group := "chance.count") (uses := "geom_zero, pow_zero, one_mul, geom_succ, mul_assoc, pow_succ'")
 :::en
 *The masses.* $`k` times `false`, then `true`: mass $`(1 - p)^k p`.
 :::
@@ -121,7 +121,7 @@ rw [geom_succ, ih, ← mul_assoc, ← pow_succ']
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (k m : ℕ) : geom p (k + m) = ↑(σ p) ^ k * geom p m") (lemma := "geom_memoryless") (group := "chance.count")
+::::leanonly (proof := "(p : I) (k m : ℕ) : geom p (k + m) = ↑(σ p) ^ k * geom p m") (lemma := "geom_memoryless") (group := "chance.count") (uses := "zero_add, pow_zero, one_mul, add_right_comm, geom_succ, mul_assoc, pow_succ'")
 :::en
 *Without memory.* $`k` times `false` first, and then as if nothing had happened: the coin does not remember.
 :::
@@ -150,7 +150,7 @@ rw [add_right_comm, geom_succ, ih, ← mul_assoc, ← pow_succ']
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : ∑' k, (↑(σ p) : ENNReal) ^ k = (↑p)⁻¹") (new := "ENNReal.tsum_geometric, one_sub_symm") (group := "chance.count")
+::::leanonly (proof := "(p : I) : ∑' k, (↑(σ p) : ENNReal) ^ k = (↑p)⁻¹") (new := "ENNReal.tsum_geometric, one_sub_symm") (group := "chance.count") (uses := "ENNReal.tsum_geometric, one_sub_symm")
 :::en
 *A geometric series.* $`\sum_k (1 - p)^k = 1 / p`. `∑' k, a k` is the sum over all $`k`, as a mass (it may be $`\infty`: for $`p = 0`).
 :::
@@ -177,7 +177,7 @@ rw [ENNReal.tsum_geometric, one_sub_symm]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : ∑' k, (↑(σ p) : ENNReal) ^ k * ↑p = (↑p : ENNReal)⁻¹ * ↑p") (new := "ENNReal.tsum_mul_right") (group := "chance.count")
+::::leanonly (proof := "(p : I) : ∑' k, (↑(σ p) : ENNReal) ^ k * ↑p = (↑p : ENNReal)⁻¹ * ↑p") (new := "ENNReal.tsum_mul_right") (group := "chance.count") (uses := "ENNReal.tsum_mul_right, ENNReal.tsum_geometric, one_sub_symm")
 :::en
 *Factoring out.* A factor that does not depend on $`k` comes out of the sum.
 :::
@@ -204,7 +204,7 @@ rw [ENNReal.tsum_mul_right, ENNReal.tsum_geometric, one_sub_symm]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (h : p ≠ 0) : ∑' k, geom p k = 1") (new := "ENNReal.inv_mul_cancel, mass_ne_zero, mass_finite") (group := "chance.count")
+::::leanonly (proof := "(p : I) (h : p ≠ 0) : ∑' k, geom p k = 1") (new := "ENNReal.inv_mul_cancel, mass_ne_zero, mass_finite") (group := "chance.count") (uses := "geom_formula, ENNReal.tsum_mul_right, ENNReal.tsum_geometric, one_sub_symm, ENNReal.inv_mul_cancel, mass_ne_zero, mass_finite")
 :::en
 *Total mass one.* If $`p \neq 0`, the first `true` comes for sure: the masses add up to one. (For $`p = 0` it never comes, and all masses are $`0`.)
 :::
@@ -233,7 +233,7 @@ rw [ENNReal.inv_mul_cancel (mass_ne_zero h) (mass_finite p)]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : geom p = (do let x ← coin p; bif x then pure 0 else (do let Y ← geom p; pure (1 + Y)))") (lemma := "geom_first") (group := "chance.count")
+::::leanonly (proof := "(p : I) : geom p = (do let x ← coin p; bif x then pure 0 else (do let Y ← geom p; pure (1 + Y)))") (lemma := "geom_first") (group := "chance.count") (uses := "coin_bind_apply, Bool.cond_true, Bool.cond_false, pure_self, shift_zero, mul_zero, add_zero, mul_one, geom_zero, pure_zero_succ, shift_succ, zero_add, geom_succ")
 :::en
 *Boss: waiting for the first true.* Throw once: on `true` it is $`0`; on `false`, start again, and add one. The geometric distribution is the one that does this: it is defined by its masses, and here it is a `do` block that calls itself.
 :::

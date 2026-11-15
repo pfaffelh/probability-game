@@ -7,6 +7,7 @@ import ProbGame.Worlds.TwoCoins
 import ProbGame.Worlds.Counting
 import ProbGame.Worlds.Circuits
 import ProbGame.Worlds.Bind
+import ProbGame.Worlds.RealNumbers
 import ProbGame.Worlds.Thinning
 import ProbGame.Worlds.Sequences
 import ProbGame.Worlds.Binomial
@@ -69,6 +70,8 @@ Welt.
 {include 1 ProbGame.Worlds.Counting}
 
 {include 1 ProbGame.Worlds.Bind}
+
+{include 1 ProbGame.Worlds.RealNumbers}
 
 {include 1 ProbGame.Worlds.Thinning}
 

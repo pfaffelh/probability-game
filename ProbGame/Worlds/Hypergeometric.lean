@@ -18,7 +18,7 @@ An urn with white and black balls; balls are drawn one after the other, without 
 Eine Urne mit weißen und schwarzen Kugeln; Kugeln werden eine nach der anderen gezogen, ohne sie zurückzulegen. Die hypergeometrische Verteilung, die Anzahl der gezogenen weißen Kugeln, als `do`-Block, der Kugel für Kugel zieht: Jeder Zug ist eine Münze, die wartet (wie in *Münzen, die warten*), ihre Chance hängt davon ab, was vorher gezogen wurde. Nur in Lean.
 :::
 
-::::leanonly (proof := "(w b : ℕ) : hyper w b 0 = pure 0") (lemma := "hyper_zero") (group := "chance.count")
+::::leanonly (proof := "(w b : ℕ) : hyper w b 0 = pure 0") (lemma := "hyper_zero") (group := "chance.count") (uses := "-")
 :::en
 *No draw.* An urn with $`w` white and $`b` black balls. `hyper w b n` is the number of white balls in $`n` draws, one after the other, without putting a ball back. With no draw: none.
 :::
@@ -71,7 +71,7 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(w b n : ℕ) : hyper w b (n + 1) = (do let X ← coin (frac w b); bif X then (do let Y ← hyper (w - 1) b n; pure (1 + Y)) else hyper w (b - 1) n)") (lemma := "hyper_succ") (group := "chance.count")
+::::leanonly (proof := "(w b n : ℕ) : hyper w b (n + 1) = (do let X ← coin (frac w b); bif X then (do let Y ← hyper (w - 1) b n; pure (1 + Y)) else hyper w (b - 1) n)") (lemma := "hyper_succ") (group := "chance.count") (uses := "-")
 :::en
 *One ball after the other.* The first ball is white with chance $`w / (w + b)`: then one white less in the urn, and one more counted. Else one black less.
 :::
@@ -98,7 +98,7 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(b : ℕ) : coin (frac 0 b) = pure false") (new := "frac_zero, coin_zero") (group := "chance.count")
+::::leanonly (proof := "(b : ℕ) : coin (frac 0 b) = pure false") (new := "frac_zero, coin_zero") (group := "chance.count") (uses := "frac_zero, coin_zero")
 :::en
 *No white ball.* Without white balls, the ball drawn is surely black.
 :::
@@ -125,7 +125,7 @@ rw [frac_zero, coin_zero]
 :::
 ::::
 
-::::leanonly (proof := "(b n : ℕ) : hyper 0 b n = pure 0") (lemma := "hyper_black") (group := "chance.count")
+::::leanonly (proof := "(b n : ℕ) : hyper 0 b n = pure 0") (lemma := "hyper_black") (group := "chance.count") (uses := "hyper_zero, hyper_succ, frac_zero, coin_zero, pure_bind, Bool.cond_false")
 :::en
 *Only black.* From an urn without white balls, no white one is ever drawn.
 :::
@@ -154,7 +154,7 @@ rw [hyper_succ, frac_zero, coin_zero, pure_bind, Bool.cond_false, ih]
 :::
 ::::
 
-::::leanonly (proof := "(w : ℕ) : coin (frac (w + 1) 0) = pure true") (new := "frac_white, coin_one") (group := "chance.count")
+::::leanonly (proof := "(w : ℕ) : coin (frac (w + 1) 0) = pure true") (new := "frac_white, coin_one") (group := "chance.count") (uses := "frac_white, coin_one")
 :::en
 *No black ball.* Without black balls (and with at least one white one), the ball drawn is surely white.
 :::
@@ -181,7 +181,7 @@ rw [frac_white, coin_one]
 :::
 ::::
 
-::::leanonly (proof := "(w : ℕ) : hyper w 0 w = pure w") (lemma := "hyper_white") (new := "Nat.add_sub_cancel") (group := "chance.count")
+::::leanonly (proof := "(w : ℕ) : hyper w 0 w = pure w") (lemma := "hyper_white") (new := "Nat.add_sub_cancel") (group := "chance.count") (uses := "hyper_zero, hyper_succ, frac_white, coin_one, pure_bind, Bool.cond_true, Nat.add_sub_cancel, add_comm")
 :::en
 *Only white.* $`w` draws from an urn with $`w` white balls: all of them, surely.
 :::
@@ -210,7 +210,7 @@ rw [hyper_succ, frac_white, coin_one, pure_bind, Bool.cond_true, Nat.add_sub_can
 :::
 ::::
 
-::::leanonly (proof := "(w b : ℕ) : hyper w b (w + b) = pure w") (lemma := "hyper_all") (group := "chance.count")
+::::leanonly (proof := "(w b : ℕ) : hyper w b (w + b) = pure w") (lemma := "hyper_all") (group := "chance.count") (uses := "zero_add, hyper_black, add_zero, hyper_white, add_assoc, hyper_succ, Nat.add_sub_cancel, add_right_comm, pure_bind, add_comm, cond_same, coin_unused")
 :::en
 *Boss: drawing all the balls.* Draw all $`w + b` balls, one after the other: whatever happens on the way, in the end you surely have all $`w` white ones.
 :::
