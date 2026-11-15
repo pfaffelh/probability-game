@@ -57,7 +57,7 @@ Die Aussagen handeln von der Masse bei `true`: Das Spielfeld zeigt die ganze Ver
 `true` (die Masse `μ true`, dann die Masse von `f true` bei `true`) und über `false`.
 :::
 
-::::circuit (inputs := "x y") (gates := "") (table := "0001") (goal := "x && y") (proof := "(x y : Bool) : (if x then y else false) = (bif x then (bif y then true else false) else (bif y then false else false))") (start := "a=bind@240,250; x>a.0; y>a.1; a>out") (play := "a.T=id; a.F=false")
+::::circuit (height := "540") (inputs := "x y") (gates := "") (table := "0001") (goal := "x && y") (proof := "(x y : Bool) : (if x then y else false) = (bif x then (bif y then true else false) else (bif y then false else false))") (start := "a=bind@240,250; x>a.0; y>a.1; a>out") (play := "a.T=id; a.F=false")
 :::en
 *A gate of your own.* First without coins, as in *Circuits*. There are four maps `Bool → Bool`:
 `id`, `not`, always `T`, always `F` (see *Maps*). New gate: `bind`. It is on the board already, wired;
@@ -101,7 +101,7 @@ decide +revert
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : (if x then !y else y) = (bif x then (bif y then false else true) else (bif y then true else false))") (start := "a=bind@240,250; x>a.0; y>a.1; a>out") (play := "a.T=not; a.F=id")
+::::circuit (height := "540") (inputs := "x y") (gates := "") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : (if x then !y else y) = (bif x then (bif y then false else true) else (bif y then true else false))") (start := "a=bind@240,250; x>a.0; y>a.1; a>out") (play := "a.T=not; a.F=id")
 :::en
 *xor, chosen yourself.* `true` when exactly one input is. With `bind`: for `x = true` one map of `y`,
 for `x = false` another. Four maps for each field: sixteen gates with two inputs, all of them.
@@ -127,7 +127,7 @@ decide +revert
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "") (table := "1101") (goal := "!x || y") (proof := "(x y : Bool) : (if x then y else true) = (bif x then (bif y then true else false) else (bif y then true else true))") (start := "a=bind@240,250; x>a.0; y>a.1; a>out") (play := "a.T=id; a.F=true")
+::::circuit (height := "540") (inputs := "x y") (gates := "") (table := "1101") (goal := "!x || y") (proof := "(x y : Bool) : (if x then y else true) = (bif x then (bif y then true else false) else (bif y then true else true))") (start := "a=bind@240,250; x>a.0; y>a.1; a>out") (play := "a.T=id; a.F=true")
 :::en
 *If x, then y.* The implication: `false` only when `x` is `true` and `y` is `false`. In Lean
 `!x || y`.
@@ -152,7 +152,7 @@ decide +revert
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:p^2 false:1-p^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then coin p else pure false); pure y) true = (↑p * ↑p : ENNReal)") (new := "bind_true") (play := "y.T=p; y.F=0")
+::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:p^2 false:1-p^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then coin p else pure false); pure y) true = (↑p * ↑p : ENNReal)") (new := "bind_true") (play := "y.T=p; y.F=0")
 :::en
 *Only after true.* `y` is a coin when `x` showed `true`, and surely `false` otherwise: choose its two
 coins. Compare with *Both `true`* of *Building with Coins*: the same distribution,
@@ -188,7 +188,7 @@ norm_num
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bernoulli p") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else pure false); pure y) true = (↑p : ENNReal)") (play := "y.T=1; y.F=0")
+::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bernoulli p") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else pure false); pure y) true = (↑p : ENNReal)") (play := "y.T=1; y.F=0")
 :::en
 *Copying.* `y` is surely `true` after `true`, and surely `false` after `false`: it copies `x`. The
 output `y` has the distribution of the coin `x`.
@@ -218,7 +218,7 @@ norm_num
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:2p-p^2 false:(1-p)^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else coin p); pure y) true = (↑p + ↑(σ p) * ↑p : ENNReal)") (play := "y.T=1; y.F=p")
+::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:2p-p^2 false:(1-p)^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else coin p); pure y) true = (↑p + ↑(σ p) * ↑p : ENNReal)") (play := "y.T=1; y.F=p")
 :::en
 *One more try.* When `x` showed `true`, that is enough: `y` is surely `true`. When it showed `false`,
 throw again. Compare with *At least one `true`* of *Building with Coins*: the same as `x || y`, but the
@@ -250,7 +250,7 @@ norm_num
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:1-2p+2p^2 false:2p-2p^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then coin p else coin (σ p)); pure y) true = (↑p * ↑p + ↑(σ p) * ↑(σ p) : ENNReal)") (play := "y.T=p; y.F=1-p")
+::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:1-2p+2p^2 false:2p-2p^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then coin p else coin (σ p)); pure y) true = (↑p * ↑p + ↑(σ p) * ↑(σ p) : ENNReal)") (play := "y.T=p; y.F=1-p")
 :::en
 *A coin that remembers.* After `true` the coin `p` again, after `false` the flipped coin $`1 - p`:
 the second throw tends to repeat the first.

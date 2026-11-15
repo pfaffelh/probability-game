@@ -34,7 +34,7 @@ und die Aussage sagt, dass sie die Zieltafel ist. Die Lean-Hälfte ist hier kurz
 Welten danach.
 :::
 
-::::circuit (height := "360") (inputs := "x") (gates := "") (table := "01") (goal := "x") (shape := "x") (proof := "(x : Bool) : x = x") (new := "rfl") (play := "x>out")
+::::circuit (height := "300") (inputs := "x") (gates := "") (table := "01") (goal := "x") (shape := "x") (proof := "(x : Bool) : x = x") (new := "rfl") (play := "x>out")
 :::en
 *A wire.* The output is to be the input itself. Wire `x` to the output: tap `x`, then the output.
 :::
@@ -72,7 +72,7 @@ rfl
 :::
 ::::
 
-::::circuit (height := "420") (inputs := "true") (gates := "not") (table := "0") (goal := "false") (shape := "!true") (proof := ": (!true) = false") (play := "a=not; true>a.0; a>out")
+::::circuit (height := "400") (inputs := "true") (gates := "not") (table := "0") (goal := "false") (shape := "!true") (proof := ": (!true) = false") (play := "a=not; true>a.0; a>out")
 :::en
 *Not true.* The input is `true` itself, the target `false`. Drag `not` onto the board, then wire
 `true` to it and it to the output.
@@ -114,7 +114,7 @@ rfl
 :::
 ::::
 
-::::circuit (inputs := "x") (gates := "not") (table := "01") (goal := "x") (shape := "!(!x)") (start := "a=not; x>a.0") (proof := "(x : Bool) : (!(!x)) = x") (lemma := "Bool.not_not") (new := "cases") (play := "b=not; a>b.0; b>out")
+::::circuit (height := "500") (inputs := "x") (gates := "not") (table := "01") (goal := "x") (shape := "!(!x)") (start := "a=not; x>a.0") (proof := "(x : Bool) : (!(!x)) = x") (lemma := "Bool.not_not") (new := "cases") (play := "b=not; a>b.0; b>out")
 :::en
 *Flipped twice.* One `not` is already on the board and stays there. Add a second one, so that the output is the input again.
 :::
@@ -151,7 +151,7 @@ rfl
 :::
 ::::
 
-::::circuit (inputs := "x") (gates := "not, or") (table := "11") (goal := "true") (proof := "(x : Bool) : (x || !x) = (bif x then true else true)") (new := "<;>") (play := "a=not; b=or; x>a.0; x>b.0; a>b.1; b>out")
+::::circuit (height := "500") (inputs := "x") (gates := "not, or") (table := "11") (goal := "true") (proof := "(x : Bool) : (x || !x) = (bif x then true else true)") (new := "<;>") (play := "a=not; b=or; x>a.0; x>b.0; a>b.1; b>out")
 :::en
 *Always true, without always true.* An output can feed several inputs: wire `x` twice.
 :::
