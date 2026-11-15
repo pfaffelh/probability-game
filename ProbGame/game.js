@@ -3788,9 +3788,10 @@
   }).filter(w => w && !/\/Lexicon\/$/.test(w.path))
   const levelsKey = path => `pg:levels:${path}`
   // the worlds on a side way: which world they come after (not the one above them on the map)
-  const SIDE_WAYS = { 'Coins-that-Wait': 'Building-with-Coins', 'Sequences': 'Counting', 'Hypergeometric': 'Binomial' }
-  // (a world that also comes from another one, besides the one before it: Binomial needs Counting too)
-  const JOINS = { 'Binomial': 'Thinning' }
+  // The map as a graph, as in verso-nng: each world with the worlds it needs (else the one before it),
+  // a branch in a column of its own, the names to the right of the tree.
+  const PREDS = { 'Coins-that-Wait': ['Building-with-Coins'], 'Sequences': ['Counting'], 'Binomial': ['Sequences', 'Thinning'], 'Geometric': ['Binomial'], 'Hypergeometric': ['Binomial'] }
+  const COLUMN = { 'Coins-that-Wait': 1, 'Thinning': 1, 'Hypergeometric': 1 }
   const fetched = new Set()
   function worldMap() {
     const toc = document.querySelector('#toc'), worlds = worldLinks()
@@ -3811,21 +3812,28 @@
       if (!levels) return null
       return [levels.filter((proof, i) => ls(`pg:${w.path}:${i}`) === '1' && (SHOW || !proof || ls(`pg:${w.path}:${i}:proofd`) === '1')).length, levels.length]
     }
-    const W2 = 250, dy = 56, x = 56, y0 = 26, H = y0 + (worlds.length - 1) * dy + 30
-    const map = svg('svg', { viewBox: `0 0 ${W2} ${H}`, class: 'pg-map' })
-    // the way: from each world to the next, or, for a world on a side way (SIDE_WAYS), from the world
-    // it comes after, past the worlds between (a fork: two ways that do not need each other)
     const slug = w => /([^/]+)\/$/.exec(w.path)?.[1] ?? ''
-    for (let i = 1; i < worlds.length; i++) {
-      const from = worlds.findIndex(w => slug(w) === SIDE_WAYS[slug(worlds[i])])
-      const ya = y0 + (from < 0 ? i - 1 : from) * dy, yb = y0 + i * dy
-      if (from < 0 || from === i - 1) map.append(svg('line', { x1: x, y1: ya, x2: x, y2: yb, class: 'pg-map-edge' }))
-      else map.append(svg('path', { d: `M${x - 12},${ya + 14} C${x - 40},${ya + 36} ${x - 40},${yb - 36} ${x - 12},${yb - 14}`, class: 'pg-map-edge pg-map-fork' }))
-      const j = worlds.findIndex(w => slug(w) === JOINS[slug(worlds[i])])
-      if (j >= 0) { const yj = y0 + j * dy; map.append(svg('path', { d: `M${x - 14},${yj + 12} C${x - 56},${yj + 40} ${x - 56},${yb - 40} ${x - 14},${yb - 12}`, class: 'pg-map-edge pg-map-fork' })) }
-    }
+    const r = 16, dx = 36, dy = 54, x0 = 22, y0 = 24
+    const col = w => COLUMN[slug(w)] ?? 0
+    const cols = Math.max(...worlds.map(col)) + 1
+    const at = i => ({ x: x0 + col(worlds[i]) * dx, y: y0 + i * dy })
+    const lx = x0 + (cols - 1) * dx + r + 9
+    const W2 = 250, H = y0 + (worlds.length - 1) * dy + 30
+    const map = svg('svg', { viewBox: `0 0 ${W2} ${H}`, class: 'pg-map' })
+    const finished = w => { const c = count(w); return !!(c && c[1] && c[0] === c[1]) }
+    // the ways: from each world it needs (a straight line in a column, an S between columns)
     worlds.forEach((w, i) => {
-      const y = y0 + i * dy, r = 18, c = count(w), frac = c && c[1] ? c[0] / c[1] : 0
+      const preds = PREDS[slug(w)] ?? (i > 0 ? [slug(worlds[i - 1])] : [])
+      for (const p of preds) {
+        const j = worlds.findIndex(v => slug(v) === p)
+        if (j < 0) continue
+        const a = at(j), b = at(i), m = (a.y + b.y) / 2
+        map.append(svg('path', { class: 'pg-map-edge' + (finished(worlds[j]) ? ' pg-map-edge-done' : ''),
+          d: a.x === b.x ? `M${a.x},${a.y}L${b.x},${b.y}` : `M${a.x},${a.y}C${a.x},${m} ${b.x},${m} ${b.x},${b.y}` }))
+      }
+    })
+    worlds.forEach((w, i) => {
+      const { x, y } = at(i), c = count(w), frac = c && c[1] ? c[0] / c[1] : 0
       const name = w.a.textContent.trim()
       const g = svg('a', { href: w.a.getAttribute('href').replace(/#.*$/, ''), class: 'pg-map-world' + (w.path === location.pathname ? ' pg-map-here' : '') + (c && c[0] === c[1] && c[1] ? ' pg-map-done' : '') })
       g.append(svg('title', {}, c ? `${name}: ${c[0]}/${c[1]}` : name))
@@ -3836,9 +3844,9 @@
       }
       // (the worlds before chance have no number: a sign of their own)
       const sign = /True-and-False\/$/.test(w.path) ? '⊤' : /Walking-on-the-Grid\/$/.test(w.path) ? '⌗' : /Circuits\/$/.test(w.path) ? '∧' : /Masses\/$/.test(w.path) ? 'μ' : '•'
-      g.append(svg('text', { x, y: y + 6, 'text-anchor': 'middle', class: 'pg-map-n' }, w.num || sign))
-      g.append(svg('text', { x: x + r + 8, y: y - 1, class: 'pg-map-name' }, name))
-      g.append(svg('text', { x: x + r + 8, y: y + 13, class: 'pg-map-count' }, c ? `${c[0]}/${c[1]}` : ''))
+      g.append(svg('text', { x, y: y + 5.5, 'text-anchor': 'middle', class: 'pg-map-n' }, w.num || sign))
+      g.append(svg('text', { x: lx, y: y - 1, class: 'pg-map-name' }, name))
+      g.append(svg('text', { x: lx, y: y + 13, class: 'pg-map-count' }, c ? `${c[0]}/${c[1]}` : ''))
       map.append(g)
     })
     toc.querySelector('.pg-worlds')?.remove()
