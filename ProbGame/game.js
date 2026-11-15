@@ -49,7 +49,7 @@
   // Headings of the site, which come from Verso.
   const DE_TITLES = {
     'The Probability Game': 'Das Wahrscheinlichkeits\u00ADspiel',  // (a soft hyphen, for phones)
-    'One Coin': 'Eine Münze', 'Maps': 'Abbildungen', 'Draw, then Compute': 'Erst ziehen, dann rechnen', 'Building with Coins': 'Bauen mit Münzen',
+    'Masses': 'Massen', 'One Coin': 'Eine Münze', 'Maps': 'Abbildungen', 'Draw, then Compute': 'Erst ziehen, dann rechnen', 'Building with Coins': 'Bauen mit Münzen',
     'Counting': 'Zählen', 'Walking on the Grid': 'Gehen auf dem Gitter', 'True and False': 'Wahr und falsch', 'Circuits with Coins': 'Schaltungen mit Münzen', 'Coins that Wait': 'Münzen, die warten', 'Circuits': 'Schaltungen', 'Lexicon': 'Lexikon', 'Table of Contents': 'Inhalt', 'Contents': 'Inhalt',
   }
   function translatePage() {
@@ -2687,14 +2687,14 @@
     { name: 'chance', kind: 'rule', sig: 'chance μ : I', en: 'The mass of μ at true, as a number in [0, 1] (what coin takes).', de: 'Die Masse von μ bei true, als Zahl in [0, 1] (was coin nimmt).' },
     { name: 'chance_eq', kind: 'rule', sig: '↑(chance μ) = μ true', en: 'chance μ, as a mass, is the mass at true.', de: 'chance μ, als Masse, ist die Masse bei true.' },
     { name: 'eq_coin', kind: 'lemma', sig: 'eq_coin μ : μ = coin (chance μ)', en: 'Proved by you in One Coin: every distribution on Bool is a coin.', de: 'Von dir bewiesen in „Eine Münze“: Jede Verteilung auf Bool ist eine Münze.' },
-    { name: 'coin_true', kind: 'rule', sig: '(coin p) true = ↑p', en: 'The mass of the coin at true.', de: 'Die Masse der Münze bei true.' },
-    { name: 'coin_false', kind: 'rule', sig: '(coin p) false = ↑(σ p)', en: 'The mass of the coin at false.', de: 'Die Masse der Münze bei false.' },
+    { name: 'coin_true', kind: 'lemma', sig: '(coin p) true = ↑p', en: 'Proved by you in Masses: the mass of the coin at true.', de: 'Von dir bewiesen in „Massen“: die Masse der Münze bei true.' },
+    { name: 'coin_false', kind: 'lemma', sig: '(coin p) false = ↑(σ p)', en: 'Proved by you in Masses: the mass of the coin at false.', de: 'Von dir bewiesen in „Massen“: die Masse der Münze bei false.' },
     { name: 'map_true', kind: 'rule', sig: '(f <$> μ) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)', en: 'Where the mass of a move goes: to true comes the mass of the points that f sends to true.', de: 'Wohin die Masse eines Zuges geht: Nach true kommt die Masse der Punkte, die f nach true schickt.' },
-    { name: 'Bool.not_true', kind: 'rule', sig: '(!true) = false', en: 'Not true is false.', de: 'Nicht true ist false.' },
-    { name: 'Bool.not_false', kind: 'rule', sig: '(!false) = true', en: 'Not false is true.', de: 'Nicht false ist true.' },
-    { name: 'Bool.cond_true', kind: 'rule', sig: '(bif true then a else b) = a', en: 'bif with true: the first.', de: 'bif mit true: das Erste.' },
-    { name: 'Bool.cond_false', kind: 'rule', sig: '(bif false then a else b) = b', en: 'bif with false: the second.', de: 'bif mit false: das Zweite.' },
-    { name: 'zero_add', kind: 'rule', sig: '0 + n = n', en: 'Adding to zero.', de: 'Zu null addieren.' },
+    { name: 'Bool.not_true', kind: 'lemma', sig: '(!true) = false', en: 'Proved by you in Circuits: not true is false.', de: 'Von dir bewiesen in „Schaltungen“: Nicht true ist false.' },
+    { name: 'Bool.not_false', kind: 'lemma', sig: '(!false) = true', en: 'Proved by you in Masses: not false is true.', de: 'Von dir bewiesen in „Massen“: Nicht false ist true.' },
+    { name: 'Bool.cond_true', kind: 'lemma', sig: '(bif true then a else b) = a', en: 'Proved by you in Masses: bif with true is the first.', de: 'Von dir bewiesen in „Massen“: bif mit true ist das Erste.' },
+    { name: 'Bool.cond_false', kind: 'lemma', sig: '(bif false then a else b) = b', en: 'Proved by you in Masses: bif with false is the second.', de: 'Von dir bewiesen in „Massen“: bif mit false ist das Zweite.' },
+    { name: 'zero_add', kind: 'rule', sig: '0 + a = a', en: 'Adding to zero.', de: 'Zu null addieren.' },
     { name: 'coin_not_true', kind: 'lemma', sig: '(not <$> coin p) true = ↑(σ p)', en: 'Proved by you in One Coin.', de: 'Von dir bewiesen in „Eine Münze“.' },
     { name: 'coin_not', kind: 'lemma', sig: 'not <$> coin p = coin (σ p)', en: 'Proved by you: the boss of One Coin. Flipping a coin swaps the masses.', de: 'Von dir bewiesen: der Endgegner von „Eine Münze“. Umdrehen tauscht die Massen.' },
     { name: 'coin_total', kind: 'rule', sig: '(coin p) true + (coin p) false = 1', en: 'The total mass of a coin is one.', de: 'Die Gesamtmasse einer Münze ist eins.' },
@@ -3754,7 +3754,7 @@
         g.append(svg('path', { d: `M${x},${y - r} A${r},${r} 0 ${frac > 0.5 ? 1 : 0} 1 ${ex},${ey}`, class: 'pg-map-ring' }))
       }
       // (the worlds before chance have no number: a sign of their own)
-      const sign = /True-and-False\/$/.test(w.path) ? '⊤' : /Walking-on-the-Grid\/$/.test(w.path) ? '⌗' : /Circuits\/$/.test(w.path) ? '∧' : '•'
+      const sign = /True-and-False\/$/.test(w.path) ? '⊤' : /Walking-on-the-Grid\/$/.test(w.path) ? '⌗' : /Circuits\/$/.test(w.path) ? '∧' : /Masses\/$/.test(w.path) ? 'μ' : '•'
       g.append(svg('text', { x, y: y + 6, 'text-anchor': 'middle', class: 'pg-map-n' }, w.num || sign))
       g.append(svg('text', { x: x + r + 8, y: y - 1, class: 'pg-map-name' }, name))
       g.append(svg('text', { x: x + r + 8, y: y + 13, class: 'pg-map-count' }, c ? `${c[0]}/${c[1]}` : ''))

@@ -72,7 +72,7 @@ rfl
 :::
 ::::
 
-::::circuit (height := "400") (inputs := "true") (gates := "not") (table := "0") (goal := "false") (shape := "!true") (proof := ": (!true) = false") (play := "a=not; true>a.0; a>out")
+::::circuit (height := "400") (inputs := "true") (gates := "not") (table := "0") (goal := "false") (shape := "!true") (proof := ": (!true) = false") (lemma := "Bool.not_true") (play := "a=not; true>a.0; a>out")
 :::en
 *Not true.* The input is `true` itself, the target `false`. Drag `not` onto the board, then wire
 `true` to it and it to the output.
