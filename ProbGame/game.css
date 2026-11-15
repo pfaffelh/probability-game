@@ -657,6 +657,8 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
   .pg-stage .pg-cboard-col { width: 100%; flex: none; }
   .pg-stage .pg-czoom-box { flex: none; width: min(100%, var(--pg-fitw, 100%)); max-width: none !important; margin: 0 auto; }
   .pg-stage .pg-czoom { border-radius: 0; }
+  /* (the board at first as large as fits in height, in the middle of the frame; zoomed, wider) */
+  .pg-stage .pg-czoom > .pg-svg.pg-csvg { width: calc(var(--pg-zoom, 1) * var(--pg-boardw, 100%)); margin: 0 auto; }
 }
 
 /* a phone, the proof: above a fixed line the proof (it scrolls), below it the input, the keys and the
