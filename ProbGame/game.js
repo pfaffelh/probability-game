@@ -3254,6 +3254,8 @@
         hist.append(li)
       }
       const goals = el('div', 'pg-goals')
+      // (on the stage the other goals come below the input: the line works on the one above it)
+      const later = el('div', 'pg-goals pg-goals-later')
       if (this.done) goals.append(el('div', 'pg-proof-done', 'goals accomplished 🎉' + (this.lemma ? ' ' + tr('Your lemma {x} is now in your inventory.', { x: this.lemma }) : '')))
       if (this.done && STAGE) {
         const next = el('button', 'pg-next', tr('Next ›')); next.type = 'button'
@@ -3265,7 +3267,7 @@
         const box = el(i ? 'details' : 'div', 'pg-goal' + (i ? ' pg-goal-later' : this.goals.length > 1 ? ' pg-goal-now' : ''))
         if (this.goals.length > 1) box.append(el(i ? 'summary' : 'div', 'pg-goal-no', i ? tr('goal {i} of {n}', { i: i + 1, n: this.goals.length }) : tr('goal 1 of {n}: the next line works on this one', { n: this.goals.length })))
         box.append(el('pre', '', leanText(g)))
-        goals.append(box)
+        ;(i && STAGE ? later : goals).append(box)
       })
       if (this.busy) goals.append(el('div', 'pg-info', tr('Lean is thinking …')))
       // an error: our sentence, and Lean's message (folded when there is a sentence)
@@ -3373,10 +3375,11 @@
         scroll.append(...parts)
         const foot = el('div', 'pg-proof-foot')
         if (!this.done) foot.append(row)
+        if (!this.done && later.childElementCount && !below) foot.append(later)
         main.append(scroll)
         // (a phone: only the input stays; the keys scroll with the inventory under it; on a large
         // screen the keys head the inventory column: the same inventory everywhere, all by clicks)
-        if (below) { const rest = el('div', 'pg-side-scroll'); if (!this.done) rest.append(this.keys()); rest.append(inv); side.append(foot, rest) }
+        if (below) { const rest = el('div', 'pg-side-scroll'); if (!this.done) { if (later.childElementCount) rest.append(later); rest.append(this.keys()) } rest.append(inv); side.append(foot, rest) }
         else { if (!this.done) { main.append(foot); side.append(this.keys()) } side.append(inv) }
         // (where the proof and the inventory were scrolled to stays, after a tap)
         const top = this.box.querySelector('.pg-proof-scroll')?.scrollTop, oldInv = this.box.querySelector('.pg-side-scroll, .pg-proof-side .pg-inventory')?.scrollTop, oldSide = this.box.querySelector('.pg-proof-side')?.scrollTop
