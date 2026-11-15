@@ -11,36 +11,34 @@ htmlSplit := .never
 %%%
 
 :::en
-There are exactly four maps `Bool → Bool`: `id`, `not`, always `T` (`fun _ => true`) and always `F`
-(`fun _ => false`). A new gate, `f`, is an unknown map: it has a field for a map, and every `f` on the
-board has the same one. Drag a map into the field, or tap the field until it is the one you want.
-A statement about `f` holds for every map when it holds for each of the four: try them all.
+Maps on `Bool`, and moves with them. There are exactly four maps `Bool → Bool`: `id`, `not`, always
+`true` (`fun _ => true`) and always `false` (`fun _ => false`). A statement about an unknown map
+`f : Bool → Bool` holds for every map when it holds for each of the four.
 :::
 
 :::de
-Es gibt genau vier Abbildungen `Bool → Bool`: `id`, `not`, immer `T` (`fun _ => true`) und immer `F`
-(`fun _ => false`). Ein neuer Baustein, `f`, ist eine unbekannte Abbildung: Er hat ein Feld für eine
-Abbildung, und jedes `f` auf dem Spielfeld hat dieselbe. Zieh eine Abbildung ins Feld, oder tippe das
-Feld an, bis es die richtige ist. Eine Aussage über `f` gilt für jede Abbildung, wenn sie für jede der
-vier gilt: Probier sie alle aus.
+Abbildungen auf `Bool`, und Züge mit ihnen. Es gibt genau vier Abbildungen `Bool → Bool`: `id`,
+`not`, immer `true` (`fun _ => true`) und immer `false` (`fun _ => false`). Eine Aussage über eine
+unbekannte Abbildung `f : Bool → Bool` gilt für jede Abbildung, wenn sie für jede der vier gilt.
 :::
 
-::::circuit (inputs := "b") (gates := "") (table := "f") (shape := "f (f (f b))") (start := "a=f; c=f; d=f; b>a.0; a>c.0; c>d.0; d>out") (proof := "(f : Bool → Bool) (b : Bool) : f (f (f b)) = f b") (lemma := "Bool.apply_apply_apply") (new := "decide") (play := "a.0=id") (uses := "-")
+::::leanonly (proof := "(f : Bool → Bool) (b : Bool) : f (f (f b)) = f b") (lemma := "Bool.apply_apply_apply") (new := "decide") (uses := "-")
 :::en
-*Three times is once.* The circuit `f (f (f b))` is there; the target is `f` itself, once. Choose a
-map in `f`, and then another: for each of the four, three times is the same as once.
+*Three times is once.* Whatever map `f : Bool → Bool` is, applied three times it does the same as
+once: `f (f (f b)) = f b`. Check it for `not`: three times `not` is `not`; and for always `true`.
 :::
 
 :::de
-*Dreimal ist einmal.* Die Schaltung `f (f (f b))` liegt da; das Ziel ist `f` selbst, einmal. Wähle
-eine Abbildung in `f`, und dann eine andere: Für jede der vier ist dreimal dasselbe wie einmal.
+*Dreimal ist einmal.* Welche Abbildung `f : Bool → Bool` auch immer: dreimal angewandt tut sie
+dasselbe wie einmal, `f (f (f b)) = f b`. Prüf es für `not`: dreimal `not` ist `not`; und für immer
+`true`.
 :::
 
 :::proofen
-No rule says what `f` does. But there are only four maps `Bool → Bool`, the four you tried, and with
+No rule says what `f` does. But there are only four maps `Bool → Bool`, `id`, `not` and the two constant ones, and with
 the two values of `b` these are eight cases. The new tactic `decide` reduces a statement about finitely
 many cases until it is `true` or `false`; `decide +revert` first takes the variables into the
-statement, here `∀ f b, …`, and so checks every case, as the board did. With
+statement, here `∀ f b, …`, and so checks every case. With
 coins this no longer works: a coin `coin p` is a different distribution for every number `p` between
 0 and 1, infinitely many cases. There, the rules do the work, and this lemma: it is unlocked as
 `Bool.apply_apply_apply`.
@@ -49,11 +47,11 @@ coins this no longer works: a coin `coin p` is a different distribution for ever
 :::
 
 :::proofde
-Keine Regel sagt, was `f` tut. Aber es gibt nur vier Abbildungen `Bool → Bool`, die vier, die du
-ausprobiert hast, und mit den zwei Werten von `b` sind das acht Fälle. Die neue Taktik `decide`
+Keine Regel sagt, was `f` tut. Aber es gibt nur vier Abbildungen `Bool → Bool`, `id`, `not` und die
+zwei konstanten, und mit den zwei Werten von `b` sind das acht Fälle. Die neue Taktik `decide`
 reduziert eine Aussage über endlich viele Fälle, bis sie `true` oder `false` ist; `decide +revert`
-nimmt zuerst die Variablen in die Aussage, hier `∀ f b, …`, und prüft so jeden Fall, wie das
-Spielfeld. Mit Münzen geht das nicht mehr: Eine Münze `coin p` ist für jede Zahl `p`
+nimmt zuerst die Variablen in die Aussage, hier `∀ f b, …`, und prüft so jeden Fall. Mit
+Münzen geht das nicht mehr: Eine Münze `coin p` ist für jede Zahl `p`
 zwischen 0 und 1 eine andere Verteilung, unendlich viele Fälle. Dort machen die Regeln die Arbeit, und
 dieses Lemma: Es wird als `Bool.apply_apply_apply` freigeschaltet.
 
@@ -93,19 +91,19 @@ rw [map_map]
 :::
 ::::
 
-::::circuit (inputs := "x") (gates := "") (coins := "p") (target := "f bernoulli p") (start := "a=f; c=f; d=f; x>a.0; a>c.0; c>d.0; d>out") (context := "Lean/Rules.lean") (proof := "(f : Bool → Bool) (p : I) : f <$> (f <$> (f <$> coin p)) = f <$> coin p") (new := "congr, funext") (play := "a.0=id") (uses := "map_map, Bool.apply_apply_apply")
+::::leanonly (proof := "(f : Bool → Bool) (p : I) : f <$> (f <$> (f <$> coin p)) = f <$> coin p") (new := "congr, funext") (uses := "map_map, Bool.apply_apply_apply")
 :::en
-*Three times is once, with a coin.* The same circuit, now on a coin `x ← coin p`; the target is the
-distribution of `f x`, once. Choose a map in `f`, and then another.
+*Three times is once, with a coin.* The same, now on a coin: three moves with `f` move the coin as
+one move with `f` does.
 :::
 
 :::de
-*Dreimal ist einmal, mit einer Münze.* Dieselbe Schaltung, jetzt auf einer Münze `x ← coin p`; das
-Ziel ist die Verteilung von `f x`, einmal. Wähle eine Abbildung in `f`, und dann eine andere.
+*Dreimal ist einmal, mit einer Münze.* Dasselbe, jetzt auf einer Münze: Drei Züge mit `f` bewegen
+die Münze wie ein Zug mit `f`.
 :::
 
 :::proofen
-Three gates one after the other are one gate: the new rule
+Three moves one after the other are one move: the rule
 `map_map : g <$> (f <$> μ) = (fun x => g (f x)) <$> μ`, twice. Then both sides move the same coin,
 with two maps. Two new tactics: `congr 1` reduces the goal to the two maps being equal, and `funext b`
 to their being equal at every point `b`. That is the lemma of the first level of this world:
@@ -115,7 +113,7 @@ to their being equal at every point `b`. That is the lemma of the first level of
 :::
 
 :::proofde
-Drei Bausteine hintereinander sind ein Baustein: die neue Regel
+Drei Züge hintereinander sind ein Zug: die Regel
 `map_map : g <$> (f <$> μ) = (fun x => g (f x)) <$> μ`, zweimal. Dann bewegen beide Seiten dieselbe
 Münze, mit zwei Abbildungen. Zwei neue Taktiken: `congr 1` führt das Ziel darauf zurück, dass die
 beiden Abbildungen gleich sind, und `funext b` darauf, dass sie an jeder Stelle `b` gleich sind. Das
