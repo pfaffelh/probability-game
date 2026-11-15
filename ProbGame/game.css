@@ -737,3 +737,9 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 .pg-stage details.pg-cside { width: 100%; display: block; box-sizing: border-box; padding-inline: 12px; }
 .pg-stage details.pg-cside > summary { cursor: pointer; color: #8a5a16; font-size: 0.9em; padding: 2px 0; }
 .pg-cside-body { display: flex; flex-direction: row; flex-wrap: wrap; justify-content: center; align-items: flex-start; gap: 0.3rem 1.2rem; }
+/* the switch Board | Lean: on every screen at the left, right after the titles, as large as on a
+   phone (the user); the dots to the right */
+.pg-stage-top .pg-stage-titles { flex: 0 1 auto; }
+@media (min-width: 701px) { .pg-stage-top .pg-dots { margin-left: auto; } }
+.pg-stage-top .pg-tabs { font-size: 1.1rem; }
+.pg-stage-top .pg-tab { padding: 0.35em 1.1em; }
