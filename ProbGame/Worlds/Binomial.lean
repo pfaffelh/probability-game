@@ -398,3 +398,31 @@ ring
 ```
 :::
 ::::
+
+::::leanonly (proof := "(p : I) (k m : ℕ) : binom (σ p) (k + m) m = binom p (k + m) k") (lemma := "binom_symm") (new := "symm_twice, Nat.choose_symm_add") (group := "chance.count")
+:::en
+*Encore: true and false swapped.* $`m` times `true` with the coin $`1 - p` is as likely as $`k` times `true` with the coin $`p`: count the `false` instead of the `true`. With your formula, this is computing.
+:::
+
+:::de
+*Zugabe: true und false getauscht.* $`m`-mal `true` mit der Münze $`1 - p` ist so wahrscheinlich wie $`k`-mal `true` mit der Münze $`p`: Zähl die `false` statt der `true`. Mit deiner Formel ist das Rechnen.
+:::
+
+:::proofen
+Bring both sides into the form of `binom_formula` (`add_comm`), use it twice; `symm_twice : σ (σ p) = p` and `Nat.choose_symm_add : (m + k).choose m = (m + k).choose k`; then `ring`.
+
+*Tip.* `rw [add_comm k m, binom_formula, add_comm m k, binom_formula, symm_twice, Nat.choose_symm_add]`, `ring`.
+:::
+
+:::proofde
+Bring beide Seiten in die Form von `binom_formula` (`add_comm`), benutze sie zweimal; `symm_twice : σ (σ p) = p` und `Nat.choose_symm_add : (m + k).choose m = (m + k).choose k`; dann `ring`.
+
+*Tipp.* `rw [add_comm k m, binom_formula, add_comm m k, binom_formula, symm_twice, Nat.choose_symm_add]`, `ring`.
+:::
+:::solution
+```
+rw [add_comm k m, binom_formula, add_comm m k, binom_formula, symm_twice, Nat.choose_symm_add]
+ring
+```
+:::
+::::

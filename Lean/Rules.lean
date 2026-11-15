@@ -362,6 +362,35 @@ theorem binom_eq_count (p : I) (n : ℕ) :
   rw [binom_succ, seq_succ, ih]
   simp only [map_bind, map_pure, bind_map_left, count_true_cons]
 
+/-! Binomial symmetry, geometric total mass (2026-11-15). -/
+
+theorem symm_twice (p : I) : σ (σ p) = p := unitInterval.symm_symm p
+
+/-- Binomial, encore: `true` and `false` swapped. -/
+theorem binom_symm (p : I) (k m : ℕ) : binom (σ p) (k + m) m = binom p (k + m) k := by
+  rw [add_comm k m, binom_formula, add_comm m k, binom_formula, symm_twice, Nat.choose_symm_add]
+  ring
+
+/-- `1 - (1 - p) = p`, as masses. -/
+theorem one_sub_symm (p : I) : 1 - (↑(σ p) : ENNReal) = ↑p := by
+  rw [← add_symm_eq_one p, ENNReal.add_sub_cancel_right]
+  exact ENNReal.ofReal_ne_top
+
+/-- A number `p ≠ 0` is a mass `≠ 0`. -/
+theorem mass_ne_zero {p : I} (h : p ≠ 0) : (↑p : ENNReal) ≠ 0 := by
+  show ENNReal.ofReal p ≠ 0
+  rw [ne_eq, ENNReal.ofReal_eq_zero, not_le]
+  exact lt_of_le_of_ne p.2.1 (fun e => h (Subtype.ext e.symm))
+
+/-- A number in `[0, 1]` is a finite mass. -/
+theorem mass_finite (p : I) : (↑p : ENNReal) ≠ ⊤ := ENNReal.ofReal_ne_top
+
+/-- Geometric: the total mass is one (when `p ≠ 0`). -/
+theorem geom_total (p : I) (h : p ≠ 0) : ∑' k, geom p k = 1 := by
+  simp only [geom_formula]
+  rw [ENNReal.tsum_mul_right, ENNReal.tsum_geometric, one_sub_symm,
+    ENNReal.inv_mul_cancel (mass_ne_zero h) (mass_finite p)]
+
 end ProbGame
 
 open ProbGame
