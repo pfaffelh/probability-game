@@ -1727,6 +1727,8 @@
       const d = root.dataset
       // (`size := "big"`: a larger board, for many gates)
       this.big = d.size === 'big'; this.CW = this.big ? 760 : CW; this.CH = this.big ? 700 : CH
+      // (`height := "420"`: the height of the board of this level, the width stays)
+      if (Number(d.height) > 0) this.CH = Math.max(300, Number(d.height))
       // (an input `y:*|0` depends on a wire: `y ∈ if c then {F, T} else {F}`; rows without it fall away)
       const ins = d.inputs.split(/\s+/).filter(Boolean)
       this.names = ins.map(t => t.split(':')[0])
@@ -1909,7 +1911,7 @@
         const spots = []
         // (one below the other first: a chain of gates runs straight down)
         for (const x of this.big ? [this.CW / 2, this.CW / 2 - 220, this.CW / 2 + 220] : [this.CW / 2, this.CW / 2 - 135, this.CW / 2 + 135]) for (const y of this.binds ? [265, 345, 420] : this.big ? [170, 280, 385, 490] : [160, 260, 360]) spots.push({ x, y })
-        at = spots.find(s => !this.gatesOn.some(g => Math.abs(g.x - s.x) < GW && Math.abs(g.y - s.y) < (gateH(g.kind) + gateH(kind)) / 2 + 20)) ?? { x: this.CW / 2, y: this.CH / 2 }
+        at = spots.filter(s => s.y + gateH(kind) / 2 + 30 <= this.outBox().top).find(s => !this.gatesOn.some(g => Math.abs(g.x - s.x) < GW && Math.abs(g.y - s.y) < (gateH(g.kind) + gateH(kind)) / 2 + 20)) ?? { x: this.CW / 2, y: this.CH / 2 }
       }
       const c = this.clamp(at, kind)
       this.change(() => { this.gatesOn.push({ id: `g${this.seq++}`, kind, x: c.x, y: c.y, ...(GATES[kind].slots ? { maps: GATES[kind].shared ? [this.fmap] : [null, null] } : {}) }) })
@@ -2598,10 +2600,20 @@
       const avail = sc.clientHeight - top - (f.bar ? f.bar.offsetHeight + 8 : 0) - 10
       const w = Math.max(180, Math.min(this.CW, Math.floor(avail * this.CW / this.CH)))
       f.box.style.maxWidth = `${w}px`
-      // (on a phone the board goes from edge to edge of the screen, as far as its height allows: game.css)
-      // (the user: on a phone always the whole width, even when the board is then higher than the
-      // space and scrolls)
-      f.s.style.setProperty('--pg-fitw', PHONE() ? '100%' : `${w}px`)
+      // On a phone the frame goes from edge to edge of the screen, but the board in it is at first only
+      // as large as its top and its bottom both show (the user: else one does not know what to do);
+      // zoomed in, it fills the frame's whole width.
+      const wrap = f.s.querySelector('.pg-czoom')
+      if (PHONE() && wrap) {
+        const W = f.s.clientWidth || this.CW
+        const h = Math.max(120, Math.min(avail, W * this.CH / this.CW))
+        wrap.style.aspectRatio = 'auto'; wrap.style.height = `${Math.floor(h)}px`
+        wrap.style.setProperty('--pg-boardw', `${Math.min(W, Math.floor(h * this.CW / this.CH))}px`)
+        f.s.style.setProperty('--pg-fitw', '100%')
+      } else {
+        if (wrap) { wrap.style.aspectRatio = `${this.CW} / ${this.CH}`; wrap.style.height = ''; wrap.style.removeProperty('--pg-boardw') }
+        f.s.style.setProperty('--pg-fitw', `${w}px`)
+      }
     }
   }
   // a wire, from an output (above) to an input (below)
