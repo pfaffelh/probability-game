@@ -162,13 +162,25 @@ decide +revert
 :::
 
 :::proofen
-`bind_true : (μ >>= f) true = μ true * f true true + μ false * f false true`: the mass at the first step times the mass at `true` of what follows, for both values of the first step.
+`bind_true : (μ >>= f) true = μ true * f true true + μ false * f false true`: the mass at the first step times the mass at `true` of what follows, for both values of the first step. That is the mass of a draw, by the definition of `>>=`:
+
+```
+(μ >>= f) b = ∑' a, μ a * (f a) b
+```
+
+on `Bool` a sum of two summands.
 
 *Tip.* `rw [bind_true]`.
 :::
 
 :::proofde
-`bind_true : (μ >>= f) true = μ true * f true true + μ false * f false true`: die Masse im ersten Schritt mal die Masse bei `true` dessen, was folgt, für beide Werte des ersten Schritts.
+`bind_true : (μ >>= f) true = μ true * f true true + μ false * f false true`: die Masse im ersten Schritt mal die Masse bei `true` dessen, was folgt, für beide Werte des ersten Schritts. Das ist die Masse eines Ziehens, nach der Definition von `>>=`:
+
+```
+(μ >>= f) b = ∑' a, μ a * (f a) b
+```
+
+auf `Bool` eine Summe aus zwei Summanden.
 
 *Tipp.* `rw [bind_true]`.
 :::

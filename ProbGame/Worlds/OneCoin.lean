@@ -390,13 +390,25 @@ rw [← coin_true, ← coin_false, coin_total]
 :::
 
 :::proofen
-`pure_true : (pure b) true = bif b then 1 else 0`: one if `b` is `true`, else zero.
+`pure_true : (pure b) true = bif b then 1 else 0`: one if `b` is `true`, else zero. By the definition,
+
+```
+def pure (a : α) : DiscreteMeasure α := ⟨({a} : Set α).indicator 1⟩
+```
+
+the mass is `1` on the set `{a}` and `0` outside it.
 
 *Tip.* `rw [pure_true, Bool.cond_true]`.
 :::
 
 :::proofde
-`pure_true : (pure b) true = bif b then 1 else 0`: eins, wenn `b` gleich `true` ist, sonst null.
+`pure_true : (pure b) true = bif b then 1 else 0`: eins, wenn `b` gleich `true` ist, sonst null. Nach der Definition,
+
+```
+def pure (a : α) : DiscreteMeasure α := ⟨({a} : Set α).indicator 1⟩
+```
+
+ist die Masse `1` auf der Menge `{a}` und `0` außerhalb.
 
 *Tipp.* `rw [pure_true, Bool.cond_true]`.
 :::

@@ -726,3 +726,6 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
   .pg-stage .pg-level.pg-circuit .pg-palette .pg-moves { display: flex; flex-direction: column; flex-wrap: nowrap; gap: 4px; }
   .pg-stage .pg-level.pg-circuit .pg-palette .pg-gate-icon { width: 100%; height: 46px; }
 }
+/* code in a tip (a definition): wrapped, never cut at the edge of a phone */
+.pg-tip-body pre, .pg-tip-body pre code { white-space: pre-wrap; overflow-wrap: anywhere; max-width: 100%; }
+.pg-tip-body pre { font-size: 0.9em; }

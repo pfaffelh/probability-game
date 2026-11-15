@@ -30,67 +30,6 @@ $`p` ist `coin p`. Ein Zug wird `f <$> μ` geschrieben: die Abbildung `f`, angew
 `μ`, ihr Bildmaß.
 :::
 
-::::leanonly (proof := "(p : I) : coin p true = p") (lemma := "coin_true")
-:::en
-*The mass at true.* The coin `coin p` has the mass $`p` at `true`.
-:::
-
-:::de
-*Die Masse bei true.* Die Münze `coin p` hat bei `true` die Masse $`p`.
-:::
-
-:::proofen
-`p : I` says that $`p` lies in the unit interval $`I = [0, 1]`. `(coin p) true` is the mass of the coin
-at `true`, and `↑p` is the number $`p` as a mass (a mass is a number in $`[0, \infty]`, `ENNReal`). The
-coin is defined by its two masses, so Lean computes the left side to `↑p`: `rfl`, as in *Circuits*.
-The statement is the rule `coin_true`; once proved, it is in your inventory.
-
-*Tip.* `rfl`.
-:::
-
-:::proofde
-`p : I` sagt, dass $`p` im Einheitsintervall $`I = [0, 1]` liegt. `(coin p) true` ist die Masse der
-Münze bei `true`, und `↑p` ist die Zahl $`p` als Masse (eine Masse ist eine Zahl in $`[0, \infty]`,
-`ENNReal`). Die Münze ist durch ihre zwei Massen definiert, also rechnet Lean die linke Seite zu `↑p`
-aus: `rfl`, wie in *Schaltungen*. Die Aussage ist die Regel `coin_true`; bewiesen, ist sie in deinem
-Inventar.
-
-*Tipp.* `rfl`.
-:::
-:::solution
-```
-rfl
-```
-:::
-::::
-
-::::leanonly (proof := "(p : I) : coin p false = σ p") (lemma := "coin_false")
-:::en
-*The mass at false.* At `false` the coin has the rest, $`1 - p`.
-:::
-
-:::de
-*Die Masse bei false.* Bei `false` hat die Münze den Rest, $`1 - p`.
-:::
-
-:::proofen
-`σ p` is $`1 - p`, again in $`I`, and `↑(σ p)` is it as a mass. Again by definition.
-
-*Tip.* `rfl`.
-:::
-
-:::proofde
-`σ p` ist $`1 - p`, wieder in $`I`, und `↑(σ p)` ist das als Masse. Wieder nach Definition.
-
-*Tipp.* `rfl`.
-:::
-:::solution
-```
-rfl
-```
-:::
-::::
-
 ::::leanonly (proof := ": (!false) = true") (lemma := "Bool.not_false")
 :::en
 *Not false.* The other half of `not`: in *Circuits* you proved `(!true) = false`, the rule
@@ -175,6 +114,98 @@ rfl
 :::
 ::::
 
+::::leanonly (proof := "(p : I) : coin p true = p") (lemma := "coin_true")
+:::en
+*The mass at true.* The coin `coin p` has the mass $`p` at `true`.
+:::
+
+:::de
+*Die Masse bei true.* Die Münze `coin p` hat bei `true` die Masse $`p`.
+:::
+
+:::proofen
+`p : I` says that $`p` lies in the unit interval $`I = [0, 1]`. `(coin p) true` is the mass of the coin
+at `true`, and `↑p` is the number $`p` as a mass (a mass is a number in $`[0, \infty]`, `ENNReal`). A
+distribution is, in Lean, its masses (its *weight* function):
+
+```
+structure DiscreteMeasure (α : Type) where
+  weight : α → ENNReal
+```
+
+and the coin is defined by its two masses:
+
+```
+def coin (p : I) : DiscreteMeasure Bool where
+  weight := fun
+    | true => ↑p
+    | false => ↑(σ p)
+```
+
+(`μ x` is `μ.weight x`.) So Lean computes the left side to `↑p`: `rfl`, as in *Circuits*. The
+statement is the rule `coin_true`; once proved, it is in your inventory.
+
+*Tip.* `rfl`.
+:::
+
+:::proofde
+`p : I` sagt, dass $`p` im Einheitsintervall $`I = [0, 1]` liegt. `(coin p) true` ist die Masse der
+Münze bei `true`, und `↑p` ist die Zahl $`p` als Masse (eine Masse ist eine Zahl in $`[0, \infty]`,
+`ENNReal`). Eine Verteilung ist in Lean ihre Massen (ihre *Gewichtsfunktion*):
+
+```
+structure DiscreteMeasure (α : Type) where
+  weight : α → ENNReal
+```
+
+und die Münze ist durch ihre zwei Massen definiert:
+
+```
+def coin (p : I) : DiscreteMeasure Bool where
+  weight := fun
+    | true => ↑p
+    | false => ↑(σ p)
+```
+
+(`μ x` ist `μ.weight x`.) Also rechnet Lean die linke Seite zu `↑p` aus: `rfl`, wie in *Schaltungen*.
+Die Aussage ist die Regel `coin_true`; bewiesen, ist sie in deinem Inventar.
+
+*Tipp.* `rfl`.
+:::
+:::solution
+```
+rfl
+```
+:::
+::::
+
+::::leanonly (proof := "(p : I) : coin p false = σ p") (lemma := "coin_false")
+:::en
+*The mass at false.* At `false` the coin has the rest, $`1 - p`.
+:::
+
+:::de
+*Die Masse bei false.* Bei `false` hat die Münze den Rest, $`1 - p`.
+:::
+
+:::proofen
+`σ p` is $`1 - p`, again in $`I`, and `↑(σ p)` is it as a mass. Again by the definition of `coin` (the line `| false => ↑(σ p)`).
+
+*Tip.* `rfl`.
+:::
+
+:::proofde
+`σ p` ist $`1 - p`, wieder in $`I`, und `↑(σ p)` ist das als Masse. Wieder nach der Definition von `coin` (die Zeile `| false => ↑(σ p)`).
+
+*Tipp.* `rfl`.
+:::
+:::solution
+```
+rfl
+```
+:::
+::::
+
 ::::leanonly (proof := "(p : I) : 0 + coin p true = p") (new := "rw, zero_add")
 :::en
 *Zero plus.* Not every rule is a definition: `zero_add : 0 + a = a` is a rule of arithmetic, given
@@ -190,7 +221,7 @@ umschreibt.
 :::proofen
 A rule `h : a = b` is used with `rw [h]`: it rewrites `a` into `b` in the goal (`rw [← h]` the other
 way round), several at once with `rw [h, k]`. When the goal then reads `x = x`, it is closed.
-`rw [zero_add]` takes the `0 + ` away; then your rule `coin_true` from level 1.
+`rw [zero_add]` takes the `0 + ` away; then your rule `coin_true`.
 
 *Tip.* `rw [zero_add]`, then `rw [coin_true]` (or both at once: `rw [zero_add, coin_true]`).
 :::
@@ -198,7 +229,7 @@ way round), several at once with `rw [h, k]`. When the goal then reads `x = x`, 
 :::proofde
 Eine Regel `h : a = b` benutzt man mit `rw [h]`: Sie schreibt `a` im Ziel zu `b` um (`rw [← h]`
 andersherum), mehrere auf einmal mit `rw [h, k]`. Lautet das Ziel danach `x = x`, ist es geschlossen.
-`rw [zero_add]` nimmt das `0 + ` weg; dann deine Regel `coin_true` aus Level 1.
+`rw [zero_add]` nimmt das `0 + ` weg; dann deine Regel `coin_true`.
 
 *Tipp.* `rw [zero_add]`, dann `rw [coin_true]` (oder beides auf einmal: `rw [zero_add, coin_true]`).
 :::
@@ -219,7 +250,15 @@ of `<$>`, but not by `rfl`):
 `map_true : (f <$> μ) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)`.
 
 To `true` comes the mass at `true` when `f true` is `true`, and the mass at `false` when `f false` is
-`true`.
+`true`. That is what the definition of a move says on `Bool`:
+
+```
+def map (f : α → β) (μ : DiscreteMeasure α) : DiscreteMeasure β where
+  weight := fun b => ∑' a, (f⁻¹' {b}).indicator μ.weight a
+```
+
+The mass at `b` is the sum of the masses `μ a` over the points `a` with `f a = b` (the preimage
+`f⁻¹' {b}`; `indicator` is zero outside it). On `Bool` the sum has two summands.
 :::
 
 :::de
@@ -230,7 +269,15 @@ der Definition von `<$>`, aber nicht mit `rfl`):
 `map_true : (f <$> μ) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)`.
 
 Nach `true` kommt die Masse bei `true`, wenn `f true` gleich `true` ist, und die Masse bei `false`,
-wenn `f false` gleich `true` ist.
+wenn `f false` gleich `true` ist. Das sagt die Definition eines Zuges auf `Bool`:
+
+```
+def map (f : α → β) (μ : DiscreteMeasure α) : DiscreteMeasure β where
+  weight := fun b => ∑' a, (f⁻¹' {b}).indicator μ.weight a
+```
+
+Die Masse bei `b` ist die Summe der Massen `μ a` über die Punkte `a` mit `f a = b` (das Urbild
+`f⁻¹' {b}`; `indicator` ist außerhalb davon null). Auf `Bool` hat die Summe zwei Summanden.
 :::
 
 :::proofen
