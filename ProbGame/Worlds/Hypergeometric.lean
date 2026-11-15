@@ -98,7 +98,7 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(b : ℕ) : coin (frac 0 b) = pure false") (new := "frac_zero, coin_zero") (group := "chance.count") (uses := "frac_zero, coin_zero")
+::::leanonly (proof := "(b : ℕ) : coin (frac 0 b) = pure false") (new := "frac_zero, coin_zero") (group := "chance.count") (uses := "frac_zero, coin_zero, frac_white, coin_one")
 :::en
 *No white ball.* Without white balls, the ball drawn is surely black.
 :::
@@ -125,7 +125,7 @@ rw [frac_zero, coin_zero]
 :::
 ::::
 
-::::leanonly (proof := "(b n : ℕ) : hyper 0 b n = pure 0") (lemma := "hyper_black") (group := "chance.count") (uses := "hyper_zero, hyper_succ, frac_zero, coin_zero, pure_bind, Bool.cond_false")
+::::leanonly (proof := "(b n : ℕ) : hyper 0 b n = pure 0") (lemma := "hyper_black") (group := "chance.count") (uses := "hyper_zero, hyper_succ, frac_zero, coin_zero, pure_bind, Bool.cond_false, frac_white, coin_one, bind_pure, Bool.cond_true")
 :::en
 *Only black.* From an urn without white balls, no white one is ever drawn.
 :::
@@ -154,7 +154,7 @@ rw [hyper_succ, frac_zero, coin_zero, pure_bind, Bool.cond_false, ih]
 :::
 ::::
 
-::::leanonly (proof := "(w : ℕ) : coin (frac (w + 1) 0) = pure true") (new := "frac_white, coin_one") (group := "chance.count") (uses := "frac_white, coin_one")
+::::leanonly (proof := "(w : ℕ) : coin (frac (w + 1) 0) = pure true") (new := "frac_white, coin_one") (group := "chance.count") (uses := "frac_white, coin_one, frac_zero, coin_zero")
 :::en
 *No black ball.* Without black balls (and with at least one white one), the ball drawn is surely white.
 :::
@@ -181,7 +181,7 @@ rw [frac_white, coin_one]
 :::
 ::::
 
-::::leanonly (proof := "(w : ℕ) : hyper w 0 w = pure w") (lemma := "hyper_white") (new := "Nat.add_sub_cancel") (group := "chance.count") (uses := "hyper_zero, hyper_succ, frac_white, coin_one, pure_bind, Bool.cond_true, Nat.add_sub_cancel, add_comm")
+::::leanonly (proof := "(w : ℕ) : hyper w 0 w = pure w") (lemma := "hyper_white") (new := "Nat.add_sub_cancel") (group := "chance.count") (uses := "hyper_zero, hyper_succ, frac_white, coin_one, pure_bind, Bool.cond_true, Nat.add_sub_cancel, add_comm, frac_zero, coin_zero, bind_pure, Bool.cond_false, add_assoc")
 :::en
 *Only white.* $`w` draws from an urn with $`w` white balls: all of them, surely.
 :::
@@ -210,7 +210,7 @@ rw [hyper_succ, frac_white, coin_one, pure_bind, Bool.cond_true, Nat.add_sub_can
 :::
 ::::
 
-::::leanonly (proof := "(w b : ℕ) : hyper w b (w + b) = pure w") (lemma := "hyper_all") (group := "chance.count") (uses := "zero_add, hyper_black, add_zero, hyper_white, add_assoc, hyper_succ, Nat.add_sub_cancel, add_right_comm, pure_bind, add_comm, cond_same, coin_unused")
+::::leanonly (proof := "(w b : ℕ) : hyper w b (w + b) = pure w") (lemma := "hyper_all") (group := "chance.count") (uses := "zero_add, hyper_black, add_zero, hyper_white, add_assoc, hyper_succ, Nat.add_sub_cancel, add_right_comm, pure_bind, add_comm, cond_same, coin_unused, mul_zero, hyper_zero, bind_pure, prob_unused")
 :::en
 *Boss: drawing all the balls.* Draw all $`w + b` balls, one after the other: whatever happens on the way, in the end you surely have all $`w` white ones.
 :::

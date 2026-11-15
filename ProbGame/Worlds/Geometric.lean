@@ -92,7 +92,7 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (k : ℕ) : geom p k = ↑(σ p) ^ k * ↑p") (lemma := "geom_formula") (new := "pow_succ', mul_assoc") (group := "chance.count") (uses := "geom_zero, pow_zero, one_mul, geom_succ, mul_assoc, pow_succ'")
+::::leanonly (proof := "(p : I) (k : ℕ) : geom p k = ↑(σ p) ^ k * ↑p") (lemma := "geom_formula") (new := "pow_succ', mul_assoc") (group := "chance.count") (uses := "geom_zero, pow_zero, one_mul, geom_succ, mul_assoc, pow_succ', pow_succ, mul_one")
 :::en
 *The masses.* $`k` times `false`, then `true`: mass $`(1 - p)^k p`.
 :::
@@ -121,7 +121,7 @@ rw [geom_succ, ih, ← mul_assoc, ← pow_succ']
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (k m : ℕ) : geom p (k + m) = ↑(σ p) ^ k * geom p m") (lemma := "geom_memoryless") (group := "chance.count") (uses := "zero_add, pow_zero, one_mul, add_right_comm, geom_succ, mul_assoc, pow_succ'")
+::::leanonly (proof := "(p : I) (k m : ℕ) : geom p (k + m) = ↑(σ p) ^ k * geom p m") (lemma := "geom_memoryless") (group := "chance.count") (uses := "zero_add, pow_zero, one_mul, add_right_comm, geom_succ, mul_assoc, pow_succ', add_zero, mul_zero, pow_succ, mul_one, add_assoc, geom_zero")
 :::en
 *Without memory.* $`k` times `false` first, and then as if nothing had happened: the coin does not remember.
 :::
@@ -233,7 +233,7 @@ rw [ENNReal.inv_mul_cancel (mass_ne_zero h) (mass_finite p)]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : geom p = (do let x ← coin p; bif x then pure 0 else (do let Y ← geom p; pure (1 + Y)))") (lemma := "geom_first") (group := "chance.count") (uses := "coin_bind_apply, Bool.cond_true, Bool.cond_false, pure_self, shift_zero, mul_zero, add_zero, mul_one, geom_zero, pure_zero_succ, shift_succ, zero_add, geom_succ")
+::::leanonly (proof := "(p : I) : geom p = (do let x ← coin p; bif x then pure 0 else (do let Y ← geom p; pure (1 + Y)))") (lemma := "geom_first") (group := "chance.count") (uses := "coin_bind_apply, Bool.cond_true, Bool.cond_false, pure_self, shift_zero, mul_zero, add_zero, mul_one, geom_zero, pure_zero_succ, shift_succ, zero_add, geom_succ, one_mul")
 :::en
 *Boss: waiting for the first true.* Throw once: on `true` it is $`0`; on `false`, start again, and add one. The geometric distribution is the one that does this: it is defined by its masses, and here it is a `do` block that calls itself.
 :::

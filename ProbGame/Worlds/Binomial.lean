@@ -45,7 +45,7 @@ rw [coin_bind_apply, Bool.cond_true, Bool.cond_false]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : binom p 0 0 = 1") (new := "pure_self") (group := "chance.count") (uses := "binom_zero, pure_self")
+::::leanonly (proof := "(p : I) : binom p 0 0 = 1") (new := "pure_self") (group := "chance.count") (uses := "binom_zero, pure_self, binom_succ, pure_zero_succ")
 :::en
 *No throw.* With no throw, surely no `true`.
 :::
@@ -72,7 +72,7 @@ rw [binom_zero, pure_self]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (k : ℕ) : binom p 0 (k + 1) = 0") (new := "pure_zero_succ") (group := "chance.count") (uses := "binom_zero, pure_zero_succ")
+::::leanonly (proof := "(p : I) (k : ℕ) : binom p 0 (k + 1) = 0") (new := "pure_zero_succ") (group := "chance.count") (uses := "binom_zero, pure_zero_succ, binom_succ, pure_self")
 :::en
 *No throw, no true.* With no throw, a `true` is impossible.
 :::
@@ -99,7 +99,7 @@ rw [binom_zero, pure_zero_succ]
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure ℕ) (k : ℕ) : (do let Y ← μ; pure (1 + Y)) (k + 1) + (do let Y ← μ; pure (1 + Y)) 0 = μ k") (new := "shift_succ, shift_zero") (group := "chance.count") (uses := "shift_succ, shift_zero, add_zero")
+::::leanonly (proof := "(μ : DiscreteMeasure ℕ) (k : ℕ) : (do let Y ← μ; pure (1 + Y)) (k + 1) + (do let Y ← μ; pure (1 + Y)) 0 = μ k") (new := "shift_succ, shift_zero") (group := "chance.count") (uses := "shift_succ, shift_zero, add_zero, zero_add")
 :::en
 *One more.* Adding one to every outcome shifts the bars one place to the right: the mass at `k + 1` is the old mass at `k`, and at `0` there is nothing.
 :::
@@ -126,7 +126,7 @@ rw [shift_succ, shift_zero, add_zero]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (n : ℕ) : binom p (n + 1) 0 = ↑(σ p) * binom p n 0") (lemma := "binom_succ_zero") (new := "Bool.toNat_false") (group := "chance.count") (uses := "binom_succ, coin_bind_apply, Bool.toNat_true, Bool.toNat_false, zero_add, bind_pure, shift_zero, mul_zero")
+::::leanonly (proof := "(p : I) (n : ℕ) : binom p (n + 1) 0 = ↑(σ p) * binom p n 0") (lemma := "binom_succ_zero") (new := "Bool.toNat_false") (group := "chance.count") (uses := "binom_succ, coin_bind_apply, Bool.toNat_true, Bool.toNat_false, zero_add, bind_pure, shift_zero, mul_zero, binom_zero, add_zero, pure_bind, shift_succ")
 :::en
 *No true in one throw more.* No `true` in $`n + 1` throws: the first is `false`, and none in the other $`n`.
 :::
@@ -155,7 +155,7 @@ rw [shift_zero, mul_zero, zero_add]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (n k : ℕ) : binom p (n + 1) (k + 1) = ↑p * binom p n k + ↑(σ p) * binom p n (k + 1)") (lemma := "binom_succ_succ") (group := "chance.count") (uses := "binom_succ, coin_bind_apply, Bool.toNat_true, Bool.toNat_false, zero_add, bind_pure, shift_succ")
+::::leanonly (proof := "(p : I) (n k : ℕ) : binom p (n + 1) (k + 1) = ↑p * binom p n k + ↑(σ p) * binom p n (k + 1)") (lemma := "binom_succ_succ") (group := "chance.count") (uses := "binom_succ, coin_bind_apply, Bool.toNat_true, Bool.toNat_false, zero_add, bind_pure, shift_succ, binom_zero, add_zero, mul_zero, pure_bind, shift_zero")
 :::en
 *Pascal for masses.* $`k + 1` times `true` in $`n + 1` throws: the first is `true` and $`k` of the others are, or the first is `false` and $`k + 1` of the others are. Pascal's triangle, with masses.
 :::
@@ -184,7 +184,7 @@ rw [shift_succ]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (n : ℕ) : binom p n 0 = ↑(σ p) ^ n") (lemma := "binom_all_false") (new := "pow_zero, pow_succ") (group := "chance.count") (uses := "binom_zero, pure_self, pow_zero, binom_succ_zero, pow_succ, mul_comm")
+::::leanonly (proof := "(p : I) (n : ℕ) : binom p n 0 = ↑(σ p) ^ n") (lemma := "binom_all_false") (new := "pow_zero, pow_succ") (group := "chance.count") (uses := "binom_zero, pure_self, pow_zero, binom_succ_zero, pow_succ, mul_comm, binom_succ, pure_zero_succ, binom_succ_succ")
 :::en
 *All false.* $`n` throws, all `false`: mass $`(1 - p)^n`.
 :::
@@ -213,7 +213,7 @@ rw [binom_succ_zero, ih, pow_succ, mul_comm]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (n k : ℕ) : binom p n (n + k + 1) = 0") (lemma := "binom_above") (new := "add_right_comm") (group := "chance.count") (uses := "zero_add, binom_zero, pure_zero_succ, binom_succ_succ, add_right_comm, add_assoc, mul_zero, add_zero")
+::::leanonly (proof := "(p : I) (n k : ℕ) : binom p n (n + k + 1) = 0") (lemma := "binom_above") (new := "add_right_comm") (group := "chance.count") (uses := "zero_add, binom_zero, pure_zero_succ, binom_succ_succ, add_right_comm, add_assoc, mul_zero, add_zero, binom_succ, pure_self, binom_succ_zero, add_comm")
 :::en
 *Never more true than throws.* In $`n` throws there are at most $`n` times `true`.
 :::
@@ -242,7 +242,7 @@ rw [binom_succ_succ, add_right_comm n 1 k, ih, add_assoc n k 1, ih, mul_zero, mu
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (n : ℕ) : binom p n n = ↑p ^ n") (lemma := "binom_diag") (group := "chance.count") (uses := "binom_zero, pure_self, pow_zero, binom_succ_succ, binom_above, mul_zero, add_zero, pow_succ, mul_comm")
+::::leanonly (proof := "(p : I) (n : ℕ) : binom p n n = ↑p ^ n") (lemma := "binom_diag") (group := "chance.count") (uses := "binom_zero, pure_self, pow_zero, binom_succ_succ, binom_above, mul_zero, add_zero, pow_succ, mul_comm, binom_succ, pure_zero_succ, binom_succ_zero, zero_add")
 :::en
 *All true.* $`n` throws, all `true`: mass $`p^n`.
 :::
@@ -271,7 +271,7 @@ rw [binom_succ_succ, ih, binom_above p n 0, mul_zero, add_zero, pow_succ, mul_co
 :::
 ::::
 
-::::leanonly (proof := "(p q : I) : (do let C ← coin p; binom q C.toNat) = (do let B ← coin (p * q); pure B.toNat)") (lemma := "coin_bind_binom") (group := "chance.count") (uses := "coin_thin, bind_assoc, Bool.toNat_false, binom_zero, Bool.cond_false, pure_bind, Bool.toNat_true, Bool.cond_true, binom_succ, add_zero")
+::::leanonly (proof := "(p q : I) : (do let C ← coin p; binom q C.toNat) = (do let B ← coin (p * q); pure B.toNat)") (lemma := "coin_bind_binom") (group := "chance.count") (uses := "coin_thin, bind_assoc, Bool.toNat_false, binom_zero, Bool.cond_false, pure_bind, Bool.toNat_true, Bool.cond_true, binom_succ, add_zero, bind_pure, zero_add")
 :::en
 *Thinning comes back.* A coin `p`, and then as many coins `q` as it shows (one or none), counted: that is your thinned coin from *Thinning*, counted.
 :::
@@ -305,7 +305,7 @@ simp only [pure_bind, add_zero]
 :::
 ::::
 
-::::leanonly (proof := "(p q : I) (f : ℕ → DiscreteMeasure ℕ) : (do let C ← coin p; let U ← binom q C.toNat; f U) = (do let B ← coin (p * q); f B.toNat)") (lemma := "coin_bind_binom'") (group := "chance.count") (uses := "bind_assoc, coin_bind_binom, pure_bind")
+::::leanonly (proof := "(p q : I) (f : ℕ → DiscreteMeasure ℕ) : (do let C ← coin p; let U ← binom q C.toNat; f U) = (do let B ← coin (p * q); f B.toNat)") (lemma := "coin_bind_binom'") (group := "chance.count") (uses := "bind_assoc, coin_bind_binom, pure_bind, bind_pure")
 :::en
 *With something after it.* The same, when the `do` block goes on.
 :::
@@ -333,7 +333,7 @@ simp only [pure_bind]
 :::
 ::::
 
-::::leanonly (proof := "(p q : I) (n : ℕ) : (do let X ← binom p n; binom q X) = binom (p * q) n") (lemma := "binom_thin") (new := "bind_comm") (group := "chance.count") (uses := "binom_zero, pure_bind, binom_succ, bind_assoc, binom_add, bind_comm, coin_bind_binom'")
+::::leanonly (proof := "(p q : I) (n : ℕ) : (do let X ← binom p n; binom q X) = binom (p * q) n") (lemma := "binom_thin") (new := "bind_comm") (group := "chance.count") (uses := "binom_zero, pure_bind, binom_succ, bind_assoc, binom_add, bind_comm, coin_bind_binom', bind_pure")
 :::en
 *Thinning a binomial.* Of $`n` throws with $`p`, each `true` is kept with probability $`q`. The number kept is binomial with $`p q`.
 :::
@@ -366,7 +366,7 @@ rw [coin_bind_binom']
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (k m : ℕ) : binom p (k + m) k = ↑p ^ k * ↑(σ p) ^ m * ((k + m).choose k : ENNReal)") (lemma := "binom_formula") (new := "ring, one_mul, Nat.choose_self, Nat.choose_zero_right, Nat.choose_succ_succ', Nat.cast_add, Nat.cast_one") (group := "chance.count") (uses := "add_zero, binom_diag, pow_zero, mul_one, Nat.choose_self, Nat.cast_one, zero_add, binom_all_false, one_mul, Nat.choose_zero_right, add_assoc, binom_succ_succ, add_right_comm, Nat.choose_succ_succ', Nat.cast_add")
+::::leanonly (proof := "(p : I) (k m : ℕ) : binom p (k + m) k = ↑p ^ k * ↑(σ p) ^ m * ((k + m).choose k : ENNReal)") (lemma := "binom_formula") (new := "ring, one_mul, Nat.choose_self, Nat.choose_zero_right, Nat.choose_succ_succ', Nat.cast_add, Nat.cast_one") (group := "chance.count") (uses := "add_zero, binom_diag, pow_zero, mul_one, Nat.choose_self, Nat.cast_one, zero_add, binom_all_false, one_mul, Nat.choose_zero_right, add_assoc, binom_succ_succ, add_right_comm, Nat.choose_succ_succ', Nat.cast_add, pow_succ, mul_zero, add_comm, binom_succ_zero")
 :::en
 *Boss: the binomial formula.* $`k` times `true` and $`m` times `false` in $`k + m` throws has the mass $`p^k (1 - p)^m \binom{k + m}{k}`. (Written with $`k + m` throws, there is no $`n - k`.)
 :::
@@ -399,7 +399,7 @@ ring
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (k m : ℕ) : binom (σ p) (k + m) m = binom p (k + m) k") (lemma := "binom_symm") (new := "symm_twice, Nat.choose_symm_add") (group := "chance.count") (uses := "add_comm, binom_formula, symm_twice, Nat.choose_symm_add")
+::::leanonly (proof := "(p : I) (k m : ℕ) : binom (σ p) (k + m) m = binom p (k + m) k") (lemma := "binom_symm") (new := "symm_twice, Nat.choose_symm_add") (group := "chance.count") (uses := "add_comm, binom_formula, symm_twice, Nat.choose_symm_add, add_assoc")
 :::en
 *Encore: true and false swapped.* $`m` times `true` with the coin $`1 - p` is as likely as $`k` times `true` with the coin $`p`: count the `false` instead of the `true`. With your formula, this is computing.
 :::

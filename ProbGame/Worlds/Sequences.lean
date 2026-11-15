@@ -18,7 +18,7 @@ Throwing $`n` coins one after the other gives a list of $`n` outcomes: `iidSeque
 $`n` Münzen nacheinander werfen ergibt eine Liste von $`n` Ergebnissen: `iidSequence n (coin p)`, eine Verteilung auf Listen (unabhängig, identisch verteilt). Der Endgegner: `binom p n` ist die Anzahl der `true` darin. Nur in Lean.
 :::
 
-::::leanonly (proof := "(p : I) : iidSequence 1 (coin p) = (do let y ← coin p; pure [y])") (new := "seq_zero, seq_succ") (group := "chance.count") (uses := "seq_succ, seq_zero, pure_bind")
+::::leanonly (proof := "(p : I) : iidSequence 1 (coin p) = (do let y ← coin p; pure [y])") (new := "seq_zero, seq_succ") (group := "chance.count") (uses := "seq_succ, seq_zero, pure_bind, bind_pure")
 :::en
 *One throw, as a list.* `iidSequence n μ` draws $`n` times from `μ`, independently, and gives the list of the outcomes: a distribution on lists.
 :::
@@ -66,7 +66,7 @@ simp only [pure_bind]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : iidSequence 2 (coin p) [true, false] = ↑p * ↑(σ p)") (new := "seq_succ_apply, seq_zero_nil, mul_one") (group := "chance.count") (uses := "seq_succ_apply, seq_zero_nil, mul_one, coin_true, coin_false")
+::::leanonly (proof := "(p : I) : iidSequence 2 (coin p) [true, false] = ↑p * ↑(σ p)") (new := "seq_succ_apply, seq_zero_nil, mul_one") (group := "chance.count") (uses := "seq_succ_apply, seq_zero_nil, mul_one, coin_true, coin_false, one_mul")
 :::en
 *The mass of a sequence.* Independent: the mass of a list is the product of the masses of its entries. First `true`, then `false`: $`p (1 - p)`.
 :::
