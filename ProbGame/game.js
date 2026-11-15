@@ -3869,7 +3869,8 @@
     const refresh = () => {
       const l = levels[current], v = view()
       dots.replaceChildren(...levels.map((x, k) => {
-        const d = el('button', 'pg-dot' + (done(x) ? ' pg-dot-done' : x.solved ? ' pg-dot-half' : '') + (k === current ? ' pg-dot-current' : ''))
+        // (half: the board solved, the proof not yet; a level in Lean only has no board, so no half)
+        const d = el('button', 'pg-dot' + (done(x) ? ' pg-dot-done' : x.solved && !(x instanceof LeanOnly) ? ' pg-dot-half' : '') + (k === current ? ' pg-dot-current' : ''))
         d.type = 'button'
         d.title = tr('Level {i} of {n}', { i: k + 1, n: levels.length })
         d.addEventListener('click', () => show(k))
