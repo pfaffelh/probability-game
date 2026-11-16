@@ -3488,7 +3488,7 @@
         group.append(el('span', 'pg-inv-title', title + ':'))
         for (const item of INVENTORY.filter(i => (kind === 'tactic' ? i.kind === 'tactic' : i.kind !== 'tactic') && this.available(i))) {
           const b = el('button', 'pg-chip' + (item.kind === 'lemma' ? ' pg-chip-lemma' : '') + (this.isNew(item) ? ' pg-chip-new' : '') + (this.busy || this.done ? ' pg-chip-off' : '') + (this.peek === item.name ? ' pg-chip-on' : ''), item.name)
-          b.type = 'button'
+          b.type = 'button'; b.dataset.item = item.name
           // (a mouse: on hover what it says, as the long press on a phone shows it, in a box over the page)
           b.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') hoverShow(b, fullOf(item), textOf(item)) })
           b.addEventListener('pointerleave', hoverHide)
@@ -3681,23 +3681,76 @@
     card.append(el('code', 'pg-inv-sig', it.sig ?? it.name), el('div', '', LANG === 'de' ? it.de ?? '' : it.en ?? ''))
     return card
   }
-  // A tip in a box over the stage: a head with ✕ and a foot with "Got it" always in view; the text
-  // between them scrolls. It closes with ✕, "Got it", a tap beside it, or Escape.
-  function tipBox(head, nodes, done = () => {}) {
-    if (document.querySelector('.pg-tip-overlay')) return
-    const overlay = el('div', 'pg-tip-overlay'), card = el('div', 'pg-tip-card')
-    const top = el('div', 'pg-tip-top'), x = el('button', 'pg-tip-x', '✕'), body = el('div', 'pg-tip-body'), ok = el('button', 'pg-tip-ok', tr('Got it'))
+  // A tip as speech bubbles, one after the other: first the text of the level, in a bubble as large as
+  // it needs; then one for each new move or item, its tail at it on the screen and the rest dimmed. A
+  // bubble with nothing to point at stands in the middle. ✕, Escape or a tap beside it closes them all;
+  // Next goes on. (a tip asked for while one is open goes after it: a level in Lean only has its text,
+  // then its proof)
+  let tour = null
+  function tipBox(head, steps, done = () => {}) {
+    steps = steps.filter(s => s.nodes.length)
+    if (!steps.length) { done(); return }
+    if (tour) { tour.add(steps, done); return }
+    const overlay = el('div', 'pg-tip-overlay'), spot = el('div', 'pg-tip-spot'), tail = el('div', 'pg-tip-tail'), card = el('div', 'pg-tip-card')
+    const top = el('div', 'pg-tip-top'), title = el('div', 'pg-tip-head'), x = el('button', 'pg-tip-x', '✕'), body = el('div', 'pg-tip-body')
+    const foot = el('div', 'pg-tip-foot'), count = el('span', 'pg-tip-count'), ok = el('button', 'pg-tip-ok')
     x.type = ok.type = 'button'; x.setAttribute('aria-label', tr('Close'))
-    const close = () => { done(); overlay.remove(); document.removeEventListener('keydown', esc) }
+    const dones = [done]
+    let i = 0
+    const M = 12, GAP = 14, PAD = 4
+    // (where the bubble goes: below its thing or above it, where there is more room; in the middle
+    // when the thing is not on the screen or there is no room beside it)
+    const place = ev => {
+      if (ev?.target instanceof Node && card.contains(ev.target)) return
+      const a = steps[i].anchor?.(), r = a?.offsetParent ? a.getBoundingClientRect() : null
+      const W = document.documentElement.clientWidth, H = innerHeight
+      const on = r && r.width > 0 && r.bottom > 0 && r.top < H
+      const below = on ? H - r.bottom - GAP - M : 0, above = on ? r.top - GAP - M : 0
+      const fits = on && Math.max(below, above) >= 120
+      overlay.classList.toggle('pg-tip-dim', !fits)
+      spot.hidden = tail.hidden = !fits
+      if (!fits) {
+        card.style.maxHeight = `${H - 2 * M}px`
+        card.style.left = `${Math.max(M, (W - card.offsetWidth) / 2)}px`; card.style.top = `${Math.max(M, (H - card.offsetHeight) / 2)}px`
+        return
+      }
+      Object.assign(spot.style, { left: `${r.left - PAD}px`, top: `${r.top - PAD}px`, width: `${r.width + 2 * PAD}px`, height: `${r.height + 2 * PAD}px` })
+      card.style.maxHeight = `${Math.max(below, above)}px`
+      const down = below >= card.offsetHeight || below >= above
+      card.style.maxHeight = `${down ? below : above}px`
+      const w = card.offsetWidth, h = card.offsetHeight, cx = r.left + r.width / 2
+      const left = Math.min(Math.max(M, cx - w / 2), W - M - w)
+      card.style.left = `${left}px`; card.style.top = `${down ? r.bottom + GAP : r.top - GAP - h}px`
+      tail.style.left = `${Math.min(Math.max(left + 18, cx), left + w - 18) - 9}px`
+      tail.style.top = `${down ? r.bottom + GAP - 9 : r.top - GAP - 9}px`
+    }
+    const show = k => {
+      i = k
+      const s = steps[i]
+      title.textContent = '💡 ' + (s.head ?? head)
+      body.replaceChildren(...s.nodes); body.scrollTop = 0
+      count.textContent = steps.length > 1 ? `${i + 1} / ${steps.length}` : ''
+      ok.textContent = i < steps.length - 1 ? tr('Next ›') : tr('Got it')
+      s.anchor?.()?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' })
+      place(); requestAnimationFrame(() => place()); setTimeout(place, 250)
+    }
+    const close = () => {
+      tour = null; overlay.remove()
+      document.removeEventListener('keydown', esc); removeEventListener('resize', place); document.removeEventListener('scroll', place, true)
+      dones.forEach(f => f())
+    }
     const esc = ev => { if (ev.key === 'Escape') close() }
-    x.addEventListener('click', close); ok.addEventListener('click', close)
+    x.addEventListener('click', close)
+    ok.addEventListener('click', () => (i < steps.length - 1 ? show(i + 1) : close()))
     overlay.addEventListener('click', ev => { if (ev.target === overlay) close() })
-    document.addEventListener('keydown', esc)
-    top.append(el('div', 'pg-tip-head', '💡 ' + head), x)
-    body.append(...nodes)
-    card.append(top, body, ok)
-    overlay.append(card)
+    document.addEventListener('keydown', esc); addEventListener('resize', place); document.addEventListener('scroll', place, true)
+    top.append(title, x)
+    foot.append(count, ok)
+    card.append(top, body, foot)
+    overlay.append(spot, tail, card)
     document.body.append(overlay)
+    tour = { add: (more, d) => { steps.push(...more); dones.push(d); show(i) } }
+    show(0)
     ok.focus({ preventScroll: true })
   }
   // a button of the tool bar: a word on large screens, a symbol over a short word on phones
@@ -3799,15 +3852,21 @@
       return movesOf(levels[k]).filter(m => !before.has(m[0]) && !seen.has(m[0]) && seen.add(m[0]))
     }
     const newItems = k => { const p = levels[k].proof; return p ? INVENTORY.filter(i => p.isNew(i) && i.kind !== 'lemma') : [] }
-    const boardTip = (k, withWorld) => {
-      const moves = newMoves(k)
-      return [...levelText(k), ...(moves.length ? [el('div', 'pg-tip-sub', tr('New in this level')), ...moves.map(moveCard)] : []),
-        ...(withWorld && world.childNodes.length ? [el('div', 'pg-tip-sub', tr('This world')), ...worldText()] : [])]
+    // what a bubble of a tip points at: a new move or gate on the board (on a phone the gates may be
+    // behind ＋), a new item in the inventory
+    const visible = e => (e?.offsetParent ? e : null)
+    const atMove = (k, key) => () => {
+      const name = key.slice(key.indexOf(':') + 1)
+      return visible([...roots[k].querySelectorAll('[data-move]')].find(b => b.dataset.move.split(/\s+/)[0] === name && b.offsetParent))
+        ?? (levels[k] instanceof Circuit ? visible(add) : null)
     }
-    const proofTip = k => {
-      const items = newItems(k)
-      return [...clone(levels[k].proof?.texts ?? []), ...(items.length ? [el('div', 'pg-tip-sub', tr('New in this proof')), ...items.map(itemCard)] : [])]
-    }
+    const atItem = (k, name) => () => visible([...roots[k].querySelectorAll('.pg-chip[data-item]')].find(b => b.dataset.item === name))
+    const boardTip = (k, withWorld) => [
+      { nodes: [...levelText(k), ...(withWorld && world.childNodes.length ? [el('div', 'pg-tip-sub', tr('This world')), ...worldText()] : [])] },
+      ...newMoves(k).map(m => ({ head: tr('New in this level'), nodes: [moveCard(m)], anchor: atMove(k, m[0]) }))]
+    const proofTip = k => [
+      { nodes: clone(levels[k].proof?.texts ?? []) },
+      ...newItems(k).map(it => ({ head: tr('New in this proof'), nodes: [itemCard(it)], anchor: atItem(k, it.name) }))]
     const tipsOff = () => { try { return localStorage.getItem('pg:tips') === 'off' } catch { return false } }
     const once = (key, f) => {
       if (tipsOff()) return
@@ -3851,7 +3910,7 @@
     let leanOpen = false
     try { leanOpen = localStorage.getItem('pg:lean') === '1' } catch {}
     lean.addEventListener('click', () => { leanOpen = !leanOpen; try { localStorage.setItem('pg:lean', leanOpen ? '1' : '0') } catch {}; refresh() })
-    tips.addEventListener('click', () => tipBox(tr('Tips'), view() === 'proof' ? proofTip(current) : boardTip(current, true)))
+    tips.addEventListener('click', () => tipBox(tr('Tips'), view() !== 'proof' ? boardTip(current, true) : levels[current] instanceof LeanOnly ? [...boardTip(current, true), ...proofTip(current)] : proofTip(current)))
     tabBoard.addEventListener('click', () => setView('board'))
     tabLean.addEventListener('click', () => { if (levels[current].solved) setView('proof') })
     // Next: from the board to the Lean proof of the same level, from there to the next level

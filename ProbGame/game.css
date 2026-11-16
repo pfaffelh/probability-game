@@ -257,10 +257,14 @@ html.pg-playing .prev-next-buttons { display: none !important; }
 }
 @media (max-height: 500px) { .pg-stage { height: auto; min-height: 100svh; } }
 
-/* the tips: a box over the stage, head and "Got it" always in view, the text between them scrolls */
-.pg-tip-overlay { position: fixed; inset: 0; z-index: 60; background: rgba(40, 30, 15, 0.35); display: flex; align-items: center; justify-content: center; padding: 12px; box-sizing: border-box; }
+/* the tips: speech bubbles, as large as their text; one that points at something has its tail at it,
+   the thing ringed and the rest dimmed; one that does not stands in the middle over a dimmed page */
+.pg-tip-overlay { position: fixed; inset: 0; z-index: 60; }
+.pg-tip-overlay.pg-tip-dim { background: rgba(40, 30, 15, 0.35); }
+.pg-tip-spot { position: fixed; border-radius: 10px; box-shadow: 0 0 0 2px #b0782a, 0 0 0 200vmax rgba(40, 30, 15, 0.35); pointer-events: none; }
+.pg-tip-tail { position: fixed; width: 18px; height: 18px; background: white; transform: rotate(45deg); border-radius: 3px; box-shadow: 0 0 12px rgba(0, 0, 0, 0.25); }
 .pg-tip-card {
-  background: white; border-radius: 12px; padding: 0.8em 1.2em; max-width: 36rem; width: 100%; max-height: min(85vh, calc(100dvh - 24px));
+  position: fixed; background: white; border-radius: 12px; padding: 0.6em 1.1em 0.7em; width: max-content; min-width: min(14rem, calc(100vw - 24px)); max-width: min(36rem, calc(100vw - 24px));
   display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3); box-sizing: border-box;
 }
 .pg-tip-top { display: flex; align-items: center; gap: 0.5em; flex: none; }
@@ -270,8 +274,10 @@ html.pg-playing .prev-next-buttons { display: none !important; }
 .pg-tip-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
 .pg-tip-body .pg-proof-text { display: block; }
 :root:not(.pg-de) .pg-tip-body .pg-lang-de, :root.pg-de .pg-tip-body .pg-lang-en { display: none; }
+.pg-tip-foot { flex: none; display: flex; align-items: center; gap: 0.8em; margin-top: 0.6em; }
+.pg-tip-count { flex: 1; color: #8a7a60; font-size: 0.9em; font-family: var(--verso-structure-font-family, sans-serif); }
 .pg-tip-ok {
-  flex: none; display: block; margin: 0.6em 0 0 auto; font: inherit; font-family: var(--verso-structure-font-family, sans-serif); font-weight: bold;
+  flex: none; display: block; margin: 0; font: inherit; font-family: var(--verso-structure-font-family, sans-serif); font-weight: bold;
   color: white; background: #b0782a; border: none; border-radius: 22px; padding: 0.55em 1.4em; min-height: 44px; cursor: pointer;
 }
 .pg-tip-sub { font-weight: bold; margin: 0.8rem 0 0.4rem; font-family: var(--verso-structure-font-family, sans-serif); color: #5c3d0e; border-top: 1px solid #eadfca; padding-top: 0.5rem; }
