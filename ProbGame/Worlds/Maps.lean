@@ -25,17 +25,17 @@ unbekannte Abbildung `f : Bool → Bool` gilt für jede Abbildung, wenn sie für
 ::::leanonly (proof := "(f : Bool → Bool) (b : Bool) : f (f (f b)) = f b") (lemma := "Bool.apply_apply_apply") (new := "decide") (group := "bool") (uses := "-")
 :::en
 *Three times is once.* Whatever map `f : Bool → Bool` is, applied three times it does the same as
-once: `f (f (f b)) = f b`. Check it for `not`: three times `not` is `not`; and for always `true`.
+once: `f (f (f b)) = f b`. Check it for `not`: three times `not` is `not`; and for always `true`. In Lean the new tactic `decide` checks it, in every case at once.
 :::
 
 :::de
 *Dreimal ist einmal.* Welche Abbildung `f : Bool → Bool` auch immer: dreimal angewandt tut sie
 dasselbe wie einmal, `f (f (f b)) = f b`. Prüf es für `not`: dreimal `not` ist `not`; und für immer
-`true`.
+`true`. In Lean prüft es die neue Taktik `decide`, in allen Fällen auf einmal.
 :::
 
 :::proofen
-No rule says what `f` does. But there are only four maps `Bool → Bool`, `id`, `not` and the two constant ones, and with
+No rule says what `f` does, so there is nothing to rewrite, and no `rw` here. But there are only four maps `Bool → Bool`, `id`, `not` and the two constant ones, and with
 the two values of `b` these are eight cases. The new tactic `decide` reduces a statement about finitely
 many cases until it is `true` or `false`; `decide +revert` first takes the variables into the
 statement, here `∀ f b, …`, and so checks every case. With
@@ -47,7 +47,7 @@ coins this no longer works: a coin `coin p` is a different distribution for ever
 :::
 
 :::proofde
-Keine Regel sagt, was `f` tut. Aber es gibt nur vier Abbildungen `Bool → Bool`, `id`, `not` und die
+Keine Regel sagt, was `f` tut; es gibt also nichts umzuschreiben, und hier kein `rw`. Aber es gibt nur vier Abbildungen `Bool → Bool`, `id`, `not` und die
 zwei konstanten, und mit den zwei Werten von `b` sind das acht Fälle. Die neue Taktik `decide`
 reduziert eine Aussage über endlich viele Fälle, bis sie `true` oder `false` ist; `decide +revert`
 nimmt zuerst die Variablen in die Aussage, hier `∀ f b, …`, und prüft so jeden Fall. Mit
