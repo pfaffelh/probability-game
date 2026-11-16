@@ -11,11 +11,11 @@ htmlSplit := .never
 %%%
 
 :::en
-`binom p n` is the number of `true` in $`n` throws of a coin `p`, defined by recursion on $`n` (in *Counting*). Here its masses: by induction, Pascal's triangle with masses, up to the binomial formula. And thinning comes back: a thinned binomial is binomial.
+`binom p n` is the number of `true` in $`n` throws of a coin `p`, defined by recursion on $`n` (in *Counting*). Here its masses: by induction, Pascal's triangle with masses, up to the binomial formula.
 :::
 
 :::de
-`binom p n` ist die Anzahl der `true` in $`n` Würfen einer Münze `p`, durch Rekursion über $`n` definiert (in *Zählen*). Hier ihre Massen: durch Induktion, das Pascalsche Dreieck mit Massen, bis zur Binomialformel. Und das Ausdünnen kommt zurück: Eine ausgedünnte Binomialverteilung ist binomial.
+`binom p n` ist die Anzahl der `true` in $`n` Würfen einer Münze `p`, durch Rekursion über $`n` definiert (in *Zählen*). Hier ihre Massen: durch Induktion, das Pascalsche Dreieck mit Massen, bis zur Binomialformel.
 :::
 
 ::::leanonly (proof := "{β : Type} (p : I) (f : Bool → DiscreteMeasure β) (x : β) : (coin p >>= f) x = ↑p * f true x + ↑(σ p) * f false x") (lemma := "coin_bind_apply") (group := "chance.count") (uses := "bind_apply, Fintype.sum_bool, coin_true, coin_false, coin_total")
@@ -188,7 +188,7 @@ rw [shift_succ, shift_zero, add_zero]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (n : ℕ) : binom p (n + 1) 0 = ↑(σ p) * binom p n 0") (lemma := "binom_succ_zero") (new := "Bool.toNat_false") (group := "chance.count") (uses := "binom_succ, coin_bind_apply, Bool.toNat_true, Bool.toNat_false, zero_add, bind_pure, shift_zero, mul_zero, binom_zero, add_zero, pure_bind, shift_succ")
+::::leanonly (proof := "(p : I) (n : ℕ) : binom p (n + 1) 0 = ↑(σ p) * binom p n 0") (lemma := "binom_succ_zero") (new := "Bool.toNat_false, mul_zero") (group := "chance.count") (uses := "binom_succ, coin_bind_apply, Bool.toNat_true, Bool.toNat_false, zero_add, bind_pure, shift_zero, mul_zero, binom_zero, add_zero, pure_bind, shift_succ")
 :::en
 *No true in one throw more.* No `true` in $`n + 1` throws: the first is `false`, and none in the other $`n`.
 :::
@@ -246,7 +246,7 @@ rw [shift_succ]
 :::
 ::::
 
-::::circuit (height := "600") (route := "count") (inputs := "x y z") (gates := "and, or, not") (coins := "p p p") (target := "bool true:(1-p)^3 false:1-(1-p)^3") (context := "Lean/Rules.lean") (proof := "(p : I) (n : ℕ) : binom p n 0 = ↑(σ p) ^ n") (lemma := "binom_all_false") (new := "pow_zero, pow_succ") (play := "a=or; b=or; c=not; x>a.0; y>a.1; a>b.0; z>b.1; b>c.0; c>out") (uses := "binom_zero, pure_self, pow_zero, binom_succ_zero, pow_succ, mul_comm, binom_succ, pure_zero_succ, binom_succ_succ")
+::::circuit (height := "600") (route := "count") (inputs := "x y z") (gates := "and, or, not") (coins := "p p p") (target := "bool true:(1-p)^3 false:1-(1-p)^3") (context := "Lean/Rules.lean") (proof := "(p : I) (n : ℕ) : binom p n 0 = ↑(σ p) ^ n") (lemma := "binom_all_false") (new := "pow_zero, pow_succ, mul_comm") (play := "a=or; b=or; c=not; x>a.0; y>a.1; a>b.0; z>b.1; b>c.0; c>out") (uses := "binom_zero, pure_self, pow_zero, binom_succ_zero, pow_succ, mul_comm, binom_succ, pure_zero_succ, binom_succ_succ")
 :::en
 *All false.* $`n` throws, all `false`: mass $`(1 - p)^n`.
 
@@ -333,109 +333,6 @@ Im Schritt fragt der zweite Summand nach $`n + 1`-mal `true` in $`n` Würfen: `b
 induction' n with n ih
 rw [binom_zero, pure_self, pow_zero]
 rw [binom_succ_succ, ih, binom_above p n 0, mul_zero, add_zero, pow_succ, mul_comm]
-```
-:::
-::::
-
-::::circuit (height := "640") (route := "count") (inputs := "x y") (gates := "toNat") (coins := "p ?|?") (target := "nat 0:1-p^2 1:p^2") (start := "x>y.0") (context := "Lean/Rules.lean") (proof := "(p q : I) : (do let C ← coin p; binom q C.toNat) = (do let B ← coin (p * q); pure B.toNat)") (lemma := "coin_bind_binom") (play := "y.T=p; y.F=0; a=toNat; y>a.0; a>out") (uses := "coin_thin, bind_assoc, Bool.toNat_false, binom_zero, Bool.cond_false, pure_bind, Bool.toNat_true, Bool.cond_true, binom_succ, add_zero, bind_pure, zero_add")
-:::en
-*Thinning comes back.* A coin `p`, and then as many coins `q` as it shows (one or none), counted: that is your thinned coin from *Thinning*, counted.
-
-On the board with `q = p`: the coin `p`, thinned by a coin that waits, then counted.
-:::
-
-:::de
-*Das Ausdünnen kommt zurück.* Eine Münze `p`, und dann so viele Münzen `q`, wie sie zeigt (eine oder keine), gezählt: Das ist deine ausgedünnte Münze aus *Ausdünnen*, gezählt.
-
-Auf dem Spielfeld mit `q = p`: die Münze `p`, ausgedünnt durch eine Münze, die wartet, dann gezählt.
-:::
-
-:::proofen
-`rw [← coin_thin]` writes the coin `p * q` as the thinned coin. Then both sides start with `coin p`: `congr 1`, `funext x`, `cases x`.
-
-*Tip.* `rw [← coin_thin]`, `simp only [bind_assoc]`, `congr 1`, `funext x`, `cases x`; at `false`: `rw [Bool.toNat_false, binom_zero, Bool.cond_false, pure_bind, Bool.toNat_false]`; at `true`: `rw [Bool.toNat_true, Bool.cond_true, binom_succ, binom_zero]`, `simp only [pure_bind, add_zero]`.
-:::
-
-:::proofde
-`rw [← coin_thin]` schreibt die Münze `p * q` als ausgedünnte Münze. Dann beginnen beide Seiten mit `coin p`: `congr 1`, `funext x`, `cases x`.
-
-*Tipp.* `rw [← coin_thin]`, `simp only [bind_assoc]`, `congr 1`, `funext x`, `cases x`; bei `false`: `rw [Bool.toNat_false, binom_zero, Bool.cond_false, pure_bind, Bool.toNat_false]`; bei `true`: `rw [Bool.toNat_true, Bool.cond_true, binom_succ, binom_zero]`, `simp only [pure_bind, add_zero]`.
-:::
-:::solution
-```
-rw [← coin_thin]
-simp only [bind_assoc]
-congr 1
-funext x
-cases x
-rw [Bool.toNat_false, binom_zero, Bool.cond_false, pure_bind, Bool.toNat_false]
-rw [Bool.toNat_true, Bool.cond_true, binom_succ, binom_zero]
-simp only [pure_bind, add_zero]
-```
-:::
-::::
-
-::::leanonly (proof := "(p q : I) (f : ℕ → DiscreteMeasure ℕ) : (do let C ← coin p; let U ← binom q C.toNat; f U) = (do let B ← coin (p * q); f B.toNat)") (lemma := "coin_bind_binom'") (group := "chance.count") (uses := "bind_assoc, coin_bind_binom, pure_bind, bind_pure")
-:::en
-*With something after it.* The same, when the `do` block goes on.
-:::
-
-:::de
-*Mit etwas danach.* Dasselbe, wenn der `do`-Block weitergeht.
-:::
-
-:::proofen
-Make the first two steps a block of their own, use your lemma, and split again.
-
-*Tip.* `rw [← bind_assoc, coin_bind_binom, bind_assoc]`, `simp only [pure_bind]`.
-:::
-
-:::proofde
-Mach die ersten zwei Schritte zu einem eigenen Block, benutze dein Lemma, und teile wieder.
-
-*Tipp.* `rw [← bind_assoc, coin_bind_binom, bind_assoc]`, `simp only [pure_bind]`.
-:::
-:::solution
-```
-rw [← bind_assoc, coin_bind_binom, bind_assoc]
-simp only [pure_bind]
-```
-:::
-::::
-
-::::circuit (height := "660") (size := "big") (route := "count") (inputs := "x y z w") (gates := "toNat, plus") (coins := "p ?|? p ?|?") (target := "nat 0:(1-p^2)^2 1:2p^2(1-p^2) 2:p^4") (start := "x>y.0; z>w.0") (context := "Lean/Rules.lean") (proof := "(p q : I) (n : ℕ) : (do let X ← binom p n; binom q X) = binom (p * q) n") (lemma := "binom_thin") (new := "bind_comm") (play := "y.T=p; y.F=0; w.T=p; w.F=0; a=toNat; b=toNat; c=plus; y>a.0; w>b.0; a>c.0; b>c.1; c>out") (uses := "binom_zero, pure_bind, binom_succ, bind_assoc, binom_add, bind_comm, coin_bind_binom', bind_pure")
-:::en
-*Thinning a binomial.* Of $`n` throws with $`p`, each `true` is kept with probability $`q`. The number kept is binomial with $`p q`.
-
-On the board with $`n = 2` and `q = p`: two throws, each thinned, and the kept ones counted. The target is binomial with $`p^2`.
-:::
-
-:::de
-*Eine Binomialverteilung ausdünnen.* Von $`n` Würfen mit $`p` wird jedes `true` mit Wahrscheinlichkeit $`q` behalten. Die Anzahl der behaltenen ist binomial mit $`p q`.
-
-Auf dem Spielfeld mit $`n = 2` und `q = p`: zwei Würfe, jeder ausgedünnt, und die behaltenen gezählt. Das Ziel ist binomial mit $`p^2`.
-:::
-
-:::proofen
-Induction on $`n`. In the step, the first coin `C` and the other throws `X`: of `C.toNat + X`, keep is `binom q (C.toNat + X)`, by `binom_add` read backwards the sum of two independent parts. `bind_comm` swaps two independent draws, so that the part of the first coin comes first; then your last lemma.
-
-*Tip.* `induction' n with n ih`; `rw [binom_zero, binom_zero, pure_bind, binom_zero]`; `rw [binom_succ, binom_succ (p * q), ← ih]`, `simp only [bind_assoc, pure_bind]`, `simp only [← binom_add]`, `simp only [bind_comm (binom p n) (binom q _)]`, `rw [coin_bind_binom']`.
-:::
-
-:::proofde
-Induktion über $`n`. Im Schritt die erste Münze `C` und die anderen Würfe `X`: Von `C.toNat + X` behalten ist `binom q (C.toNat + X)`, nach `binom_add` rückwärts die Summe zweier unabhängiger Teile. `bind_comm` tauscht zwei unabhängige Ziehungen, damit der Teil der ersten Münze vorne steht; dann dein letztes Lemma.
-
-*Tipp.* `induction' n with n ih`; `rw [binom_zero, binom_zero, pure_bind, binom_zero]`; `rw [binom_succ, binom_succ (p * q), ← ih]`, `simp only [bind_assoc, pure_bind]`, `simp only [← binom_add]`, `simp only [bind_comm (binom p n) (binom q _)]`, `rw [coin_bind_binom']`.
-:::
-:::solution
-```
-induction' n with n ih
-rw [binom_zero, binom_zero, pure_bind, binom_zero]
-rw [binom_succ, binom_succ (p * q), ← ih]
-simp only [bind_assoc, pure_bind]
-simp only [← binom_add]
-simp only [bind_comm (binom p n) (binom q _)]
-rw [coin_bind_binom']
 ```
 :::
 ::::

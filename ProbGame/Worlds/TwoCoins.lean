@@ -155,7 +155,7 @@ Two distributions on `Bool` are equal when their masses at `true` are: `apply bo
 New from now on: `norm_num` does the computing for you. It computes with numbers and masses (`p * 1`,
 `a + 0`, `bif true then a else b`, `true && b`, the masses `coin p true = p` and `(pure b) true`, and
 taking away a finite mass), and with `norm_num [h]` also with a rule `h` of yours. What is left to you
-are the rules of the game.
+are the rules of the game. From here on, `coin_true`, `Bool.cond_true` and the like are no longer rewritten one by one: after the step that splits (`bind_true`, `bind_false`), `norm_num`.
 
 *Tip.* `apply bool_ext`, `rw [bind_true, bind_true, bind_true]`, `norm_num [mass_mul]`.
 :::
@@ -173,7 +173,7 @@ Dann `bind_true`, dreimal: für den ersten Zug, und für den zweiten nach `true`
 Neu ab jetzt: `norm_num` rechnet für dich. Es rechnet mit Zahlen und Massen (`p * 1`, `a + 0`,
 `bif true then a else b`, `true && b`, die Massen `coin p true = p` und `(pure b) true`, und das
 Wegnehmen einer endlichen Masse), und mit `norm_num [h]` auch mit einer Regel `h` von dir. Was dir
-bleibt, sind die Regeln des Spiels.
+bleibt, sind die Regeln des Spiels. Ab hier schreibst du `coin_true`, `Bool.cond_true` und Ähnliches nicht mehr einzeln um: nach dem Schritt, der aufteilt (`bind_true`, `bind_false`), `norm_num`.
 
 *Tipp.* `apply bool_ext`, `rw [bind_true, bind_true, bind_true]`, `norm_num [mass_mul]`.
 :::
