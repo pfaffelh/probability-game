@@ -3024,6 +3024,8 @@
     [/Tactic `decide` proved that the proposition/, 'The statement is false, at least in one case.', 'Die Aussage ist falsch, mindestens in einem Fall.'],
     [/abortTactic/, 'A tactic after <;> failed on one of the goals: for example rfl on a goal that is not true by computing alone (is a cases missing?).', 'Eine Taktik nach <;> ist an einem der Ziele gescheitert: zum Beispiel rfl an einem Ziel, das nicht schon durch Ausrechnen stimmt (fehlt ein cases?).'],
     [/Tactic `rfl` failed/, 'The two sides are not the same, not even after computing.', 'Die beiden Seiten sind nicht gleich, auch nicht nach Ausrechnen.'],
+    [/ring failed, ring expressions not equal/, 'The goal minus the combination is not 0 by computing (what is left is shown below). Perhaps a factor is missing: linear_combination c * h, with a number c.',
+      'Das Ziel minus die Kombination ist durch Rechnen nicht 0 (was übrig bleibt, steht unten). Vielleicht fehlt ein Faktor: linear_combination c * h, mit einer Zahl c.'],
     [/[Nn]o goals/, 'There is no goal left.', 'Es ist kein Ziel mehr übrig.'],
     [/Unknown (identifier|constant)/, 'Lean does not know this name.', 'Diesen Namen kennt Lean nicht.'],
     [/unexpected token|expected/, 'Lean cannot read this line: a typo?', 'Lean kann diese Zeile nicht lesen: ein Tippfehler?'],
@@ -3341,7 +3343,10 @@
       const names = [...new Set(this.vars().map(v => v.name).filter(n => !/^inst/.test(n) && !/†/.test(n)))]
       // (true and false only where the goal is about Bool: a coin, a map on Bool, …)
       const bool = /\b(Bool|true|false|coin)\b/.test(String(this.goals?.[0] ?? this.statement ?? ''))
-      for (const n of [...names, ...(bool ? ['true', 'false'] : [])]) key(n, n, () => this.putTerm(n), ' pg-key-name')
+      // (in the real numbers: the numbers of the goal and ×, for a factor as in linear_combination 2 * h)
+      const goal = String(this.goals?.[0] ?? this.statement ?? '')
+      const nums = /ℝ/.test(goal) ? [...new Set(goal.match(/(?<![\w₀-₉.])\d+(?![\w₀-₉])/g) ?? [])].slice(0, 4) : []
+      for (const n of [...names, ...(bool ? ['true', 'false'] : []), ...nums, ...(nums.length ? ['*'] : [])]) key(n, n, () => this.putTerm(n), ' pg-key-name')
       key('←', tr('backwards (in rw)'), () => this.putTerm('←'), ' pg-key-name')
       key('␣', tr('a space: what comes next is an argument'), () => this.putTerm(' '), ' pg-key-name')
       key('⌫', tr('Delete the last word'), () => this.erase(), ' pg-key-op')
