@@ -752,3 +752,8 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 /* a chip under the mouse: what it says, as on a phone after a long press, over the page */
 .pg-chip-hover { position: fixed; z-index: 50; max-width: min(36rem, calc(100vw - 16px)); margin: 0; padding: 0.45rem 0.7rem; box-shadow: 0 4px 14px rgba(0,0,0,0.15); pointer-events: none; font-family: var(--verso-structure-font-family, sans-serif); color: #3a2a10; }
 .pg-chip-hover .pg-inv-sig { font: 0.95em var(--verso-code-font-family, monospace); white-space: pre-wrap; }
+/* the gaps of a statement: ▢ to fill, the one now ringed; a filled one is marked, a tap opens it again */
+.pg-gap { display: inline-block; min-width: 1.4em; text-align: center; border-radius: 5px; padding: 0 0.15em; }
+.pg-gap-now { outline: 2px solid #b0782a; background: #fff3dc; }
+.pg-gap-filled { background: #e3edf9; box-shadow: inset 0 -2px 0 #2e6fb8; cursor: pointer; }
+.pg-gap-again { margin: 0.2rem 0 0.4rem; }

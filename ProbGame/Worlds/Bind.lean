@@ -19,8 +19,7 @@ Then a coin waits: it is thrown *after* the coin `x`, and **which** coin it is d
 showed. The waiting coin `y` is a `bind` box with a coin in each field: `coin p`, `coin (σ p)`,
 `pure true` or `pure false`, each with its small histogram. `y` becomes
 `bif x then coin q else coin r`: first throw `x`, then, depending on what came, the one or the other
-coin. In Lean: `do let x ← coin p; let y ← (bif x then coin q else coin r); …`, that is
-`coin p >>= fun x => …`.
+coin. In Lean: `do let x ← coin p; let y ← (bif x then coin q else coin r); …`.
 
 This world is one of two ways after *Building with Coins*; the other is *Counting*. They do not need
 each other.
@@ -36,24 +35,23 @@ Dann wartet eine Münze: Sie wird *nach* der Münze `x` geworfen, und **welche**
 ab, was `x` zeigte. Die wartende Münze `y` ist ein `bind`-Kasten mit einer Münze in jedem Feld:
 `coin p`, `coin (σ p)`, `pure true` oder `pure false`, jede mit ihrem kleinen Histogramm. `y` wird zu
 `bif x then coin q else coin r`: erst `x` werfen, dann, je nachdem was kam, die eine oder die andere
-Münze. In Lean: `do let x ← coin p; let y ← (bif x then coin q else coin r); …`, also
+Münze. In Lean: `do let x ← coin p; let y ← (bif x then coin q else coin r); …`.
 
 Diese Welt ist einer von zwei Wegen nach *Bauen mit Münzen*; der andere ist *Zählen*. Sie brauchen
 einander nicht.
-`coin p >>= fun x => …`.
 :::
 
 :::proofen
 The statements are about the mass at `true`: the board shows the whole distribution, and your lemma
 `bool_ext` says that the mass at `true` decides it. The new rule
-`bind_true : (μ >>= f) true = μ true * f true true + μ false * f false true` goes both ways: through
+`bind_true : (do let x ← μ; f x) true = μ true * f true true + μ false * f false true` goes both ways: through
 `true` (the mass `μ true`, then the mass of `f true` at `true`) and through `false`.
 :::
 
 :::proofde
 Die Aussagen handeln von der Masse bei `true`: Das Spielfeld zeigt die ganze Verteilung, und dein Lemma
 `bool_ext` sagt, dass die Masse bei `true` sie festlegt. Die neue Regel
-`bind_true : (μ >>= f) true = μ true * f true true + μ false * f false true` geht beide Wege: über
+`bind_true : (do let x ← μ; f x) true = μ true * f true true + μ false * f false true` geht beide Wege: über
 `true` (die Masse `μ true`, dann die Masse von `f true` bei `true`) und über `false`.
 :::
 
@@ -65,7 +63,7 @@ it has two fields, `T` and `F`, and your task is to put a map into each (drag it
 until it is the one you want). Read it from top to bottom: the input on top chooses
 one of the two fields, `T` or `F` (the blue arrows). The value at the input on the right side goes
 into both fields (the two circles, joined below them); the field chosen applies its map to it. In Lean:
-`c >>= fun b => if b then f v else g v`. Make it `and`: when `x` is `true`, `y` itself; when `x` is
+`do let b ← c; if b then f v else g v`. Make it `and`: when `x` is `true`, `y` itself; when `x` is
 `false`, always `F`. (Tap a column of the output box: the field not used fades.)
 :::
 
@@ -77,7 +75,7 @@ eine Abbildung zu legen (hineinziehen, oder das Feld antippen, bis es die richti
 Eingang oben wählt eines der beiden Felder, `T` oder `F` (die blauen Pfeile). Der Wert am Eingang
 rechts geht in beide Felder (die zwei Kreise, unten verbunden); das gewählte Feld wendet seine
 Abbildung darauf an. In Lean:
-`c >>= fun b => if b then f v else g v`. Mach daraus `and`: ist `x` `true`, `y` selbst; ist `x` `false`, immer
+`do let b ← c; if b then f v else g v`. Mach daraus `and`: ist `x` `true`, `y` selbst; ist `x` `false`, immer
 `F`. (Tippe eine Spalte des Ausgabekastens an: Das Feld, das nicht benutzt wird, verblasst.)
 :::
 
@@ -380,7 +378,7 @@ norm_num
 :::
 
 :::proofen
-`bind_false : (μ >>= f) false = μ true * f true false + μ false * f false false`.
+`bind_false : (do let x ← μ; f x) false = μ true * f true false + μ false * f false false`.
 
 Then `norm_num`, as before.
 
@@ -388,7 +386,7 @@ Then `norm_num`, as before.
 :::
 
 :::proofde
-`bind_false : (μ >>= f) false = μ true * f true false + μ false * f false false`.
+`bind_false : (do let x ← μ; f x) false = μ true * f true false + μ false * f false false`.
 
 Dann `norm_num`, wie vorher.
 

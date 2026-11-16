@@ -98,7 +98,7 @@ for (const path of paths) {
     let proof = 'none'
     if (withProofs && lv.proof) {
       if (lv.kind !== 'leanonly') { await page.locator('.pg-next-button').click(); await page.waitForTimeout(400) }
-      const r = await prove(lv.solution)
+      const r = await prove([...(lv.gaps ?? []), ...lv.solution])  // (the gaps of the statement first)
       proof = r ? `NOT: ${r}` : 'ok'
       if (r) fail(`${path} level ${i + 1}: proof ${r}`)
     }
