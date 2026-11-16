@@ -2547,7 +2547,7 @@
         box.append(el('div', 'pg-solved-head', 'goals accomplished 🎉'))
         if (!SHOW) {
           box.append(el('div', 'pg-solved-lean-head', tr(this.random ? 'In Lean, for every p:' : 'In Lean:')))
-          box.append(el('pre', 'pg-lean', this.random ? `${this.leanState()}\n  -- ${tr('a coin: true with probability')} ${new Poly(this.target.mass.get('true')?.c ?? [])}` : `${this.proof?.lemma ? 'theorem ' + this.proof.lemma : 'example'} ${this.shape ? this.root.dataset.proof : this.statement()}`))
+          box.append(el('pre', 'pg-lean', this.random ? `${this.leanState()}\n  -- ${tr('a coin: true with probability')} ${new Poly(this.target.mass.get('true')?.c ?? [])}` : `${this.proof?.lemma ? 'theorem ' + this.proof.lemma : 'example'} ${this.shape ? this.root.dataset.proof.replace(/⟦[^⟧]*⟧/g, '▢') : this.statement()}`))
         }
         const next = el('button', 'pg-next', tr('Next ›'))
         next.type = 'button'
@@ -2686,8 +2686,8 @@
     "mass_total": "theorem mass_total (μ : DiscreteMeasure Bool) [hμ : Prob μ] : μ true + μ false = 1",
     "mass_ne_top": "theorem mass_ne_top {μ : DiscreteMeasure Bool} [Prob μ] {b : Bool} : μ b ≠ ⊤",
     "ENNReal.add_sub_cancel_left": "theorem ENNReal.add_sub_cancel_left {a b : ENNReal} (ha : a ≠ ⊤) : a + b - a = b",
-    "bind_apply": "theorem bind_apply {α β : Type} [Fintype α] (μ : DiscreteMeasure α) (f : α → DiscreteMeasure β) (b : β) : (μ >>= f) b = ∑ a, μ a * (f a) b",
-    "bind_true": "theorem bind_true (μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (μ >>= f) true = μ true * (f true) true + μ false * (f false) true",
+    "bind_apply": "theorem bind_apply {α β : Type} [Fintype α] (μ : DiscreteMeasure α) (f : α → DiscreteMeasure β) (b : β) : (do let a ← μ; f a) b = ∑ a, μ a * (f a) b",
+    "bind_true": "theorem bind_true (μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (do let x ← μ; f x) true = μ true * (f true) true + μ false * (f false) true",
     "mul_one": "theorem mul_one {M : Type u_2} [MulOneClass M] (a : M) : a * 1 = a",
     "mul_zero": "theorem mul_zero {M₀ : Type u} [self : MulZeroClass M₀] (a : M₀) : a * 0 = 0",
     "add_comm": "theorem add_comm {G : Type u_1} [AddCommMagma G] (a b : G) : a + b = b + a",
@@ -2712,17 +2712,17 @@
     "coin_const": "theorem coin_const (p : I) (b : Bool) : (fun x => b) <$> coin p = pure b",
     "map_pure": "theorem map_pure {f : Type u → Type v} {inst✝ : Applicative f} [self : LawfulApplicative f] {α β : Type u} (g : α → β) (x : α) : g <$> pure x = pure (g x)",
     "map_map": "theorem map_map {α β γ : Type} (μ : DiscreteMeasure α) (f : α → β) (g : β → γ) : g <$> f <$> μ = (fun x => g (f x)) <$> μ",
-    "coin_and": "theorem coin_and (p q : I) : (do let x ← coin p let y ← coin q pure (x && y)) = coin (p * q)",
-    "bind_map_left": "theorem bind_map_left {m : Type u_1 → Type u_2} {α β γ : Type u_1} [Monad m] [LawfulMonad m] (f : α → β) (x : m α) (g : β → m γ) : (do let b ← f <$> x g b) = do let a ← x g (f a)",
-    "map_bind": "theorem map_bind {m : Type u_1 → Type u_2} {β γ α : Type u_1} [Monad m] [LawfulMonad m] (f : β → γ) (x : m α) (g : α → m β) : f <$> (x >>= g) = do let a ← x f <$> g a",
-    "coin_unused": "theorem coin_unused {β : Type} (p : I) (ν : DiscreteMeasure β) : (do let _ ← coin p ν) = ν",
+    "coin_and": "theorem coin_and (p q : I) : (do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)",
+    "bind_map_left": "theorem bind_map_left {m : Type u_1 → Type u_2} {α β γ : Type u_1} [Monad m] [LawfulMonad m] (f : α → β) (x : m α) (g : β → m γ) : (do let b ← f <$> x; g b) = do let a ← x; g (f a)",
+    "map_bind": "theorem map_bind {m : Type u_1 → Type u_2} {β γ α : Type u_1} [Monad m] [LawfulMonad m] (f : β → γ) (x : m α) (g : α → m β) : f <$> (x >>= g) = do let a ← x; f <$> g a",
+    "coin_unused": "theorem coin_unused {β : Type} (p : I) (ν : DiscreteMeasure β) : (do let _ ← coin p; ν) = ν",
     "binom_zero": "theorem binom_zero (p : I) : binom p 0 = pure 0",
-    "binom_succ": "theorem binom_succ (p : I) (n : ℕ) : binom p (n + 1) = do let X ← coin p let Y ← binom p n pure (X.toNat + Y)",
+    "binom_succ": "theorem binom_succ (p : I) (n : ℕ) : binom p (n + 1) = do let X ← coin p; let Y ← binom p n; pure (X.toNat + Y)",
     "bind_assoc": "theorem bind_assoc {m : Type u → Type v} {inst✝ : Monad m} [self : LawfulMonad m] {α β γ : Type u} (x : m α) (f : α → m β) (g : β → m γ) : x >>= f >>= g = x >>= fun x => f x >>= g",
     "pure_bind": "theorem pure_bind {m : Type u → Type v} {inst✝ : Monad m} [self : LawfulMonad m] {α β : Type u} (x : α) (f : α → m β) : pure x >>= f = f x",
     "add_zero": "theorem add_zero {M : Type u_2} [AddZeroClass M] (a : M) : a + 0 = a",
     "add_assoc": "theorem add_assoc {G : Type u_1} [AddSemigroup G] (a b c : G) : a + b + c = a + (b + c)",
-    "map_eq_pure_bind": "theorem map_eq_pure_bind {m : Type u_1 → Type u_2} {α β : Type u_1} [Monad m] [LawfulMonad m] (f : α → β) (x : m α) : f <$> x = do let a ← x pure (f a)",
+    "map_eq_pure_bind": "theorem map_eq_pure_bind {m : Type u_1 → Type u_2} {α β : Type u_1} [Monad m] [LawfulMonad m] (f : α → β) (x : m α) : f <$> x = do let a ← x; pure (f a)",
     "bind_pure": "theorem bind_pure {m : Type u_1 → Type u_2} {α : Type u_1} [Monad m] [LawfulMonad m] (x : m α) : x >>= pure = x",
     "Bool.not_not": "theorem Bool.not_not (b : Bool) : (!!b) = b",
     "Bool.apply_apply_apply": "theorem Bool.apply_apply_apply (f : Bool → Bool) (x : Bool) : f (f (f x)) = f x",
@@ -2730,12 +2730,12 @@
     "id_eq": "theorem id_eq {α : Sort u_1} (a : α) : id a = a",
     "Nat.bodd_succ": "theorem Nat.bodd_succ (n : ℕ) : n.succ.bodd = !n.bodd",
     "mass_mul": "theorem mass_mul (p q : I) : ↑(p * q) = ↑p * ↑q",
-    "coin_bind_apply": "theorem coin_bind_apply {β : Type} (p : I) (f : Bool → DiscreteMeasure β) (x : β) : (coin p >>= f) x = ↑p * (f true) x + ↑(σ p) * (f false) x",
+    "coin_bind_apply": "theorem coin_bind_apply {β : Type} (p : I) (f : Bool → DiscreteMeasure β) (x : β) : (do let b ← coin p; f b) x = ↑p * (f true) x + ↑(σ p) * (f false) x",
     "beq_self_eq_true": "theorem beq_self_eq_true {α : Type u_1} [BEq α] [ReflBEq α] (a : α) : (a == a) = true",
     "pure_self": "theorem pure_self {α : Type} [DecidableEq α] (a : α) : (pure a) a = 1",
     "pure_zero_succ": "theorem pure_zero_succ (k : ℕ) : (pure 0) (k + 1) = 0",
-    "shift_succ": "theorem shift_succ (μ : DiscreteMeasure ℕ) (k : ℕ) : (do let Y ← μ pure (1 + Y)) (k + 1) = μ k",
-    "shift_zero": "theorem shift_zero (μ : DiscreteMeasure ℕ) : (do let Y ← μ pure (1 + Y)) 0 = 0",
+    "shift_succ": "theorem shift_succ (μ : DiscreteMeasure ℕ) (k : ℕ) : (do let Y ← μ; pure (1 + Y)) (k + 1) = μ k",
+    "shift_zero": "theorem shift_zero (μ : DiscreteMeasure ℕ) : (do let Y ← μ; pure (1 + Y)) 0 = 0",
     "Bool.toNat_true": "theorem Bool.toNat_true : true.toNat = 1",
     "Bool.toNat_false": "theorem Bool.toNat_false : false.toNat = 0",
     "pow_zero": "theorem pow_zero {M : Type u_2} [Monoid M] (a : M) : a ^ 0 = 1",
@@ -2748,7 +2748,7 @@
     "Nat.cast_add": "theorem Nat.cast_add {R : Type u_1} [AddMonoidWithOne R] (m n : ℕ) : ↑(m + n) = ↑m + ↑n",
     "Nat.cast_one": "theorem Nat.cast_one {R : Type u_1} [AddMonoidWithOne R] : ↑1 = 1",
     "seq_zero": "theorem seq_zero {α : Type} (μ : DiscreteMeasure α) : iidSequence 0 μ = pure []",
-    "seq_succ": "theorem seq_succ {α : Type} (μ : DiscreteMeasure α) (n : ℕ) : iidSequence (n + 1) μ = do let y ← μ let l ← iidSequence n μ pure (y :: l)",
+    "seq_succ": "theorem seq_succ {α : Type} (μ : DiscreteMeasure α) (n : ℕ) : iidSequence (n + 1) μ = do let y ← μ; let l ← iidSequence n μ; pure (y :: l)",
     "seq_succ_apply": "theorem seq_succ_apply {α : Type} [DecidableEq α] (μ : DiscreteMeasure α) (n : ℕ) (a : α) (l : List α) : (iidSequence (n + 1) μ) (a :: l) = μ a * (iidSequence n μ) l",
     "seq_zero_nil": "theorem seq_zero_nil {α : Type} (μ : DiscreteMeasure α) : (iidSequence 0 μ) [] = 1",
     "count_true_cons": "theorem count_true_cons (y : Bool) (l : List Bool) : List.count true (y :: l) = y.toNat + List.count true l",
@@ -2760,20 +2760,20 @@
     "cond_same": "theorem cond_same {α : Type} (c : Bool) (a : α) : (bif c then a else a) = a",
     "Nat.add_sub_cancel": "theorem Nat.add_sub_cancel (n m : ℕ) : n + m - m = n",
     "hyper_zero": "theorem hyper_zero (w b : ℕ) : hyper w b 0 = pure 0",
-    "hyper_succ": "theorem hyper_succ (w b n : ℕ) : hyper w b (n + 1) = do let X ← coin (frac w b) bif X then do let Y ← hyper (w - 1) b n pure (1 + Y) else hyper w (b - 1) n",
+    "hyper_succ": "theorem hyper_succ (w b n : ℕ) : hyper w b (n + 1) = do let X ← coin (frac w b); bif X then do let Y ← hyper (w - 1) b n; pure (1 + Y) else hyper w (b - 1) n",
     "hyper_black": "theorem hyper_black (b n : ℕ) : hyper 0 b n = pure 0",
     "hyper_white": "theorem hyper_white (w : ℕ) : hyper w 0 w = pure w",
     "hyper_all": "theorem hyper_all (w b : ℕ) : hyper w b (w + b) = pure w",
     "or_eq": "theorem or_eq (x y : Bool) : (x || y) = !(!x && !y)",
     "Bool.and_not_self": "theorem Bool.and_not_self (x : Bool) : (x && !x) = false",
     "Bool.or_not_self": "theorem Bool.or_not_self (x : Bool) : (x || !x) = true",
-    "binom_add": "theorem binom_add (p : I) (n m : ℕ) : (do let X ← binom p n let Y ← binom p m pure (X + Y)) = binom p (n + m)",
-    "coin_bind_binom": "theorem coin_bind_binom (p q : I) : (do let C ← coin p binom q C.toNat) = do let B ← coin (p * q) pure B.toNat",
-    "binom_thin": "theorem binom_thin (p q : I) (n : ℕ) : (do let X ← binom p n binom q X) = binom (p * q) n",
+    "binom_add": "theorem binom_add (p : I) (n m : ℕ) : (do let X ← binom p n; let Y ← binom p m; pure (X + Y)) = binom p (n + m)",
+    "coin_bind_binom": "theorem coin_bind_binom (p q : I) : (do let C ← coin p; binom q C.toNat) = do let B ← coin (p * q); pure B.toNat",
+    "binom_thin": "theorem binom_thin (p q : I) (n : ℕ) : (do let X ← binom p n; binom q X) = binom (p * q) n",
     "binom_symm": "theorem binom_symm (p : I) (k m : ℕ) : (binom (σ p) (k + m)) m = (binom p (k + m)) k",
     "geom_formula": "theorem geom_formula (p : I) (k : ℕ) : (geom p) k = ↑(σ p) ^ k * ↑p",
     "geom_memoryless": "theorem geom_memoryless (p : I) (k m : ℕ) : (geom p) (k + m) = ↑(σ p) ^ k * (geom p) m",
-    "bind_comm": "theorem bind_comm {α β γ : Type} (μ : DiscreteMeasure α) (ν : DiscreteMeasure β) (f : α → β → DiscreteMeasure γ) : (do let x ← μ let y ← ν f x y) = do let y ← ν let x ← μ f x y",
+    "bind_comm": "theorem bind_comm {α β γ : Type} (μ : DiscreteMeasure α) (ν : DiscreteMeasure β) (f : α → β → DiscreteMeasure γ) : (do let x ← μ; let y ← ν; f x y) = do let y ← ν; let x ← μ; f x y",
     "symm_twice": "theorem symm_twice (p : I) : σ (σ p) = p",
     "Nat.choose_symm_add": "theorem Nat.choose_symm_add {a b : ℕ} : (a + b).choose a = (a + b).choose b",
     "mul_assoc": "theorem mul_assoc {G : Type u_1} [Semigroup G] (a b c : G) : a * b * c = a * (b * c)",
@@ -2783,15 +2783,15 @@
     "ENNReal.inv_mul_cancel": "theorem ENNReal.inv_mul_cancel {a : ENNReal} (h0 : a ≠ 0) (ht : a ≠ ⊤) : a⁻¹ * a = 1",
     "mass_ne_zero": "theorem mass_ne_zero {p : ↑I} (h : p ≠ 0) : ↑p ≠ 0",
     "mass_finite": "theorem mass_finite (p : I) : ↑p ≠ ⊤",
-    "bind_false": "theorem bind_false (μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (μ >>= f) false = μ true * (f true) false + μ false * (f false) false",
-    "prob_unused": "theorem prob_unused {β : Type} (μ : DiscreteMeasure Bool) [h : Prob μ] (ν : DiscreteMeasure β) : (do let _ ← μ ν) = ν",
+    "bind_false": "theorem bind_false (μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (do let x ← μ; f x) false = μ true * (f true) false + μ false * (f false) false",
+    "prob_unused": "theorem prob_unused {β : Type} (μ : DiscreteMeasure Bool) [h : Prob μ] (ν : DiscreteMeasure β) : (do let _ ← μ; ν) = ν",
     "mass_eq_ofReal": "theorem mass_eq_ofReal (p : I) : ↑p = ENNReal.ofReal ↑p",
     "mass_mul_real": "theorem mass_mul_real (p q : I) : ↑p * ↑q = ENNReal.ofReal (↑p * ↑q)",
     "ENNReal.ofReal_add": "theorem ENNReal.ofReal_add {p q : ℝ} (hp : 0 ≤ p) (hq : 0 ≤ q) : ENNReal.ofReal (p + q) = ENNReal.ofReal p + ENNReal.ofReal q",
     "real_mul_nonneg": "theorem real_mul_nonneg (p q : I) : 0 ≤ ↑p * ↑q",
     "symm_real": "theorem symm_real (p : I) : ↑(σ p) = 1 - ↑p",
-    "coin_stays": "theorem coin_stays (p q r : I) (h : (1 - ↑p) * ↑r = ↑p * (1 - ↑q)) : (do let x ← coin p bif x then coin q else coin r) = coin p",
-    "coin_thin": "theorem coin_thin (p q : I) : (do let x ← coin p bif x then coin q else pure false) = coin (p * q)",
+    "coin_stays": "theorem coin_stays (p q r : I) (h : (1 - ↑p) * ↑r = ↑p * (1 - ↑q)) : (do let x ← coin p; bif x then coin q else coin r) = coin p",
+    "coin_thin": "theorem coin_thin (p q : I) : (do let x ← coin p; bif x then coin q else pure false) = coin (p * q)",
     "binom_succ_zero": "theorem binom_succ_zero (p : I) (n : ℕ) : (binom p (n + 1)) 0 = ↑(σ p) * (binom p n) 0",
     "binom_succ_succ": "theorem binom_succ_succ (p : I) (n k : ℕ) : (binom p (n + 1)) (k + 1) = ↑p * (binom p n) k + ↑(σ p) * (binom p n) (k + 1)",
     "binom_all_false": "theorem binom_all_false (p : I) (n : ℕ) : (binom p n) 0 = ↑(σ p) ^ n",
@@ -2800,7 +2800,7 @@
     "binom_formula": "theorem binom_formula (p : I) (k m : ℕ) : (binom p (k + m)) k = ↑p ^ k * ↑(σ p) ^ m * ↑((k + m).choose k)",
     "geom_zero": "theorem geom_zero (p : I) : (geom p) 0 = ↑p",
     "geom_succ": "theorem geom_succ (p : I) (k : ℕ) : (geom p) (k + 1) = ↑(σ p) * (geom p) k",
-    "geom_first": "theorem geom_first (p : I) : geom p = do let x ← coin p bif x then pure 0 else do let Y ← geom p pure (1 + Y)"
+    "geom_first": "theorem geom_first (p : I) : geom p = do let x ← coin p; bif x then pure 0 else do let Y ← geom p; pure (1 + Y)"
     }
   // LEAN_SIGS end
   const INVENTORY = [
@@ -2814,8 +2814,8 @@
       en: 'Closes a goal a = b whose two sides become the same after reducing: Lean unfolds definitions and computes a definition by cases once it knows the value (!true reduces to false, true && b to b, if true then a else b to a, 1 + 1 to 2). With an unknown x, !x does not reduce: (!(!x)) = x is not rfl; after cases x it is.',
       de: 'Schließt ein Ziel a = b, dessen beide Seiten nach dem Reduzieren gleich sind: Lean setzt Definitionen ein und rechnet eine Definition durch Fälle aus, sobald es den Wert kennt (!true reduziert zu false, true && b zu b, if true then a else b zu a, 1 + 1 zu 2). Mit einem unbekannten x reduziert !x nicht: (!(!x)) = x ist nicht rfl; nach cases x schon.' },
     { name: 'congr', kind: 'tactic', insert: 'congr 1', sig: 'congr 1',
-      en: 'For a goal f a = f b, or μ >>= g = μ >>= h (a do block): reduces it to the parts that differ (a = b, g = h).',
-      de: 'Für ein Ziel f a = f b, oder μ >>= g = μ >>= h (ein do-Block): führt es auf die Teile zurück, die sich unterscheiden (a = b, g = h).' },
+      en: 'For a goal f a = f b, or (do let x ← μ; g x) = (do let x ← μ; h x): reduces it to the parts that differ (a = b, g = h).',
+      de: 'Für ein Ziel f a = f b, oder (do let x ← μ; g x) = (do let x ← μ; h x): führt es auf die Teile zurück, die sich unterscheiden (a = b, g = h).' },
     { name: 'funext', kind: 'tactic', insert: 'funext x', sig: 'funext x',
       en: 'For a goal g = h between functions: it suffices that g x = h x for every x.',
       de: 'Für ein Ziel g = h zwischen Funktionen: Es genügt, dass g x = h x für jedes x.' },
@@ -2848,8 +2848,8 @@
     { name: 'mass_total', kind: 'rule', sig: 'mass_total μ : μ true + μ false = 1', en: 'A distribution on Bool has total mass one.', de: 'Eine Verteilung auf Bool hat die Gesamtmasse eins.' },
     { name: 'mass_ne_top', kind: 'rule', sig: 'mass_ne_top : μ b ≠ ⊤', en: 'A mass of a distribution is finite (masses are numbers in [0, ∞], and ⊤ is ∞).', de: 'Eine Masse einer Verteilung ist endlich (Massen sind Zahlen in [0, ∞], und ⊤ ist ∞).' },
     { name: 'ENNReal.add_sub_cancel_left', kind: 'rule', sig: 'ENNReal.add_sub_cancel_left (h : a ≠ ⊤) : a + b - a = b', en: 'Adding a and taking it away again: for a finite a.', de: 'a dazu und wieder weg: für ein endliches a.' },
-    { name: 'bind_apply', kind: 'rule', sig: '(μ >>= f) b = ∑ a, μ a * f a b', en: 'The definition of a bind: the mass at b is the sum over the first steps a of the mass of a times the mass of f a at b.', de: 'Die Definition eines bind: Die Masse bei b ist die Summe über die ersten Schritte a von der Masse von a mal der Masse von f a bei b.' },
-    { name: 'bind_true', kind: 'lemma', sig: '(μ >>= f) true = μ true * f true true + μ false * f false true', en: 'Proved by you in Building with Coins: the mass of a bind at true, the way through true (mass μ true, then f true) and the way through false.', de: 'Von dir bewiesen in „Bauen mit Münzen“: die Masse eines bind bei true, der Weg über true (Masse μ true, dann f true) und der Weg über false.' },
+    { name: 'bind_apply', kind: 'rule', sig: '(do let a ← μ; f a) b = ∑ a, μ a * f a b', en: 'The definition of a bind: the mass at b is the sum over the first steps a of the mass of a times the mass of f a at b.', de: 'Die Definition eines bind: Die Masse bei b ist die Summe über die ersten Schritte a von der Masse von a mal der Masse von f a bei b.' },
+    { name: 'bind_true', kind: 'lemma', sig: '(do let x ← μ; f x) true = μ true * f true true + μ false * f false true', en: 'Proved by you in Building with Coins: the mass of a bind at true, the way through true (mass μ true, then f true) and the way through false.', de: 'Von dir bewiesen in „Bauen mit Münzen“: die Masse eines bind bei true, der Weg über true (Masse μ true, dann f true) und der Weg über false.' },
     { name: 'mul_one', kind: 'rule', sig: 'a * 1 = a', en: 'Times one.', de: 'Mal eins.' },
     { name: 'mul_zero', kind: 'rule', sig: 'a * 0 = 0', en: 'Times zero.', de: 'Mal null.' },
     { name: 'add_comm', kind: 'rule', sig: 'a + b = b + a', en: 'The order of a sum does not matter.', de: 'Die Reihenfolge einer Summe ist egal.' },
@@ -2922,7 +2922,7 @@
     { name: 'odd_walk', kind: 'lemma', sig: 'odd <$> walk n = pure n.bodd', en: 'Proved by you: the boss of Walking on the Grid.', de: 'Von dir bewiesen: der Endgegner von „Gehen auf dem Gitter“.' },
     { name: 'ring', kind: 'tactic', insert: 'ring', sig: 'ring', en: 'Proves an equation that holds by computing with + and * alone (commutative, associative, distributive, powers), whatever the letters are.', de: 'Beweist eine Gleichung, die allein durch Rechnen mit + und * gilt (kommutativ, assoziativ, distributiv, Potenzen), was auch immer die Buchstaben sind.' },
     { name: 'mass_mul', kind: 'rule', sig: '↑(p * q) = ↑p * ↑q', en: 'A product of numbers in [0, 1], as a mass.', de: 'Ein Produkt von Zahlen in [0, 1], als Masse.' },
-    { name: 'coin_bind_apply', kind: 'lemma', sig: '(coin p >>= f) x = ↑p * f true x + ↑(σ p) * f false x', en: 'Proved by you in Binomial: a draw that starts with a coin, at any point, through true and through false.', de: 'Von dir bewiesen in „Binomial“: ein Ziehen, das mit einer Münze beginnt, an jedem Punkt, über true und über false.' },
+    { name: 'coin_bind_apply', kind: 'lemma', sig: '(do let b ← coin p; f b) x = ↑p * f true x + ↑(σ p) * f false x', en: 'Proved by you in Binomial: a draw that starts with a coin, at any point, through true and through false.', de: 'Von dir bewiesen in „Binomial“: ein Ziehen, das mit einer Münze beginnt, an jedem Punkt, über true und über false.' },
     { name: 'beq_self_eq_true', kind: 'rule', sig: '(a == a) = true', en: 'A point tested against itself.', de: 'Ein Punkt, mit sich selbst verglichen.' },
     { name: 'pure_self', kind: 'lemma', sig: '(pure a) a = 1', en: 'Proved by you in Binomial: a point mass at its point.', de: 'Von dir bewiesen in „Binomial“: eine Punktmasse an ihrem Punkt.' },
     { name: 'pure_zero_succ', kind: 'rule', sig: '(pure 0) (k + 1) = 0', en: 'The point mass at 0 has nothing at k + 1.', de: 'Die Punktmasse bei 0 hat bei k + 1 nichts.' },
@@ -2978,7 +2978,7 @@
     { name: 'ENNReal.inv_mul_cancel', kind: 'rule', sig: 'a ≠ 0 → a ≠ ⊤ → a⁻¹ * a = 1', en: 'One over a, times a.', de: 'Eins durch a, mal a.' },
     { name: 'mass_ne_zero', kind: 'rule', sig: 'p ≠ 0 → ↑p ≠ 0', en: 'A number ≠ 0 is a mass ≠ 0.', de: 'Eine Zahl ≠ 0 ist eine Masse ≠ 0.' },
     { name: 'mass_finite', kind: 'rule', sig: '↑p ≠ ⊤', en: 'A number in [0, 1] is a finite mass.', de: 'Eine Zahl in [0, 1] ist eine endliche Masse.' },
-    { name: 'bind_false', kind: 'rule', sig: '(μ >>= f) false = μ true * f true false + μ false * f false false', en: 'The mass of a bind at false: through true and through false.', de: 'Die Masse eines bind bei false: über true und über false.' },
+    { name: 'bind_false', kind: 'rule', sig: '(do let x ← μ; f x) false = μ true * f true false + μ false * f false false', en: 'The mass of a bind at false: through true and through false.', de: 'Die Masse eines bind bei false: über true und über false.' },
     { name: 'prob_unused', kind: 'rule', sig: '(do let _ ← μ; ν) = ν', en: 'A draw whose outcome is not used changes nothing.', de: 'Ein Ziehen, dessen Ergebnis nicht benutzt wird, ändert nichts.' },
     { name: 'linear_combination', kind: 'tactic', insert: 'linear_combination h', sig: 'linear_combination h', en: 'Proves the goal from the equation h by computing (with ring): goal and h differ only by computing.', de: 'Beweist das Ziel aus der Gleichung h durch Rechnen (mit ring): Ziel und h unterscheiden sich nur durch Rechnen.' },
     { name: 'mass_eq_ofReal', kind: 'lemma', sig: '↑p = ENNReal.ofReal p', en: 'Proved by you in Real Numbers: a mass is a real number.', de: 'Von dir bewiesen in „Reelle Zahlen“: Eine Masse ist eine reelle Zahl.' },
@@ -3053,6 +3053,13 @@
       this.key = level.key + ':proof'
       this.lines = []
       try { this.lines = JSON.parse(localStorage.getItem(this.key) ?? '[]') } catch {}
+      // Gaps: a part of the statement marked ⟦…⟧ is open; the player fills it first and then proves the
+      // statement as filled. A wrong filling is no stop: its proof just never comes to an end.
+      this.template = this.statement
+      this.gapCount = (this.template.match(/⟦[^⟧]*⟧/g) ?? []).length
+      this.fill = []
+      try { this.fill = JSON.parse(localStorage.getItem(this.key + ':gaps') ?? '[]').slice(0, this.gapCount) } catch {}
+      this.statement = this.filledStatement()
       this.goals = null; this.error = ''; this.busy = false; this.session = null; this.picked = null
       this.box = el('section', 'pg-proof')
       this.box.hidden = true
@@ -3071,7 +3078,22 @@
     }
 
     get proved() { try { return localStorage.getItem(this.key + 'd') === '1' } catch { return false } }
-    get canUndo() { return !this.busy && this.lines.length > 0 }
+    get canUndo() { return !this.busy && (this.lines.length > 0 || this.fill.length > 0) }
+    get gapsOpen() { return this.fill.length < this.gapCount }
+    // the statement with the gaps as filled (▢ where not yet)
+    filledStatement() {
+      let i = 0
+      return this.template.replace(/⟦[^⟧]*⟧/g, () => { const f = this.fill[i++]; return f === undefined ? '▢' : /\s/.test(f) ? `(${f})` : f })
+    }
+    saveFill() { try { localStorage.setItem(this.key + ':gaps', JSON.stringify(this.fill)) } catch {} }
+    // the gaps (from the k-th on) open again; the proof starts anew
+    reopen(k = 0) {
+      if (this.busy) return
+      this.fill = this.fill.slice(0, k); this.saveFill()
+      this.lines = []; try { localStorage.setItem(this.key, '[]') } catch {}
+      this.session = null; this.goals = null; this.states = null; this.view = null; this.error = ''; this.failed = null; this.done = false
+      this.statement = this.filledStatement(); this.render(); this.input?.focus({ preventScroll: true })
+    }
     // the statement, when the board makes it (a circuit): a new one starts the proof anew
     setStatement(st) {
       if (st === this.statement) return
@@ -3080,6 +3102,7 @@
     }
     status() {
       if (!BACKEND) return ''
+      if (this.gapsOpen) return tr('Fill the gap ▢ in the statement first.')
       if (this.done) return 'goals accomplished 🎉'
       if (this.busy) return tr('Lean is thinking …')
       if (this.error) return tr('Lean did not take the line: see why above the input.')
@@ -3109,7 +3132,7 @@
       return r.json()
     }
     async begin() {
-      if (!BACKEND) { this.render(); return }
+      if (!BACKEND || this.gapsOpen) { this.render(); return }
       this.busy = true; this.render()
       try {
         const r = await this.post('/start', { context: this.context, statement: `example ${this.statement}` })
@@ -3177,6 +3200,17 @@
     }
 
     async run() {
+      // (a gap open: the input fills it; with the last one Lean starts on the statement as filled)
+      if (this.gapsOpen) {
+        const v = this.input.value.trim()
+        if (!v || this.busy) return
+        this.fill.push(v); this.saveFill(); this.typed = ''; this.choice = null
+        this.statement = this.filledStatement()
+        if (this.gapsOpen) { this.render(); this.input?.focus({ preventScroll: true }); return }
+        this.lines = []; this.session = null; this.goals = null; this.states = null; this.error = ''
+        await this.begin(); this.input?.focus({ preventScroll: true })
+        return
+      }
       let line = unabbrev(this.input.value, true).trim()
       // (rw [a, b — the bracket closed)
       const open = (line.match(/\[/g) ?? []).length - (line.match(/\]/g) ?? []).length
@@ -3192,6 +3226,7 @@
       this.busy = false; this.render(); this.input?.focus({ preventScroll: true }); this.reveal()
     }
     async back() {
+      if (!this.lines.length && this.fill.length) return this.reopen(this.fill.length - 1)
       if (this.busy || !this.lines.length) return
       this.busy = true; this.render()
       await this.check(this.lines.slice(0, -1)); this.done = false
@@ -3232,6 +3267,8 @@
       return out
     }
     async restart() {
+      // (with gaps: they open again, the statement is the player's)
+      if (this.gapCount) return this.reopen(0)
       if (this.busy || !this.lines.length) return
       this.busy = true; this.error = ''; this.typed = ''; this.render()
       try { await this.check([]) } catch (e) { this.error = tr('Lean cannot be reached: {e}', { e: String(e) }) }
@@ -3340,6 +3377,15 @@
     keys() {
       const box = el('div', 'pg-keys')
       const key = (label, title, f, cls = '') => { const b = el('button', 'pg-key' + cls, label); b.type = 'button'; b.title = title; b.setAttribute('aria-label', title); b.disabled = this.busy; b.addEventListener('click', f); box.append(b); return b }
+      // (a gap open: the names of the statement, and signs to put a term together)
+      const binders = () => [...this.template.matchAll(/\(([^():]+?)\s*:\s*([^()]*)\)/g)].filter(m => !/^Type\b/.test(m[2].trim())).flatMap(m => m[1].trim().split(/\s+/))
+      if (this.gapsOpen) {
+        for (const n of [...new Set(binders()), '*', 'σ', '(', ')']) key(n, n, () => this.putTerm(n), ' pg-key-name')
+        key('⌫', tr('Delete the last word'), () => this.erase(), ' pg-key-op')
+        key('✕', tr('Clear the input'), () => { this.input.value = this.typed = ''; this.render() }, ' pg-key-op')
+        if (TOUCH()) key('⌨', tr(KEYBOARD ? 'No keyboard' : 'Keyboard'), () => { KEYBOARD = !KEYBOARD; this.render(); if (KEYBOARD) this.input?.focus() }, ' pg-key-op' + (KEYBOARD ? ' pg-on' : ''))
+        return box
+      }
       const names = [...new Set(this.vars().map(v => v.name).filter(n => !/^inst/.test(n) && !/†/.test(n)))]
       // (true and false only where the goal is about Bool: a coin, a map on Bool, …)
       const bool = /\b(Bool|true|false|coin)\b/.test(String(this.goals?.[0] ?? this.statement ?? ''))
@@ -3360,8 +3406,22 @@
       if (HOVER && this.box.contains(HOVER.chip)) hoverHide()
       if (this.box.hidden) return
       const head = el('h3', 'pg-proof-head', tr('Proof'))
-      const stmt = el('pre', 'pg-proof-statement', `${this.lemma ? `theorem ${this.lemma}` : 'example'} ${this.statement}`)
+      const stmt = el('pre', 'pg-proof-statement', `${this.lemma ? `theorem ${this.lemma}` : 'example'} `)
+      // (the gaps: filled ones marked, the one to fill now ringed; a tap on a filled one opens it again)
+      let gi = 0
+      for (const part of this.template.split(/(⟦[^⟧]*⟧)/)) {
+        if (!part.startsWith('⟦')) { stmt.append(part); continue }
+        const k = gi++, f = this.fill[k]
+        const g = el('span', 'pg-gap' + (f !== undefined ? ' pg-gap-filled' : k === this.fill.length ? ' pg-gap-now' : ''), f === undefined ? '▢' : /\s/.test(f) ? `(${f})` : f)
+        if (f !== undefined) { g.title = tr('Fill the gaps anew'); g.addEventListener('click', () => this.reopen(k)) }
+        stmt.append(g)
+      }
       const parts = STAGE ? [head, stmt] : [head, ...this.texts, stmt]
+      if (this.gapCount && !this.gapsOpen) {
+        const again = el('button', 'pg-tool pg-gap-again', '✎ ' + tr('Fill the gaps anew')); again.type = 'button'; again.disabled = this.busy
+        again.addEventListener('click', () => this.reopen(0))
+        parts.push(again)
+      } else if (this.gapsOpen) parts.push(el('div', 'pg-info pg-gap-info', tr('What belongs in the gap ▢? Put it together below and take it with Run. Then you prove the statement as you filled it: if it is wrong, the proof will not come to an end.')))
       // (the board's solution is not repeated here: the Board tab at the top shows it)
       const sol = null
       if (!BACKEND) {
@@ -3452,7 +3512,7 @@
       // the input
       const row = el('div', 'pg-proof-input')
       this.input = el('input'); this.input.type = 'text'; this.input.spellcheck = false; this.input.autocapitalize = 'off'; this.input.autocomplete = 'off'; this.input.enterKeyHint = 'go'; this.input.setAttribute('autocorrect', 'off')
-      this.input.placeholder = this.world0 ? tr('a tactic, e.g. rw [pure_bind]') : this.worldB ? tr('a tactic, e.g. rfl') : tr('a tactic, e.g. rw [coin_true]')
+      this.input.placeholder = this.gapsOpen ? tr('what goes into ▢, e.g. p') : this.world0 ? tr('a tactic, e.g. rw [pure_bind]') : this.worldB ? tr('a tactic, e.g. rfl') : tr('a tactic, e.g. rw [coin_true]')
       this.input.value = this.typed ?? ''
       // (on a phone: no keyboard, unless asked for with ⌨)
       if (TOUCH() && !KEYBOARD) { this.input.readOnly = true; this.input.inputMode = 'none' }
@@ -3488,7 +3548,8 @@
       inv.append(ihead)
       const sigOf = item => (this.world0 && item.sig0) || item.sig || ''
       // (a theorem: its whole statement in Lean, as Lean prints it; a tactic: how it is written)
-      const fullOf = item => (!this.world0 && LEAN_SIGS[item.name]) || sigOf(item)
+      // (but in do form: where Lean prints a monad law with >>=, as the core of Lean states it, the game's own do form)
+      const fullOf = item => (!this.world0 && LEAN_SIGS[item.name] && !LEAN_SIGS[item.name].includes('>>=') && LEAN_SIGS[item.name]) || sigOf(item)
       const textOf = item => this.world0 && item.en0 ? (LANG === 'de' ? item.de0 : item.en0) : this.worldB && item.enb ? (LANG === 'de' ? item.deb : item.enb) : (LANG === 'de' ? item.de : item.en)
       for (const [kind, title] of [['tactic', tr('Tactics')], ['rule', tr('Theorems')]]) {
         const group = el('div', 'pg-inv-group')
@@ -3608,6 +3669,9 @@
     'backwards (in rw)': 'rückwärts (in rw)', 'a space: what comes next is an argument': 'ein Leerzeichen: was danach kommt, ist ein Argument', 'Delete the last word': 'Das letzte Wort löschen', 'Clear the input': 'Die Eingabe leeren',
     'Keyboard': 'Tastatur', 'No keyboard': 'Keine Tastatur',
     'Zoom in': 'Vergrößern', 'Zoom out': 'Verkleinern', 'Whole board': 'Ganzes Spielfeld',
+    'Fill the gap ▢ in the statement first.': 'Erst die Lücke ▢ in der Aussage füllen.', 'Fill the gaps anew': 'Lücken neu füllen',
+    'What belongs in the gap ▢? Put it together below and take it with Run. Then you prove the statement as you filled it: if it is wrong, the proof will not come to an end.': 'Was gehört in die Lücke ▢? Setz es unten zusammen und übernimm es mit Ausführen. Dann beweist du die Aussage so, wie du sie gefüllt hast: Ist sie falsch, kommt der Beweis nie ans Ende.',
+    'what goes into ▢, e.g. p': 'was in ▢ kommt, z. B. p',
     'New in this level': 'Neu in diesem Level', 'New in this proof': 'Neu in diesem Beweis', 'Solve the board first.': 'Erst das Spielfeld lösen.',
   })
   // What the moves and building blocks do, for the tips (by kind of board: level, bool, build, src, walk).

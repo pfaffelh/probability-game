@@ -129,12 +129,12 @@ theorem map_true (f : Bool → Bool) (μ : DiscreteMeasure Bool) :
 /-- The definition of a bind, as the game writes it for a finite first step: the mass of `μ >>= f` at
 `b` is the sum over the first steps `a` of the mass `μ a` times the mass of `f a` at `b`. -/
 theorem bind_apply {α β : Type} [Fintype α] (μ : DiscreteMeasure α) (f : α → DiscreteMeasure β) (b : β) :
-    (μ >>= f) b = ∑ a, μ a * f a b := by
+    (do let a ← μ; f a) b = ∑ a, μ a * f a b := by
   rw [← MeasureTheory.DiscreteMeasure.bind_eq_bind, MeasureTheory.DiscreteMeasure.bind_apply, tsum_fintype]
 
 /-- The mass of a bind at `true`: through `true` and through `false` (Building with coins). -/
 theorem bind_true (μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) :
-    (μ >>= f) true = μ true * f true true + μ false * f false true := by
+    (do let x ← μ; f x) true = μ true * f true true + μ false * f false true := by
   rw [← MeasureTheory.DiscreteMeasure.bind_eq_bind, MeasureTheory.DiscreteMeasure.bind_apply, tsum_fintype, Fintype.sum_bool]
 
 /-- A coin whose result is not used changes nothing. -/
@@ -225,7 +225,7 @@ theorem mass_mul (p q : I) : ((p * q : I) : ENNReal) = (p : ENNReal) * (q : ENNR
 
 /-- The mass of a draw that starts with a coin, at any point: through `true` and through `false`. -/
 theorem coin_bind_apply {β : Type} (p : I) (f : Bool → DiscreteMeasure β) (x : β) :
-    (coin p >>= f) x = ↑p * f true x + ↑(σ p) * f false x := by
+    (do let b ← coin p; f b) x = ↑p * f true x + ↑(σ p) * f false x := by
   rw [← MeasureTheory.DiscreteMeasure.bind_eq_bind, MeasureTheory.DiscreteMeasure.bind_apply,
     tsum_fintype, Fintype.sum_bool, coin_true, coin_false]
 
@@ -481,7 +481,7 @@ theorem hyper_all (w b : ℕ) : hyper w b (w + b) = pure w := by
 
 /-- The mass of a bind at `false`: through `true` and through `false`. -/
 theorem bind_false (μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) :
-    (μ >>= f) false = μ true * f true false + μ false * f false false := by
+    (do let x ← μ; f x) false = μ true * f true false + μ false * f false false := by
   rw [← MeasureTheory.DiscreteMeasure.bind_eq_bind, MeasureTheory.DiscreteMeasure.bind_apply,
     tsum_fintype, Fintype.sum_bool]
 

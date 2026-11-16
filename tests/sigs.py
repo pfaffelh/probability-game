@@ -28,7 +28,12 @@ for l in out.splitlines():
     except ValueError: continue
     i = m['pos']['line'] - first - 2
     if m['severity'] == 'information' and 0 <= i < len(names):
-        t = re.sub(r'\s+', ' ', m['data']).strip()
+        # (one line: the lines of a do block with `;` between them, as the inventory writes them)
+        ls = m['data'].split('\n')
+        t = ls[0]
+        for prev, l in zip(ls, ls[1:]):
+            t += ('; ' if re.match(r'^(.*\bdo\s+)?let\s[^←]*←', prev.strip()) else ' ') + l.strip()
+        t = re.sub(r'\s+', ' ', t).strip()
         t = re.sub(r'^ProbGame\.', '', re.sub(r'^(\S+?)\.\{[^}]*\}', r'\1', t))
         t = t.replace(': ↑I)', ': I)')  # (as the goals show it)
         sigs[names[i]] = 'theorem ' + names[i] + ' ' + t.split(' ', 1)[1]  # (named as the player writes it)

@@ -18,7 +18,7 @@ htmlSplit := .never
 `binom p n` ist die Anzahl der `true` in $`n` Würfen einer Münze `p`, durch Rekursion über $`n` definiert (in *Zählen*). Hier ihre Massen: durch Induktion, das Pascalsche Dreieck mit Massen, bis zur Binomialformel.
 :::
 
-::::leanonly (proof := "{β : Type} (p : I) (f : Bool → DiscreteMeasure β) (x : β) : (coin p >>= f) x = ↑p * f true x + ↑(σ p) * f false x") (lemma := "coin_bind_apply") (group := "chance.count") (uses := "bind_apply, Fintype.sum_bool, coin_true, coin_false, coin_total")
+::::leanonly (proof := "{β : Type} (p : I) (f : Bool → DiscreteMeasure β) (x : β) : (do let b ← coin p; f b) x = ↑p * f true x + ↑(σ p) * f false x") (lemma := "coin_bind_apply") (group := "chance.count") (uses := "bind_apply, Fintype.sum_bool, coin_true, coin_false, coin_total")
 :::en
 *A coin first.* A draw that starts with a coin `p`: the mass at any point `x` comes through `true`
 (mass $`p`) and through `false` (mass $`1 - p`). That is `bind_true` again, now at any point.
@@ -31,14 +31,14 @@ Punkt.
 :::
 
 :::proofen
-As for `bind_true`: `bind_apply : (μ >>= f) b = ∑ a, μ a * f a b` and the two summands of a sum over
+As for `bind_true`: `bind_apply : (do let a ← μ; f a) b = ∑ a, μ a * f a b` and the two summands of a sum over
 `Bool`, then the masses of the coin. What you prove is unlocked as `coin_bind_apply`.
 
 *Tip.* `rw [bind_apply, Fintype.sum_bool, coin_true, coin_false]`.
 :::
 
 :::proofde
-Wie bei `bind_true`: `bind_apply : (μ >>= f) b = ∑ a, μ a * f a b` und die zwei Summanden einer
+Wie bei `bind_true`: `bind_apply : (do let a ← μ; f a) b = ∑ a, μ a * f a b` und die zwei Summanden einer
 Summe über `Bool`, dann die Massen der Münze. Was du beweist, wird als `coin_bind_apply`
 freigeschaltet.
 
@@ -61,13 +61,13 @@ rw [bind_apply, Fintype.sum_bool, coin_true, coin_false]
 :::
 
 :::proofen
-`coin_bind_apply : (coin p >>= f) x = ↑p * f true x + ↑(σ p) * f false x`, from the last level.
+`coin_bind_apply : (do let b ← coin p; f b) x = ↑p * f true x + ↑(σ p) * f false x`, from the last level.
 
 *Tip.* `rw [coin_bind_apply, Bool.cond_true, Bool.cond_false]`.
 :::
 
 :::proofde
-`coin_bind_apply : (coin p >>= f) x = ↑p * f true x + ↑(σ p) * f false x`, aus dem letzten Level.
+`coin_bind_apply : (do let b ← coin p; f b) x = ↑p * f true x + ↑(σ p) * f false x`, aus dem letzten Level.
 
 *Tipp.* `rw [coin_bind_apply, Bool.cond_true, Bool.cond_false]`.
 :::

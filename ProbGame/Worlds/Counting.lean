@@ -213,13 +213,13 @@ rw [pure_bind, Bool.cond_true]
 :::
 
 :::proofen
-`bind_assoc : (μ >>= f) >>= g = μ >>= fun x => f x >>= g`.
+`bind_assoc : (do let y ← (do let x ← μ; f x); g y) = (do let x ← μ; let y ← f x; g y)`.
 
 *Tip.* `rw [bind_assoc]`.
 :::
 
 :::proofde
-`bind_assoc : (μ >>= f) >>= g = μ >>= fun x => f x >>= g`.
+`bind_assoc : (do let y ← (do let x ← μ; f x); g y) = (do let x ← μ; let y ← f x; g y)`.
 
 *Tipp.* `rw [bind_assoc]`.
 :::

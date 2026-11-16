@@ -55,45 +55,45 @@ und `fun x => …` ist diese Funktion. Die Beweise lernen die Regeln der `do`-Bl
 *Monadengesetze*, eine nach der anderen, wenn ein Level sie braucht.
 :::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (μ >>= f) true = μ true * f true true + μ false * f false true") (new := "bind_apply") (lemma := "bind_true") (uses := "bind_apply, Fintype.sum_bool")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (do let x ← μ; f x) true = μ true * f true true + μ false * f false true") (new := "bind_apply") (lemma := "bind_true") (uses := "bind_apply, Fintype.sum_bool")
 :::en
-*Two ways to true.* `do let x ← μ; …` draws from `μ`, calls the result `x`, and goes on with the
-rest. Lean writes it as `μ >>= fun x => …` (read `>>=` as *bind*: draw, then go on), in short
-`μ >>= f`, where `f` says how to go on after each first draw. Its mass at `true` comes two ways: the
+*Two ways to true.* `do let x ← μ; f x` draws from `μ`, calls the result `x`, and goes on with
+`f x`: `f` says how to go on after each first draw. (Behind `do`, Lean writes `μ >>= f`, read *bind*:
+draw, then go on; the rules here are written with `do`.) Its mass at `true` comes two ways: the
 first draw is `true`, or it is `false`.
 :::
 
 :::de
-*Zwei Wege zu true.* `do let x ← μ; …` zieht aus `μ`, nennt das Ergebnis `x` und macht mit dem Rest
-weiter. Lean schreibt das als `μ >>= fun x => …` (lies `>>=` als *bind*: ziehen, dann weiter), kurz
-`μ >>= f`, wobei `f` sagt, wie es nach jedem ersten Zug weitergeht. Seine Masse bei `true` kommt auf
-zwei Wegen: Der erste Zug ist `true`, oder er ist `false`.
+*Zwei Wege zu true.* `do let x ← μ; f x` zieht aus `μ`, nennt das Ergebnis `x` und macht mit `f x`
+weiter: `f` sagt, wie es nach jedem ersten Zug weitergeht. (Hinter `do` schreibt Lean `μ >>= f`, lies
+*bind*: ziehen, dann weiter; die Regeln hier sind mit `do` geschrieben.) Seine Masse bei `true` kommt
+auf zwei Wegen: Der erste Zug ist `true`, oder er ist `false`.
 :::
 
 :::proofen
-The definition of `>>=` sums over the first draw `a`: its mass, times the mass of what follows,
+The definition of a draw sums over the first draw `a`: its mass, times the mass of what follows,
 
 ```
-(μ >>= f) b = ∑' a, μ a * (f a) b
+(do let a ← μ; f a) b = ∑' a, μ a * (f a) b
 ```
 
 On a finite type, `∑'` is the finite sum `∑`, and that is the new rule
-`bind_apply : (μ >>= f) b = ∑ a, μ a * f a b`. On `Bool` it has two summands
+`bind_apply : (do let a ← μ; f a) b = ∑ a, μ a * f a b`. On `Bool` it has two summands
 (`Fintype.sum_bool`). What you prove is unlocked as `bind_true`.
 
 *Tip.* `rw [bind_apply, Fintype.sum_bool]`.
 :::
 
 :::proofde
-Die Definition von `>>=` summiert über den ersten Zug `a`: seine Masse, mal die Masse dessen, was
+Die Definition eines Zugs summiert über den ersten Zug `a`: seine Masse, mal die Masse dessen, was
 folgt,
 
 ```
-(μ >>= f) b = ∑' a, μ a * (f a) b
+(do let a ← μ; f a) b = ∑' a, μ a * (f a) b
 ```
 
 Auf einem endlichen Typ ist `∑'` die endliche Summe `∑`, und das ist die neue Regel
-`bind_apply : (μ >>= f) b = ∑ a, μ a * f a b`. Auf `Bool` hat sie zwei Summanden
+`bind_apply : (do let a ← μ; f a) b = ∑ a, μ a * f a b`. Auf `Bool` hat sie zwei Summanden
 (`Fintype.sum_bool`). Was du beweist, wird als `bind_true` freigeschaltet.
 
 *Tipp.* `rw [bind_apply, Fintype.sum_bool]`.
@@ -186,7 +186,7 @@ norm_num [mass_mul]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (f : Bool → DiscreteMeasure Bool) : (not <$> coin p) >>= f = coin p >>= (fun x => f (!x))") (new := "bind_map_left") (uses := "bind_map_left, map_bind")
+::::leanonly (proof := "(p : I) (f : Bool → DiscreteMeasure Bool) : (do let x ← not <$> coin p; f x) = (do let x ← coin p; f (!x))") (new := "bind_map_left") (uses := "bind_map_left, map_bind")
 :::en
 *A move before a draw.* Drawing from a moved coin is drawing from the coin and moving the result.
 :::
@@ -196,13 +196,13 @@ norm_num [mass_mul]
 :::
 
 :::proofen
-`μ >>= f` is the `do` block `do let x ← μ; f x`. `bind_map_left : (f <$> μ) >>= g = μ >>= fun x => g (f x)`.
+`bind_map_left : (do let x ← f <$> μ; g x) = (do let x ← μ; g (f x))`.
 
 *Tip.* `rw [bind_map_left]`.
 :::
 
 :::proofde
-`μ >>= f` ist der `do`-Block `do let x ← μ; f x`. `bind_map_left : (f <$> μ) >>= g = μ >>= fun x => g (f x)`.
+`bind_map_left : (do let x ← f <$> μ; g x) = (do let x ← μ; g (f x))`.
 
 *Tipp.* `rw [bind_map_left]`.
 :::
@@ -256,7 +256,7 @@ simp only [bind_map_left]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (f : Bool → DiscreteMeasure Bool) : not <$> (coin p >>= f) = coin p >>= (fun x => not <$> f x)") (new := "map_bind") (uses := "map_bind, bind_map_left")
+::::leanonly (proof := "(p : I) (f : Bool → DiscreteMeasure Bool) : not <$> (do let x ← coin p; f x) = (do let x ← coin p; not <$> f x)") (new := "map_bind") (uses := "map_bind, bind_map_left")
 :::en
 *A move after a draw.* A move at the end can go into the `do` block.
 :::
@@ -266,13 +266,13 @@ simp only [bind_map_left]
 :::
 
 :::proofen
-`map_bind : f <$> (μ >>= g) = μ >>= fun x => f <$> g x`.
+`map_bind : f <$> (do let x ← μ; g x) = (do let x ← μ; f <$> g x)`.
 
 *Tip.* `rw [map_bind]`.
 :::
 
 :::proofde
-`map_bind : f <$> (μ >>= g) = μ >>= fun x => f <$> g x`.
+`map_bind : f <$> (do let x ← μ; g x) = (do let x ← μ; f <$> g x)`.
 
 *Tipp.* `rw [map_bind]`.
 :::
