@@ -342,7 +342,7 @@ simp only [pure_bind, Bool.not_not, bind_pure]
 :::
 ::::
 
-::::leanonly (proof := "(p q r : I) : (do let x ← coin p; bif x then coin q else coin r) true = (↑p * ↑q + ↑(σ p) * ↑r : ENNReal)") (uses := "bind_true, Bool.cond_true, Bool.cond_false, coin_true, coin_false, bind_false, coin_total")
+::::leanonly (proof := "(p q r : I) : (do let x ← coin p; bif x then coin q else coin r) true = (↑p * ↑q + ↑(σ p) * ↑r : ENNReal)") (uses := "bind_true, bind_false")
 :::en
 *One step forward.* A chain starts with `coin p`. From `true` the next step is `coin q`, from `false` it is `coin r`. The start distribution is carried one step forward: at `true` arrives $`p q + (1 - p) r`.
 :::
@@ -352,25 +352,25 @@ simp only [pure_bind, Bool.not_not, bind_pure]
 :::
 
 :::proofen
-`bind_true`, the two branches, and the masses of the coins.
+`bind_true` splits by the first coin; `norm_num` computes the two branches and the masses of the coins.
 
-*Tip.* `rw [bind_true, Bool.cond_true, Bool.cond_false]`, `rw [coin_true, coin_true, coin_true, coin_false]`.
+*Tip.* `rw [bind_true]`, `norm_num`.
 :::
 
 :::proofde
-`bind_true`, die zwei Zweige, und die Massen der Münzen.
+`bind_true` teilt nach der ersten Münze; `norm_num` rechnet die zwei Zweige und die Massen der Münzen aus.
 
-*Tipp.* `rw [bind_true, Bool.cond_true, Bool.cond_false]`, `rw [coin_true, coin_true, coin_true, coin_false]`.
+*Tipp.* `rw [bind_true]`, `norm_num`.
 :::
 :::solution
 ```
-rw [bind_true, Bool.cond_true, Bool.cond_false]
-rw [coin_true, coin_true, coin_true, coin_false]
+rw [bind_true]
+norm_num
 ```
 :::
 ::::
 
-::::leanonly (proof := "(p q r : I) : (do let x ← coin p; bif x then coin q else coin r) false = (↑p * ↑(σ q) + ↑(σ p) * ↑(σ r) : ENNReal)") (new := "bind_false") (uses := "bind_false, Bool.cond_true, Bool.cond_false, coin_true, coin_false, bind_true, coin_total")
+::::leanonly (proof := "(p q r : I) : (do let x ← coin p; bif x then coin q else coin r) false = (↑p * ↑(σ q) + ↑(σ p) * ↑(σ r) : ENNReal)") (new := "bind_false") (uses := "bind_false, bind_true")
 :::en
 *...and at false.* The rest of the distribution after the step: at `false` arrives $`p (1 - q) + (1 - p)(1 - r)`. Now the whole distribution after one step is known.
 :::
@@ -382,23 +382,27 @@ rw [coin_true, coin_true, coin_true, coin_false]
 :::proofen
 `bind_false : (μ >>= f) false = μ true * f true false + μ false * f false false`.
 
-*Tip.* `rw [bind_false, Bool.cond_true, Bool.cond_false]`, `rw [coin_true, coin_false, coin_false, coin_false]`.
+Then `norm_num`, as before.
+
+*Tip.* `rw [bind_false]`, `norm_num`.
 :::
 
 :::proofde
 `bind_false : (μ >>= f) false = μ true * f true false + μ false * f false false`.
 
-*Tipp.* `rw [bind_false, Bool.cond_true, Bool.cond_false]`, `rw [coin_true, coin_false, coin_false, coin_false]`.
+Dann `norm_num`, wie vorher.
+
+*Tipp.* `rw [bind_false]`, `norm_num`.
 :::
 :::solution
 ```
-rw [bind_false, Bool.cond_true, Bool.cond_false]
-rw [coin_true, coin_false, coin_false, coin_false]
+rw [bind_false]
+norm_num
 ```
 :::
 ::::
 
-::::leanonly (proof := "(p q r : I) (h : ↑p * ↑q + ↑(σ p) * ↑r = (↑p : ENNReal)) : (do let x ← coin p; bif x then coin q else coin r) = coin p") (uses := "bool_ext, bind_true, Bool.cond_true, Bool.cond_false, coin_true, coin_false, bind_false, coin_total")
+::::leanonly (proof := "(p q r : I) (h : ↑p * ↑q + ↑(σ p) * ↑r = (↑p : ENNReal)) : (do let x ← coin p; bif x then coin q else coin r) = coin p") (uses := "bool_ext, bind_true, bind_false")
 :::en
 *A distribution that stays.* When does the step carry `coin p` to itself? When the mass at `true` after the step is $`p` again: $`p = p q + (1 - p) r`. Then `coin p` is *stationary*: the chain started there stays there, step after step.
 :::
@@ -410,19 +414,19 @@ rw [coin_true, coin_false, coin_false, coin_false]
 :::proofen
 Two distributions on `Bool` with the same mass at `true` are the same: `apply bool_ext`. Then the computation of *One step forward*, and the hypothesis `h`.
 
-*Tip.* `apply bool_ext`, `rw [bind_true, Bool.cond_true, Bool.cond_false]`, `rw [coin_true, coin_true, coin_true, coin_false]`, `exact h`.
+*Tip.* `apply bool_ext`, `rw [bind_true]`, `norm_num`, `exact h`.
 :::
 
 :::proofde
 Zwei Verteilungen auf `Bool` mit derselben Masse bei `true` sind gleich: `apply bool_ext`. Dann die Rechnung aus *Ein Schritt nach vorn*, und die Annahme `h`.
 
-*Tipp.* `apply bool_ext`, `rw [bind_true, Bool.cond_true, Bool.cond_false]`, `rw [coin_true, coin_true, coin_true, coin_false]`, `exact h`.
+*Tipp.* `apply bool_ext`, `rw [bind_true]`, `norm_num`, `exact h`.
 :::
 :::solution
 ```
 apply bool_ext
-rw [bind_true, Bool.cond_true, Bool.cond_false]
-rw [coin_true, coin_true, coin_true, coin_false]
+rw [bind_true]
+norm_num
 exact h
 ```
 :::

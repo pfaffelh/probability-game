@@ -2961,9 +2961,9 @@
     { name: 'Bool.and_not_self', kind: 'lemma', sig: '(x && !x) = false', en: 'Proved by you in Building with Coins: x and not x is never true.', de: 'Von dir bewiesen in „Bauen mit Münzen“: x und nicht x ist nie true.' },
     { name: 'Bool.or_not_self', kind: 'lemma', sig: '(x || !x) = true', en: 'Proved by you in Building with Coins: x or not x is always true.', de: 'Von dir bewiesen in „Bauen mit Münzen“: x oder nicht x ist immer true.' },
     { name: 'binom_add', kind: 'lemma', sig: '(do let X ← binom p n; let Y ← binom p m; pure (X + Y)) = binom p (n + m)', en: 'Proved by you in Building with Coins.', de: 'Von dir bewiesen in „Bauen mit Münzen“.' },
-    { name: 'coin_bind_binom', kind: 'lemma', sig: '(do let C ← coin p; binom q C.toNat) = (do let B ← coin (p * q); pure B.toNat)', en: 'Proved by you in Binomial: a coin p, then as many coins q as it shows.', de: 'Von dir bewiesen in „Binomial“: eine Münze p, dann so viele Münzen q, wie sie zeigt.' },
-    { name: "coin_bind_binom'", kind: 'lemma', sig: '(do let C ← coin p; let U ← binom q C.toNat; f U) = (do let B ← coin (p * q); f B.toNat)', en: 'Proved by you in Binomial: the same, with something after it.', de: 'Von dir bewiesen in „Binomial“: dasselbe, mit etwas danach.' },
-    { name: 'binom_thin', kind: 'lemma', sig: '(do let X ← binom p n; binom q X) = binom (p * q) n', en: 'Proved by you in Binomial: thinning a binomial.', de: 'Von dir bewiesen in „Binomial“: eine Binomialverteilung ausdünnen.' },
+    { name: 'coin_bind_binom', kind: 'lemma', sig: '(do let C ← coin p; binom q C.toNat) = (do let B ← coin (p * q); pure B.toNat)', en: 'Proved by you in Thinning: a coin p, then as many coins q as it shows.', de: 'Von dir bewiesen in „Ausdünnen“: eine Münze p, dann so viele Münzen q, wie sie zeigt.' },
+    { name: "coin_bind_binom'", kind: 'lemma', sig: '(do let C ← coin p; let U ← binom q C.toNat; f U) = (do let B ← coin (p * q); f B.toNat)', en: 'Proved by you in Thinning: the same, with something after it.', de: 'Von dir bewiesen in „Ausdünnen“: dasselbe, mit etwas danach.' },
+    { name: 'binom_thin', kind: 'lemma', sig: '(do let X ← binom p n; binom q X) = binom (p * q) n', en: 'Proved by you in Thinning: thinning a binomial.', de: 'Von dir bewiesen in „Ausdünnen“: eine Binomialverteilung ausdünnen.' },
     { name: 'binom_symm', kind: 'lemma', sig: 'binom (σ p) (k + m) m = binom p (k + m) k', en: 'Proved by you in Binomial: true and false swapped.', de: 'Von dir bewiesen in „Binomial“: true und false getauscht.' },
     { name: 'geom_formula', kind: 'lemma', sig: 'geom p k = ↑(σ p) ^ k * ↑p', en: 'Proved by you in Geometric: the masses of the geometric distribution.', de: 'Von dir bewiesen in „Geometrisch“: die Massen der geometrischen Verteilung.' },
     { name: 'geom_memoryless', kind: 'lemma', sig: 'geom p (k + m) = ↑(σ p) ^ k * geom p m', en: 'Proved by you in Geometric: without memory.', de: 'Von dir bewiesen in „Geometrisch“: ohne Gedächtnis.' },
@@ -4023,12 +4023,13 @@
     const a = tr.querySelector('a'); if (!a) return null
     return { a, num: tr.querySelector('.num')?.textContent.trim().replace(/\.$/, '') ?? '', path: new URL(a.href).pathname }
   }).filter(w => w && !/\/Lexicon\/$/.test(w.path))
-  const levelsKey = path => `pg:levels:${path}`
+  // (the version: when levels move between worlds, the cached shapes are read anew)
+  const levelsKey = path => `pg:levels2:${path}`
   // the worlds on a side way: which world they come after (not the one above them on the map)
   // The map as a graph, as in verso-nng: each world with the worlds it needs (else the one before it),
   // a branch in a column of its own, the names to the right of the tree.
-  const PREDS = { 'Coins-that-Wait': ['Building-with-Coins'], 'Real-Numbers': ['Coins-that-Wait'], 'Thinning': ['Coins-that-Wait'], 'Sequences': ['Counting'], 'Binomial': ['Sequences', 'Thinning'], 'Geometric': ['Binomial'], 'Hypergeometric': ['Binomial'] }
-  const COLUMN = { 'Coins-that-Wait': 1, 'Real-Numbers': 2, 'Thinning': 1, 'Hypergeometric': 1 }
+  const PREDS = { 'Coins-that-Wait': ['Building-with-Coins'], 'Real-Numbers': ['Coins-that-Wait'], 'Sequences': ['Counting'], 'Binomial': ['Sequences'], 'Geometric': ['Binomial'], 'Thinning': ['Geometric'], 'Hypergeometric': ['Binomial'] }
+  const COLUMN = { 'Coins-that-Wait': 1, 'Real-Numbers': 2, 'Hypergeometric': 1 }
   const fetched = new Set()
   function worldMap() {
     const toc = document.querySelector('#toc'), worlds = worldLinks()

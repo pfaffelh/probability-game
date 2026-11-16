@@ -181,7 +181,7 @@ linear_combination h
 :::
 ::::
 
-::::leanonly (proof := "(p q r : I) (h : (1 - (p : ℝ)) * r = p * (1 - q)) : (do let x ← coin p; bif x then coin q else coin r) = coin p") (lemma := "coin_stays") (uses := "bool_ext, bind_true, Bool.cond_true, Bool.cond_false, coin_true, coin_false, mass_mul_real, ENNReal.ofReal_add, real_mul_nonneg, symm_real, mass_eq_ofReal, bind_false, coin_total")
+::::leanonly (proof := "(p q r : I) (h : (1 - (p : ℝ)) * r = p * (1 - q)) : (do let x ← coin p; bif x then coin q else coin r) = coin p") (lemma := "coin_stays") (uses := "bool_ext, bind_true, mass_mul_real, ENNReal.ofReal_add, real_mul_nonneg, symm_real, mass_eq_ofReal, bind_false")
 :::en
 *Boss: a balance that stays.* The chain of *Coins that Wait*: from `true` to `coin q`, from `false` to `coin r`. `coin p` stays when what flows from `false` to `true`, $`(1 - p) r`, is what flows back, $`p (1 - q)`: a balance.
 :::
@@ -193,19 +193,19 @@ linear_combination h
 :::proofen
 As in *A distribution that stays* down to the masses; then everything into `ℝ`: the products, the sum (with its conditions), $`1 - p`, and `↑p` itself (`mass_eq_ofReal`). Now both sides are `ENNReal.ofReal` of something: `congr 1` leaves the real equation, and `linear_combination h`.
 
-*Tip.* `apply bool_ext`, `rw [bind_true, Bool.cond_true, Bool.cond_false]`, `rw [coin_true, coin_true, coin_true, coin_false]`, `rw [mass_mul_real, mass_mul_real, ← ENNReal.ofReal_add (real_mul_nonneg p q) (real_mul_nonneg (σ p) r), symm_real, mass_eq_ofReal]`, `congr 1`, `linear_combination h`.
+*Tip.* `apply bool_ext`, `rw [bind_true]`, `norm_num`, `rw [mass_mul_real, mass_mul_real, ← ENNReal.ofReal_add (real_mul_nonneg p q) (real_mul_nonneg (σ p) r), symm_real, mass_eq_ofReal]`, `congr 1`, `linear_combination h`.
 :::
 
 :::proofde
 Wie in *Eine Verteilung, die bleibt* bis zu den Massen; dann alles nach `ℝ`: die Produkte, die Summe (mit ihren Bedingungen), $`1 - p`, und `↑p` selbst (`mass_eq_ofReal`). Jetzt sind beide Seiten `ENNReal.ofReal` von etwas: `congr 1` lässt die reelle Gleichung, und `linear_combination h`.
 
-*Tipp.* `apply bool_ext`, `rw [bind_true, Bool.cond_true, Bool.cond_false]`, `rw [coin_true, coin_true, coin_true, coin_false]`, `rw [mass_mul_real, mass_mul_real, ← ENNReal.ofReal_add (real_mul_nonneg p q) (real_mul_nonneg (σ p) r), symm_real, mass_eq_ofReal]`, `congr 1`, `linear_combination h`.
+*Tipp.* `apply bool_ext`, `rw [bind_true]`, `norm_num`, `rw [mass_mul_real, mass_mul_real, ← ENNReal.ofReal_add (real_mul_nonneg p q) (real_mul_nonneg (σ p) r), symm_real, mass_eq_ofReal]`, `congr 1`, `linear_combination h`.
 :::
 :::solution
 ```
 apply bool_ext
-rw [bind_true, Bool.cond_true, Bool.cond_false]
-rw [coin_true, coin_true, coin_true, coin_false]
+rw [bind_true]
+norm_num
 rw [mass_mul_real, mass_mul_real, ← ENNReal.ofReal_add (real_mul_nonneg p q) (real_mul_nonneg (σ p) r), symm_real, mass_eq_ofReal]
 congr 1
 linear_combination h
