@@ -3334,12 +3334,14 @@
       this.render()
     }
     // The keys of a phone, under the input: the names of the goal (its variables and hypotheses),
-    // true, false, ←, and ⌫, clear, ⌨ (the keyboard after all).
+    // true and false (where the goal is about Bool), ←, and ⌫, clear, ⌨ (the keyboard after all).
     keys() {
       const box = el('div', 'pg-keys')
       const key = (label, title, f, cls = '') => { const b = el('button', 'pg-key' + cls, label); b.type = 'button'; b.title = title; b.setAttribute('aria-label', title); b.disabled = this.busy; b.addEventListener('click', f); box.append(b); return b }
       const names = [...new Set(this.vars().map(v => v.name).filter(n => !/^inst/.test(n) && !/†/.test(n)))]
-      for (const n of [...names, 'true', 'false']) key(n, n, () => this.putTerm(n), ' pg-key-name')
+      // (true and false only where the goal is about Bool: a coin, a map on Bool, …)
+      const bool = /\b(Bool|true|false|coin)\b/.test(String(this.goals?.[0] ?? this.statement ?? ''))
+      for (const n of [...names, ...(bool ? ['true', 'false'] : [])]) key(n, n, () => this.putTerm(n), ' pg-key-name')
       key('←', tr('backwards (in rw)'), () => this.putTerm('←'), ' pg-key-name')
       key('␣', tr('a space: what comes next is an argument'), () => this.putTerm(' '), ' pg-key-name')
       key('⌫', tr('Delete the last word'), () => this.erase(), ' pg-key-op')
