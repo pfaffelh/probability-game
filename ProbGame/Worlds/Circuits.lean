@@ -246,9 +246,29 @@ rfl
 :::
 :::::
 
-::::circuit (height := "500") (inputs := "x") (gates := "not, or, and") (table := "11") (goal := "true") (proof := "(x : Bool) : (x || ⟦!x ‖ x, !x, false⟧) = true") (play := "a=not; b=or; x>a.0; x>b.0; a>b.1; b>out") (uses := "-")
+:::::circuit (height := "500") (inputs := "x") (gates := "not, or, and") (table := "11") (goal := "true") (proof := "(x : Bool) : (x || ⟦!x ‖ x, !x, true, false⟧) = true") (play := "a=not; b=or; x>a.0; x>b.0; a>b.1; b>out") (uses := "-")
 :::hint (anchor := "none")
 :::
+
+::::hint (anchor := "gap")
+:::en
+First the statement: fill the gap ▢ so that `x || ▢` is `true` for every `x`.
+:::
+
+:::de
+Zuerst die Aussage: Füll die Lücke ▢ so, dass `x || ▢` für jedes `x` gleich `true` ist.
+:::
+::::
+
+::::hint (anchor := "keys")
+:::en
+These are the candidates for the gap. Tap one; a tap on the filled gap opens it again.
+:::
+
+:::de
+Das sind die Kandidaten für die Lücke. Tippe einen an; ein Tipp auf die gefüllte Lücke öffnet sie wieder.
+:::
+::::
 
 :::en
 *Always true, without always true.* An output can feed several inputs: wire `x` twice.
@@ -263,7 +283,7 @@ First the statement: your circuit is `x || ▢`, and it is to be `true` for ever
 the gap? Then the proof: `||` is defined by cases of its left side, `false || b` reduces to `b`, and
 `true || b` to `true`. So `cases x`, then `rfl` in each case.
 
-*Tip.* `!x`; then `cases x`, `rfl`, `rfl`.
+*Tip.* `!x` (or `true`); then `cases x`, `rfl`, `rfl`.
 :::
 
 :::proofde
@@ -271,7 +291,7 @@ Zuerst die Aussage: Deine Schaltung ist `x || ▢`, und sie soll für jedes `x` 
 in die Lücke? Dann der Beweis: `||` ist durch Fälle seiner linken Seite definiert, `false || b`
 reduziert zu `b`, und `true || b` zu `true`. Also `cases x`, dann `rfl` in jedem Fall.
 
-*Tipp.* `!x`; dann `cases x`, `rfl`, `rfl`.
+*Tipp.* `!x` (oder `true`); dann `cases x`, `rfl`, `rfl`.
 :::
 :::solution
 ```
@@ -280,18 +300,19 @@ rfl
 rfl
 ```
 :::
-::::
+:::::
 
-::::leanonly (proof := "(a b : Bool) : (bif true then a else b) = a") (lemma := "Bool.cond_true") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "-")
+::::leanonly (proof := "(a b : Bool) : (bif true then a else b) = ⟦a ‖ a, b, true, false⟧") (lemma := "Bool.cond_true") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "-")
 :::en
-*bif with true.* `bif c then a else b` is `a` when `c` is `true`, and `b` when it is `false`: an
-if-then-else for a `Bool`. The boss needs it, and later the coins: where the mass of a move goes.
+*bif with true.* `bif` is Lean's *Boolean if*: `bif c then a else b` is if-then-else with a
+condition `c : Bool`. What is it when the condition is `true`? The boss needs it, and later the
+coins: where the mass of a move goes.
 :::
 
 :::de
-*bif mit true.* `bif c then a else b` ist `a`, wenn `c` gleich `true` ist, und `b`, wenn es `false`
-ist: ein Wenn-dann-sonst für ein `Bool`. Der Endgegner braucht es, und später die Münzen: wohin die
-Masse eines Zuges geht.
+*bif mit true.* `bif` ist Leans *Boolean if*: `bif c then a else b` ist Wenn-dann-sonst mit einer
+Bedingung `c : Bool`. Was ist es, wenn die Bedingung `true` ist? Der Endgegner braucht es, und später
+die Münzen: wohin die Masse eines Zuges geht.
 :::
 
 :::proofen
@@ -336,6 +357,9 @@ rfl
 ::::
 
 ::::circuit (inputs := "x y") (gates := "and, or, not") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : ((x || y) && !(x && y)) = (bif x then (bif y then ⟦false ‖ true, false⟧ else ⟦true ‖ true, false⟧) else (bif y then ⟦true ‖ true, false⟧ else ⟦false ‖ true, false⟧))") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out") (new := "<;>") (uses := "-")
+:::hint (anchor := "none")
+:::
+
 :::en
 *The boss: exactly one.* Two inputs now, and four rows: one for each pair of values. `true` when exactly one
 input is `true`: at least one, but not both. In Lean this is `xor`, written `x ^^ y`.
