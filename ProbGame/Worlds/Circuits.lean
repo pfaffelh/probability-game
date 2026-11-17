@@ -207,6 +207,49 @@ rfl
 :::
 ::::
 
+:::::leanonly (proof := ": (!(!true)) = true") (context := "Lean/WorldBool.lean") (group := "bool") (new := "rw") (uses := "Bool.not_true, Bool.not_false")
+::::hint (anchor := "item:rw")
+:::en
+`rw [h]` rewrites the goal with a theorem `h : a = b`: every `a` becomes `b`. Use your theorems `Bool.not_true` and `Bool.not_false`.
+:::
+
+:::de
+`rw [h]` schreibt das Ziel mit einem Satz `h : a = b` um: Jedes `a` wird zu `b`. Benutze deine Sätze `Bool.not_true` und `Bool.not_false`.
+:::
+::::
+
+:::en
+*Back again.* Twice `not` on `true`, with the two theorems you proved.
+:::
+
+:::de
+*Wieder zurück.* Zweimal `not` auf `true`, mit den zwei Sätzen, die du bewiesen hast.
+:::
+
+:::proofen
+`rfl` would compute this as well. Here with your theorems, one step at a time. `rw [Bool.not_true]`
+*rewrites* the goal with `Bool.not_true : (!true) = false`: it replaces the left side of the theorem by
+its right side. Then `Bool.not_false : (!false) = true`. When both sides of the goal are the same,
+`rw` closes it.
+
+*Tip.* `rw [Bool.not_true, Bool.not_false]`.
+:::
+
+:::proofde
+`rfl` würde auch das ausrechnen. Hier mit deinen Sätzen, Schritt für Schritt. `rw [Bool.not_true]`
+*schreibt* das Ziel mit `Bool.not_true : (!true) = false` *um*: Es ersetzt die linke Seite des Satzes
+durch seine rechte. Dann `Bool.not_false : (!false) = true`. Sind beide Seiten des Ziels gleich,
+schließt `rw` es.
+
+*Tipp.* `rw [Bool.not_true, Bool.not_false]`.
+:::
+:::solution
+```
+rw [Bool.not_true, Bool.not_false]
+```
+:::
+:::::
+
 :::::circuit (height := "500") (inputs := "x") (gates := "not") (table := "01") (goal := "x") (shape := "!(!x)") (start := "a=not; x>a.0") (proof := "(x : Bool) : (!(!x)) = x") (lemma := "Bool.not_not") (new := "cases") (play := "b=not; a>b.0; b>out") (uses := "-")
 :::hint (anchor := "none")
 :::
@@ -318,14 +361,12 @@ rfl
 ::::leanonly (proof := "(a b : Bool) : (bif true then a else b) = ⟦a ‖ a, b, true, false⟧") (lemma := "Bool.cond_true") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "-")
 :::en
 *bif with true.* `bif` is Lean's *Boolean if*: `bif c then a else b` is if-then-else with a
-condition `c : Bool`. What is it when the condition is `true`? The boss needs it, and later the
-coins: where the mass of a move goes.
+condition `c : Bool`.
 :::
 
 :::de
 *bif mit true.* `bif` ist Leans *Boolean if*: `bif c then a else b` ist Wenn-dann-sonst mit einer
-Bedingung `c : Bool`. Was ist es, wenn die Bedingung `true` ist? Der Endgegner braucht es, und später
-die Münzen: wohin die Masse eines Zuges geht.
+Bedingung `c : Bool`.
 :::
 
 :::proofen
@@ -346,7 +387,10 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(a b : Bool) : (bif false then a else b) = b") (lemma := "Bool.cond_false") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "-")
+::::leanonly (proof := "(a b : Bool) : (bif false then a else b) = ⟦b ‖ a, b, true, false⟧") (lemma := "Bool.cond_false") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "-")
+:::hint (anchor := "none")
+:::
+
 :::en
 *bif with false.* The other case: the second.
 :::
