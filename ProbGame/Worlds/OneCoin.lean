@@ -40,6 +40,9 @@ Spielfeld die Säulen für ein Beispiel-$`p` (der Schieberegler ändert es).
 :::
 
 ::::circuit (height := "440") (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : (not <$> coin p) true = σ p") (play := "a=not; x>a.0; a>out") (uses := "map_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, coin_false, add_zero, mul_zero, coin_true, coin_total")
+:::hint (anchor := "none")
+:::
+
 :::en
 *Where does the mass go?* The coin `x` is thrown at the top; below, the output with the target:
 `false` with mass $`p`, `true` with $`1 - p`. Put a `not` between them. Then look at `true`: its mass
