@@ -64,11 +64,22 @@ theorem pure_true (b : Bool) : (pure b : DiscreteMeasure Bool) true = bif b then
   · exact MeasureTheory.DiscreteMeasure.pure_apply_nonself (by decide)
   · exact MeasureTheory.DiscreteMeasure.pure_apply_self
 
+/-- What `Prob μ` says: the masses of `μ`, summed over all points, give one. -/
+theorem Prob.total {α : Type} (μ : DiscreteMeasure α) [h : Prob μ] : ∑' a, μ a = 1 :=
+  h.hasSum.tsum_eq
+
 /-- The total mass of a distribution on `Bool` is one. -/
 theorem mass_total (μ : DiscreteMeasure Bool) [hμ : Prob μ] : μ true + μ false = 1 := by
   have a := hμ.hasSum.tsum_eq
   rw [tsum_fintype, Fintype.sum_bool] at a
   simpa only [MeasureTheory.DiscreteMeasure.weight_eq] using a
+
+/-- A mass of a distribution on `Bool` is at most one. -/
+theorem mass_le_one (μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b ≤ 1 := by
+  rw [← mass_total μ]
+  cases b
+  · exact le_add_self
+  · exact le_self_add
 
 /-- A mass of a distribution is finite (at most one). -/
 theorem mass_ne_top {μ : DiscreteMeasure Bool} [Prob μ] {b : Bool} : μ b ≠ ⊤ := by
