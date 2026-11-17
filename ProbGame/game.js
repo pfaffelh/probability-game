@@ -2812,8 +2812,8 @@
       en: 'For a goal that is the conclusion of the rule h: leaves what h needs (its hypotheses) as the new goals.',
       de: 'Für ein Ziel, das die Folgerung der Regel h ist: lässt das, was h braucht (ihre Annahmen), als neue Ziele.' },
     { name: 'rfl', kind: 'tactic', insert: 'rfl', sig: 'rfl',
-      en: 'Closes a goal a = b whose two sides become the same after reducing: Lean unfolds definitions and computes a definition by cases once it knows the value (!true reduces to false, true && b to b, if true then a else b to a, 1 + 1 to 2). With an unknown x, !x does not reduce: (!(!x)) = x is not rfl; after cases x it is.',
-      de: 'Schließt ein Ziel a = b, dessen beide Seiten nach dem Reduzieren gleich sind: Lean setzt Definitionen ein und rechnet eine Definition durch Fälle aus, sobald es den Wert kennt (!true reduziert zu false, true && b zu b, if true then a else b zu a, 1 + 1 zu 2). Mit einem unbekannten x reduziert !x nicht: (!(!x)) = x ist nicht rfl; nach cases x schon.' },
+      en: 'Closes a goal a = b whose two sides become the same after reducing: Lean unfolds definitions before comparing both sides.',
+      de: 'Schließt ein Ziel a = b, dessen beide Seiten nach dem Reduzieren gleich werden: Lean löst Definitionen auf, bevor es beide Seiten vergleicht.' },
     { name: 'congr', kind: 'tactic', insert: 'congr 1', sig: 'congr 1',
       en: 'For a goal f a = f b, or (do let x ← μ; g x) = (do let x ← μ; h x): reduces it to the parts that differ (a = b, g = h).',
       de: 'Für ein Ziel f a = f b, oder (do let x ← μ; g x) = (do let x ← μ; h x): führt es auf die Teile zurück, die sich unterscheiden (a = b, g = h).' },
@@ -3950,8 +3950,10 @@
     const HINT_AT = { output: '.pg-coutput', input: '.pg-cinput' }
     const hintText = h => clone([...h.children])
     const worldHint = () => world.querySelector(':scope > .pg-hint[data-at="world"]')
-    const levelHints = k => [...roots[k].querySelectorAll(':scope > .pg-text > .pg-hint:not([data-at^="item:"]):not([data-at="none"])')].map(h => ({
-      nodes: hintText(h), anchor: () => visible(roots[k].querySelector(HINT_AT[h.dataset.at] ?? h.dataset.at)) }))
+    // (`move:not`: at the move or building block not, in place of its card)
+    const boardHints = k => [...roots[k].querySelectorAll(':scope > .pg-text > .pg-hint:not([data-at^="item:"]):not([data-at="none"])')]
+    const levelHints = k => boardHints(k).map(h => ({
+      nodes: hintText(h), anchor: h.dataset.at.startsWith('move:') ? atMove(k, h.dataset.at) : () => visible(roots[k].querySelector(HINT_AT[h.dataset.at] ?? h.dataset.at)) }))
     // the moves new in a level: not offered by a level before it on this page
     const newMoves = k => {
       const before = new Set(levels.slice(0, k).flatMap(l => movesOf(l).map(m => m[0])))
@@ -3972,7 +3974,8 @@
     // (the tip that comes by itself: no text of the level when it has bubbles at the board; the
     // button Tips: everything)
     const boardTip = (k, withWorld, auto = false) => {
-      const at = [...levelHints(k), ...newMoves(k).map(m => ({ head: tr('New in this level'), nodes: [moveCard(m)], anchor: atMove(k, m[0]) }))]
+      const hinted = new Set(boardHints(k).map(h => h.dataset.at).filter(a => a.startsWith('move:')).map(a => a.slice(5)))
+      const at = [...levelHints(k), ...newMoves(k).filter(m => !hinted.has(m[0].slice(m[0].indexOf(':') + 1))).map(m => ({ head: tr('New in this level'), nodes: [moveCard(m)], anchor: atMove(k, m[0]) }))]
       const first = auto && k === 0 && worldHint() ? [{ nodes: hintText(worldHint()) }]
         : auto && at.length ? []
         : [{ nodes: [...levelText(k), ...(withWorld && worldText().length ? [el('div', 'pg-tip-sub', tr('This world')), ...worldText()] : [])] }]

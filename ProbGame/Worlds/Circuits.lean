@@ -109,6 +109,16 @@ onto the board, then wire `x` to it and it to the output.
 `nicht` aufs Spielfeld, dann verdrahte `x` mit ihm und ihn mit dem Ausgang.
 :::
 
+::::hint (anchor := "move:not")
+:::en
+Click on a game piece or drag it in order to use it!
+:::
+
+:::de
+Tippe einen Spielstein an oder zieh ihn aufs Spielfeld, um ihn zu benutzen!
+:::
+::::
+
 ::::hint (anchor := "item:rfl")
 :::en
 *Equal* means here: *equal after reduction*. `rfl` may first compute with the definitions, and
