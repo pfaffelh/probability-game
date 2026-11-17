@@ -420,31 +420,6 @@ def lexicon : DirectiveExpanderOf Unit
     let blocks ← contents.mapM elabBlock
     ``(Verso.Doc.Block.other Block.lexicon #[$blocks,*])
 
--- A picture of the front page (`:::picture (kind := "coin")`, with no content), which `game.js`
--- draws: `coin`, `move`, `binom`, `geom`, `lean`.
-block_extension Block.picture (kind : String) where
-  data := Json.str kind
-  traverse _ _ _ := pure none
-  extraJs := {JS.mk gameJs}
-  extraCss := {CSS.mk gameCss}
-  toHtml := some fun _ goB _ data content => do
-    let kind := data.getStr?.toOption.getD ""
-    pure <| .tag "figure" #[("class", "pg-picture"), ("data-kind", kind)] (← content.mapM goB)
-  toTeX := none
-
-structure PictureConfig where
-  kind : String
-
-instance : FromArgs PictureConfig DocElabM where
-  fromArgs := PictureConfig.mk <$> .named `kind .string false
-
-/-- A picture, drawn by `game.js`. -/
-@[directive]
-def picture : DirectiveExpanderOf PictureConfig
-  | cfg, contents => do
-    let blocks ← contents.mapM elabBlock
-    ``(Verso.Doc.Block.other (Block.picture $(quote cfg.kind)) #[$blocks,*])
-
 -- A hint, shown as a bubble of the tips at a part of the board: `:::hint (anchor := "output")` in a
 -- level (with `:::en` and `:::de` inside); `(anchor := "world")` in the text of a world: what the
 -- first tip of the world says, in place of the whole text of the world.
