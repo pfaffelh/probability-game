@@ -98,19 +98,34 @@ rfl
 :::
 :::::
 
-::::circuit (height := "400") (inputs := "true") (gates := "not") (table := "0") (goal := "false") (shape := "!true") (proof := ": (!true) = false") (lemma := "Bool.not_true") (play := "a=not; true>a.0; a>out") (uses := "-")
+:::::circuit (height := "400") (inputs := "x") (gates := "not") (table := "10") (goal := "!x") (shape := "!x") (proof := ": (!true) = false") (lemma := "Bool.not_true") (play := "a=not; x>a.0; a>out") (uses := "-")
 :::en
-*Not true.* The input is `true` itself, the target `false`. Drag `not` onto the board, then wire
-`true` to it and it to the output.
+*Not.* The output is to be the other value: `false` for `true`, and `true` for `false`. Drag `not`
+onto the board, then wire `x` to it and it to the output.
 :::
 
 :::de
-*Nicht true.* Der Eingang ist `true` selbst, das Ziel `false`. Zieh `nicht` aufs Spielfeld, dann
-verdrahte `true` mit ihm und ihn mit dem Ausgang.
+*Nicht.* Der Ausgang soll der andere Wert sein: `false` für `true`, und `true` für `false`. Zieh
+`nicht` aufs Spielfeld, dann verdrahte `x` mit ihm und ihn mit dem Ausgang.
 :::
 
+::::hint (anchor := "item:rfl")
+:::en
+*Equal* means here: *equal after reduction*. `rfl` may first compute with the definitions, and
+that can also be unfolding one: `!true` unfolds by the definition of `not`,
+`fun | true => false | false => true`, to `false`. Then both sides are the same.
+:::
+
+:::de
+*Gleich* heißt hier: *gleich nach Reduktion*. `rfl` darf zuerst mit den Definitionen rechnen, und
+das kann auch das Auflösen einer Definition sein: `!true` wird mit der Definition von `not`,
+`fun | true => false | false => true`, zu `false` aufgelöst. Danach sind beide Seiten gleich.
+:::
+::::
+
 :::proofen
-Now the two sides are not the same as they stand: `!true` on the left, `false` on the right. But
+In Lean, one column at a time: here the column `x = true`, the statement `(!true) = false` (the
+column `x = false` is the next level). Now the two sides are not the same as they stand: `!true` on the left, `false` on the right. But
 `rfl` also *reduces*: it computes with the definitions. `not` is defined by its two cases,
 
 `fun | true => false | false => true`
@@ -122,7 +137,8 @@ Now the two sides are not the same as they stand: `!true` on the left, `false` o
 :::
 
 :::proofde
-Jetzt sind die beiden Seiten nicht so, wie sie dastehen, gleich: links `!true`, rechts `false`. Aber
+In Lean eine Spalte nach der anderen: hier die Spalte `x = true`, die Aussage `(!true) = false` (die
+Spalte `x = false` ist das nächste Level). Jetzt sind die beiden Seiten nicht so, wie sie dastehen, gleich: links `!true`, rechts `false`. Aber
 `rfl` *reduziert* auch: Es rechnet mit den Definitionen. `not` ist durch seine zwei Fälle definiert,
 
 `fun | true => false | false => true`
@@ -138,16 +154,19 @@ gleich.
 rfl
 ```
 :::
-::::
+:::::
 
 ::::leanonly (proof := ": (!false) = true") (lemma := "Bool.not_false") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "-")
+:::hint (anchor := "none")
+:::
+
 :::en
-*Not false.* The other half of `not`, in Lean only: the level before proved `(!true) = false`, the
-rule `Bool.not_true`.
+*Not false.* The other column of `not`, in Lean only: the level before proved `(!true) = false`,
+the rule `Bool.not_true`.
 :::
 
 :::de
-*Nicht false.* Die andere Hälfte von `not`, nur in Lean: Das Level davor hat `(!true) = false`
+*Nicht false.* Die andere Spalte von `not`, nur in Lean: Das Level davor hat `(!true) = false`
 bewiesen, die Regel `Bool.not_true`.
 :::
 
