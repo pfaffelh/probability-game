@@ -246,7 +246,10 @@ rfl
 :::
 :::::
 
-::::circuit (height := "500") (inputs := "x") (gates := "not, or") (table := "11") (goal := "true") (proof := "(x : Bool) : (x || ⟦!x ‖ x, !x, false⟧) = true") (play := "a=not; b=or; x>a.0; x>b.0; a>b.1; b>out") (uses := "-")
+::::circuit (height := "500") (inputs := "x") (gates := "not, or, and") (table := "11") (goal := "true") (proof := "(x : Bool) : (x || ⟦!x ‖ x, !x, false⟧) = true") (play := "a=not; b=or; x>a.0; x>b.0; a>b.1; b>out") (uses := "-")
+:::hint (anchor := "none")
+:::
+
 :::en
 *Always true, without always true.* An output can feed several inputs: wire `x` twice.
 :::

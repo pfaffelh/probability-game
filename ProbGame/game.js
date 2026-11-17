@@ -1614,7 +1614,7 @@
     'Tap a gate below, or drag it onto the board.': 'Tippe unten einen Baustein an, oder zieh ihn aufs Spielfeld.', 'Drag a gate onto the board, or tap it.': 'Zieh einen Baustein aufs Spielfeld, oder tippe ihn an.',
     'Wire {g}: tap a coin above (or a gate), then {g}. Wires run from a dot ● down to a circle ○.': 'Verdrahte {g}: tippe eine Münze oben (oder einen Baustein) an, dann {g}. Drähte laufen von einem Punkt ● nach unten zu einem Kreis ○.',
     'Wire the Output: tap the last gate, then Output.': 'Verdrahte den Ausgang: tippe den letzten Baustein an, dann den Ausgang.', 'Drag gates onto the board, or tap them.': 'Zieh Bausteine aufs Spielfeld, oder tippe sie an.',
-    'Task: build a circuit whose output is the target, in every row.': 'Aufgabe: Bau eine Schaltung, deren Ausgang in jeder Zeile das Ziel ist.',
+
     'Task: build a circuit whose output has the distribution of the target.': 'Aufgabe: Bau eine Schaltung, deren Ausgang die Verteilung des Ziels hat.',
     'Tap a row to see its coins on the board.': 'Tippe eine Zeile an, um ihre Münzen auf dem Spielfeld zu sehen.', 'Drag the coin into a field, T or F.': 'Zieh die Münze in ein Feld, T oder F.', 'Fill {y}: drag a coin into the field T and one into F (or tap a field).': 'Füll {y}: zieh eine Münze ins Feld T und eine ins Feld F (oder tippe ein Feld an).',
     'P(row)': 'P(Zeile)', 'thrown': 'geworfen', '{n} throws': '{n} Würfe', 'a coin: true with probability': 'eine Münze: true mit Wahrscheinlichkeit', 'The mass of each output: the sum of P over its rows.': 'Die Masse jedes Ausgangs: die Summe von P über seine Zeilen.',
@@ -2535,10 +2535,11 @@
       this.info = el('div', 'pg-info', '')
       const ln = el('div', 'pg-lean-state')
       ln.append(el('span', 'pg-lean-label', tr('Lean:') + ' '), el('code', '', this.leanState()))
+      // (with coins: what the target is, a distribution; without: the hint at the game piece says it)
       const task = el('div', 'pg-task')
-      task.append(el('b', '', tr(this.random ? 'Task: build a circuit whose output has the distribution of the target.' : 'Task: build a circuit whose output is the target, in every row.')))
+      if (this.random) task.append(el('b', '', tr('Task: build a circuit whose output has the distribution of the target.')))
       this.picture = rowEl
-      const parts = [task, rowEl, this.info, ...(SHOW ? [] : [ln]), el('div', 'pg-moves-head', tr('Gates')), moves, tools]
+      const parts = [...(this.random ? [task] : []), rowEl, this.info, ...(SHOW ? [] : [ln]), el('div', 'pg-moves-head', tr('Gates')), moves, tools]
       // the proof is about the circuit built (without coins)
       if (done && !this.random && this.proof && !this.shape) this.proof.setStatement(this.statement())
       // (on the stage the status line, the green frame and Next say it: nothing new below the board, so
@@ -4001,10 +4002,11 @@
       try { if (localStorage.getItem(key)) return } catch {}
       f(() => { try { localStorage.setItem(key, '1') } catch {} })
     }
-    // (a level with `:::hint (anchor := "none")`: no tip comes by itself; the button Tips still shows them)
+    // (a level with `:::hint (anchor := "none")`: no tip comes by itself on the board (in a level in Lean
+    // only: none at all); the button Tips still shows them)
     const quiet = k => !!roots[k].querySelector(':scope > .pg-text > .pg-hint[data-at="none"]')
     const showBoardTip = k => quiet(k) || once(`${levels[k].key}:tip`, mark => tipBox(tr('Tip'), boardTip(k, k === 0, true), mark))
-    const showProofTip = k => quiet(k) || once(`${levels[k].key}:proof-tip`, mark => tipBox(tr('Tip'), proofTip(k, true), mark))
+    const showProofTip = k => (quiet(k) && levels[k] instanceof LeanOnly) || once(`${levels[k].key}:proof-tip`, mark => tipBox(tr('Tip'), proofTip(k, true), mark))
 
     // the tool bar
     const undo = barButton('pg-undo', '↶', tr('Undo')), restart = barButton('pg-restart', '⟲', tr('Start over'), tr('Restart'))
