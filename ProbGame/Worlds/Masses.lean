@@ -28,30 +28,15 @@ Wahrscheinlichkeit $`p` `true` zeigt und mit Wahrscheinlichkeit $`1 - p` `false`
 
 ::::circuit (height := "400") (inputs := "x") (gates := "") (coins := "p") (target := "bool true:p false:1-p") (context := "Lean/Rules.lean") (proof := "(p : I) : coin p true = p") (lemma := "coin_true") (play := "x>out") (uses := "-")
 :::en
-*The mass at true.* Now the coin. A coin shows `true` (heads) or `false` (tails); `coin p` is the coin
+*The mass at true.* A coin shows `true` (heads) or `false` (tails); `coin p` is the coin
 that shows `true` with probability $`p` and `false` with probability $`1 - p`. As a distribution on
-`Bool` it has two masses: $`p` at `true` and $`1 - p` at `false`, together $`1`.
-
-Here $`p` is a probability, a number between $`0` and $`1`: in Lean `p : I`, with $`I = [0, 1]` the
-unit interval. Its counterpart $`1 - p` is written `σ p` (also in $`I`). A mass is a number in
-$`[0, \infty]` (`ENNReal`); `↑p` is $`p` as a mass. With $`p = 1` the coin always shows `true`, with $`p = 0` always
-`false`; with $`p = 1/2` it is a fair coin.
-
-On the board: the coin `x` is thrown at the top. Wire it to the output, and the output has its two masses. In Lean: the mass of `coin p` at `true` is $`p`.
+`Bool` it has two masses: $`p` at `true` and $`1 - p` at `false`.
 :::
 
 :::de
-*Die Masse bei true.* Jetzt die Münze. Eine Münze zeigt `true` (Kopf) oder `false` (Zahl); `coin p`
+*Die Masse bei true.* Eine Münze zeigt `true` (Kopf) oder `false` (Zahl); `coin p`
 ist die Münze, die mit Wahrscheinlichkeit $`p` `true` zeigt und mit Wahrscheinlichkeit $`1 - p`
-`false`. Als Verteilung auf `Bool` hat sie zwei Massen: $`p` bei `true` und $`1 - p` bei `false`,
-zusammen $`1`.
-
-Dabei ist $`p` eine Wahrscheinlichkeit, eine Zahl zwischen $`0` und $`1`: in Lean `p : I`, mit
-$`I = [0, 1]` dem Einheitsintervall. Das Gegenstück $`1 - p` schreibt man `σ p` (auch in $`I`). Eine
-Masse ist eine Zahl in $`[0, \infty]` (`ENNReal`); `↑p` ist $`p` als Masse. Mit $`p = 1` zeigt die Münze immer
-`true`, mit $`p = 0` immer `false`; mit $`p = 1/2` ist sie fair.
-
-Auf dem Spielfeld: Oben wird die Münze `x` geworfen. Verdrahte sie mit dem Ausgang, und der Ausgang hat ihre zwei Massen. In Lean: Die Masse von `coin p` bei `true` ist $`p`.
+`false`. Als Verteilung auf `Bool` hat sie zwei Massen: $`p` bei `true` und $`1 - p` bei `false`.
 :::
 
 :::proofen

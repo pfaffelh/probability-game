@@ -3028,6 +3028,7 @@
       'Das Ziel minus die Kombination ist durch Rechnen nicht 0 (was übrig bleibt, steht unten). Vielleicht fehlt ein Faktor: linear_combination c * h, mit einer Zahl c.'],
     [/[Nn]o goals/, 'There is no goal left.', 'Es ist kein Ziel mehr übrig.'],
     [/Unknown (identifier|constant)/, 'Lean does not know this name.', 'Diesen Namen kennt Lean nicht.'],
+    [/^(Lean cannot be reached|Lean ist nicht erreichbar)/, 'Lean cannot be reached just now (perhaps it is restarting). Send the line again in a moment.', 'Lean ist gerade nicht erreichbar (vielleicht startet es neu). Schick die Zeile gleich noch einmal.'],
     [/unexpected token|expected/, 'Lean cannot read this line: a typo?', 'Lean kann diese Zeile nicht lesen: ein Tippfehler?'],
   ]
   const advice = m => { const a = ADVICE.find(([r]) => r.test(m)); return a ? (LANG === 'de' ? a[2] : a[1]) : '' }
@@ -3137,9 +3138,19 @@
     }
     focus() { this.box.scrollIntoView({ behavior: 'smooth', block: 'start' }); setTimeout(() => this.input?.focus({ preventScroll: true }), 400) }
 
+    // (Lean on the server restarts now and then, e.g. when the game is deployed: for some seconds the
+    // answer is no JSON, or none; then ask again, for about 20 seconds)
     async post(path, body) {
-      const r = await fetch(BACKEND.replace(/\/$/, '') + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
-      return r.json()
+      let last = ''
+      for (let k = 0; k < 10; k++) {
+        if (k) await new Promise(res => setTimeout(res, 2000))
+        try {
+          const r = await fetch(BACKEND.replace(/\/$/, '') + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+          if (r.status < 500) { const t = await r.text(); try { return JSON.parse(t) } catch { last = `HTTP ${r.status}` } }
+          else last = `HTTP ${r.status}`
+        } catch (e) { last = String(e) }
+      }
+      throw new Error(last)
     }
     async begin() {
       if (!BACKEND || this.gapsOpen) { this.render(); return }
@@ -4128,7 +4139,7 @@
       if (ev.key === 'ArrowLeft') { if (view() === 'proof' && !(levels[current] instanceof LeanOnly)) setView('board'); else show(current - 1) }
       if (ev.key === 'ArrowRight' && !next.disabled) goNext()
     })
-    try { localStorage.setItem(levelsKey(location.pathname), JSON.stringify(levels.map(l => !!l.proof))) } catch {}
+    try { localStorage.setItem(levelsKey(location.pathname), JSON.stringify(levels.map(l => l instanceof LeanOnly ? 2 : l.proof ? 1 : 0))) } catch {}
     const fromHash = Number(/^#level-(\d+)$/.exec(location.hash)?.[1] ?? 0) - 1
     show(fromHash >= 0 ? fromHash : Math.max(0, levels.findIndex(l => !done(l))))
     // The stage fills the screen below the header; measured again when the window changes, without
@@ -4158,7 +4169,7 @@
     return { a, num: tr.querySelector('.num')?.textContent.trim().replace(/\.$/, '') ?? '', path: new URL(a.href).pathname }
   }).filter(w => w && !/\/Lexicon\/$/.test(w.path))
   // (the version: when levels move between worlds, the cached shapes are read anew)
-  const levelsKey = path => `pg:levels2:${path}`
+  const levelsKey = path => `pg:levels3:${path}`
   // the worlds on a side way: which world they come after (not the one above them on the map)
   // The map as a graph, as in verso-nng: each world with the worlds it needs (else the one before it),
   // a branch in a column of its own, the names to the right of the tree.
@@ -4173,7 +4184,7 @@
       fetched.add(w.path)
       fetch(w.a.href.replace(/#.*$/, '')).then(r => r.text()).then(html => {
         const doc = new DOMParser().parseFromString(html, 'text/html')
-        const levels = [...doc.querySelectorAll('.pg-level')].filter(ours).map(r => !!r.dataset.proof)
+        const levels = [...doc.querySelectorAll('.pg-level')].filter(ours).map(r => r.classList.contains('pg-leanonly') ? 2 : r.dataset.proof ? 1 : 0)
         try { localStorage.setItem(levelsKey(w.path), JSON.stringify(levels)) } catch {}
         worldMap()
       }).catch(() => {})
@@ -4182,7 +4193,8 @@
     const count = w => {
       const levels = info(w)
       if (!levels) return null
-      return [levels.filter((proof, i) => ls(`pg:${w.path}:${i}`) === '1' && (SHOW || !proof || ls(`pg:${w.path}:${i}:proofd`) === '1')).length, levels.length]
+      // (a level in Lean only: solved when its proof is; 2 in the list, 1 a level with a proof, 0 one without)
+      return [levels.filter((kind, i) => (kind === 2 || ls(`pg:${w.path}:${i}`) === '1') && (SHOW || !kind || ls(`pg:${w.path}:${i}:proofd`) === '1')).length, levels.length]
     }
     const slug = w => /([^/]+)\/$/.exec(w.path)?.[1] ?? ''
     const r = 16, dx = 36, dy = 54, x0 = 22, y0 = 24
