@@ -39,53 +39,7 @@ zeigt Ziel und Ausgang, als Massen und als kleines Histogramm (das Ziel gestrich
 Spielfeld die Säulen für ein Beispiel-$`p` (der Schieberegler ändert es).
 :::
 
-::::circuit (height := "440") (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : (not <$> coin p) true = σ p") (play := "a=not; x>a.0; a>out") (uses := "map_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, coin_false, add_zero, mul_zero, coin_true, coin_total")
-:::hint (anchor := "none")
-:::
-
-:::en
-*Where does the mass go?* The coin `x` is thrown at the top; below, the output with the target:
-`false` with mass $`p`, `true` with $`1 - p`. Put a `not` between them. Then look at `true`: its mass
-came from `false`.
-:::
-
-:::de
-*Wohin geht die Masse?* Oben wird die Münze `x` geworfen; unten der Ausgang mit dem Ziel: `false`
-mit Masse $`p`, `true` mit $`1 - p`. Setz ein `nicht` dazwischen. Dann sieh dir `true` an: Seine
-Masse kam von `false`.
-:::
-
-:::proofen
-*Now the proof.* Everything it needs you know from *Circuits* and *Masses*: `coin p` and its masses, `f <$> μ`, and
-the rules. First the rule of the gates, `map_true`; then computing, one rule after another:
-`Bool.not_true`, `Bool.not_false`, `Bool.cond_false`, `Bool.cond_true`, `zero_add` and `coin_false`.
-Keep this computation in mind: the boss of this world needs it again.
-
-*Tip.* `rw [map_true]`, `rw [Bool.not_true, Bool.not_false]`,
-`rw [Bool.cond_false, Bool.cond_true, zero_add]`, `rw [coin_false]` (type it, or tap the inventory,
-and press *Run*).
-:::
-
-:::proofde
-*Jetzt der Beweis.* Alles, was er braucht, kennst du aus *Schaltungen* und *Massen*: `coin p` und seine Massen,
-`f <$> μ` und die Regeln. Zuerst die Regel der Bausteine, `map_true`; dann Rechnen, eine Regel nach der
-anderen: `Bool.not_true`, `Bool.not_false`, `Bool.cond_false`, `Bool.cond_true`, `zero_add` und
-`coin_false`. Merk dir diese Rechnung: Der Endgegner dieser Welt braucht sie noch einmal.
-
-*Tipp.* `rw [map_true]`, `rw [Bool.not_true, Bool.not_false]`,
-`rw [Bool.cond_false, Bool.cond_true, zero_add]`, `rw [coin_false]`.
-:::
-:::solution
-```
-rw [map_true]
-rw [Bool.not_true, Bool.not_false]
-rw [Bool.cond_false, Bool.cond_true, zero_add]
-rw [coin_false]
-```
-:::
-::::
-
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (h : μ true = 0) : μ false = 1") (new := "mass_total") (uses := "mass_total, zero_add, coin_total, add_zero, mul_zero")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (h : μ true = 0) : μ false = 1") (uses := "mass_total, zero_add, coin_total, add_zero, mul_zero")
 :::en
 *The whole mass.* A distribution has the total mass one. If nothing lies at `true`, everything lies at `false`.
 :::
@@ -95,46 +49,19 @@ rw [coin_false]
 :::
 
 :::proofen
-`μ : DiscreteMeasure Bool` is any distribution on `Bool`, and `[Prob μ]` says that its total mass is one: the rule `mass_total μ : μ true + μ false = 1`. `h : μ true = 0` is a hypothesis, a rule of this level only. `rw [← mass_total μ]` rewrites from right to left: the `1` becomes `μ true + μ false`. Then `h`, then `zero_add`.
+`μ : DiscreteMeasure Bool` is any distribution on `Bool`, and `[Prob μ]` says that its total mass is one: your theorem `mass_total μ : μ true + μ false = 1`. `h : μ true = 0` is a hypothesis, a rule of this level only. `rw [← mass_total μ]` rewrites from right to left: the `1` becomes `μ true + μ false`. Then `h`, then `zero_add`.
 
 *Tip.* `rw [← mass_total μ, h, zero_add]` (type `\l` for `←`, or tap ←).
 :::
 
 :::proofde
-`μ : DiscreteMeasure Bool` ist irgendeine Verteilung auf `Bool`, und `[Prob μ]` sagt, dass ihre Gesamtmasse eins ist: die Regel `mass_total μ : μ true + μ false = 1`. `h : μ true = 0` ist eine Annahme, eine Regel nur dieses Levels. `rw [← mass_total μ]` schreibt von rechts nach links um: Die `1` wird zu `μ true + μ false`. Dann `h`, dann `zero_add`.
+`μ : DiscreteMeasure Bool` ist irgendeine Verteilung auf `Bool`, und `[Prob μ]` sagt, dass ihre Gesamtmasse eins ist: dein Satz `mass_total μ : μ true + μ false = 1`. `h : μ true = 0` ist eine Annahme, eine Regel nur dieses Levels. `rw [← mass_total μ]` schreibt von rechts nach links um: Die `1` wird zu `μ true + μ false`. Dann `h`, dann `zero_add`.
 
 *Tipp.* `rw [← mass_total μ, h, zero_add]` (`\l` tippen für `←`, oder ← antippen).
 :::
 :::solution
 ```
 rw [← mass_total μ, h, zero_add]
-```
-:::
-::::
-
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ true ≠ ⊤") (new := "mass_ne_top, exact") (uses := "mass_ne_top")
-:::en
-*Finite.* Masses are numbers in $`[0, \infty]`; the mass of a distribution is finite, `≠ ⊤` (`⊤` is $`\infty`).
-:::
-
-:::de
-*Endlich.* Massen sind Zahlen in $`[0, \infty]`; die Masse einer Verteilung ist endlich, `≠ ⊤` (`⊤` ist $`\infty`).
-:::
-
-:::proofen
-The rule `mass_ne_top : μ b ≠ ⊤` is exactly the goal. `exact h` closes a goal that is exactly `h`.
-
-*Tip.* `exact mass_ne_top`.
-:::
-
-:::proofde
-Die Regel `mass_ne_top : μ b ≠ ⊤` ist genau das Ziel. `exact h` schließt ein Ziel, das genau `h` ist.
-
-*Tipp.* `exact mass_ne_top`.
-:::
-:::solution
-```
-exact mass_ne_top
 ```
 :::
 ::::

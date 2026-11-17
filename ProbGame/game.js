@@ -2845,8 +2845,15 @@
     { name: "induction'", kind: 'tactic', insert: "induction' n with n ih", sig: "induction' n with n ih",
       en: 'Induction on the natural number n: first the goal for 0, then the goal for n + 1, with the hypothesis ih for n.',
       de: 'Induktion nach der natürlichen Zahl n: zuerst das Ziel für 0, dann das Ziel für n + 1, mit der Annahme ih für n.' },
-    { name: 'mass_total', kind: 'rule', sig: 'mass_total μ : μ true + μ false = 1', en: 'A distribution on Bool has total mass one.', de: 'Eine Verteilung auf Bool hat die Gesamtmasse eins.' },
-    { name: 'mass_ne_top', kind: 'rule', sig: 'mass_ne_top : μ b ≠ ⊤', en: 'A mass of a distribution is finite (masses are numbers in [0, ∞], and ⊤ is ∞).', de: 'Eine Masse einer Verteilung ist endlich (Massen sind Zahlen in [0, ∞], und ⊤ ist ∞).' },
+    { name: 'Prob.total', kind: 'rule', sig: 'Prob.total μ : ∑\' a, μ a = 1', en: 'What [Prob μ] says: the masses of μ, summed over all points (∑\'), give one.', de: 'Was [Prob μ] sagt: Die Massen von μ, über alle Punkte summiert (∑\'), ergeben eins.' },
+    { name: 'tsum_fintype', kind: 'rule', sig: '∑\' a, f a = ∑ a, f a', en: 'Over a finite type (as Bool), the sum over all points is a finite sum.', de: 'Über einem endlichen Typ (wie Bool) ist die Summe über alle Punkte eine endliche Summe.' },
+    { name: 'mass_total', kind: 'lemma', sig: 'mass_total μ : μ true + μ false = 1', en: 'Proved by you in Masses: a distribution on Bool has total mass one.', de: 'Von dir bewiesen in „Massen“: Eine Verteilung auf Bool hat die Gesamtmasse eins.' },
+    { name: 'le_self_add', kind: 'rule', sig: 'le_self_add : a ≤ a + c', en: 'A sum of masses is at least its first summand.', de: 'Eine Summe von Massen ist mindestens ihr erster Summand.' },
+    { name: 'le_add_self', kind: 'rule', sig: 'le_add_self : a ≤ c + a', en: 'A sum of masses is at least its second summand.', de: 'Eine Summe von Massen ist mindestens ihr zweiter Summand.' },
+    { name: 'mass_le_one', kind: 'lemma', sig: 'mass_le_one μ b : μ b ≤ 1', en: 'Proved by you in Masses: a mass of a distribution is at most one.', de: 'Von dir bewiesen in „Massen“: Eine Masse einer Verteilung ist höchstens eins.' },
+    { name: 'ne_top_of_le_ne_top', kind: 'rule', sig: 'ne_top_of_le_ne_top : b ≠ ⊤ → a ≤ b → a ≠ ⊤', en: 'Below something finite is finite.', de: 'Unter etwas Endlichem ist endlich.' },
+    { name: 'ENNReal.one_ne_top', kind: 'rule', sig: 'ENNReal.one_ne_top : 1 ≠ ⊤', en: 'One is finite (⊤ is ∞).', de: 'Eins ist endlich (⊤ ist ∞).' },
+    { name: 'mass_ne_top', kind: 'lemma', sig: 'mass_ne_top : μ b ≠ ⊤', en: 'Proved by you in Masses: a mass of a distribution is finite (masses are numbers in [0, ∞], and ⊤ is ∞).', de: 'Von dir bewiesen in „Massen“: Eine Masse einer Verteilung ist endlich (Massen sind Zahlen in [0, ∞], und ⊤ ist ∞).' },
     { name: 'ENNReal.add_sub_cancel_left', kind: 'rule', sig: 'ENNReal.add_sub_cancel_left (h : a ≠ ⊤) : a + b - a = b', en: 'Adding a and taking it away again: for a finite a.', de: 'a dazu und wieder weg: für ein endliches a.' },
     { name: 'bind_apply', kind: 'rule', sig: '(do let a ← μ; f a) b = ∑ a, μ a * f a b', en: 'The definition of a bind: the mass at b is the sum over the first steps a of the mass of a times the mass of f a at b.', de: 'Die Definition eines bind: Die Masse bei b ist die Summe über die ersten Schritte a von der Masse von a mal der Masse von f a bei b.' },
     { name: 'bind_true', kind: 'lemma', sig: '(do let x ← μ; f x) true = μ true * f true true + μ false * f false true', en: 'Proved by you in Building with Coins: the mass of a bind at true, the way through true (mass μ true, then f true) and the way through false.', de: 'Von dir bewiesen in „Bauen mit Münzen“: die Masse eines bind bei true, der Weg über true (Masse μ true, dann f true) und der Weg über false.' },
@@ -3793,9 +3800,10 @@
     return card
   }
   // A tip as speech bubbles, one after the other. Nothing is dimmed and the board stays playable: a
-  // tap beside the bubble closes it (and still does what it does). A bubble that points at something
-  // stands beside it, the thing ringed (on a large screen); a bubble with nothing to point at, and every
-  // bubble on a phone, is a strip in the stage: above the board on a large screen, above the tool bar
+  // tap beside the bubble closes it (and still does what it does). A bubble at something of the proof
+  // (an item, the gap) stands right below or above it; one at something of the board stands beside the
+  // level, the thing ringed (on a large screen); a bubble with nothing to point at, and one at the board
+  // on a phone, is a strip in the stage: above the board on a large screen, above the tool bar
   // on a phone; the board makes room for it. ✕ or Escape close them all; Next goes on. (a tip asked
   // for while one is open goes after it: a level in Lean only has its text, then its proof)
   let tour = null
@@ -3816,8 +3824,10 @@
     const place = ev => {
       if (moved || (ev?.target instanceof Node && card.contains(ev.target))) return
       const a = steps[i].anchor?.(), has = shown(a)
+      // (a tip in the proof, at an item, the gap or the statement: right at it, on a phone too)
+      const near = has && !!a.closest('.pg-proof')
       // (the strip: where the bubble goes when it is one)
-      if (stage && (!has || !WIDE.matches)) {
+      if (stage && (!has || (!WIDE.matches && !near))) {
         const at = WIDE.matches ? stage.querySelector(':scope > .pg-stage-top') : stage.querySelector(':scope > .pg-status')
         if (at && (WIDE.matches ? at.nextElementSibling !== strip : at.previousElementSibling !== strip)) WIDE.matches ? at.after(strip) : at.before(strip)
         if (card.parentNode !== strip) strip.append(card)
@@ -3849,7 +3859,7 @@
       const outR = W - box.right - GAP - M, outL = box.left - GAP - M
       const out = Math.max(outR, outL) >= 260, R = out ? box.right : r.right, L = out ? box.left : r.left
       const right = W - R - GAP - M, left = L - GAP - M
-      if (Math.max(right, left) >= 260) {
+      if (!near && Math.max(right, left) >= 260) {
         const toRight = right >= left
         card.style.maxWidth = `${Math.min(576, toRight ? right : left)}px`; card.style.maxHeight = `${H - 2 * M}px`
         const w = card.offsetWidth, h = card.offsetHeight

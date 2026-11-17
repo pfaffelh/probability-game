@@ -340,3 +340,165 @@ rw [Bool.cond_true, Bool.cond_true]
 ```
 :::
 ::::
+
+:::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ true + μ false = 1") (lemma := "mass_total") (new := "Prob.total, tsum_fintype") (uses := "Prob.total, tsum_fintype, Fintype.sum_bool")
+:::en
+*The whole mass.* `[Prob μ]` says: `μ` is a distribution, its masses add up to one. On `Bool` there
+are two of them.
+:::
+
+:::de
+*Die ganze Masse.* `[Prob μ]` sagt: `μ` ist eine Verteilung, ihre Massen ergeben zusammen eins. Auf
+`Bool` sind es zwei.
+:::
+
+::::hint (anchor := "statement")
+:::en
+`[Prob μ]` is an assumption about `μ`: in Lean, `class Prob (μ) : Prop where hasSum : HasSum μ.weight 1`,
+the masses of `μ`, summed over all points, give one. The rule `Prob.total` says it as a sum.
+:::
+
+:::de
+`[Prob μ]` ist eine Annahme über `μ`: in Lean `class Prob (μ) : Prop where hasSum : HasSum μ.weight 1`,
+die Massen von `μ`, über alle Punkte summiert, ergeben eins. Die Regel `Prob.total` sagt es als Summe.
+:::
+::::
+
+:::proofen
+`Prob.total μ : ∑' a, μ a = 1` is a sum over all points, `∑'`. Read from right to left,
+`rw [← Prob.total μ]` makes the `1` of the goal this sum. `tsum_fintype` turns a sum over all points
+of a finite type into a finite sum `∑`, and `Fintype.sum_bool` into its two summands.
+
+*Tip.* `rw [← Prob.total μ, tsum_fintype, Fintype.sum_bool]` (type `\l` for `←`, or tap ←).
+:::
+
+:::proofde
+`Prob.total μ : ∑' a, μ a = 1` ist eine Summe über alle Punkte, `∑'`. Von rechts nach links gelesen
+macht `rw [← Prob.total μ]` die `1` des Ziels zu dieser Summe. `tsum_fintype` macht eine Summe über
+alle Punkte eines endlichen Typs zu einer endlichen Summe `∑`, und `Fintype.sum_bool` zu ihren zwei
+Summanden.
+
+*Tipp.* `rw [← Prob.total μ, tsum_fintype, Fintype.sum_bool]` (`\l` tippen für `←`, oder ← antippen).
+:::
+:::solution
+```
+rw [← Prob.total μ, tsum_fintype, Fintype.sum_bool]
+```
+:::
+:::::
+
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b ≤ 1") (lemma := "mass_le_one") (new := "exact, le_self_add, le_add_self") (uses := "mass_total, le_add_self, le_self_add, coin_total")
+:::en
+*At most one.* Each mass is a part of the whole mass, so at most one.
+:::
+
+:::de
+*Höchstens eins.* Jede Masse ist ein Teil der ganzen Masse, also höchstens eins.
+:::
+
+:::proofen
+`rw [← mass_total μ]` makes the `1` the whole mass; `cases b` gives the two points. Then the goal is
+exactly a rule: `le_self_add : a ≤ a + c` or `le_add_self : a ≤ c + a`. `exact h` closes a goal that
+is exactly `h`.
+
+*Tip.* `rw [← mass_total μ]`, `cases b`, `exact le_add_self`, `exact le_self_add`.
+:::
+
+:::proofde
+`rw [← mass_total μ]` macht die `1` zur ganzen Masse; `cases b` gibt die zwei Punkte. Dann ist das
+Ziel genau eine Regel: `le_self_add : a ≤ a + c` oder `le_add_self : a ≤ c + a`. `exact h` schließt
+ein Ziel, das genau `h` ist.
+
+*Tipp.* `rw [← mass_total μ]`, `cases b`, `exact le_add_self`, `exact le_self_add`.
+:::
+:::solution
+```
+rw [← mass_total μ]
+cases b
+exact le_add_self
+exact le_self_add
+```
+:::
+::::
+
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b ≠ ⊤") (lemma := "mass_ne_top") (new := "apply, ne_top_of_le_ne_top, ENNReal.one_ne_top") (uses := "ne_top_of_le_ne_top, ENNReal.one_ne_top, mass_le_one")
+:::en
+*Finite.* Masses are numbers in $`[0, \infty]`; a mass of a distribution is finite, `≠ ⊤`
+(`⊤` is $`\infty`): it is at most one, and one is finite.
+:::
+
+:::de
+*Endlich.* Massen sind Zahlen in $`[0, \infty]`; eine Masse einer Verteilung ist endlich, `≠ ⊤`
+(`⊤` ist $`\infty`): Sie ist höchstens eins, und eins ist endlich.
+:::
+
+:::proofen
+`ne_top_of_le_ne_top : b ≠ ⊤ → a ≤ b → a ≠ ⊤`. `apply h` works backwards: the goal is the conclusion
+of `h`, and what `h` still needs becomes the new goal. With `b = 1` and `ENNReal.one_ne_top : 1 ≠ ⊤`
+given, what is left is `μ b ≤ 1`: your theorem `mass_le_one`.
+
+*Tip.* `apply ne_top_of_le_ne_top ENNReal.one_ne_top`, then `exact mass_le_one μ b`.
+:::
+
+:::proofde
+`ne_top_of_le_ne_top : b ≠ ⊤ → a ≤ b → a ≠ ⊤`. `apply h` arbeitet rückwärts: Das Ziel ist die
+Folgerung von `h`, und was `h` noch braucht, wird das neue Ziel. Mit `b = 1` und
+`ENNReal.one_ne_top : 1 ≠ ⊤` gegeben, bleibt `μ b ≤ 1`: dein Satz `mass_le_one`.
+
+*Tipp.* `apply ne_top_of_le_ne_top ENNReal.one_ne_top`, dann `exact mass_le_one μ b`.
+:::
+:::solution
+```
+apply ne_top_of_le_ne_top ENNReal.one_ne_top
+exact mass_le_one μ b
+```
+:::
+::::
+
+:::::circuit (height := "440") (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : (not <$> coin p) true = ⟦σ p ‖ p, σ p, 1, 0⟧") (play := "a=not; x>a.0; a>out") (uses := "map_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, coin_false, add_zero, mul_zero, coin_true, coin_total")
+:::hint (anchor := "none")
+:::
+
+:::hint (anchor := "none")
+:::
+
+:::en
+*Where does the mass go?* The coin `x` is thrown at the top; below, the output with the target:
+`false` with mass $`p`, `true` with $`1 - p`. Put a `not` between them. Then look at `true`: its mass
+came from `false`.
+:::
+
+:::de
+*Wohin geht die Masse?* Oben wird die Münze `x` geworfen; unten der Ausgang mit dem Ziel: `false`
+mit Masse $`p`, `true` mit $`1 - p`. Setz ein `nicht` dazwischen. Dann sieh dir `true` an: Seine
+Masse kam von `false`.
+:::
+
+:::proofen
+*Now the proof.* Everything it needs you know from *Circuits* and this world: `coin p` and its masses, `f <$> μ`, and
+the rules. First the rule of the gates, `map_true`; then computing, one rule after another:
+`Bool.not_true`, `Bool.not_false`, `Bool.cond_false`, `Bool.cond_true`, `zero_add` and `coin_false`.
+
+*Tip.* `rw [map_true]`, `rw [Bool.not_true, Bool.not_false]`,
+`rw [Bool.cond_false, Bool.cond_true, zero_add]`, `rw [coin_false]` (type it, or tap the inventory,
+and press *Run*).
+:::
+
+:::proofde
+*Jetzt der Beweis.* Alles, was er braucht, kennst du aus *Schaltungen* und dieser Welt: `coin p` und seine Massen,
+`f <$> μ` und die Regeln. Zuerst die Regel der Bausteine, `map_true`; dann Rechnen, eine Regel nach der
+anderen: `Bool.not_true`, `Bool.not_false`, `Bool.cond_false`, `Bool.cond_true`, `zero_add` und
+`coin_false`.
+
+*Tipp.* `rw [map_true]`, `rw [Bool.not_true, Bool.not_false]`,
+`rw [Bool.cond_false, Bool.cond_true, zero_add]`, `rw [coin_false]`.
+:::
+:::solution
+```
+rw [map_true]
+rw [Bool.not_true, Bool.not_false]
+rw [Bool.cond_false, Bool.cond_true, zero_add]
+rw [coin_false]
+```
+:::
+:::::
