@@ -3955,8 +3955,8 @@
     const hintText = h => clone([...h.children])
     const worldHint = () => world.querySelector(':scope > .pg-hint[data-at="world"]')
     // (`move:not`: at the move or building block not, in place of its card)
-    // (hints in the proof: at an item, `item:rfl`; at the gap to fill, `gap`; at the keys, `keys`)
-    const PROOF_AT = { gap: '.pg-gap-now', keys: '.pg-keys' }
+    // (hints in the proof: at an item, `item:rfl`; at the gap to fill, `gap`; at the keys, `keys`; at the statement, `statement`)
+    const PROOF_AT = { gap: '.pg-gap-now', keys: '.pg-keys', statement: '.pg-proof-statement' }
     const proofHint = h => h.dataset.at.startsWith('item:') || h.dataset.at in PROOF_AT
     const boardHints = k => [...roots[k].querySelectorAll(':scope > .pg-text > .pg-hint:not([data-at="none"])')].filter(h => !proofHint(h))
     const levelHints = k => boardHints(k).map(h => ({

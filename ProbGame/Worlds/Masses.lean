@@ -106,7 +106,20 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : coin p false = σ p") (lemma := "coin_false") (uses := "-")
+:::::leanonly (proof := "(p : I) : coin p false = σ p") (lemma := "coin_false") (uses := "-")
+::::hint (anchor := "statement")
+:::en
+`σ p := 1 - p`, computed in the unit interval: `σ p : I` (`unitInterval`), a probability again. As
+a mass, `1 - p` would be `1 - ↑p : ℝ≥0∞`. The statement takes `σ p` and makes it a mass, `↑(σ p)`.
+:::
+
+:::de
+`σ p := 1 - p`, gerechnet im Einheitsintervall: `σ p : I` (`unitInterval`), wieder eine
+Wahrscheinlichkeit. Als Masse wäre `1 - p` dagegen `1 - ↑p : ℝ≥0∞`. Die Aussage nimmt `σ p` und
+macht es zur Masse, `↑(σ p)`.
+:::
+::::
+
 :::en
 *The mass at false.* At `false` the coin has the rest, $`1 - p`.
 :::
@@ -131,7 +144,7 @@ rfl
 rfl
 ```
 :::
-::::
+:::::
 
 ::::leanonly (proof := "(p : I) : 0 + coin p true = p") (new := "rw, zero_add") (uses := "zero_add, coin_true, add_zero, mul_zero, coin_false, coin_total")
 :::en
