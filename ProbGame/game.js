@@ -3969,8 +3969,10 @@
     // (hints at an item of the inventory: `:::hint (anchor := "item:rfl")`; the tip that comes by
     // itself: no text of the proof when it has bubbles at the inventory)
     const proofTip = (k, auto = false) => {
-      const at = [...[...roots[k].querySelectorAll(':scope > .pg-text > .pg-hint[data-at^="item:"]')].map(h => ({ nodes: hintText(h), anchor: atItem(k, h.dataset.at.slice(5)) })),
-        ...newItems(k).map(it => ({ head: tr('New in this proof'), nodes: [itemCard(it)], anchor: atItem(k, it.name) }))]
+      const hints = [...roots[k].querySelectorAll(':scope > .pg-text > .pg-hint[data-at^="item:"]')], hinted = new Set(hints.map(h => h.dataset.at.slice(5)))
+      // (a new item with a hint of its own: the hint, with the card of the item)
+      const at = [...hints.map(h => { const it = INVENTORY.find(i => i.name === h.dataset.at.slice(5)); return { head: it && newItems(k).includes(it) ? tr('New in this proof') : undefined, nodes: [...(it && newItems(k).includes(it) ? [itemCard(it)] : []), ...hintText(h)], anchor: atItem(k, h.dataset.at.slice(5)) } }),
+        ...newItems(k).filter(it => !hinted.has(it.name)).map(it => ({ head: tr('New in this proof'), nodes: [itemCard(it)], anchor: atItem(k, it.name) }))]
       return [...(auto && at.length ? [] : [{ nodes: clone(levels[k].proof?.texts ?? []) }]), ...at]
     }
     const tipsOff = () => { try { return localStorage.getItem('pg:tips') === 'off' } catch { return false } }

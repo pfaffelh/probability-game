@@ -189,7 +189,7 @@ rfl
 :::
 ::::
 
-::::circuit (height := "500") (inputs := "x") (gates := "not") (table := "01") (goal := "x") (shape := "!(!x)") (start := "a=not; x>a.0") (proof := "(x : Bool) : (!(!x)) = x") (lemma := "Bool.not_not") (new := "cases") (play := "b=not; a>b.0; b>out") (uses := "-")
+:::::circuit (height := "500") (inputs := "x") (gates := "not") (table := "01") (goal := "x") (shape := "!(!x)") (start := "a=not; x>a.0") (proof := "(x : Bool) : (!(!x)) = x") (lemma := "Bool.not_not") (new := "cases") (play := "b=not; a>b.0; b>out") (uses := "-")
 :::en
 *Flipped twice.* One `not` is already on the board and stays there. Add a second one, so that the output is the input again.
 :::
@@ -197,6 +197,18 @@ rfl
 :::de
 *Zweimal umgedreht.* Ein `nicht` liegt schon auf dem Spielfeld und bleibt dort. Füge ein zweites hinzu, sodass der Ausgang wieder der Eingang ist.
 :::
+
+::::hint (anchor := "item:cases")
+:::en
+`rfl` can only unfold definitions if no variables (`x` here) are involved. `cases x` makes Lean
+distinguish the two cases, `x = false` and `x = true`.
+:::
+
+:::de
+`rfl` kann Definitionen nur auflösen, wenn keine Variablen (hier `x`) beteiligt sind. `cases x` lässt
+Lean die zwei Fälle unterscheiden, `x = false` und `x = true`.
+:::
+::::
 
 :::proofen
 `!(!x) = x` for every `x`. Now `rfl` does not help: `not` is defined by its cases, and Lean cannot
@@ -224,7 +236,7 @@ rfl
 rfl
 ```
 :::
-::::
+:::::
 
 ::::circuit (height := "500") (inputs := "x") (gates := "not, or") (table := "11") (goal := "true") (proof := "(x : Bool) : (x || !x) = (bif x then true else true)") (new := "<;>") (play := "a=not; b=or; x>a.0; x>b.0; a>b.1; b>out") (uses := "-")
 :::en
