@@ -24,8 +24,9 @@ for f in sorted(glob.glob(str(root / 'ProbGame/Worlds/*.lean'))):
     lines = open(f).read().split('\n'); changed = 0
     i = 0
     while i < len(lines):
-        if re.match(r'^::::(circuit|leanonly) ', lines[i]):
-            end = next(j for j in range(i + 1, len(lines)) if lines[j] == '::::')
+        m = re.match(r'^(::::+)(circuit|leanonly) ', lines[i])
+        if m:
+            end = next(j for j in range(i + 1, len(lines)) if lines[j] == m.group(1))
             body = lines[i + 1:end]
             if ':::solution' in body and '(uses := "!' not in lines[i]:
                 k = body.index(':::solution') + 2; sol = []

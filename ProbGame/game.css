@@ -267,7 +267,7 @@ html.pg-playing .prev-next-buttons { display: none !important; }
   position: fixed; background: white; border-radius: 12px; padding: 0.6em 1.1em 0.7em; width: max-content; min-width: min(14rem, calc(100vw - 24px)); max-width: min(36rem, calc(100vw - 24px));
   display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3); box-sizing: border-box;
 }
-.pg-tip-top { display: flex; align-items: center; gap: 0.5em; flex: none; }
+.pg-tip-top { display: flex; align-items: center; gap: 0.5em; flex: none; cursor: move; touch-action: none; user-select: none; }
 .pg-tip-head { font-weight: bold; color: #8a5a16; font-family: var(--verso-structure-font-family, sans-serif); flex: 1; }
 .pg-tip-x { flex: none; font: inherit; font-size: 1.1em; width: 44px; height: 44px; margin-right: -0.6em; border: none; border-radius: 22px; background: none; color: #555; cursor: pointer; }
 .pg-tip-x:hover { background: #f6efe2; }
@@ -775,3 +775,4 @@ figure.pg-picture { margin: 1rem 0 1.2rem; }
 .pg-pic-lean { background: #f6f1e7; border: 1px solid #e3d5bb; border-radius: 10px; padding: 0.6em 0.9em; margin: 0; font-size: 0.85em; overflow-x: auto; white-space: pre; }
 .pg-pic-kw { color: #8a3b9a; font-weight: bold; }
 .pg-pic-tac { color: #2e6fb8; }
+.pg-hint { display: none; }
