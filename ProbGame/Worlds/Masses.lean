@@ -12,22 +12,18 @@ number := false
 %%%
 
 :::en
-Before the first coin: how Lean writes a distribution, and the rules that *One Coin* needs, each in a
-level of its own. Most of them hold by definition, and the proof is `rfl`.
-
-A distribution on `Bool` is, in Lean, `μ : DiscreteMeasure Bool`: it gives each of the two points its
-*mass*, `μ true` and `μ false`, the heights of its two bars. The coin with probability $`p` is
-`coin p`. A move is written `f <$> μ`: the map `f` applied to the distribution `μ`, its image measure.
+A coin shows `true` (heads) or `false` (tails); `coin p` is the coin that shows `true` with
+probability $`p` and `false` with probability $`1 - p`. A distribution on `Bool` is, in Lean,
+`μ : DiscreteMeasure Bool`: it gives each of the two points its *mass*, `μ true` and `μ false`, the
+heights of its two bars. The coin with probability $`p` is `(coin p : DiscreteMeasure Bool)`.
 :::
 
 :::de
-Vor der ersten Münze: wie Lean eine Verteilung schreibt, und die Regeln, die *Eine Münze* braucht,
-jede in einem eigenen Level. Die meisten gelten nach Definition, und der Beweis ist `rfl`.
-
-Eine Verteilung auf `Bool` ist in Lean `μ : DiscreteMeasure Bool`: Sie gibt jedem der beiden Punkte
-seine *Masse*, `μ true` und `μ false`, die Höhen ihrer beiden Säulen. Die Münze mit Wahrscheinlichkeit
-$`p` ist `coin p`. Ein Zug wird `f <$> μ` geschrieben: die Abbildung `f`, angewandt auf die Verteilung
-`μ`, ihr Bildmaß.
+Eine Münze zeigt `true` (Kopf) oder `false` (Zahl); `coin p` ist die Münze, die mit
+Wahrscheinlichkeit $`p` `true` zeigt und mit Wahrscheinlichkeit $`1 - p` `false`. Eine Verteilung auf
+`Bool` ist in Lean `μ : DiscreteMeasure Bool`: Sie gibt jedem der beiden Punkte seine *Masse*,
+`μ true` und `μ false`, die Höhen ihrer beiden Säulen. Die Münze mit Wahrscheinlichkeit $`p` ist
+`(coin p : DiscreteMeasure Bool)`.
 :::
 
 ::::circuit (height := "400") (inputs := "x") (gates := "") (coins := "p") (target := "bool true:p false:1-p") (context := "Lean/Rules.lean") (proof := "(p : I) : coin p true = p") (lemma := "coin_true") (play := "x>out") (uses := "-")
