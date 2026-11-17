@@ -66,6 +66,81 @@ rw [← mass_total μ, h, zero_add]
 :::
 ::::
 
+:::::leanonly (proof := "(a b : ENNReal) : ⟦a - a + b ‖ a + b - a, b - a + a, a - a + b⟧ = b") (new := "tsub_self") (uses := "tsub_self, zero_add, add_zero, mul_zero")
+:::en
+*Subtracting masses.* In Lean, masses are numbers in `ℝ≥0∞ = [0, ∞]` (`ENNReal`). Adding is as
+usual, with `a + ∞ = ∞`. But `a - b : ℝ≥0∞` cannot be negative: `a - b = 0` when `b > a`. And with
+`∞`: `∞ - b = ∞` for a finite `b`, `a - ∞ = 0`, in particular `∞ - ∞ = 0`.
+:::
+
+:::de
+*Massen abziehen.* In Lean sind Massen Zahlen in `ℝ≥0∞ = [0, ∞]` (`ENNReal`). Addieren geht wie
+gewohnt, mit `a + ∞ = ∞`. Aber `a - b : ℝ≥0∞` kann nicht negativ sein: `a - b = 0`, wenn `b > a`. Und
+mit `∞`: `∞ - b = ∞` für ein endliches `b`, `a - ∞ = 0`, insbesondere `∞ - ∞ = 0`.
+:::
+
+::::hint (anchor := "gap")
+:::en
+Which of the three holds for all `a b : ℝ≥0∞`? Try `b < a`, and try `a = ∞`.
+:::
+
+:::de
+Welche der drei gilt für alle `a b : ℝ≥0∞`? Probier `b < a`, und probier `a = ∞`.
+:::
+::::
+
+:::proofen
+`b - a + a = b` fails for `b < a`: then `b - a = 0`, and `0 + a = a`. `a + b - a = b` fails for
+`a = ∞`: `∞ + b - ∞ = ∞ - ∞ = 0`. It holds for every finite `a`, as the next levels show. But
+`a - a = 0` always, also for `a = ∞`: the rule `tsub_self : a - a = 0`. Then `zero_add`.
+
+*Tip.* `a - a + b`; then `rw [tsub_self, zero_add]`.
+:::
+
+:::proofde
+`b - a + a = b` stimmt nicht für `b < a`: Dann ist `b - a = 0`, und `0 + a = a`. `a + b - a = b`
+stimmt nicht für `a = ∞`: `∞ + b - ∞ = ∞ - ∞ = 0`. Für jedes endliche `a` gilt es, wie die nächsten
+Levels zeigen. Aber `a - a = 0` immer, auch für `a = ∞`: die Regel `tsub_self : a - a = 0`. Dann
+`zero_add`.
+
+*Tipp.* `a - a + b`; dann `rw [tsub_self, zero_add]`.
+:::
+:::solution
+```
+rw [tsub_self, zero_add]
+```
+:::
+:::::
+
+::::leanonly (proof := "(a b : ENNReal) : b - a + a = ⟦max b a ‖ b, a, max b a, a + b⟧") (new := "tsub_add_eq_max") (uses := "tsub_add_eq_max")
+:::en
+*Taking away and putting back.* `b - a + a` is not always `b`. What is it, for all `a b : ℝ≥0∞`?
+:::
+
+:::de
+*Wegnehmen und wieder dazu.* `b - a + a` ist nicht immer `b`. Was ist es, für alle `a b : ℝ≥0∞`?
+:::
+
+:::proofen
+For `a ≤ b` (and `a` finite) it is `b`; for `b < a` it is `0 + a = a`; with `a = ∞` it is `∞`. Always
+the larger of the two: the rule `tsub_add_eq_max : b - a + a = max b a`.
+
+*Tip.* `max b a`; then `rw [tsub_add_eq_max]`.
+:::
+
+:::proofde
+Für `a ≤ b` (und endliches `a`) ist es `b`; für `b < a` ist es `0 + a = a`; mit `a = ∞` ist es `∞`.
+Immer das größere der beiden: die Regel `tsub_add_eq_max : b - a + a = max b a`.
+
+*Tipp.* `max b a`; dann `rw [tsub_add_eq_max]`.
+:::
+:::solution
+```
+rw [tsub_add_eq_max]
+```
+:::
+::::
+
 ::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ true + μ false - μ true = μ false") (new := "ENNReal.add_sub_cancel_left") (uses := "ENNReal.add_sub_cancel_left, mass_ne_top")
 :::en
 *Taking away.* What is added and taken away again is gone, when it is finite.
