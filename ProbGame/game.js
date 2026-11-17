@@ -1611,7 +1611,7 @@
     'Show the values row by row': 'Werte Zeile für Zeile zeigen', 'Or tap a row of the table.': 'Oder tippe eine Zeile der Tafel an.',
     'Now tap where it goes: a gate, or Output.': 'Tippe jetzt an, wohin es geht: einen Baustein oder den Ausgang.',
     'Now tap where it comes from: a coin above, or a gate.': 'Tippe jetzt an, woher es kommt: eine Münze oben oder einen Baustein.',
-    'Tap a gate below, or drag it onto the board.': 'Tippe unten einen Baustein an, oder zieh ihn aufs Spielfeld.', 'Drag a gate onto the board, or tap it.': 'Zieh einen Baustein aufs Spielfeld, oder tippe ihn an.',
+    
     'Wire {g}: tap a coin above (or a gate), then {g}. Wires run from a dot ● down to a circle ○.': 'Verdrahte {g}: tippe eine Münze oben (oder einen Baustein) an, dann {g}. Drähte laufen von einem Punkt ● nach unten zu einem Kreis ○.',
     'Wire the Output: tap the last gate, then Output.': 'Verdrahte den Ausgang: tippe den letzten Baustein an, dann den Ausgang.', 'Drag gates onto the board, or tap them.': 'Zieh Bausteine aufs Spielfeld, oder tippe sie an.',
 
@@ -2152,7 +2152,8 @@
       if (loose) return tr('Wire the coin {y}: which coin it is depends on a wire into it, from a coin above or a gate.', { y: loose })
       // (a level without gates: a wire only)
       if (!this.gates.length && !this.wires.length) return tr('Tap {x}, then the Output.', { x: this.names[0] })
-      if (!this.gatesOn.length && !this.wires.length) return tr(STAGE && matchMedia('(max-width: 760px), (max-height: 500px)').matches ? 'Tap a gate below, or drag it onto the board.' : 'Drag a gate onto the board, or tap it.')
+      // (an empty board: nothing to say; how to take a gate is known from the hints of the first levels)
+      if (!this.gatesOn.length && !this.wires.length) return ''
       const open = this.gatesOn.find(g => [...Array(GATES[g.kind].n).keys()].some(i => !this.wireTo(g.id, i)))
       const empty = this.gatesOn.find(g => GATES[g.kind].slots && [...Array(GATES[g.kind].slots).keys()].some(i => !g.maps?.[i]))
       if (empty && !open) return tr(empty.kind === 'f' ? 'Choose f: drag a map into f, or tap its field.' : 'Fill bind: a map into the field true, one into false (drag it in, or tap the field).')
