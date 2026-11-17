@@ -3990,14 +3990,14 @@
     }
     const atItem = (k, name) => () => visible([...roots[k].querySelectorAll('.pg-chip[data-item]')].find(b => b.dataset.item === name))
     // (the first tip of a world, by itself: the short text of the world, when it has one)
-    // (the tip that comes by itself: no text of the level when it has bubbles at the board; the
-    // button Tips: everything)
+    // (the tip that comes by itself: no text of the level when it has bubbles at the board, never the
+    // text of the world, only its short hint)
     const boardTip = (k, withWorld, auto = false) => {
       const hinted = new Set(boardHints(k).map(h => h.dataset.at).filter(a => a.startsWith('move:')).map(a => a.slice(5)))
       const at = [...levelHints(k), ...newMoves(k).filter(m => !hinted.has(m[0].slice(m[0].indexOf(':') + 1))).map(m => ({ head: tr('New in this level'), nodes: [moveCard(m)], anchor: atMove(k, m[0]) }))]
       const first = auto && k === 0 && worldHint() ? [{ nodes: hintText(worldHint()) }]
         : auto && at.length ? []
-        : [{ nodes: [...levelText(k), ...(withWorld && worldText().length ? [el('div', 'pg-tip-sub', tr('This world')), ...worldText()] : [])] }]
+        : [{ nodes: [...levelText(k), ...(withWorld && !auto && worldText().length ? [el('div', 'pg-tip-sub', tr('This world')), ...worldText()] : [])] }]
       return [...first, ...at]
     }
     // (hints at an item of the inventory: `:::hint (anchor := "item:rfl")`; the tip that comes by
