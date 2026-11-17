@@ -3117,7 +3117,12 @@
       return n === 1 ? tr('One goal left.') : tr('{n} goals left.', { n })
     }
     // the inventory at this level: what was introduced up to here; the lemma of this level is not yet
-    available(item) { return !!item && this.inventory.has(item.name) && (item.kind === 'tactic' || !this.uses || this.uses.has(item.name)) }
+    // (tactics always; your lemmas of this world always, once earned; other theorems where the level needs them)
+    available(item) {
+      if (!item || !this.inventory.has(item.name)) return false
+      if (item.kind === 'tactic' || !this.uses || this.uses.has(item.name)) return true
+      return item.kind === 'lemma' && [...document.querySelectorAll('[data-lemma]')].some(e => e.dataset.lemma === item.name)
+    }
     isNew(item) { return this.newHere.has(item.name) }
     // where an item comes in: world 0 has an inventory of its own (`w0`), the other worlds share one (`at`)
     get world0() { return this.group === 'walk' }
