@@ -2401,12 +2401,9 @@
         const val = m => { try { const v = m?.value(P); return Number.isFinite(v) ? Math.max(0, Math.min(1, v)) : null } catch { return null } }
         b.keys.forEach((k, j) => {
           const tv = val(new Poly((t.mass.get(k) ?? ZERO).c)), dmk = d && d.space === t.space ? (d.mass.get(k) ?? ZERO) : null, dv = dmk ? val(new Poly(dmk.c)) : null
-          if (dv !== null) og.append(svg('rect', { class: 'pg-chist-out', x: cx(j) - bw / 2, y: base - dv * hh, width: bw, height: dv * hh }))
+          if (dv !== null) og.append(svg('rect', { class: 'pg-chist-out' + (k === 'true' || k === 'false' ? ' pg-chist-' + k : ''), x: cx(j) - bw / 2, y: base - dv * hh, width: bw, height: dv * hh }))
           if (tv !== null) og.append(svg('rect', { class: 'pg-chist-target', x: cx(j) - bw / 2, y: base - tv * hh, width: bw, height: tv * hh }))
         })
-        // (a target that is one of the small blocks, a coin or a point mass: that block, on the left)
-        const named = t.space === 'bool' && DISTS.find(c => { const q = parsePoly(c); return sameDist(t, { space: 'bool', mass: new Map([['true', q], ['false', complement(q)]]) }) })
-        if (named) og.append(svg('rect', { class: 'pg-cslot pg-cslot-full pg-ctarget-block', x: x0 + 8, y: b.top + 12, width: 68, height: 46, rx: 6 }), distGlyph(named, x0 + 8, b.top + 12, 68, 46))
         text(x0 + 10, y(0), tr('value'), 'pg-tlabel', 'start')
         text(x0 + 10, y(1), tr('Target'), 'pg-tlabel pg-tlabel-target', 'start')
         text(x0 + 10, y(2), tr('Output'), 'pg-tlabel', 'start')
