@@ -32,29 +32,93 @@ authors := ["Peter Pfaffelhuber"]
 %%%
 
 :::en
-A distribution, in mathematics also called a probability measure, is drawn as a bar chart: over each
-point of its space a bar, as high as the point's mass. A *move* applies a map to it. The mass of each
-point goes to its image; the new distribution is the *image measure* (pushforward). Every level has two parts, as in the Natural Number Game: first you find the statement
-on the board, then you prove it in Lean, for every probability $`p`, with the tactics and theorems of
-your inventory. Each lemma you prove is unlocked for the levels after it. Lean runs on the server;
-your progress stays in your browser.
-One world comes before chance: circuits of `true` and `false`; then how Lean writes a distribution. Then a coin with probability $`p`, what it is and where its mass
-goes; the maps `Bool → Bool`, on values and on coins; circuits of coins, read as `do` blocks, and counting; and coins that wait for
-others (bind); sequences of coins; the binomial formula by induction; the geometric distribution; thinning, of a coin, a geometric and a binomial distribution; the hypergeometric distribution. The board leads at first; Lean grows from world to world.
+*Goal.* Here you learn some basics of probability theory, but the main part is their
+implementation in Lean: every statement you find on the board, you then prove in Lean.
 :::
 
 :::de
-Eine Verteilung, in der Mathematik auch Wahrscheinlichkeitsmaß genannt, ist als Säulendiagramm
-gezeichnet: über jedem Punkt ihres Raums eine Säule, so hoch wie seine Masse. Ein *Zug* wendet eine
-Abbildung auf sie an. Die Masse jedes Punkts geht zu seinem Bild; die neue Verteilung ist das *Bildmaß*. Jedes Level hat zwei Teile, wie im Natural Number Game: Zuerst findest du die Aussage
-auf dem Spielfeld, dann beweist du sie in Lean, für jede Wahrscheinlichkeit $`p`, mit den Taktiken und
-Sätzen deines Inventars. Jedes Lemma, das du beweist, wird für die Level danach freigeschaltet. Lean
-läuft auf dem Server; dein Fortschritt bleibt in deinem Browser.
-Eine Welt kommt vor dem Zufall: Schaltungen aus `true` und `false`; dann, wie Lean eine Verteilung schreibt.
-Dann eine Münze mit Wahrscheinlichkeit $`p`, was
-sie ist und wohin ihre Masse geht; die Abbildungen `Bool → Bool`, auf Werten und auf Münzen; Schaltungen aus Münzen, gelesen als `do`-Blöcke, und
-Zählen; und Münzen, die auf andere warten (bind); Folgen von Münzen; die Binomialformel durch Induktion; die geometrische Verteilung; Ausdünnen, einer Münze, einer geometrischen und einer Binomialverteilung; die hypergeometrische Verteilung. Am Anfang führt das Spielfeld; Lean wächst von Welt zu
-Welt.
+*Ziel.* Hier lernst du einige Grundlagen der Wahrscheinlichkeitstheorie, aber der Hauptteil ist
+ihre Umsetzung in Lean: Jede Aussage, die du auf dem Spielfeld findest, beweist du danach in Lean.
+:::
+
+:::en
+*Prerequisites.* Having taken a course in probability theory is not required. A first contact with
+Lean is useful, but not necessary.
+:::
+
+:::de
+*Voraussetzungen.* Eine Vorlesung über Wahrscheinlichkeitstheorie ist nicht nötig. Ein erster
+Kontakt mit Lean ist nützlich, aber keine Voraussetzung.
+:::
+
+:::en
+*Probability keywords.* Coin toss, distribution (probability measure), image measure
+(pushforward), independence, two-stage experiments, counting, sequences of coins, binomial
+distribution, geometric distribution, thinning, hypergeometric distribution.
+:::
+
+:::de
+*Stichworte Wahrscheinlichkeit.* Münzwurf, Verteilung (Wahrscheinlichkeitsmaß), Bildmaß,
+Unabhängigkeit, zweistufige Experimente, Zählen, Folgen von Münzen, Binomialverteilung,
+geometrische Verteilung, Ausdünnen, hypergeometrische Verteilung.
+:::
+
+:::picture (kind := "coin move binom geom")
+:::
+
+:::en
+*Lean keywords.* Goal and tactic; rewriting with `rw`; `rfl`, `exact`, `apply`; case analysis with
+`cases` and `decide`; induction; computing with `norm_num`, `ring` and `linear_combination`;
+`congr` and `funext`; the types `Bool`, `ℕ`, `ℝ` and `ℝ≥0∞`; `do` notation and monads (`pure`,
+bind); theorems of Mathlib.
+:::
+
+:::de
+*Stichworte Lean.* Ziel und Taktik; Umschreiben mit `rw`; `rfl`, `exact`, `apply`;
+Fallunterscheidung mit `cases` und `decide`; Induktion; Rechnen mit `norm_num`, `ring` und
+`linear_combination`; `congr` und `funext`; die Typen `Bool`, `ℕ`, `ℝ` und `ℝ≥0∞`; `do`-Notation
+und Monaden (`pure`, bind); Sätze aus Mathlib.
+:::
+
+:::picture (kind := "lean")
+:::
+
+:::en
+*How to play.* A distribution is drawn as a bar chart: over each point of its space a bar, as high
+as the point's mass. A *move* applies a map to it; the mass of each point goes to its image, and
+the new distribution is the *image measure*. Every level has two parts, as in the Natural Number
+Game: first you find the statement on the board, then you prove it in Lean, for every probability
+$`p`, with the tactics and theorems of your inventory. Each lemma you prove is unlocked for the
+levels after it. Lean runs on the server; your progress stays in your browser.
+:::
+
+:::de
+*So wird gespielt.* Eine Verteilung ist als Säulendiagramm gezeichnet: über jedem Punkt ihres
+Raums eine Säule, so hoch wie seine Masse. Ein *Zug* wendet eine Abbildung auf sie an; die Masse
+jedes Punkts geht zu seinem Bild, und die neue Verteilung ist das *Bildmaß*. Jedes Level hat zwei
+Teile, wie im Natural Number Game: Zuerst findest du die Aussage auf dem Spielfeld, dann beweist du
+sie in Lean, für jede Wahrscheinlichkeit $`p`, mit den Taktiken und Sätzen deines Inventars. Jedes
+Lemma, das du beweist, wird für die Level danach freigeschaltet. Lean läuft auf dem Server; dein
+Fortschritt bleibt in deinem Browser.
+:::
+
+:::en
+*The worlds.* One world comes before chance: circuits of `true` and `false`; then how Lean writes a
+distribution. Then a coin with probability $`p`, what it is and where its mass goes; the maps
+`Bool → Bool`, on values and on coins; circuits of coins, read as `do` blocks, and counting; coins
+that wait for others (bind); sequences of coins; the binomial formula by induction; the geometric
+distribution; thinning, of a coin, a geometric and a binomial distribution; the hypergeometric
+distribution. The board leads at first; Lean grows from world to world.
+:::
+
+:::de
+*Die Welten.* Eine Welt kommt vor dem Zufall: Schaltungen aus `true` und `false`; dann, wie Lean
+eine Verteilung schreibt. Dann eine Münze mit Wahrscheinlichkeit $`p`, was sie ist und wohin ihre
+Masse geht; die Abbildungen `Bool → Bool`, auf Werten und auf Münzen; Schaltungen aus Münzen,
+gelesen als `do`-Blöcke, und Zählen; Münzen, die auf andere warten (bind); Folgen von Münzen; die
+Binomialformel durch Induktion; die geometrische Verteilung; Ausdünnen, einer Münze, einer
+geometrischen und einer Binomialverteilung; die hypergeometrische Verteilung. Am Anfang führt das
+Spielfeld; Lean wächst von Welt zu Welt.
 :::
 
 {include 1 ProbGame.Worlds.Circuits}
