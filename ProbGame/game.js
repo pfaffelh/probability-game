@@ -1613,7 +1613,7 @@
     'Now tap where it comes from: a coin above, or a gate.': 'Tippe jetzt an, woher es kommt: eine Münze oben oder einen Baustein.',
     
     'Wire {g}: tap a coin above (or a gate), then {g}. Wires run from a dot ● down to a circle ○.': 'Verdrahte {g}: tippe eine Münze oben (oder einen Baustein) an, dann {g}. Drähte laufen von einem Punkt ● nach unten zu einem Kreis ○.',
-    'Wire the Output: tap the last gate, then Output.': 'Verdrahte den Ausgang: tippe den letzten Baustein an, dann den Ausgang.', 'Drag gates onto the board, or tap them.': 'Zieh Bausteine aufs Spielfeld, oder tippe sie an.',
+    'Drag gates onto the board, or tap them.': 'Zieh Bausteine aufs Spielfeld, oder tippe sie an.',
 
     'Task: build a circuit whose output has the distribution of the target.': 'Aufgabe: Bau eine Schaltung, deren Ausgang die Verteilung des Ziels hat.',
     'Tap a row to see its coins on the board.': 'Tippe eine Zeile an, um ihre Münzen auf dem Spielfeld zu sehen.', 'Drag the coin into a field, T or F.': 'Zieh die Münze in ein Feld, T oder F.', 'Fill {y}: drag a coin into the field T and one into F (or tap a field).': 'Füll {y}: zieh eine Münze ins Feld T und eine ins Feld F (oder tippe ein Feld an).',
@@ -2158,7 +2158,7 @@
       const empty = this.gatesOn.find(g => GATES[g.kind].slots && [...Array(GATES[g.kind].slots).keys()].some(i => !g.maps?.[i]))
       if (empty && !open) return tr(empty.kind === 'f' ? 'Choose f: drag a map into f, or tap its field.' : 'Fill bind: a map into the field true, one into false (drag it in, or tap the field).')
       if (open) return tr('Wire {g}: tap a coin above (or a gate), then {g}. Wires run from a dot ● down to a circle ○.', { g: tr(GATES[open.kind].label) })
-      if (!this.wireTo('out', 0)) return tr('Wire the Output: tap the last gate, then Output.')
+      if (!this.wireTo('out', 0)) return ''
       const outs = this.outputs()
       if (outs.some(o => o === null)) return tr('An input of a gate is still open.')
       if (this.every.length) {
@@ -3956,7 +3956,8 @@
     const worldHint = () => world.querySelector(':scope > .pg-hint[data-at="world"]')
     // (`move:not`: at the move or building block not, in place of its card)
     // (hints in the proof: at an item, `item:rfl`; at the gap to fill, `gap`; at the keys, `keys`; at the statement, `statement`)
-    const PROOF_AT = { gap: '.pg-gap-now', keys: '.pg-keys', statement: '.pg-proof-statement' }
+    // (and `lean`: a tip of the proof at nothing, in the middle)
+    const PROOF_AT = { gap: '.pg-gap-now', keys: '.pg-keys', statement: '.pg-proof-statement', lean: null }
     const proofHint = h => h.dataset.at.startsWith('item:') || h.dataset.at in PROOF_AT
     const boardHints = k => [...roots[k].querySelectorAll(':scope > .pg-text > .pg-hint:not([data-at="none"])')].filter(h => !proofHint(h))
     const levelHints = k => boardHints(k).map(h => ({
@@ -3993,7 +3994,7 @@
     const proofTip = (k, auto = false) => {
       const all = [...roots[k].querySelectorAll(':scope > .pg-text > .pg-hint')].filter(proofHint)
       const hints = all.filter(h => h.dataset.at.startsWith('item:')), hinted = new Set(hints.map(h => h.dataset.at.slice(5)))
-      const at = h => () => visible(roots[k].querySelector(PROOF_AT[h.dataset.at]))
+      const at = h => () => (PROOF_AT[h.dataset.at] ? visible(roots[k].querySelector(PROOF_AT[h.dataset.at])) : null)
       // (a new item with a hint of its own: the hint, with the card of the item)
       const steps = [...all.filter(h => !h.dataset.at.startsWith('item:')).map(h => ({ nodes: hintText(h), anchor: at(h) })), ...hints.map(h => { const it = INVENTORY.find(i => i.name === h.dataset.at.slice(5)); return { head: it && newItems(k).includes(it) ? tr('New in this proof') : undefined, nodes: [...(it && newItems(k).includes(it) ? [itemCard(it)] : []), ...hintText(h)], anchor: atItem(k, h.dataset.at.slice(5)) } }),
         ...newItems(k).filter(it => !hinted.has(it.name)).map(it => ({ head: tr('New in this proof'), nodes: [itemCard(it)], anchor: atItem(k, it.name) }))]

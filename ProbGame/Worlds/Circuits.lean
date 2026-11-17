@@ -66,6 +66,16 @@ den Eingang `x` so mit dem Spielstein, dass *Ziel* und *Ausgang* übereinstimmen
 :::
 ::::
 
+::::hint (anchor := "lean")
+:::en
+Let us prove this in Lean!
+:::
+
+:::de
+Beweisen wir das in Lean!
+:::
+::::
+
 :::proofen
 Let us start easy and translate the last level to Lean. The board reads: the output, `x`, is the
 target, `x`. In Lean, `example (x : Bool) : x = x` says *for every `x` of type `Bool`, `x = x`*.
@@ -198,6 +208,9 @@ rfl
 ::::
 
 :::::circuit (height := "500") (inputs := "x") (gates := "not") (table := "01") (goal := "x") (shape := "!(!x)") (start := "a=not; x>a.0") (proof := "(x : Bool) : (!(!x)) = x") (lemma := "Bool.not_not") (new := "cases") (play := "b=not; a>b.0; b>out") (uses := "-")
+:::hint (anchor := "none")
+:::
+
 :::en
 *Flipped twice.* One `not` is already on the board and stays there. Add a second one, so that the output is the input again.
 :::
