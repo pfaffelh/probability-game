@@ -3957,7 +3957,10 @@
     const hintText = h => clone([...h.children])
     const worldHint = () => world.querySelector(':scope > .pg-hint[data-at="world"]')
     // (`move:not`: at the move or building block not, in place of its card)
-    const boardHints = k => [...roots[k].querySelectorAll(':scope > .pg-text > .pg-hint:not([data-at^="item:"]):not([data-at="none"])')]
+    // (hints in the proof: at an item, `item:rfl`; at the gap to fill, `gap`; at the keys, `keys`)
+    const PROOF_AT = { gap: '.pg-gap-now', keys: '.pg-keys' }
+    const proofHint = h => h.dataset.at.startsWith('item:') || h.dataset.at in PROOF_AT
+    const boardHints = k => [...roots[k].querySelectorAll(':scope > .pg-text > .pg-hint:not([data-at="none"])')].filter(h => !proofHint(h))
     const levelHints = k => boardHints(k).map(h => ({
       nodes: hintText(h), anchor: h.dataset.at.startsWith('move:') ? atMove(k, h.dataset.at) : () => visible(roots[k].querySelector(HINT_AT[h.dataset.at] ?? h.dataset.at)) }))
     // the moves new in a level: not offered by a level before it on this page
@@ -3990,11 +3993,13 @@
     // (hints at an item of the inventory: `:::hint (anchor := "item:rfl")`; the tip that comes by
     // itself: no text of the proof when it has bubbles at the inventory)
     const proofTip = (k, auto = false) => {
-      const hints = [...roots[k].querySelectorAll(':scope > .pg-text > .pg-hint[data-at^="item:"]')], hinted = new Set(hints.map(h => h.dataset.at.slice(5)))
+      const all = [...roots[k].querySelectorAll(':scope > .pg-text > .pg-hint')].filter(proofHint)
+      const hints = all.filter(h => h.dataset.at.startsWith('item:')), hinted = new Set(hints.map(h => h.dataset.at.slice(5)))
+      const at = h => () => visible(roots[k].querySelector(PROOF_AT[h.dataset.at]))
       // (a new item with a hint of its own: the hint, with the card of the item)
-      const at = [...hints.map(h => { const it = INVENTORY.find(i => i.name === h.dataset.at.slice(5)); return { head: it && newItems(k).includes(it) ? tr('New in this proof') : undefined, nodes: [...(it && newItems(k).includes(it) ? [itemCard(it)] : []), ...hintText(h)], anchor: atItem(k, h.dataset.at.slice(5)) } }),
+      const steps = [...all.filter(h => !h.dataset.at.startsWith('item:')).map(h => ({ nodes: hintText(h), anchor: at(h) })), ...hints.map(h => { const it = INVENTORY.find(i => i.name === h.dataset.at.slice(5)); return { head: it && newItems(k).includes(it) ? tr('New in this proof') : undefined, nodes: [...(it && newItems(k).includes(it) ? [itemCard(it)] : []), ...hintText(h)], anchor: atItem(k, h.dataset.at.slice(5)) } }),
         ...newItems(k).filter(it => !hinted.has(it.name)).map(it => ({ head: tr('New in this proof'), nodes: [itemCard(it)], anchor: atItem(k, it.name) }))]
-      return [...(auto && at.length ? [] : [{ nodes: clone(levels[k].proof?.texts ?? []) }]), ...at]
+      return [...(auto && steps.length ? [] : [{ nodes: clone(levels[k].proof?.texts ?? []) }]), ...steps]
     }
     const tipsOff = () => { try { return localStorage.getItem('pg:tips') === 'off' } catch { return false } }
     const once = (key, f) => {
