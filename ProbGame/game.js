@@ -3048,6 +3048,8 @@
   const PHONE = () => matchMedia('(max-width: 700px)').matches
   const TOUCH = () => matchMedia('(pointer: coarse)').matches || PHONE()
   let KEYBOARD = false
+  // (the input of a proof grows with its text: anew when the width changes)
+  addEventListener('resize', () => document.querySelectorAll('.pg-proof-input textarea').forEach(i => { i.style.height = 'auto'; i.style.height = `${i.scrollHeight + i.offsetHeight - i.clientHeight}px` }))
   class Proof {
     constructor(level, onChange) {
       const root = level.root
@@ -3558,17 +3560,24 @@
 
       // the input
       const row = el('div', 'pg-proof-input')
-      this.input = el('input'); this.input.type = 'text'; this.input.spellcheck = false; this.input.autocapitalize = 'off'; this.input.autocomplete = 'off'; this.input.enterKeyHint = 'go'; this.input.setAttribute('autocorrect', 'off')
+      // (a text field that grows with what is typed, so that all of it stays in sight; Enter runs it)
+      this.input = el('textarea'); this.input.rows = 1; this.input.spellcheck = false; this.input.autocapitalize = 'off'; this.input.autocomplete = 'off'; this.input.enterKeyHint = 'go'; this.input.setAttribute('autocorrect', 'off')
       this.input.placeholder = this.gapsOpen ? (this.gapChoices ? tr('what goes into ▢: choose it above') : tr('what goes into ▢, e.g. p')) : this.world0 ? tr('a tactic, e.g. rw [pure_bind]') : this.worldB ? tr('a tactic, e.g. rfl') : tr('a tactic, e.g. rw [coin_true]')
       this.input.value = this.typed ?? ''
       // (on a phone: no keyboard, unless asked for with ⌨)
       if (TOUCH() && !KEYBOARD) { this.input.readOnly = true; this.input.inputMode = 'none' }
       // (the abbreviations of Lean's editors: \l becomes ←, once a space, a bracket or a comma follows)
+      const grow = () => { const i = this.input; if (!i.offsetParent) return; i.style.height = 'auto'; i.style.height = `${i.scrollHeight + i.offsetHeight - i.clientHeight}px` }
       this.input.addEventListener('input', () => {
-        const i = this.input, at = i.selectionStart ?? i.value.length, before = i.value.slice(0, at), now = unabbrev(before, false)
+        const i = this.input
+        // (a line break, pasted: a space; a tactic is one line)
+        if (/\n/.test(i.value)) { const at = i.selectionStart; i.value = i.value.replace(/\r?\n/g, ' '); i.setSelectionRange(at, at) }
+        const at = i.selectionStart ?? i.value.length, before = i.value.slice(0, at), now = unabbrev(before, false)
         if (now !== before) { i.value = now + i.value.slice(at); i.setSelectionRange(now.length, now.length) }
         this.typed = i.value
+        grow()
       })
+      requestAnimationFrame(grow); this.growInput = grow
       this.input.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); this.run() } })
       const run = el('button', 'pg-check', tr('Run')); run.type = 'button'; run.disabled = this.busy || this.done
       run.addEventListener('click', () => this.run())
