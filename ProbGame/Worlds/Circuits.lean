@@ -238,7 +238,7 @@ rfl
 :::
 :::::
 
-::::circuit (height := "500") (inputs := "x") (gates := "not, or") (table := "11") (goal := "true") (proof := "(x : Bool) : (x || !x) = (bif x then true else true)") (new := "<;>") (play := "a=not; b=or; x>a.0; x>b.0; a>b.1; b>out") (uses := "-")
+::::circuit (height := "500") (inputs := "x") (gates := "not, or") (table := "11") (goal := "true") (proof := "(x : Bool) : (x || ⟦!x ‖ x, !x, false⟧) = true") (play := "a=not; b=or; x>a.0; x>b.0; a>b.1; b>out") (uses := "-")
 :::en
 *Always true, without always true.* An output can feed several inputs: wire `x` twice.
 :::
@@ -248,32 +248,30 @@ rfl
 :::
 
 :::proofen
-How to read the statement: on the left your circuit, `x || !x`; on the right the target, the table
-written as a decision: `bif x then true else true` is `true` when `x` is `true`, else `true` (`bif`
-is *if* for a `Bool`; it reduces as soon as `x` is known). `||` is defined by cases of its left side:
-`false || b` reduces to `b`, and `true || b` to `true`. So `cases x`, then `rfl` in each case. New:
-`t₁ <;> t₂` runs `t₂` on every goal that `t₁` leaves, in one line: `cases x <;> rfl`.
+First the statement: your circuit is `x || ▢`, and it is to be `true` for every `x`. What goes into
+the gap? Then the proof: `||` is defined by cases of its left side, `false || b` reduces to `b`, and
+`true || b` to `true`. So `cases x`, then `rfl` in each case.
 
-*Tip.* `cases x <;> rfl`.
+*Tip.* `!x`; then `cases x`, `rfl`, `rfl`.
 :::
 
 :::proofde
-So liest man die Aussage: links deine Schaltung, `x || !x`; rechts das Ziel, die Tafel als
-Entscheidung geschrieben: `bif x then true else true` ist `true`, wenn `x` `true` ist, sonst `true`
-(`bif` ist *wenn* für ein `Bool`; es reduziert, sobald `x` bekannt ist). `||` ist durch Fälle seiner linken Seite definiert:
-`false || b` reduziert zu `b`, und `true || b` zu `true`. Also `cases x`, dann `rfl` in jedem Fall. Neu:
-`t₁ <;> t₂` führt `t₂` auf jedem Ziel aus, das `t₁` übrig lässt, in einer Zeile: `cases x <;> rfl`.
+Zuerst die Aussage: Deine Schaltung ist `x || ▢`, und sie soll für jedes `x` `true` sein. Was gehört
+in die Lücke? Dann der Beweis: `||` ist durch Fälle seiner linken Seite definiert, `false || b`
+reduziert zu `b`, und `true || b` zu `true`. Also `cases x`, dann `rfl` in jedem Fall.
 
-*Tipp.* `cases x <;> rfl`.
+*Tipp.* `!x`; dann `cases x`, `rfl`, `rfl`.
 :::
 :::solution
 ```
-cases x <;> rfl
+cases x
+rfl
+rfl
 ```
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "and, or, not") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : ((x || y) && !(x && y)) = (bif x then (bif y then false else true) else (bif y then true else false))") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out") (uses := "-")
+::::circuit (inputs := "x y") (gates := "and, or, not") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : ((x || y) && !(x && y)) = (bif x then (bif y then false else true) else (bif y then true else false))") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out") (new := "<;>") (uses := "-")
 :::en
 *The boss: exactly one.* Two inputs now, and four rows: one for each pair of values. `true` when exactly one
 input is `true`: at least one, but not both. In Lean this is `xor`, written `x ^^ y`.
@@ -288,7 +286,7 @@ genau ein Eingang `true` ist: mindestens einer, aber nicht beide. In Lean ist da
 :::proofen
 The table has four rows now, one for each pair of values: first `x` decides, then `y`, a `bif` in
 each branch of a `bif`. `cases x` makes two goals; in each, `cases y` makes two more: four goals, the
-four rows. With `<;>` in one line.
+four rows. New: `t₁ <;> t₂` runs `t₂` on every goal that `t₁` leaves; so all in one line.
 
 *Tip.* `cases x <;> cases y <;> rfl`.
 :::
@@ -296,7 +294,8 @@ four rows. With `<;>` in one line.
 :::proofde
 Die Tafel hat jetzt vier Zeilen, eine für jedes Paar von Werten: erst entscheidet `x`, dann `y`, ein
 `bif` in jedem Zweig eines `bif`. `cases x` macht zwei Ziele; in jedem macht `cases y` zwei weitere:
-vier Ziele, die vier Zeilen. Mit `<;>` in einer Zeile.
+vier Ziele, die vier Zeilen. Neu: `t₁ <;> t₂` führt `t₂` auf jedem Ziel aus, das `t₁` übrig lässt; so
+alles in einer Zeile.
 
 *Tipp.* `cases x <;> cases y <;> rfl`.
 :::

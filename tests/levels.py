@@ -41,8 +41,9 @@ def levels_of(path):
             key, default = CONTEXT[kind]
             out.append({'kind': kind, 'edition': edition, 'play': attr(l, 'play') or '', 'start': attr(l, 'start') or '',
                         # (gaps ⟦…⟧: Lean gets the statement filled as meant; the filling, for the playthrough)
-                        'proof': re.sub(r'⟦([^⟧]*)⟧', lambda m: '(' + m.group(1) + ')', attr(l, 'proof')) if attr(l, 'proof') else None,
-                        'gaps': re.findall(r'⟦([^⟧]*)⟧', attr(l, 'proof') or ''),
+                        # (⟦!x ‖ x, !x, false⟧: what is meant, before ‖)
+                        'proof': re.sub(r'⟦([^⟧‖]*)(‖[^⟧]*)?⟧', lambda m: '(' + m.group(1).strip() + ')', attr(l, 'proof')) if attr(l, 'proof') else None,
+                        'gaps': [g.strip() for g in re.findall(r'⟦([^⟧‖]*)(?:‖[^⟧]*)?⟧', attr(l, 'proof') or '')],
                         'lemma': attr(l, 'lemma'), 'solution': solution,
                         'context': attr(l, key) or default})
             i = end

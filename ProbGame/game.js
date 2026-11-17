@@ -3081,6 +3081,11 @@
     get proved() { try { return localStorage.getItem(this.key + 'd') === '1' } catch { return false } }
     get canUndo() { return !this.busy && (this.lines.length > 0 || this.fill.length > 0) }
     get gapsOpen() { return this.fill.length < this.gapCount }
+    // (a gap with a choice, ⟦!x ‖ x, !x, false⟧: what is meant, and what is offered)
+    get gapChoices() {
+      const g = (this.template.match(/⟦[^⟧]*⟧/g) ?? [])[this.fill.length]
+      return g && g.includes('‖') ? g.slice(1, -1).split('‖')[1].split(',').map(c => c.trim()).filter(Boolean) : null
+    }
     // the statement with the gaps as filled (▢ where not yet)
     filledStatement() {
       let i = 0
@@ -3380,6 +3385,10 @@
       const key = (label, title, f, cls = '') => { const b = el('button', 'pg-key' + cls, label); b.type = 'button'; b.title = title; b.setAttribute('aria-label', title); b.disabled = this.busy; b.addEventListener('click', f); box.append(b); return b }
       // (a gap open: the names of the statement, and signs to put a term together)
       const binders = () => [...this.template.matchAll(/\(([^():]+?)\s*:\s*([^()]*)\)/g)].filter(m => !/^Type\b/.test(m[2].trim())).flatMap(m => m[1].trim().split(/\s+/))
+      if (this.gapsOpen && this.gapChoices) {
+        for (const c of this.gapChoices) key(c, c, () => { this.input.value = c; this.run() }, ' pg-key-name pg-key-choice')
+        return box
+      }
       if (this.gapsOpen) {
         for (const n of [...new Set(binders()), '*', 'σ', '(', ')']) key(n, n, () => this.putTerm(n), ' pg-key-name')
         key('⌫', tr('Delete the last word'), () => this.erase(), ' pg-key-op')
@@ -3422,7 +3431,8 @@
         const again = el('button', 'pg-tool pg-gap-again', '✎ ' + tr('Fill the gaps anew')); again.type = 'button'; again.disabled = this.busy
         again.addEventListener('click', () => this.reopen(0))
         parts.push(again)
-      } else if (this.gapsOpen) parts.push(el('div', 'pg-info pg-gap-info', tr('What belongs in the gap ▢? Put it together below and take it with Run. Then you prove the statement as you filled it: if it is wrong, the proof will not come to an end.')))
+      } else if (this.gapsOpen && this.gapChoices) parts.push(el('div', 'pg-info pg-gap-info', tr('What belongs in the gap ▢? Choose it below. Then you prove the statement as you filled it: if it is wrong, the proof will not come to an end.')))
+      else if (this.gapsOpen) parts.push(el('div', 'pg-info pg-gap-info', tr('What belongs in the gap ▢? Put it together below and take it with Run. Then you prove the statement as you filled it: if it is wrong, the proof will not come to an end.')))
       // (the board's solution is not repeated here: the Board tab at the top shows it)
       const sol = null
       if (!BACKEND) {
@@ -3513,7 +3523,7 @@
       // the input
       const row = el('div', 'pg-proof-input')
       this.input = el('input'); this.input.type = 'text'; this.input.spellcheck = false; this.input.autocapitalize = 'off'; this.input.autocomplete = 'off'; this.input.enterKeyHint = 'go'; this.input.setAttribute('autocorrect', 'off')
-      this.input.placeholder = this.gapsOpen ? tr('what goes into ▢, e.g. p') : this.world0 ? tr('a tactic, e.g. rw [pure_bind]') : this.worldB ? tr('a tactic, e.g. rfl') : tr('a tactic, e.g. rw [coin_true]')
+      this.input.placeholder = this.gapsOpen ? (this.gapChoices ? tr('what goes into ▢: choose it above') : tr('what goes into ▢, e.g. p')) : this.world0 ? tr('a tactic, e.g. rw [pure_bind]') : this.worldB ? tr('a tactic, e.g. rfl') : tr('a tactic, e.g. rw [coin_true]')
       this.input.value = this.typed ?? ''
       // (on a phone: no keyboard, unless asked for with ⌨)
       if (TOUCH() && !KEYBOARD) { this.input.readOnly = true; this.input.inputMode = 'none' }
@@ -3671,6 +3681,8 @@
     'Keyboard': 'Tastatur', 'No keyboard': 'Keine Tastatur',
     'Zoom in': 'Vergrößern', 'Zoom out': 'Verkleinern', 'Whole board': 'Ganzes Spielfeld',
     'Fill the gap ▢ in the statement first.': 'Erst die Lücke ▢ in der Aussage füllen.', 'Fill the gaps anew': 'Lücken neu füllen',
+    'what goes into ▢: choose it above': 'was in ▢ gehört: wähl es oben aus',
+    'What belongs in the gap ▢? Choose it below. Then you prove the statement as you filled it: if it is wrong, the proof will not come to an end.': 'Was gehört in die Lücke ▢? Wähl es unten aus. Dann beweist du die Aussage so, wie du sie gefüllt hast: Ist sie falsch, kommt der Beweis nie ans Ende.',
     'What belongs in the gap ▢? Put it together below and take it with Run. Then you prove the statement as you filled it: if it is wrong, the proof will not come to an end.': 'Was gehört in die Lücke ▢? Setz es unten zusammen und übernimm es mit Ausführen. Dann beweist du die Aussage so, wie du sie gefüllt hast: Ist sie falsch, kommt der Beweis nie ans Ende.',
     'what goes into ▢, e.g. p': 'was in ▢ kommt, z. B. p',
     'New in this level': 'Neu in diesem Level', 'New in this proof': 'Neu in diesem Beweis', 'Solve the board first.': 'Erst das Spielfeld lösen.',
