@@ -4045,7 +4045,12 @@
     let leanOpen = false
     try { leanOpen = localStorage.getItem('pg:lean') === '1' } catch {}
     lean.addEventListener('click', () => { leanOpen = !leanOpen; try { localStorage.setItem('pg:lean', leanOpen ? '1' : '0') } catch {}; refresh() })
-    tips.addEventListener('click', () => tipBox(tr('Tips'), view() !== 'proof' ? boardTip(current, true) : levels[current] instanceof LeanOnly ? [...boardTip(current, true), ...proofTip(current)] : proofTip(current)))
+    // (the button Tips: the same tips as those that came by themselves; in a level without any, the
+    // text of the level)
+    const sameTips = k => view() !== 'proof' ? (quiet(k) ? [] : boardTip(k, k === 0, true))
+      : levels[k] instanceof LeanOnly ? (quiet(k) ? [] : [...boardTip(k, k === 0, true), ...proofTip(k, true)]) : proofTip(k, true)
+    const allTips = k => view() !== 'proof' ? boardTip(k, true) : levels[k] instanceof LeanOnly ? [...boardTip(k, true), ...proofTip(k)] : proofTip(k)
+    tips.addEventListener('click', () => { const t = sameTips(current).filter(s => s.nodes.length); tipBox(tr('Tips'), t.length ? t : allTips(current)) })
     tabBoard.addEventListener('click', () => setView('board'))
     tabLean.addEventListener('click', () => { if (levels[current].solved) setView('proof') })
     // Next: from the board to the Lean proof of the same level, from there to the next level
