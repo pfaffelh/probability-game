@@ -4205,6 +4205,80 @@
     document.documentElement.classList.add('pg-front')
   }
 
+  // ---------------------------------------------------------------- pictures of the front page
+
+  // `:::picture (kind := "coin move binom geom")`: a row of small bar charts, with captions; `lean`:
+  // a level in Lean, its statement and its proof.
+  Object.assign(DE, {
+    'A coin toss: coin p is true with probability p.': 'Ein Münzwurf: coin p ist true mit Wahrscheinlichkeit p.',
+    'Image measure: the mass of each point goes to its image under f (here: is the number even?).': 'Bildmaß: Die Masse jedes Punkts geht zu seinem Bild unter f (hier: ist die Zahl gerade?).',
+    'Binomial distribution: the number of true among n = 8 coins.': 'Binomialverteilung: die Anzahl der true unter n = 8 Münzen.',
+    'Geometric distribution: the number of false before the first true.': 'Geometrische Verteilung: die Anzahl der false vor dem ersten true.',
+    'Thinning in Lean: toss coin p, and if it shows true, coin q. The statement and its proof, one tactic per line.': 'Ausdünnen in Lean: Wirf coin p und, wenn sie true zeigt, coin q. Die Aussage und ihr Beweis, eine Taktik pro Zeile.',
+  })
+  const PIC_COLOURS = ['#e2b25c', '#7fa7d9', '#9cc79a', '#d98f7f']
+  // A bar chart: bars = [{label, parts: [{mass, colour}], text}], on a box of width w and height h.
+  function barChart(g, bars, x0, w, h, top, max) {
+    const base = top + h, step = w / bars.length, bw = Math.min(step * 0.62, 34)
+    g.append(svg('line', { x1: x0, y1: base, x2: x0 + w, y2: base, class: 'pg-pic-axis' }))
+    bars.forEach((b, i) => {
+      const cx = x0 + step * (i + 0.5)
+      let y = base
+      for (const part of b.parts) {
+        const hh = part.mass / max * (h - 16)
+        y -= hh
+        g.append(svg('rect', { x: cx - bw / 2, y, width: bw, height: hh, fill: part.colour ?? PIC_COLOURS[0], class: 'pg-pic-bar' }))
+      }
+      if (b.text) g.append(svg('text', { x: cx, y: y - 4, 'text-anchor': 'middle', class: 'pg-pic-mass' }, b.text))
+      g.append(svg('text', { x: cx, y: base + 14, 'text-anchor': 'middle', class: 'pg-pic-point' }, b.label))
+    })
+  }
+  function pictureOf(kind) {
+    const fig = el('div', 'pg-pic')
+    const box = (W, H) => { const g = svg('svg', { viewBox: `0 0 ${W} ${H}`, class: 'pg-pic-svg', role: 'img' }); fig.append(g); return g }
+    const bars = (masses, labels = masses.map((_, k) => String(k))) => masses.map((m, k) => ({ label: labels[k], parts: [{ mass: m }] }))
+    if (kind === 'coin') {
+      const g = box(220, 120)
+      barChart(g, [{ label: 'false', parts: [{ mass: 0.7 }], text: '1 − p' }, { label: 'true', parts: [{ mass: 0.3 }], text: 'p' }], 50, 120, 92, 6, 0.75)
+      fig.append(el('figcaption', '', tr('A coin toss: coin p is true with probability p.')))
+    } else if (kind === 'move') {
+      const g = box(220, 120), ms = [0.1, 0.3, 0.2, 0.4]
+      barChart(g, ms.map((m, k) => ({ label: String(k + 1), parts: [{ mass: m, colour: PIC_COLOURS[k] }] })), 4, 100, 92, 6, 0.75)
+      const arrow = svg('g', { class: 'pg-pic-arrow' })
+      arrow.append(svg('line', { x1: 108, y1: 64, x2: 128, y2: 64 }), svg('path', { d: 'M128,58 L136,64 L128,70 Z' }))
+      g.append(arrow, svg('text', { x: 120, y: 56, 'text-anchor': 'middle', class: 'pg-pic-f' }, 'f'))
+      barChart(g, [{ label: '1, 3', parts: [0, 2].map(k => ({ mass: ms[k], colour: PIC_COLOURS[k] })) },
+                   { label: '2, 4', parts: [1, 3].map(k => ({ mass: ms[k], colour: PIC_COLOURS[k] })) }], 140, 76, 92, 6, 0.75)
+      fig.append(el('figcaption', '', tr('Image measure: the mass of each point goes to its image under f (here: is the number even?).')))
+    } else if (kind === 'binom') {
+      const n = 8, p = 0.4, choose = (n, k) => k === 0 ? 1 : choose(n - 1, k - 1) * n / k
+      const g = box(220, 120)
+      barChart(g, bars([...Array(n + 1)].map((_, k) => choose(n, k) * p ** k * (1 - p) ** (n - k))), 6, 208, 92, 6, 0.3)
+      fig.append(el('figcaption', '', tr('Binomial distribution: the number of true among n = 8 coins.')))
+    } else if (kind === 'geom') {
+      const p = 0.35, g = box(220, 120)
+      barChart(g, [...bars([...Array(8)].map((_, k) => (1 - p) ** k * p)), { label: '…', parts: [] }], 6, 208, 92, 6, 0.38)
+      fig.append(el('figcaption', '', tr('Geometric distribution: the number of false before the first true.')))
+    } else if (kind === 'lean') {
+      const pre = el('pre', 'pg-pic-lean')
+      const line = (...parts) => { for (const [cls, t] of parts) pre.append(cls ? el('span', cls, t) : document.createTextNode(t)); pre.append('\n') }
+      line(['pg-pic-kw', 'theorem'], [null, ' coin_thin (p q : I) :'])
+      line([null, '    ('], ['pg-pic-kw', 'do let'], [null, ' x ← coin p; '], ['pg-pic-kw', 'bif'], [null, ' x '], ['pg-pic-kw', 'then'], [null, ' coin q '], ['pg-pic-kw', 'else'], [null, ' pure false)'])
+      line([null, '      = coin (p * q) := '], ['pg-pic-kw', 'by'])
+      for (const t of ['apply bool_ext', 'rw [bind_true]', 'norm_num', 'rw [mass_mul]']) line([null, '  '], ['pg-pic-tac', t])
+      fig.classList.add('pg-pic-wide')
+      fig.append(pre, el('figcaption', '', tr('Thinning in Lean: toss coin p, and if it shows true, coin q. The statement and its proof, one tactic per line.')))
+    }
+    return fig
+  }
+  function pictures() {
+    for (const f of document.querySelectorAll('figure.pg-picture')) {
+      const row = el('div', 'pg-pic-row')
+      for (const kind of (f.dataset.kind ?? '').split(/\s+/).filter(Boolean)) row.append(pictureOf(kind))
+      f.replaceChildren(row)
+    }
+  }
+
   // ---------------------------------------------------------------- the lexicon
 
   // Every move and building block (with its picture), and every tactic and rule, of the worlds of
@@ -4259,6 +4333,7 @@
     languageSwitch()
     stage()
     lexicon()
+    pictures()
     startButton()
     worldMap()
   }
