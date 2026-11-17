@@ -30,61 +30,7 @@ $`p` ist `coin p`. Ein Zug wird `f <$> μ` geschrieben: die Abbildung `f`, angew
 `μ`, ihr Bildmaß.
 :::
 
-::::leanonly (proof := "(a b : ENNReal) : (bif true then a else b) = a") (lemma := "Bool.cond_true") (uses := "-")
-:::en
-*bif with true.* `bif c then a else b` is `a` when `c` is `true`, and `b` when it is `false`: an
-if-then-else for a `Bool`. *One Coin* needs it to say where the mass of a move goes.
-:::
-
-:::de
-*bif mit true.* `bif c then a else b` ist `a`, wenn `c` gleich `true` ist, und `b`, wenn es `false`
-ist: ein Wenn-dann-sonst für ein `Bool`. *Eine Münze* braucht es, um zu sagen, wohin die Masse eines
-Zuges geht.
-:::
-
-:::proofen
-`a b : ENNReal` are two masses. `bif` is defined by the two cases of `c`; here `c` is `true`.
-
-*Tip.* `rfl`.
-:::
-
-:::proofde
-`a b : ENNReal` sind zwei Massen. `bif` ist durch die zwei Fälle von `c` definiert; hier ist `c`
-gleich `true`.
-
-*Tipp.* `rfl`.
-:::
-:::solution
-```
-rfl
-```
-:::
-::::
-
-::::leanonly (proof := "(a b : ENNReal) : (bif false then a else b) = b") (lemma := "Bool.cond_false") (uses := "-")
-:::en
-*bif with false.* The other case: the second.
-:::
-
-:::de
-*bif mit false.* Der andere Fall: das Zweite.
-:::
-
-:::proofen
-*Tip.* `rfl`.
-:::
-
-:::proofde
-*Tipp.* `rfl`.
-:::
-:::solution
-```
-rfl
-```
-:::
-::::
-
-::::leanonly (proof := "(p : I) : coin p true = p") (lemma := "coin_true") (uses := "-")
+::::circuit (height := "400") (inputs := "x") (gates := "") (coins := "p") (target := "bool true:p false:1-p") (context := "Lean/Rules.lean") (proof := "(p : I) : coin p true = p") (lemma := "coin_true") (play := "x>out") (uses := "-")
 :::en
 *The mass at true.* Now the coin. A coin shows `true` (heads) or `false` (tails); `coin p` is the coin
 that shows `true` with probability $`p` and `false` with probability $`1 - p`. As a distribution on
@@ -95,7 +41,7 @@ unit interval. Its counterpart $`1 - p` is written `σ p` (also in $`I`). A mass
 $`[0, \infty]` (`ENNReal`); `↑p` is $`p` as a mass. With $`p = 1` the coin always shows `true`, with $`p = 0` always
 `false`; with $`p = 1/2` it is a fair coin.
 
-This level: the mass of `coin p` at `true` is $`p`.
+On the board: the coin `x` is thrown at the top. Wire it to the output, and the output has its two masses. In Lean: the mass of `coin p` at `true` is $`p`.
 :::
 
 :::de
@@ -109,7 +55,7 @@ $`I = [0, 1]` dem Einheitsintervall. Das Gegenstück $`1 - p` schreibt man `σ p
 Masse ist eine Zahl in $`[0, \infty]` (`ENNReal`); `↑p` ist $`p` als Masse. Mit $`p = 1` zeigt die Münze immer
 `true`, mit $`p = 0` immer `false`; mit $`p = 1/2` ist sie fair.
 
-Dieses Level: Die Masse von `coin p` bei `true` ist $`p`.
+Auf dem Spielfeld: Oben wird die Münze `x` geworfen. Verdrahte sie mit dem Ausgang, und der Ausgang hat ihre zwei Massen. In Lean: Die Masse von `coin p` bei `true` ist $`p`.
 :::
 
 :::proofen

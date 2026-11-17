@@ -271,7 +271,60 @@ rfl
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "and, or, not") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : ((x || y) && !(x && y)) = (bif x then (bif y then false else true) else (bif y then true else false))") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out") (new := "<;>") (uses := "-")
+::::leanonly (proof := "(a b : Bool) : (bif true then a else b) = a") (lemma := "Bool.cond_true") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "-")
+:::en
+*bif with true.* `bif c then a else b` is `a` when `c` is `true`, and `b` when it is `false`: an
+if-then-else for a `Bool`. The boss needs it, and later the coins: where the mass of a move goes.
+:::
+
+:::de
+*bif mit true.* `bif c then a else b` ist `a`, wenn `c` gleich `true` ist, und `b`, wenn es `false`
+ist: ein Wenn-dann-sonst für ein `Bool`. Der Endgegner braucht es, und später die Münzen: wohin die
+Masse eines Zuges geht.
+:::
+
+:::proofen
+`bif` is defined by the two cases of `c`; here `c` is `true`.
+
+*Tip.* `rfl`.
+:::
+
+:::proofde
+`bif` ist durch die zwei Fälle von `c` definiert; hier ist `c` gleich `true`.
+
+*Tipp.* `rfl`.
+:::
+:::solution
+```
+rfl
+```
+:::
+::::
+
+::::leanonly (proof := "(a b : Bool) : (bif false then a else b) = b") (lemma := "Bool.cond_false") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "-")
+:::en
+*bif with false.* The other case: the second.
+:::
+
+:::de
+*bif mit false.* Der andere Fall: das Zweite.
+:::
+
+:::proofen
+*Tip.* `rfl`.
+:::
+
+:::proofde
+*Tipp.* `rfl`.
+:::
+:::solution
+```
+rfl
+```
+:::
+::::
+
+::::circuit (inputs := "x y") (gates := "and, or, not") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : ((x || y) && !(x && y)) = (bif x then (bif y then ⟦false ‖ true, false⟧ else ⟦true ‖ true, false⟧) else (bif y then ⟦true ‖ true, false⟧ else ⟦false ‖ true, false⟧))") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out") (new := "<;>") (uses := "-")
 :::en
 *The boss: exactly one.* Two inputs now, and four rows: one for each pair of values. `true` when exactly one
 input is `true`: at least one, but not both. In Lean this is `xor`, written `x ^^ y`.
