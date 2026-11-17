@@ -121,15 +121,13 @@ Tippe einen Spielstein an oder zieh ihn aufs Spielfeld, um ihn zu benutzen!
 
 ::::hint (anchor := "item:rfl")
 :::en
-*Equal* means here: *equal after reduction*. `rfl` may first compute with the definitions, and
-that can also be unfolding one: `!true` unfolds by the definition of `not`,
-`fun | true => false | false => true`, to `false`. Then both sides are the same.
+*Equal* means here: *equal after reduction*. `not` (abbreviated `!` here) is defined as the function
+`fun | true => false | false => true`.
 :::
 
 :::de
-*Gleich* heißt hier: *gleich nach Reduktion*. `rfl` darf zuerst mit den Definitionen rechnen, und
-das kann auch das Auflösen einer Definition sein: `!true` wird mit der Definition von `not`,
-`fun | true => false | false => true`, zu `false` aufgelöst. Danach sind beide Seiten gleich.
+*Gleich* heißt hier: *gleich nach Reduktion*. `not` (hier abgekürzt `!`) ist definiert als die
+Funktion `fun | true => false | false => true`.
 :::
 ::::
 
