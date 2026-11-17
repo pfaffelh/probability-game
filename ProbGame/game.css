@@ -144,9 +144,9 @@ header .pg-langs { align-self: center; margin: 0 0.8em 0 0.5em; flex-shrink: 0; 
 .pg-proof-error pre { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.85em; max-height: 12em; overflow-y: auto; margin: 0.3em 0 0; }
 .pg-proof-advice { font-family: var(--verso-structure-font-family, sans-serif); font-weight: bold; }
 .pg-proof-error summary { cursor: pointer; font-size: 0.85em; color: #8a4a40; }
-.pg-proof-input { display: flex; gap: 0.5rem; margin: 0.4rem 0; }
-.pg-proof-input input { flex: 1 1 auto; min-width: 0; font: 16px var(--verso-code-font-family, monospace); padding: 0.45em 0.6em; border: 2px solid #c9b48f; border-radius: 10px; }
-.pg-proof-input input:focus { outline: none; border-color: #2e6fb8; }
+.pg-proof-input { display: flex; align-items: flex-start; gap: 0.5rem; margin: 0.4rem 0; }
+.pg-proof-input textarea { resize: none; overflow: hidden; line-height: 1.35; box-sizing: border-box; display: block; flex: 1 1 auto; min-width: 0; font: 16px var(--verso-code-font-family, monospace); padding: 0.45em 0.6em; border: 2px solid #c9b48f; border-radius: 10px; }
+.pg-proof-input textarea:focus { outline: none; border-color: #2e6fb8; }
 .pg-check:disabled { background: #9db6d6; cursor: default; }
 .pg-delete { font: inherit; font-family: var(--verso-structure-font-family, sans-serif); color: #8a3a2a; background: white; border: 1px solid #c98a7a; border-radius: 20px; padding: 0.35em 1em; cursor: pointer; margin-left: 0.4em; }
 .pg-delete:hover:not(:disabled) { background: #fbeeea; }
@@ -688,7 +688,7 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
   .pg-stage .pg-proof-side { flex: 0 0 auto; height: 44%; display: flex; flex-direction: column; border-top: 2px solid #c9b48f; padding-top: 0.4rem; background: #fffdf8; }
   .pg-stage .pg-proof-side .pg-proof-input { margin: 0 0 0.2rem; }
   .pg-stage .pg-proof-side .pg-inventory { flex: 1 1 0; min-height: 0; overflow-y: auto; margin: 0; }
-  .pg-stage .pg-proof-input input[readonly] { caret-color: transparent; background: #fffaf0; }
+  .pg-stage .pg-proof-input textarea[readonly] { caret-color: transparent; background: #fffaf0; }
 }
 
 /* the input right below the goal, and never out of sight: the proof only as high as it needs; when it
@@ -718,7 +718,7 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
   .pg-stage .pg-proof-side { flex: 1 1 0; height: auto; min-height: 0; }
   .pg-keys { gap: 4px; margin: 0.1rem 0 0.3rem; }
   .pg-key { min-width: 2.1em; height: 2em; padding: 0 0.45em; font-size: 14px; border-radius: 7px; }
-  .pg-stage .pg-proof-side .pg-proof-input input { padding: 0.3em 0.5em; }
+  .pg-stage .pg-proof-side .pg-proof-input textarea { padding: 0.3em 0.5em; }
   .pg-stage .pg-proof-side .pg-check { padding-block: 0.3em; }
 }
 @media (max-width: 700px) {

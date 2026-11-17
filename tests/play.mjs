@@ -88,7 +88,7 @@ for (const [name, vp] of [['desktop', { width: 1200, height: 900 }], ['phone', {
       }
       await lvl().locator('.pg-solved .pg-next').click()
       // the proof
-      const input = lvl().locator('.pg-proof-input input')
+      const input = lvl().locator('.pg-proof-input textarea')
       await input.waitFor({ timeout: 60000 })
       const idle = async () => { await page.waitForFunction(() => !document.querySelector('.pg-level:not([hidden]) .pg-proof')?.textContent.includes('denkt'), null, { timeout: 120000 }) }
       await idle()

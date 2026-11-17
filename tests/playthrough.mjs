@@ -61,7 +61,7 @@ async function playCircuit(play) {
 }
 
 async function prove(lines) {
-  const input = page.locator(`${L}.pg-proof-input input`)
+  const input = page.locator(`${L}.pg-proof-input textarea`)
   await input.waitFor({ timeout: 30000 }).catch(() => {})
   await idle()
   for (const line of lines) {
