@@ -257,14 +257,24 @@ html.pg-playing .prev-next-buttons { display: none !important; }
 }
 @media (max-height: 500px) { .pg-stage { height: auto; min-height: 100svh; } }
 
-/* the tips: speech bubbles, as large as their text; one that points at something has its tail at it,
-   the thing ringed and the rest dimmed; one that does not stands in the middle over a dimmed page */
-.pg-tip-overlay { position: fixed; inset: 0; z-index: 60; }
-.pg-tip-overlay.pg-tip-dim { background: rgba(40, 30, 15, 0.35); }
-.pg-tip-spot { position: fixed; border-radius: 10px; box-shadow: 0 0 0 2px #b0782a, 0 0 0 200vmax rgba(40, 30, 15, 0.35); pointer-events: none; }
+/* the tips: speech bubbles beside the thing they point at (ringed), or a strip in the stage; nothing
+   dimmed, the board stays playable */
+.pg-tip-overlay { position: fixed; inset: 0; z-index: 60; pointer-events: none; }
+.pg-tip-spot { position: fixed; border-radius: 10px; box-shadow: 0 0 0 3px #b0782a, 0 0 14px 4px rgba(176, 120, 42, 0.45); pointer-events: none; }
 .pg-tip-tail { position: fixed; width: 18px; height: 18px; background: white; transform: rotate(45deg); border-radius: 3px; box-shadow: 0 0 12px rgba(0, 0, 0, 0.25); }
+.pg-tip-strip { flex: none; margin: 0 0 0.4rem; }
+.pg-stage > .pg-status + .pg-tip-strip, .pg-tip-strip + .pg-status { margin: 0.3rem 0 0; }
+.pg-tip-card.pg-tip-in-strip {
+  position: static; width: auto; min-width: 0; max-width: none; max-height: 32vh; pointer-events: auto;
+  border: 1px solid #e3cfa6; border-left: 5px solid #b0782a; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12); padding: 0.2em 0.9em 0.45em;
+}
+.pg-tip-in-strip .pg-tip-top { cursor: default; touch-action: auto; }
+.pg-tip-in-strip .pg-tip-x { width: 36px; height: 36px; }
+.pg-tip-in-strip .pg-tip-foot { margin-top: 0.3em; }
+.pg-tip-in-strip .pg-tip-ok { min-height: 36px; padding: 0.35em 1.2em; }
+@media (max-width: 760px), (max-height: 500px) { .pg-tip-card.pg-tip-in-strip { max-height: 38svh; } }
 .pg-tip-card {
-  position: fixed; background: white; border-radius: 12px; padding: 0.6em 1.1em 0.7em; width: max-content; min-width: min(14rem, calc(100vw - 24px)); max-width: min(36rem, calc(100vw - 24px));
+  position: fixed; pointer-events: auto; background: white; border-radius: 12px; padding: 0.6em 1.1em 0.7em; width: max-content; min-width: min(14rem, calc(100vw - 24px)); max-width: min(36rem, calc(100vw - 24px));
   display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3); box-sizing: border-box;
 }
 .pg-tip-top { display: flex; align-items: center; gap: 0.5em; flex: none; cursor: move; touch-action: none; user-select: none; }
