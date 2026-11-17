@@ -26,7 +26,7 @@ Wahrscheinlichkeit $`p` `true` zeigt und mit Wahrscheinlichkeit $`1 - p` `false`
 `(coin p : DiscreteMeasure Bool)`.
 :::
 
-::::circuit (height := "400") (inputs := "x") (gates := "") (coins := "p") (target := "bool true:p false:1-p") (context := "Lean/Rules.lean") (proof := "(p : I) : coin p true = p") (lemma := "coin_true") (play := "x>out") (uses := "-")
+:::::circuit (height := "400") (inputs := "x") (gates := "") (coins := "p") (target := "bool true:p false:1-p") (context := "Lean/Rules.lean") (proof := "(p : I) : coin p true = p") (lemma := "coin_true") (play := "x>out") (uses := "-")
 :::en
 *The mass at true.* A coin shows `true` (heads) or `false` (tails); `coin p` is the coin
 that shows `true` with probability $`p` and `false` with probability $`1 - p`. As a distribution on
@@ -38,6 +38,20 @@ that shows `true` with probability $`p` and `false` with probability $`1 - p`. A
 ist die Münze, die mit Wahrscheinlichkeit $`p` `true` zeigt und mit Wahrscheinlichkeit $`1 - p`
 `false`. Als Verteilung auf `Bool` hat sie zwei Massen: $`p` bei `true` und $`1 - p` bei `false`.
 :::
+
+::::hint (anchor := "input")
+:::en
+A coin shows `true` (heads) or `false` (tails); `coin p` is the coin that shows `true` with
+probability $`p` and `false` with probability $`1 - p`. As a distribution on `Bool` it has two
+masses: $`p` at `true` and $`1 - p` at `false`.
+:::
+
+:::de
+Eine Münze zeigt `true` (Kopf) oder `false` (Zahl); `coin p` ist die Münze, die mit
+Wahrscheinlichkeit $`p` `true` zeigt und mit Wahrscheinlichkeit $`1 - p` `false`. Als Verteilung
+auf `Bool` hat sie zwei Massen: $`p` bei `true` und $`1 - p` bei `false`.
+:::
+::::
 
 :::proofen
 `(coin p) true` is the mass of the coin at `true`. A distribution is, in Lean, its masses (its *weight* function):
@@ -89,7 +103,7 @@ Die Aussage ist die Regel `coin_true`; bewiesen, ist sie in deinem Inventar.
 rfl
 ```
 :::
-::::
+:::::
 
 :::::leanonly (proof := "(p : I) : coin p false = σ p") (lemma := "coin_false") (uses := "-")
 ::::hint (anchor := "statement")
@@ -203,6 +217,9 @@ rw [Fintype.sum_bool, Bool.cond_true, Bool.cond_false]
 ::::
 
 ::::leanonly (proof := "(c : Bool) : (c == true) = c") (lemma := "beq_true") (uses := "-")
+:::hint (anchor := "none")
+:::
+
 :::en
 *Equal to true.* `c == b` is `true` when `c` and `b` are equal, else `false`: a test, itself a
 `Bool`. Testing `c == true` gives back `c` itself.

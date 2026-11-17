@@ -3165,7 +3165,13 @@
     // Lean on the proof `lines`: on success they become the proof, else the error is shown
     async check(lines, quiet = false) {
       let r = await this.post('/check', { session: this.session, proof: lines.join('\n') })
-      if (r.error?.kind === 'session') { await this.begin(); return false }
+      // (Lean on the server has forgotten the proof, after a restart: start it anew and ask once more)
+      if (r.error?.kind === 'session') {
+        const s = await this.post('/start', { context: this.context, statement: `example ${this.statement}` })
+        if (s.error) { this.error = s.error.message; return false }
+        this.session = s.session
+        r = await this.post('/check', { session: this.session, proof: lines.join('\n') })
+      }
       if (r.error) { this.error = r.error.message; return false }
       const bad = r.steps.flatMap(s => s.diags.filter(d => d.severity === 1).map(d => d.message.text))
       if (bad.length) {
@@ -3237,7 +3243,13 @@
       const open = (line.match(/\[/g) ?? []).length - (line.match(/\]/g) ?? []).length
       if (open > 0) line += ']'.repeat(open)
       this.choice = null
-      if (!line || this.busy || !this.session) return
+      if (!line || this.busy) return
+      // (no proof on the server, as Lean could not be reached: try again, and say so when it fails)
+      if (!this.session) {
+        if (!BACKEND) return
+        await this.begin()
+        if (!this.session) { this.failed = line; this.error ||= tr('Lean cannot be reached: {e}', { e: '' }); this.render(); return }
+      }
       const no = this.refuse(line)
       // (a line that is refused, or that Lean does not take, leaves the input: it is shown with the error)
       this.failed = null
@@ -3780,11 +3792,12 @@
     card.append(el('code', 'pg-inv-sig', it.sig ?? it.name), el('div', '', LANG === 'de' ? it.de ?? '' : it.en ?? ''))
     return card
   }
-  // A tip as speech bubbles, one after the other: first the text of the level, in a bubble as large as
-  // it needs; then one for each new move or item, its tail at it on the screen and the rest dimmed. A
-  // bubble with nothing to point at stands in the middle. ✕, Escape or a tap beside it closes them all;
-  // Next goes on. (a tip asked for while one is open goes after it: a level in Lean only has its text,
-  // then its proof)
+  // A tip as speech bubbles, one after the other. Nothing is dimmed and the board stays playable: a
+  // tap beside the bubble closes it (and still does what it does). A bubble that points at something
+  // stands beside it, the thing ringed (on a large screen); a bubble with nothing to point at, and every
+  // bubble on a phone, is a strip in the stage: above the board on a large screen, above the tool bar
+  // on a phone; the board makes room for it. ✕ or Escape close them all; Next goes on. (a tip asked
+  // for while one is open goes after it: a level in Lean only has its text, then its proof)
   let tour = null
   function tipBox(head, steps, done = () => {}) {
     steps = steps.filter(s => s.nodes.length)
@@ -3793,40 +3806,71 @@
     const overlay = el('div', 'pg-tip-overlay'), spot = el('div', 'pg-tip-spot'), tail = el('div', 'pg-tip-tail'), card = el('div', 'pg-tip-card')
     const top = el('div', 'pg-tip-top'), title = el('div', 'pg-tip-head'), x = el('button', 'pg-tip-x', '✕'), body = el('div', 'pg-tip-body')
     const foot = el('div', 'pg-tip-foot'), count = el('span', 'pg-tip-count'), ok = el('button', 'pg-tip-ok')
+    const stage = document.querySelector('.pg-stage'), strip = el('div', 'pg-tip-strip')
     x.type = ok.type = 'button'; x.setAttribute('aria-label', tr('Close'))
     const dones = [done]
     let i = 0
     const M = 12, GAP = 14, PAD = 4
-    // (where the bubble goes: below its thing or above it, where there is more room; in the middle
-    // when the thing is not on the screen or there is no room beside it)
+    const shown = a => !!a && !!(a.offsetParent || (a instanceof SVGElement && a.getClientRects().length))
     let moved = false
     const place = ev => {
       if (moved || (ev?.target instanceof Node && card.contains(ev.target))) return
-      const a = steps[i].anchor?.(), r = a && (a.offsetParent || (a instanceof SVGElement && a.getClientRects().length)) ? a.getBoundingClientRect() : null
+      const a = steps[i].anchor?.(), has = shown(a)
+      // (the strip: where the bubble goes when it is one)
+      if (stage && (!has || !WIDE.matches)) {
+        const at = WIDE.matches ? stage.querySelector(':scope > .pg-stage-top') : stage.querySelector(':scope > .pg-status')
+        if (at && (WIDE.matches ? at.nextElementSibling !== strip : at.previousElementSibling !== strip)) WIDE.matches ? at.after(strip) : at.before(strip)
+        if (card.parentNode !== strip) strip.append(card)
+        card.classList.add('pg-tip-in-strip'); card.style.left = card.style.top = card.style.maxHeight = card.style.maxWidth = ''
+        tail.hidden = true
+      } else {
+        strip.remove()
+        if (card.parentNode !== overlay) overlay.append(card)
+        card.classList.remove('pg-tip-in-strip')
+      }
+      const r = has ? a.getBoundingClientRect() : null
       const W = document.documentElement.clientWidth, H = innerHeight
       const on = r && r.width > 0 && r.bottom > 0 && r.top < H
-      const below = on ? H - r.bottom - GAP - M : 0, above = on ? r.top - GAP - M : 0
-      const fits = on && Math.max(below, above) >= 120
-      overlay.classList.toggle('pg-tip-dim', !fits)
-      spot.hidden = tail.hidden = !fits
-      if (!fits) {
+      spot.hidden = !on
+      if (on) Object.assign(spot.style, { left: `${r.left - PAD}px`, top: `${r.top - PAD}px`, width: `${r.width + 2 * PAD}px`, height: `${r.height + 2 * PAD}px` })
+      if (card.parentNode === strip) return
+      card.style.maxWidth = ''
+      if (!on) {
+        // (no stage, or the thing is not on the screen: in the middle)
+        tail.hidden = true
         card.style.maxHeight = `${H - 2 * M}px`
         card.style.left = `${Math.max(M, (W - card.offsetWidth) / 2)}px`; card.style.top = `${Math.max(M, (H - card.offsetHeight) / 2)}px`
         return
       }
-      Object.assign(spot.style, { left: `${r.left - PAD}px`, top: `${r.top - PAD}px`, width: `${r.width + 2 * PAD}px`, height: `${r.height + 2 * PAD}px` })
-      card.style.maxHeight = `${Math.max(below, above)}px`
+      tail.hidden = false
+      // beside the level, over the list of worlds, when there is room; else beside the thing, where
+      // there is more room; else below or above it
+      const box = (a.closest('.pg-level') ?? a).getBoundingClientRect(), cy = r.top + r.height / 2
+      const outR = W - box.right - GAP - M, outL = box.left - GAP - M
+      const out = Math.max(outR, outL) >= 260, R = out ? box.right : r.right, L = out ? box.left : r.left
+      const right = W - R - GAP - M, left = L - GAP - M
+      if (Math.max(right, left) >= 260) {
+        const toRight = right >= left
+        card.style.maxWidth = `${Math.min(576, toRight ? right : left)}px`; card.style.maxHeight = `${H - 2 * M}px`
+        const w = card.offsetWidth, h = card.offsetHeight
+        const y = Math.min(Math.max(M, cy - h / 2), H - M - h)
+        card.style.left = `${toRight ? R + GAP : L - GAP - w}px`; card.style.top = `${y}px`
+        tail.style.left = `${(toRight ? R + GAP : L - GAP) - 9}px`
+        tail.style.top = `${Math.min(Math.max(y + 14, cy - 9), y + h - 32)}px`
+        return
+      }
+      const below = H - r.bottom - GAP - M, above = r.top - GAP - M
       const down = below >= card.offsetHeight || below >= above
-      card.style.maxHeight = `${down ? below : above}px`
+      card.style.maxHeight = `${Math.max(120, down ? below : above)}px`
       const w = card.offsetWidth, h = card.offsetHeight, cx = r.left + r.width / 2
-      const left = Math.min(Math.max(M, cx - w / 2), W - M - w)
-      card.style.left = `${left}px`; card.style.top = `${down ? r.bottom + GAP : r.top - GAP - h}px`
-      tail.style.left = `${Math.min(Math.max(left + 18, cx), left + w - 18) - 9}px`
+      const l = Math.min(Math.max(M, cx - w / 2), W - M - w)
+      card.style.left = `${l}px`; card.style.top = `${down ? r.bottom + GAP : r.top - GAP - h}px`
+      tail.style.left = `${Math.min(Math.max(l + 18, cx), l + w - 18) - 9}px`
       tail.style.top = `${down ? r.bottom + GAP - 9 : r.top - GAP - 9}px`
     }
-    // (the bubble can be moved, by its title bar: it then stays where it was put, until Next)
+    // (a bubble beside its thing can be moved, by its title bar: it then stays where it was put, until Next)
     top.addEventListener('pointerdown', ev => {
-      if (ev.button !== 0 || x.contains(ev.target)) return
+      if (ev.button !== 0 || x.contains(ev.target) || card.parentNode === strip) return
       ev.preventDefault()
       const r = card.getBoundingClientRect(), dx = ev.clientX - r.left, dy = ev.clientY - r.top
       top.setPointerCapture(ev.pointerId)
@@ -3846,26 +3890,30 @@
       body.replaceChildren(...s.nodes); body.scrollTop = 0
       count.textContent = steps.length > 1 ? `${i + 1} / ${steps.length}` : ''
       ok.textContent = i < steps.length - 1 ? tr('Next ›') : tr('Got it')
+      place()
       s.anchor?.()?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' })
       place(); requestAnimationFrame(() => place()); setTimeout(place, 250)
     }
     const close = () => {
-      tour = null; overlay.remove()
-      document.removeEventListener('keydown', esc); removeEventListener('resize', place); document.removeEventListener('scroll', place, true)
+      tour = null; overlay.remove(); strip.remove()
+      document.removeEventListener('keydown', esc); document.removeEventListener('pointerdown', beside, true)
+      removeEventListener('resize', place); document.removeEventListener('scroll', place, true)
       dones.forEach(f => f())
     }
     const esc = ev => { if (ev.key === 'Escape') close() }
+    const beside = ev => { if (!card.contains(ev.target)) close() }
     x.addEventListener('click', close)
     ok.addEventListener('click', () => (i < steps.length - 1 ? show(i + 1) : close()))
-    overlay.addEventListener('click', ev => { if (ev.target === overlay) close() })
     document.addEventListener('keydown', esc); addEventListener('resize', place); document.addEventListener('scroll', place, true)
     top.append(title, x)
     foot.append(count, ok)
     card.append(top, body, foot)
-    overlay.append(spot, tail, card)
+    overlay.append(spot, tail)
     document.body.append(overlay)
     tour = { add: (more, d) => { steps.push(...more); dones.push(d); show(i) } }
     show(0)
+    // (the tap that opened the tip is over; from now on a tap beside it closes it)
+    setTimeout(() => document.addEventListener('pointerdown', beside, true), 0)
     ok.focus({ preventScroll: true })
   }
   // a button of the tool bar: a word on large screens, a symbol over a short word on phones
@@ -4020,7 +4068,8 @@
     // (a level with `:::hint (anchor := "none")`: no tip comes by itself on the board (in a level in Lean
     // only: none at all); the button Tips still shows them)
     const quiet = k => !!roots[k].querySelector(':scope > .pg-text > .pg-hint[data-at="none"]')
-    const showBoardTip = k => quiet(k) || once(`${levels[k].key}:tip`, mark => tipBox(tr('Tip'), boardTip(k, k === 0, true), mark))
+    const pointing = k => levels[k] instanceof LeanOnly && !(k === 0 && worldHint()) && proofTip(k, true).some(s => s.anchor)
+    const showBoardTip = k => quiet(k) || pointing(k) || once(`${levels[k].key}:tip`, mark => tipBox(tr('Tip'), boardTip(k, k === 0, true), mark))
     const showProofTip = k => (quiet(k) && levels[k] instanceof LeanOnly) || once(`${levels[k].key}:proof-tip`, mark => tipBox(tr('Tip'), proofTip(k, true), mark))
 
     // the tool bar
@@ -4060,7 +4109,7 @@
     // (the button Tips: the same tips as those that came by themselves; in a level without any, the
     // text of the level)
     const sameTips = k => view() !== 'proof' ? (quiet(k) ? [] : boardTip(k, k === 0, true))
-      : levels[k] instanceof LeanOnly ? (quiet(k) ? [] : [...boardTip(k, k === 0, true), ...proofTip(k, true)]) : proofTip(k, true)
+      : levels[k] instanceof LeanOnly ? (quiet(k) ? [] : [...(pointing(k) ? [] : boardTip(k, k === 0, true)), ...proofTip(k, true)]) : proofTip(k, true)
     const allTips = k => view() !== 'proof' ? boardTip(k, true) : levels[k] instanceof LeanOnly ? [...boardTip(k, true), ...proofTip(k)] : proofTip(k)
     tips.addEventListener('click', () => { const t = sameTips(current).filter(s => s.nodes.length); tipBox(tr('Tips'), t.length ? t : allTips(current)) })
     tabBoard.addEventListener('click', () => setView('board'))
