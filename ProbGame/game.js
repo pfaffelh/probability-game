@@ -2453,7 +2453,8 @@
         // (tap a column: its values on the board; again: hidden)
         this.rows.forEach((r, k) => {
           const hit = svg('rect', { class: 'pg-ccol-hit', x: cx(k) - cw / 2, y: b.top + 6, width: cw, height: b.h - 12 })
-          hit.addEventListener('click', ev => { if (this.sel) return; ev.stopPropagation(); this.row = this.row === k ? null : k; this.render() })
+          // (while the output has no wire, a tap on the box chooses its input, for a wire to it, in either order)
+          hit.addEventListener('click', ev => { if (this.sel || !this.wireTo('out', 0)) return; ev.stopPropagation(); this.row = this.row === k ? null : k; this.render() })
           og.append(hit)
         })
       }
@@ -3937,7 +3938,7 @@
     const HINT_AT = { output: '.pg-coutput', input: '.pg-cinput' }
     const hintText = h => clone([...h.children])
     const worldHint = () => world.querySelector(':scope > .pg-hint[data-at="world"]')
-    const levelHints = k => [...roots[k].querySelectorAll(':scope > .pg-text > .pg-hint')].map(h => ({
+    const levelHints = k => [...roots[k].querySelectorAll(':scope > .pg-text > .pg-hint:not([data-at^="item:"]):not([data-at="none"])')].map(h => ({
       nodes: hintText(h), anchor: () => visible(roots[k].querySelector(HINT_AT[h.dataset.at] ?? h.dataset.at)) }))
     // the moves new in a level: not offered by a level before it on this page
     const newMoves = k => {
@@ -3965,17 +3966,23 @@
         : [{ nodes: [...levelText(k), ...(withWorld && worldText().length ? [el('div', 'pg-tip-sub', tr('This world')), ...worldText()] : [])] }]
       return [...first, ...at]
     }
-    const proofTip = k => [
-      { nodes: clone(levels[k].proof?.texts ?? []) },
-      ...newItems(k).map(it => ({ head: tr('New in this proof'), nodes: [itemCard(it)], anchor: atItem(k, it.name) }))]
+    // (hints at an item of the inventory: `:::hint (anchor := "item:rfl")`; the tip that comes by
+    // itself: no text of the proof when it has bubbles at the inventory)
+    const proofTip = (k, auto = false) => {
+      const at = [...[...roots[k].querySelectorAll(':scope > .pg-text > .pg-hint[data-at^="item:"]')].map(h => ({ nodes: hintText(h), anchor: atItem(k, h.dataset.at.slice(5)) })),
+        ...newItems(k).map(it => ({ head: tr('New in this proof'), nodes: [itemCard(it)], anchor: atItem(k, it.name) }))]
+      return [...(auto && at.length ? [] : [{ nodes: clone(levels[k].proof?.texts ?? []) }]), ...at]
+    }
     const tipsOff = () => { try { return localStorage.getItem('pg:tips') === 'off' } catch { return false } }
     const once = (key, f) => {
       if (tipsOff()) return
       try { if (localStorage.getItem(key)) return } catch {}
       f(() => { try { localStorage.setItem(key, '1') } catch {} })
     }
-    const showBoardTip = k => once(`${levels[k].key}:tip`, mark => tipBox(tr('Tip'), boardTip(k, k === 0, true), mark))
-    const showProofTip = k => once(`${levels[k].key}:proof-tip`, mark => tipBox(tr('Tip'), proofTip(k), mark))
+    // (a level with `:::hint (anchor := "none")`: no tip comes by itself; the button Tips still shows them)
+    const quiet = k => !!roots[k].querySelector(':scope > .pg-text > .pg-hint[data-at="none"]')
+    const showBoardTip = k => quiet(k) || once(`${levels[k].key}:tip`, mark => tipBox(tr('Tip'), boardTip(k, k === 0, true), mark))
+    const showProofTip = k => quiet(k) || once(`${levels[k].key}:proof-tip`, mark => tipBox(tr('Tip'), proofTip(k, true), mark))
 
     // the tool bar
     const undo = barButton('pg-undo', '↶', tr('Undo')), restart = barButton('pg-restart', '⟲', tr('Start over'), tr('Restart'))
