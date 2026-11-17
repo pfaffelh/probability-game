@@ -445,6 +445,32 @@ def picture : DirectiveExpanderOf PictureConfig
     let blocks ← contents.mapM elabBlock
     ``(Verso.Doc.Block.other (Block.picture $(quote cfg.kind)) #[$blocks,*])
 
+-- A hint, shown as a bubble of the tips at a part of the board: `:::hint (anchor := "output")` in a
+-- level (with `:::en` and `:::de` inside); `(anchor := "world")` in the text of a world: what the
+-- first tip of the world says, in place of the whole text of the world.
+block_extension Block.hint (anchor : String) where
+  data := Json.str anchor
+  traverse _ _ _ := pure none
+  extraJs := {JS.mk gameJs}
+  extraCss := {CSS.mk gameCss}
+  toHtml := some fun _ goB _ data content => do
+    let anchor := data.getStr?.toOption.getD ""
+    pure <| .tag "div" #[("class", "pg-hint"), ("data-at", anchor)] (← content.mapM goB)
+  toTeX := none
+
+structure HintConfig where
+  anchor : String
+
+instance : FromArgs HintConfig DocElabM where
+  fromArgs := HintConfig.mk <$> .named `anchor .string false
+
+/-- A hint at a part of the board, for the tips. -/
+@[directive]
+def hint : DirectiveExpanderOf HintConfig
+  | cfg, contents => do
+    let blocks ← contents.mapM elabBlock
+    ``(Verso.Doc.Block.other (Block.hint $(quote cfg.anchor)) #[$blocks,*])
+
 -- Text in one language: `:::en` and `:::de`; `game.js` shows the language chosen.
 block_extension Block.lang (lang : String) where
   data := Json.str lang

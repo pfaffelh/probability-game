@@ -3771,9 +3771,10 @@
     const M = 12, GAP = 14, PAD = 4
     // (where the bubble goes: below its thing or above it, where there is more room; in the middle
     // when the thing is not on the screen or there is no room beside it)
+    let moved = false
     const place = ev => {
-      if (ev?.target instanceof Node && card.contains(ev.target)) return
-      const a = steps[i].anchor?.(), r = a?.offsetParent ? a.getBoundingClientRect() : null
+      if (moved || (ev?.target instanceof Node && card.contains(ev.target))) return
+      const a = steps[i].anchor?.(), r = a && (a.offsetParent || (a instanceof SVGElement && a.getClientRects().length)) ? a.getBoundingClientRect() : null
       const W = document.documentElement.clientWidth, H = innerHeight
       const on = r && r.width > 0 && r.bottom > 0 && r.top < H
       const below = on ? H - r.bottom - GAP - M : 0, above = on ? r.top - GAP - M : 0
@@ -3795,8 +3796,23 @@
       tail.style.left = `${Math.min(Math.max(left + 18, cx), left + w - 18) - 9}px`
       tail.style.top = `${down ? r.bottom + GAP - 9 : r.top - GAP - 9}px`
     }
+    // (the bubble can be moved, by its title bar: it then stays where it was put, until Next)
+    top.addEventListener('pointerdown', ev => {
+      if (ev.button !== 0 || x.contains(ev.target)) return
+      ev.preventDefault()
+      const r = card.getBoundingClientRect(), dx = ev.clientX - r.left, dy = ev.clientY - r.top
+      top.setPointerCapture(ev.pointerId)
+      const move = e => {
+        moved = true; tail.hidden = true
+        const W = document.documentElement.clientWidth, H = innerHeight
+        card.style.left = `${Math.min(Math.max(0, e.clientX - dx), W - 40)}px`
+        card.style.top = `${Math.min(Math.max(0, e.clientY - dy), H - 40)}px`
+      }
+      const up = () => { top.removeEventListener('pointermove', move); top.removeEventListener('pointerup', up); top.removeEventListener('pointercancel', up) }
+      top.addEventListener('pointermove', move); top.addEventListener('pointerup', up); top.addEventListener('pointercancel', up)
+    })
     const show = k => {
-      i = k
+      i = k; moved = false
       const s = steps[i]
       title.textContent = '💡 ' + (s.head ?? head)
       body.replaceChildren(...s.nodes); body.scrollTop = 0
@@ -3915,7 +3931,14 @@
     }
     const clone = nodes => nodes.map(n => n.cloneNode(true))
     const levelText = k => clone([...roots[k].querySelectorAll(':scope > .pg-text > .pg-lang:not(.pg-proof-text)')])
-    const worldText = () => clone([...world.childNodes])
+    const worldText = () => clone([...world.childNodes].filter(n => !n.classList?.contains('pg-hint')))
+    // the hints (`:::hint`, ProbGame/Level.lean): of the world, the short text of its first tip; of a
+    // level, bubbles at a part of its board
+    const HINT_AT = { output: '.pg-coutput', input: '.pg-cinput' }
+    const hintText = h => clone([...h.children])
+    const worldHint = () => world.querySelector(':scope > .pg-hint[data-at="world"]')
+    const levelHints = k => [...roots[k].querySelectorAll(':scope > .pg-text > .pg-hint')].map(h => ({
+      nodes: hintText(h), anchor: () => visible(roots[k].querySelector(HINT_AT[h.dataset.at] ?? h.dataset.at)) }))
     // the moves new in a level: not offered by a level before it on this page
     const newMoves = k => {
       const before = new Set(levels.slice(0, k).flatMap(l => movesOf(l).map(m => m[0])))
@@ -3925,16 +3948,23 @@
     const newItems = k => { const p = levels[k].proof; return p ? INVENTORY.filter(i => p.isNew(i) && i.kind !== 'lemma') : [] }
     // what a bubble of a tip points at: a new move or gate on the board (on a phone the gates may be
     // behind ＋), a new item in the inventory
-    const visible = e => (e?.offsetParent ? e : null)
+    const visible = e => (e?.offsetParent || (e instanceof SVGElement && e.getClientRects().length) ? e : null)
     const atMove = (k, key) => () => {
       const name = key.slice(key.indexOf(':') + 1)
       return visible([...roots[k].querySelectorAll('[data-move]')].find(b => b.dataset.move.split(/\s+/)[0] === name && b.offsetParent))
         ?? (levels[k] instanceof Circuit ? visible(add) : null)
     }
     const atItem = (k, name) => () => visible([...roots[k].querySelectorAll('.pg-chip[data-item]')].find(b => b.dataset.item === name))
-    const boardTip = (k, withWorld) => [
-      { nodes: [...levelText(k), ...(withWorld && world.childNodes.length ? [el('div', 'pg-tip-sub', tr('This world')), ...worldText()] : [])] },
-      ...newMoves(k).map(m => ({ head: tr('New in this level'), nodes: [moveCard(m)], anchor: atMove(k, m[0]) }))]
+    // (the first tip of a world, by itself: the short text of the world, when it has one)
+    // (the tip that comes by itself: no text of the level when it has bubbles at the board; the
+    // button Tips: everything)
+    const boardTip = (k, withWorld, auto = false) => {
+      const at = [...levelHints(k), ...newMoves(k).map(m => ({ head: tr('New in this level'), nodes: [moveCard(m)], anchor: atMove(k, m[0]) }))]
+      const first = auto && k === 0 && worldHint() ? [{ nodes: hintText(worldHint()) }]
+        : auto && at.length ? []
+        : [{ nodes: [...levelText(k), ...(withWorld && worldText().length ? [el('div', 'pg-tip-sub', tr('This world')), ...worldText()] : [])] }]
+      return [...first, ...at]
+    }
     const proofTip = k => [
       { nodes: clone(levels[k].proof?.texts ?? []) },
       ...newItems(k).map(it => ({ head: tr('New in this proof'), nodes: [itemCard(it)], anchor: atItem(k, it.name) }))]
@@ -3944,7 +3974,7 @@
       try { if (localStorage.getItem(key)) return } catch {}
       f(() => { try { localStorage.setItem(key, '1') } catch {} })
     }
-    const showBoardTip = k => once(`${levels[k].key}:tip`, mark => tipBox(tr('Tip'), boardTip(k, k === 0), mark))
+    const showBoardTip = k => once(`${levels[k].key}:tip`, mark => tipBox(tr('Tip'), boardTip(k, k === 0, true), mark))
     const showProofTip = k => once(`${levels[k].key}:proof-tip`, mark => tipBox(tr('Tip'), proofTip(k), mark))
 
     // the tool bar

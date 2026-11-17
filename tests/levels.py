@@ -9,7 +9,7 @@ import json, re, sys
 from pathlib import Path
 
 here = Path(__file__).resolve().parent.parent
-HEAD = re.compile(r'^::::(level|build|boolean|walk|circuit|leanonly) ')
+HEAD = re.compile(r'^(::::+)(level|build|boolean|walk|circuit|leanonly) ')
 # the rules the proofs of a kind of level are checked in, when the level names none
 CONTEXT = {'level': ('proofContext', 'Lean/Rules.lean'), 'build': ('proofContext', 'Lean/Rules.lean'),
            'boolean': ('context', 'Lean/WorldBool.lean'), 'walk': ('context', 'Lean/WorldWalk.lean'),
@@ -31,8 +31,8 @@ def levels_of(path):
         elif l == ':::::':
             edition = None
         elif HEAD.match(l):
-            kind = HEAD.match(l).group(1)
-            end = next(j for j in range(i + 1, len(lines)) if lines[j] == '::::')
+            fence, kind = HEAD.match(l).groups()
+            end = next(j for j in range(i + 1, len(lines)) if lines[j] == fence)
             body = lines[i + 1:end]
             solution = []
             if ':::solution' in body:

@@ -11,6 +11,16 @@ htmlSplit := .never
 number := false
 %%%
 
+::::hint (anchor := "world")
+:::en
+This introductory world teaches you about Boolean variables: `true` and `false`.
+:::
+
+:::de
+Diese Einführungswelt bringt dir Boolesche Variablen bei: `true` und `false`.
+:::
+::::
+
 :::en
 Maps built from gates, as circuits are. The inputs are above, the output below. Drag gates from the side onto the board (or tap them), and draw wires: from an output,
 the dot below a block, to an input, the circle above one (tap the one and then the other, or drag).
@@ -34,7 +44,7 @@ und die Aussage sagt, dass sie die Zieltafel ist. Die Lean-Hälfte ist hier kurz
 Welten danach.
 :::
 
-::::circuit (height := "300") (inputs := "x") (gates := "") (table := "01") (goal := "x") (shape := "x") (proof := "(x : Bool) : x = x") (new := "rfl") (play := "x>out") (uses := "-")
+:::::circuit (height := "300") (inputs := "x") (gates := "") (table := "01") (goal := "x") (shape := "x") (proof := "(x : Bool) : x = x") (new := "rfl") (play := "x>out") (uses := "-")
 :::en
 *A wire.* The output is to be the input itself. Wire `x` to the output: tap `x`, then the output.
 :::
@@ -44,24 +54,40 @@ Welten danach.
 dann den Ausgang.
 :::
 
+::::hint (anchor := "output")
+:::en
+This is the game piece. `F` is for `false`, `T` is for `true`, `?` is for either of them. Connect
+the input `x` to the game piece such that *Target* and *Output* match.
+:::
+
+:::de
+Das ist der Spielstein. `F` steht für `false`, `T` für `true`, `?` für eins von beiden. Verbinde
+den Eingang `x` so mit dem Spielstein, dass *Ziel* und *Ausgang* übereinstimmen.
+:::
+::::
+
 :::proofen
-In Lean the board reads: the output, `x`, is the target, `x`. How to read a statement:
-`example (x : Bool) : x = x` says *for every `x` of type `Bool`, `x = x`*. Before the colon stand the
-variables (and later the hypotheses), after it what is claimed. Below the statement Lean shows the
-*goal*: the variables and hypotheses on top, and after `⊢` what is still to be shown. A *tactic*, one
-line, changes the goal, until nothing is left. The tactic `rfl` proves an equation whose two sides are
-the same.
+Let us start easy and translate the last level to Lean. The board reads: the output, `x`, is the
+target, `x`. In Lean, `example (x : Bool) : x = x` says *for every `x` of type `Bool`, `x = x`*.
+Before the colon stand the variables (and later the hypotheses), after it what is claimed. Below the
+statement Lean shows the *goal*: the variables on top, and after `⊢` what is still to be shown. A
+*tactic*, one line, changes the goal, until nothing is left.
+
+`rfl` is a tactic that proves an equation whose two sides are the same (*reflexivity*: everything is
+equal to itself).
 
 *Tip.* `rfl`.
 :::
 
 :::proofde
-In Lean liest sich das Spielfeld so: Der Ausgang, `x`, ist das Ziel, `x`. So liest man eine Aussage:
-`example (x : Bool) : x = x` sagt *für jedes `x` vom Typ `Bool` ist `x = x`*. Vor dem Doppelpunkt
-stehen die Variablen (und später die Annahmen), danach das, was behauptet wird. Unter der Aussage zeigt
-Lean das *Ziel*: oben die Variablen und Annahmen, und nach `⊢` das, was noch zu zeigen ist. Eine
-*Taktik*, eine Zeile, ändert das Ziel, bis nichts mehr übrig ist. Die Taktik `rfl` beweist eine
-Gleichung, deren beide Seiten gleich sind.
+Fangen wir leicht an und übersetzen das letzte Level nach Lean. Das Spielfeld sagt: Der Ausgang, `x`,
+ist das Ziel, `x`. In Lean sagt `example (x : Bool) : x = x`: *für jedes `x` vom Typ `Bool` ist
+`x = x`*. Vor dem Doppelpunkt stehen die Variablen (und später die Annahmen), danach das, was
+behauptet wird. Unter der Aussage zeigt Lean das *Ziel*: oben die Variablen, und nach `⊢` das, was
+noch zu zeigen ist. Eine *Taktik*, eine Zeile, ändert das Ziel, bis nichts mehr übrig ist.
+
+`rfl` ist eine Taktik, die eine Gleichung beweist, deren beide Seiten gleich sind (*Reflexivität*:
+alles ist sich selbst gleich).
 
 *Tipp.* `rfl`.
 :::
@@ -70,7 +96,7 @@ Gleichung, deren beide Seiten gleich sind.
 rfl
 ```
 :::
-::::
+:::::
 
 ::::circuit (height := "400") (inputs := "true") (gates := "not") (table := "0") (goal := "false") (shape := "!true") (proof := ": (!true) = false") (lemma := "Bool.not_true") (play := "a=not; true>a.0; a>out") (uses := "-")
 :::en
