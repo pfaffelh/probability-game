@@ -18,7 +18,7 @@ How long until the first `true`? The geometric distribution, defined by its mass
 Wie lange bis zum ersten `true`? Die geometrische Verteilung, Schritt für Schritt durch ihre Massen definiert; ihre Formel, ihre Gedächtnislosigkeit, und der `do`-Block, der wartet. Nur in Lean.
 :::
 
-::::leanonly (proof := "(p : I) : geom p 0 = ↑p") (lemma := "geom_zero") (group := "chance.count") (uses := "-")
+::::leanonly (proof := "(p : I) [Fact (p ≠ 0)] : geom p 0 = ↑p") (lemma := "geom_zero") (group := "chance.count") (uses := "-")
 :::en
 *True at once.* Throw a coin `p` until it shows `true`; `geom p` is the number of `false` before. Its masses are defined step by step: at once `true`, mass $`p`; one `false` more, $`1 - p` times as much.
 :::
@@ -35,8 +35,13 @@ def geomMass (p : I) : ℕ → ENNReal
   | 0 => ↑p
   | k + 1 => ↑(σ p) * geomMass p k
 
-def geom (p : I) : DiscreteMeasure ℕ := ⟨geomMass p⟩
+def geom (p : I) [h : Fact (p ≠ 0)] : PMF ℕ :=
+  ⟨geomMass p, (geomMass_total p h.out : HasSum …)⟩
 ```
+
+A `PMF` needs the proof that its masses add up to one: `geomMass_total`, a later level of this
+world. It holds only for $`p \neq 0` (for $`p = 0` the first `true` never comes, and all masses are
+$`0`); so `geom p` asks for `[Fact (p ≠ 0)]`, an assumption that Lean finds by itself.
 
 The first case.
 
@@ -51,8 +56,13 @@ def geomMass (p : I) : ℕ → ENNReal
   | 0 => ↑p
   | k + 1 => ↑(σ p) * geomMass p k
 
-def geom (p : I) : DiscreteMeasure ℕ := ⟨geomMass p⟩
+def geom (p : I) [h : Fact (p ≠ 0)] : PMF ℕ :=
+  ⟨geomMass p, (geomMass_total p h.out : HasSum …)⟩
 ```
+
+Ein `PMF` braucht den Beweis, dass seine Massen zusammen eins ergeben: `geomMass_total`, ein späteres
+Level dieser Welt. Es gilt nur für $`p \neq 0` (für $`p = 0` kommt das erste `true` nie, und alle
+Massen sind $`0`); deshalb verlangt `geom p` die Annahme `[Fact (p ≠ 0)]`, die Lean selbst findet.
 
 Der erste Fall.
 
@@ -65,7 +75,7 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (k : ℕ) : geom p (k + 1) = ↑(σ p) * geom p k") (lemma := "geom_succ") (group := "chance.count") (uses := "-")
+::::leanonly (proof := "(p : I) [Fact (p ≠ 0)] (k : ℕ) : geom p (k + 1) = ↑(σ p) * geom p k") (lemma := "geom_succ") (group := "chance.count") (uses := "-")
 :::en
 *One false more.* The second case of the definition.
 :::
@@ -92,7 +102,7 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (k : ℕ) : geom p k = ↑(σ p) ^ k * ↑p") (lemma := "geom_formula") (new := "pow_succ', mul_assoc") (group := "chance.count") (uses := "geom_zero, pow_zero, one_mul, geom_succ, mul_assoc, pow_succ', pow_succ, mul_one")
+::::leanonly (proof := "(p : I) [Fact (p ≠ 0)] (k : ℕ) : geom p k = ↑(σ p) ^ k * ↑p") (lemma := "geom_formula") (new := "pow_succ', mul_assoc") (group := "chance.count") (uses := "geom_zero, pow_zero, one_mul, geom_succ, mul_assoc, pow_succ', pow_succ, mul_one")
 :::en
 *The masses.* $`k` times `false`, then `true`: mass $`(1 - p)^k p`.
 :::
@@ -121,7 +131,7 @@ rw [geom_succ, ih, ← mul_assoc, ← pow_succ']
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (k m : ℕ) : geom p (k + m) = ↑(σ p) ^ k * geom p m") (lemma := "geom_memoryless") (group := "chance.count") (uses := "zero_add, pow_zero, one_mul, add_right_comm, geom_succ, mul_assoc, pow_succ', add_zero, mul_zero, pow_succ, mul_one, add_assoc, geom_zero")
+::::leanonly (proof := "(p : I) [Fact (p ≠ 0)] (k m : ℕ) : geom p (k + m) = ↑(σ p) ^ k * geom p m") (lemma := "geom_memoryless") (group := "chance.count") (uses := "zero_add, pow_zero, one_mul, add_right_comm, geom_succ, mul_assoc, pow_succ', add_zero, mul_zero, pow_succ, mul_one, add_assoc, geom_zero")
 :::en
 *Without memory.* $`k` times `false` first, and then as if nothing had happened: the coin does not remember.
 :::
@@ -204,36 +214,36 @@ rw [ENNReal.tsum_mul_right, ENNReal.tsum_geometric, one_sub_symm]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (h : p ≠ 0) : ∑' k, geom p k = 1") (new := "ENNReal.inv_mul_cancel, mass_ne_zero, mass_finite") (group := "chance.count") (uses := "geom_formula, ENNReal.tsum_mul_right, ENNReal.tsum_geometric, one_sub_symm, ENNReal.inv_mul_cancel, mass_ne_zero, mass_finite")
+::::leanonly (proof := "(p : I) (h : p ≠ 0) : ∑' k, geomMass p k = 1") (lemma := "geomMass_total") (new := "geomMass_formula, ENNReal.inv_mul_cancel, mass_ne_zero, mass_finite") (group := "chance.count") (uses := "geomMass_formula, ENNReal.tsum_mul_right, ENNReal.tsum_geometric, one_sub_symm, ENNReal.inv_mul_cancel, mass_ne_zero, mass_finite")
 :::en
-*Total mass one.* If $`p \neq 0`, the first `true` comes for sure: the masses add up to one. (For $`p = 0` it never comes, and all masses are $`0`.)
+*Total mass one.* If $`p \neq 0`, the first `true` comes for sure: the masses add up to one. (For $`p = 0` it never comes, and all masses are $`0`.) This is the proof that makes `geom p` a `PMF`.
 :::
 
 :::de
-*Gesamtmasse eins.* Wenn $`p \neq 0`, kommt das erste `true` sicher: Die Massen ergeben zusammen eins. (Für $`p = 0` kommt es nie, und alle Massen sind $`0`.)
+*Gesamtmasse eins.* Wenn $`p \neq 0`, kommt das erste `true` sicher: Die Massen ergeben zusammen eins. (Für $`p = 0` kommt es nie, und alle Massen sind $`0`.) Das ist der Beweis, der `geom p` zu einem `PMF` macht.
 :::
 
 :::proofen
-Your formula under the sum (`simp only`, it rewrites under `∑'`), the last level, and `ENNReal.inv_mul_cancel (h₀ : a ≠ 0) (h₁ : a ≠ ⊤) : a⁻¹ * a = 1`, with `mass_ne_zero h : ↑p ≠ 0` and `mass_finite p : ↑p ≠ ⊤`.
+The masses before they are a distribution: `geomMass_formula : geomMass p k = ↑(σ p) ^ k * ↑p`, your formula for them. Under the sum (`simp only`, it rewrites under `∑'`), then the last level, and `ENNReal.inv_mul_cancel (h₀ : a ≠ 0) (h₁ : a ≠ ⊤) : a⁻¹ * a = 1`, with `mass_ne_zero h : ↑p ≠ 0` and `mass_finite p : ↑p ≠ ⊤`.
 
-*Tip.* `simp only [geom_formula]`, `rw [ENNReal.tsum_mul_right, ENNReal.tsum_geometric, one_sub_symm]`, `rw [ENNReal.inv_mul_cancel (mass_ne_zero h) (mass_finite p)]`.
+*Tip.* `simp only [geomMass_formula]`, `rw [ENNReal.tsum_mul_right, ENNReal.tsum_geometric, one_sub_symm]`, `rw [ENNReal.inv_mul_cancel (mass_ne_zero h) (mass_finite p)]`.
 :::
 
 :::proofde
-Deine Formel unter der Summe (`simp only`, es schreibt unter `∑'` um), das letzte Level, und `ENNReal.inv_mul_cancel (h₀ : a ≠ 0) (h₁ : a ≠ ⊤) : a⁻¹ * a = 1`, mit `mass_ne_zero h : ↑p ≠ 0` und `mass_finite p : ↑p ≠ ⊤`.
+Die Massen, bevor sie eine Verteilung sind: `geomMass_formula : geomMass p k = ↑(σ p) ^ k * ↑p`, deine Formel für sie. Unter der Summe (`simp only`, es schreibt unter `∑'` um), dann das letzte Level, und `ENNReal.inv_mul_cancel (h₀ : a ≠ 0) (h₁ : a ≠ ⊤) : a⁻¹ * a = 1`, mit `mass_ne_zero h : ↑p ≠ 0` und `mass_finite p : ↑p ≠ ⊤`.
 
-*Tipp.* `simp only [geom_formula]`, `rw [ENNReal.tsum_mul_right, ENNReal.tsum_geometric, one_sub_symm]`, `rw [ENNReal.inv_mul_cancel (mass_ne_zero h) (mass_finite p)]`.
+*Tipp.* `simp only [geomMass_formula]`, `rw [ENNReal.tsum_mul_right, ENNReal.tsum_geometric, one_sub_symm]`, `rw [ENNReal.inv_mul_cancel (mass_ne_zero h) (mass_finite p)]`.
 :::
 :::solution
 ```
-simp only [geom_formula]
+simp only [geomMass_formula]
 rw [ENNReal.tsum_mul_right, ENNReal.tsum_geometric, one_sub_symm]
 rw [ENNReal.inv_mul_cancel (mass_ne_zero h) (mass_finite p)]
 ```
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : geom p = (do let x ← coin p; bif x then pure 0 else (do let Y ← geom p; pure (1 + Y)))") (lemma := "geom_first") (group := "chance.count") (uses := "coin_bind_apply, Bool.cond_true, Bool.cond_false, pure_self, shift_zero, mul_zero, add_zero, mul_one, geom_zero, pure_zero_succ, shift_succ, zero_add, geom_succ, one_mul")
+::::leanonly (proof := "(p : I) [Fact (p ≠ 0)] : geom p = (do let x ← coin p; bif x then pure 0 else (do let Y ← geom p; pure (1 + Y)))") (lemma := "geom_first") (group := "chance.count") (uses := "coin_bind_apply, Bool.cond_true, Bool.cond_false, pure_self, shift_zero, mul_zero, add_zero, mul_one, geom_zero, pure_zero_succ, shift_succ, zero_add, geom_succ, one_mul")
 :::en
 *Boss: waiting for the first true.* Throw once: on `true` it is $`0`; on `false`, start again, and add one. The geometric distribution is the one that does this: it is defined by its masses, and here it is a `do` block that calls itself.
 :::

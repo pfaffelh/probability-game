@@ -39,7 +39,7 @@ zeigt Ziel und Ausgang, als Massen und als kleines Histogramm (das Ziel gestrich
 Spielfeld die Säulen für ein Beispiel-$`p` (der Schieberegler ändert es).
 :::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (h : μ true = 0) : μ false = 1") (uses := "mass_total, zero_add, coin_total, add_zero, mul_zero")
+::::leanonly (proof := "(μ : PMF Bool) (h : μ true = 0) : μ false = 1") (uses := "mass_total, zero_add, coin_total, add_zero, mul_zero")
 :::en
 *The whole mass.* A distribution has the total mass one. If nothing lies at `true`, everything lies at `false`.
 :::
@@ -49,13 +49,13 @@ Spielfeld die Säulen für ein Beispiel-$`p` (der Schieberegler ändert es).
 :::
 
 :::proofen
-`μ : DiscreteMeasure Bool` is any distribution on `Bool`, and `[Prob μ]` says that its total mass is one: your theorem `mass_total μ : μ true + μ false = 1`. `h : μ true = 0` is a hypothesis, a rule of this level only. `rw [← mass_total μ]` rewrites from right to left: the `1` becomes `μ true + μ false`. Then `h`, then `zero_add`.
+`μ : PMF Bool` is any distribution on `Bool`, and its total mass is one: your theorem `mass_total μ : μ true + μ false = 1`. `h : μ true = 0` is a hypothesis, a rule of this level only. `rw [← mass_total μ]` rewrites from right to left: the `1` becomes `μ true + μ false`. Then `h`, then `zero_add`.
 
 *Tip.* `rw [← mass_total μ, h, zero_add]` (type `\l` for `←`, or tap ←).
 :::
 
 :::proofde
-`μ : DiscreteMeasure Bool` ist irgendeine Verteilung auf `Bool`, und `[Prob μ]` sagt, dass ihre Gesamtmasse eins ist: dein Satz `mass_total μ : μ true + μ false = 1`. `h : μ true = 0` ist eine Annahme, eine Regel nur dieses Levels. `rw [← mass_total μ]` schreibt von rechts nach links um: Die `1` wird zu `μ true + μ false`. Dann `h`, dann `zero_add`.
+`μ : PMF Bool` ist irgendeine Verteilung auf `Bool`, und ihre Gesamtmasse ist eins: dein Satz `mass_total μ : μ true + μ false = 1`. `h : μ true = 0` ist eine Annahme, eine Regel nur dieses Levels. `rw [← mass_total μ]` schreibt von rechts nach links um: Die `1` wird zu `μ true + μ false`. Dann `h`, dann `zero_add`.
 
 *Tipp.* `rw [← mass_total μ, h, zero_add]` (`\l` tippen für `←`, oder ← antippen).
 :::
@@ -141,7 +141,7 @@ rw [tsub_add_eq_max]
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ true + μ false - μ true = μ false") (new := "ENNReal.add_sub_cancel_left") (uses := "ENNReal.add_sub_cancel_left, mass_ne_top")
+::::leanonly (proof := "(μ : PMF Bool) : μ true + μ false - μ true = μ false") (new := "ENNReal.add_sub_cancel_left") (uses := "ENNReal.add_sub_cancel_left, mass_ne_top")
 :::en
 *Taking away.* What is added and taken away again is gone, when it is finite.
 :::
@@ -168,7 +168,7 @@ rw [ENNReal.add_sub_cancel_left mass_ne_top]
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ false + μ true = 1") (new := "add_comm") (uses := "add_comm, mass_total, add_assoc, coin_total")
+::::leanonly (proof := "(μ : PMF Bool) : μ false + μ true = 1") (new := "add_comm") (uses := "add_comm, mass_total, add_assoc, coin_total")
 :::en
 *The other way round.* The total mass, with the summands swapped.
 :::
@@ -195,7 +195,7 @@ rw [add_comm, mass_total μ]
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b = 1 - μ (!b)") (lemma := "mass_not") (uses := "Bool.not_false, mass_total, ENNReal.add_sub_cancel_left, mass_ne_top, Bool.not_true, add_comm, coin_total, add_assoc")
+::::leanonly (proof := "(μ : PMF Bool) (b : Bool) : μ b = 1 - μ (!b)") (lemma := "mass_not") (uses := "Bool.not_false, mass_total, ENNReal.add_sub_cancel_left, mass_ne_top, Bool.not_true, add_comm, coin_total, add_assoc")
 :::en
 *The rest of the mass.* Now in Lean only: a statement about *every* distribution on `Bool`, which no
 board can show. What is not at `b` lies at `!b`.
@@ -207,7 +207,7 @@ Spielfeld zeigen kann. Was nicht bei `b` liegt, liegt bei `!b`.
 :::
 
 :::proofen
-`μ : DiscreteMeasure Bool` is any distribution on `Bool`, and `[Prob μ]` says that its total mass is
+`μ : PMF Bool` is any distribution on `Bool`, and its total mass is
 one. That is the rule `mass_total μ : μ true + μ false = 1`. So the mass at one side is what the
 other side misses to one.
 
@@ -228,8 +228,8 @@ goal that is exactly `h`.
 :::
 
 :::proofde
-`μ : DiscreteMeasure Bool` ist irgendeine Verteilung auf `Bool`, und `[Prob μ]` sagt, dass ihre
-Gesamtmasse eins ist. Das ist die Regel `mass_total μ : μ true + μ false = 1`. Also ist die Masse auf
+`μ : PMF Bool` ist irgendeine Verteilung auf `Bool`, und ihre
+Gesamtmasse ist eins. Das ist die Regel `mass_total μ : μ true + μ false = 1`. Also ist die Masse auf
 der einen Seite das, was der anderen zu eins fehlt.
 
 `cases b` (aus *Schaltungen*): Der Punkt `b` ist `false` oder `true`, zwei Ziele nacheinander
@@ -259,7 +259,7 @@ rw [ENNReal.add_sub_cancel_left mass_ne_top]
 :::
 ::::
 
-::::leanonly (proof := "(μ ν : DiscreteMeasure Bool) [Prob μ] [Prob ν] (h : μ true = ν true) : μ = ν") (lemma := "bool_ext") (new := "ext") (uses := "mass_not, Bool.not_false, Bool.not_true")
+::::leanonly (proof := "(μ ν : PMF Bool) (h : μ true = ν true) : μ = ν") (lemma := "bool_ext") (new := "ext") (uses := "mass_not, Bool.not_false, Bool.not_true")
 :::en
 *One bar is enough.* Two distributions on `Bool` with the same mass at `true` are the same. That is
 why the board only had to look at one bar.
@@ -324,7 +324,7 @@ rw [← coin_true, ← coin_false, coin_total]
 :::
 ::::
 
-::::leanonly (proof := "(b : Bool) : (pure b : DiscreteMeasure Bool) true = bif b then 1 else 0") (new := "pure_apply") (lemma := "pure_true") (uses := "pure_apply, beq_true")
+::::leanonly (proof := "(b : Bool) : (pure b : PMF Bool) true = bif b then 1 else 0") (new := "pure_apply") (lemma := "pure_true") (uses := "pure_apply, beq_true")
 :::en
 *Surely true.* `pure b` is the distribution that is surely `b`: all its mass lies at `b`. Its mass at
 `true` is one if `b` is `true`, else zero.
@@ -339,7 +339,7 @@ Masse bei `true` ist eins, wenn `b` gleich `true` ist, sonst null.
 By the definition,
 
 ```
-def pure (a : α) : DiscreteMeasure α := ⟨({a} : Set α).indicator 1⟩
+def pure (a : α) : PMF α := ⟨({a} : Set α).indicator 1⟩
 ```
 
 the mass is `1` on the set `{a}` and `0` outside it. The game writes this as the new rule
@@ -353,7 +353,7 @@ the mass is `1` on the set `{a}` and `0` outside it. The game writes this as the
 Nach der Definition,
 
 ```
-def pure (a : α) : DiscreteMeasure α := ⟨({a} : Set α).indicator 1⟩
+def pure (a : α) : PMF α := ⟨({a} : Set α).indicator 1⟩
 ```
 
 ist die Masse `1` auf der Menge `{a}` und `0` außerhalb. Das Spiel schreibt das als die neue Regel
@@ -426,7 +426,7 @@ rw [Bool.cond_true, Bool.cond_true, Bool.cond_true, coin_total]
 :::
 ::::
 
-::::leanonly (proof := ": (not <$> (pure true : DiscreteMeasure Bool)) = pure false") (new := "map_pure") (uses := "map_pure, Bool.not_true, Bool.not_false")
+::::leanonly (proof := ": (not <$> (pure true : PMF Bool)) = pure false") (new := "map_pure") (uses := "map_pure, Bool.not_true, Bool.not_false")
 :::en
 *A sure thing, moved.* A move applied to a sure value is the sure value of its image.
 :::

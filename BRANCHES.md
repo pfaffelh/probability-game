@@ -4,6 +4,7 @@
 |---|---|---|---|
 | `main` | `main` | The game in development: chance, with what it needs. *True and False* (the tutorial), *One Coin* (what a distribution on `Bool` is: `bool_ext`, `coin_not`), *Draw, then Compute* (`do` blocks and the monad laws for `DiscreteMeasure`), *Building with Coins* (circuits of coins and `B(n, p)`). Each level: the board, then the proof. | `/main/` |
 | `monad` | `main` | `main` and the other monads: *Walking on the Grid* (`Id`, `Set`). Only here. | `/monad/` |
+| `pmf` | `main` | `main` on Mathlib's `PMF` instead of the journal's `DiscreteMeasure` (2026-11-18, a trial): `coin`, `binom`, `iidSequence` defined in `Lean/Rules.lean` (Mathlib's `PMF.bernoulli` and `PMF.binomial` are deprecated); no `[Prob μ]` (a `PMF` has mass one), `geom p` needs `[Fact (p ≠ 0)]`. Same bridge and base. Merges `main`; the conflicts are in `Lean/` and the statements. | not yet |
 | `show` | `show` | The boards alone, without Lean and without proofs: a graphical target, the building blocks (coins, `B(n, p)`), and composing them (moves, circuits). *One Coin*, *Building with Coins*. | `/show/` |
 
 ## How the branches differ

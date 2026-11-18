@@ -14,16 +14,16 @@ number := false
 :::en
 A coin shows `true` (heads) or `false` (tails); `coin p` is the coin that shows `true` with
 probability $`p` and `false` with probability $`1 - p`. A distribution on `Bool` is, in Lean,
-`μ : DiscreteMeasure Bool`: it gives each of the two points its *mass*, `μ true` and `μ false`, the
-heights of its two bars. The coin with probability $`p` is `(coin p : DiscreteMeasure Bool)`.
+`μ : PMF Bool`: it gives each of the two points its *mass*, `μ true` and `μ false`, the
+heights of its two bars. The coin with probability $`p` is `(coin p : PMF Bool)`.
 :::
 
 :::de
 Eine Münze zeigt `true` (Kopf) oder `false` (Zahl); `coin p` ist die Münze, die mit
 Wahrscheinlichkeit $`p` `true` zeigt und mit Wahrscheinlichkeit $`1 - p` `false`. Eine Verteilung auf
-`Bool` ist in Lean `μ : DiscreteMeasure Bool`: Sie gibt jedem der beiden Punkte seine *Masse*,
+`Bool` ist in Lean `μ : PMF Bool`: Sie gibt jedem der beiden Punkte seine *Masse*,
 `μ true` und `μ false`, die Höhen ihrer beiden Säulen. Die Münze mit Wahrscheinlichkeit $`p` ist
-`(coin p : DiscreteMeasure Bool)`.
+`(coin p : PMF Bool)`.
 :::
 
 :::::circuit (height := "400") (inputs := "x") (gates := "") (coins := "p") (target := "bool true:p false:1-p") (context := "Lean/Rules.lean") (proof := "(p : I) : coin p true = p") (lemma := "coin_true") (play := "x>out") (uses := "-")
@@ -54,46 +54,42 @@ auf `Bool` hat sie zwei Massen: $`p` bei `true` und $`1 - p` bei `false`.
 ::::
 
 :::proofen
-`(coin p) true` is the mass of the coin at `true`. A distribution is, in Lean, its masses (its *weight* function):
+`(coin p) true` is the mass of the coin at `true`. A distribution is, in Mathlib, its masses, which
+add up to one (`PMF`, a probability mass function):
 
 ```
-structure DiscreteMeasure (α : Type) where
-  weight : α → ENNReal
+def PMF (α : Type) := { f : α → ℝ≥0∞ // HasSum f 1 }
 ```
 
-and the coin is defined by its two masses:
+and the coin is defined by its two masses (and the fact that they add up to one):
 
 ```
-def coin (p : I) : DiscreteMeasure Bool where
-  weight := fun
-    | true => ↑p
-    | false => ↑(σ p)
+def coin (p : I) : PMF Bool :=
+  PMF.ofFintype (fun b => bif b then ↑p else ↑(σ p)) (coin_sum p)
 ```
 
-(`μ x` is `μ.weight x`.) So Lean computes the left side to `↑p`: `rfl`, as in *Circuits*. The
+So Lean computes the left side to `↑p`: `rfl`, as in *Circuits*. The
 statement is the rule `coin_true`; once proved, it is in your inventory.
 
 *Tip.* `rfl`.
 :::
 
 :::proofde
-`(coin p) true` ist die Masse der Münze bei `true`. Eine Verteilung ist in Lean ihre Massen (ihre *Gewichtsfunktion*):
+`(coin p) true` ist die Masse der Münze bei `true`. Eine Verteilung ist in Mathlib ihre Massen, die
+zusammen eins ergeben (`PMF`, eine Wahrscheinlichkeitsfunktion):
 
 ```
-structure DiscreteMeasure (α : Type) where
-  weight : α → ENNReal
+def PMF (α : Type) := { f : α → ℝ≥0∞ // HasSum f 1 }
 ```
 
-und die Münze ist durch ihre zwei Massen definiert:
+und die Münze ist durch ihre zwei Massen definiert (und dadurch, dass sie zusammen eins ergeben):
 
 ```
-def coin (p : I) : DiscreteMeasure Bool where
-  weight := fun
-    | true => ↑p
-    | false => ↑(σ p)
+def coin (p : I) : PMF Bool :=
+  PMF.ofFintype (fun b => bif b then ↑p else ↑(σ p)) (coin_sum p)
 ```
 
-(`μ x` ist `μ.weight x`.) Also rechnet Lean die linke Seite zu `↑p` aus: `rfl`, wie in *Schaltungen*.
+Also rechnet Lean die linke Seite zu `↑p` aus: `rfl`, wie in *Schaltungen*.
 Die Aussage ist die Regel `coin_true`; bewiesen, ist sie in deinem Inventar.
 
 *Tipp.* `rfl`.
@@ -249,19 +245,18 @@ cases c <;> rfl
 :::
 ::::
 
-::::leanonly (proof := "(f : Bool → Bool) (μ : DiscreteMeasure Bool) : (f <$> μ) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)") (new := "map_apply") (lemma := "map_true") (uses := "map_apply, Fintype.sum_bool, beq_true")
+::::leanonly (proof := "(f : Bool → Bool) (μ : PMF Bool) : (f <$> μ) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)") (new := "map_apply") (lemma := "map_true") (uses := "map_apply, Fintype.sum_bool, beq_true")
 :::en
 *Where the mass goes.* A move `f <$> μ` takes each point `a` with its mass `μ a` to `f a`. So the
-mass at `b` afterwards is the sum of the masses `μ a` of the points with `f a = b`. Lean defines it
+mass at `b` afterwards is the sum of the masses `μ a` of the points with `f a = b`. Mathlib says it
 so:
 
 ```
-def map (f : α → β) (μ : DiscreteMeasure α) : DiscreteMeasure β where
-  weight := fun b => ∑' a, (f⁻¹' {b}).indicator μ.weight a
+theorem PMF.map_apply (f : α → β) (μ : PMF α) (b : β) :
+    (f <$> μ) b = ∑' a, if b = f a then μ a else 0
 ```
 
-(`f⁻¹' {b}` are the points `a` with `f a = b`; `indicator` is `μ a` there and `0` elsewhere; `∑'`
-is a sum over possibly infinitely many points.) On a finite type, as `Bool`, it is a finite sum `∑`,
+(`∑'` is a sum over possibly infinitely many points.) On a finite type, as `Bool`, it is a finite sum `∑`,
 and the game writes the definition as the rule
 
 `map_apply : (f <$> μ) b = ∑ a, (bif f a == b then μ a else 0)`.
@@ -272,16 +267,15 @@ is `true`, and the mass at `false` when `f false` is `true`.
 
 :::de
 *Wohin die Masse geht.* Ein Zug `f <$> μ` bringt jeden Punkt `a` mit seiner Masse `μ a` nach `f a`.
-Die Masse bei `b` danach ist also die Summe der Massen `μ a` der Punkte mit `f a = b`. Lean definiert
+Die Masse bei `b` danach ist also die Summe der Massen `μ a` der Punkte mit `f a = b`. Mathlib sagt
 es so:
 
 ```
-def map (f : α → β) (μ : DiscreteMeasure α) : DiscreteMeasure β where
-  weight := fun b => ∑' a, (f⁻¹' {b}).indicator μ.weight a
+theorem PMF.map_apply (f : α → β) (μ : PMF α) (b : β) :
+    (f <$> μ) b = ∑' a, if b = f a then μ a else 0
 ```
 
-(`f⁻¹' {b}` sind die Punkte `a` mit `f a = b`; `indicator` ist dort `μ a` und sonst `0`; `∑'` ist
-eine Summe über möglicherweise unendlich viele Punkte.) Auf einem endlichen Typ, wie `Bool`, ist es
+(`∑'` ist eine Summe über möglicherweise unendlich viele Punkte.) Auf einem endlichen Typ, wie `Bool`, ist es
 eine endliche Summe `∑`, und das Spiel schreibt die Definition als Regel
 
 `map_apply : (f <$> μ) b = ∑ a, (bif f a == b then μ a else 0)`.
@@ -311,7 +305,7 @@ rw [beq_true, beq_true]
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) : ((fun _ => true) <$> μ) true = μ true + μ false") (uses := "map_true, Bool.cond_true, Bool.cond_false")
+::::leanonly (proof := "(μ : PMF Bool) : ((fun _ => true) <$> μ) true = μ true + μ false") (uses := "map_true, Bool.cond_true, Bool.cond_false")
 :::en
 *All to true.* The move *always `true`*, `fun _ => true`, sends both points to `true`; so all the
 mass of `μ` comes to `true`. Your rule `map_true` says so.
@@ -341,53 +335,53 @@ rw [Bool.cond_true, Bool.cond_true]
 :::
 ::::
 
-:::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ true + μ false = 1") (lemma := "mass_total") (new := "Prob.total, tsum_fintype") (uses := "Prob.total, tsum_fintype, Fintype.sum_bool")
+:::::leanonly (proof := "(μ : PMF Bool) : μ true + μ false = 1") (lemma := "mass_total") (new := "PMF.tsum_coe, tsum_fintype") (uses := "PMF.tsum_coe, tsum_fintype, Fintype.sum_bool")
 :::en
-*The whole mass.* `[Prob μ]` says: `μ` is a distribution, its masses add up to one. On `Bool` there
+*The whole mass.* `μ : PMF Bool` is a distribution: its masses add up to one. On `Bool` there
 are two of them.
 :::
 
 :::de
-*Die ganze Masse.* `[Prob μ]` sagt: `μ` ist eine Verteilung, ihre Massen ergeben zusammen eins. Auf
+*Die ganze Masse.* `μ : PMF Bool` ist eine Verteilung: Ihre Massen ergeben zusammen eins. Auf
 `Bool` sind es zwei.
 :::
 
 ::::hint (anchor := "statement")
 :::en
-`[Prob μ]` is an assumption about `μ`: in Lean, `class Prob (μ) : Prop where hasSum : HasSum μ.weight 1`,
-the masses of `μ`, summed over all points, give one. The rule `Prob.total` says it as a sum.
+A `PMF` (probability mass function) is, in Mathlib, its masses together with their sum:
+`def PMF (α) := { f : α → ℝ≥0∞ // HasSum f 1 }`. The rule `PMF.tsum_coe` says it as a sum.
 :::
 
 :::de
-`[Prob μ]` ist eine Annahme über `μ`: in Lean `class Prob (μ) : Prop where hasSum : HasSum μ.weight 1`,
-die Massen von `μ`, über alle Punkte summiert, ergeben eins. Die Regel `Prob.total` sagt es als Summe.
+Ein `PMF` (Wahrscheinlichkeitsfunktion) ist in Mathlib seine Massen zusammen mit ihrer Summe:
+`def PMF (α) := { f : α → ℝ≥0∞ // HasSum f 1 }`. Die Regel `PMF.tsum_coe` sagt es als Summe.
 :::
 ::::
 
 :::proofen
-`Prob.total μ : ∑' a, μ a = 1` is a sum over all points, `∑'`. Read from right to left,
-`rw [← Prob.total μ]` makes the `1` of the goal this sum. `tsum_fintype` turns a sum over all points
+`PMF.tsum_coe μ : ∑' a, μ a = 1` is a sum over all points, `∑'`. Read from right to left,
+`rw [← PMF.tsum_coe μ]` makes the `1` of the goal this sum. `tsum_fintype` turns a sum over all points
 of a finite type into a finite sum `∑`, and `Fintype.sum_bool` into its two summands.
 
-*Tip.* `rw [← Prob.total μ, tsum_fintype, Fintype.sum_bool]` (type `\l` for `←`, or tap ←).
+*Tip.* `rw [← PMF.tsum_coe μ, tsum_fintype, Fintype.sum_bool]` (type `\l` for `←`, or tap ←).
 :::
 
 :::proofde
-`Prob.total μ : ∑' a, μ a = 1` ist eine Summe über alle Punkte, `∑'`. Von rechts nach links gelesen
-macht `rw [← Prob.total μ]` die `1` des Ziels zu dieser Summe. `tsum_fintype` macht eine Summe über
+`PMF.tsum_coe μ : ∑' a, μ a = 1` ist eine Summe über alle Punkte, `∑'`. Von rechts nach links gelesen
+macht `rw [← PMF.tsum_coe μ]` die `1` des Ziels zu dieser Summe. `tsum_fintype` macht eine Summe über
 alle Punkte eines endlichen Typs zu einer endlichen Summe `∑`, und `Fintype.sum_bool` zu ihren zwei
 Summanden.
 
-*Tipp.* `rw [← Prob.total μ, tsum_fintype, Fintype.sum_bool]` (`\l` tippen für `←`, oder ← antippen).
+*Tipp.* `rw [← PMF.tsum_coe μ, tsum_fintype, Fintype.sum_bool]` (`\l` tippen für `←`, oder ← antippen).
 :::
 :::solution
 ```
-rw [← Prob.total μ, tsum_fintype, Fintype.sum_bool]
+rw [← PMF.tsum_coe μ, tsum_fintype, Fintype.sum_bool]
 ```
 :::
 :::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b ≤ 1") (lemma := "mass_le_one") (new := "exact, le_self_add, le_add_self") (uses := "mass_total, le_add_self, le_self_add, coin_total")
+::::leanonly (proof := "(μ : PMF Bool) (b : Bool) : μ b ≤ 1") (lemma := "mass_le_one") (new := "exact, le_self_add, le_add_self") (uses := "mass_total, le_add_self, le_self_add, coin_total")
 :::en
 *At most one.* Each mass is a part of the whole mass, so at most one.
 :::
@@ -421,7 +415,7 @@ exact le_self_add
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b ≠ ⊤") (lemma := "mass_ne_top") (new := "apply, ne_top_of_le_ne_top, ENNReal.one_ne_top") (uses := "ne_top_of_le_ne_top, ENNReal.one_ne_top, mass_le_one")
+::::leanonly (proof := "(μ : PMF Bool) (b : Bool) : μ b ≠ ⊤") (lemma := "mass_ne_top") (new := "apply, ne_top_of_le_ne_top, ENNReal.one_ne_top") (uses := "ne_top_of_le_ne_top, ENNReal.one_ne_top, mass_le_one")
 :::en
 *Finite.* Masses are numbers in $`[0, \infty]`; a mass of a distribution is finite, `≠ ⊤`
 (`⊤` is $`\infty`): it is at most one, and one is finite.

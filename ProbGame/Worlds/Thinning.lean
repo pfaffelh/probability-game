@@ -106,7 +106,7 @@ rw [← bind_assoc, coin_thin, coin_thin]
 :::
 ::::
 
-::::leanonly (proof := "(p q : I) : geom ⟦p * q⟧ = (do let x ← coin p; let y ← (bif x then coin q else pure false); bif y then pure 0 else (do let Y ← geom ⟦p * q⟧; pure (1 + Y)))") (group := "chance.count") (uses := "bind_assoc, coin_thin, geom_first")
+::::leanonly (proof := "(p q : I) [Fact (p ≠ 0)] [Fact (q ≠ 0)] : geom ⟦p * q⟧ = (do let x ← coin p; let y ← (bif x then coin q else pure false); bif y then pure 0 else (do let Y ← geom ⟦p * q⟧; pure (1 + Y)))") (group := "chance.count") (uses := "bind_assoc, coin_thin, geom_first")
 :::en
 *Waiting for a kept true.* Throw a coin `p` again and again; each `true` is kept with probability $`q` (a coin `q` decides). How many throws before the first `true` that is kept? Each throw, thinned, is a coin again: so the waiting is geometric, with which parameter? On the right: one thinned throw; on `true` it is $`0`, else start again and add one.
 :::
@@ -171,7 +171,7 @@ norm_num [binom_succ, binom_zero]
 :::
 ::::
 
-::::leanonly (proof := "(p q : I) (f : ℕ → DiscreteMeasure ℕ) : (do let C ← coin p; let U ← binom q C.toNat; f U) = (do let B ← coin (p * q); f B.toNat)") (lemma := "coin_bind_binom'") (group := "chance.count") (uses := "bind_assoc, coin_bind_binom, pure_bind, bind_pure")
+::::leanonly (proof := "(p q : I) (f : ℕ → PMF ℕ) : (do let C ← coin p; let U ← binom q C.toNat; f U) = (do let B ← coin (p * q); f B.toNat)") (lemma := "coin_bind_binom'") (group := "chance.count") (uses := "bind_assoc, coin_bind_binom, pure_bind, bind_pure")
 :::en
 *With something after it.* The same, when the `do` block goes on.
 :::

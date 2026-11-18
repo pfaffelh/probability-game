@@ -100,7 +100,7 @@
 
   // ---------------------------------------------------------------- Lean
 
-  // A backend with Lean (server/bridge.py, with the journal's DiscreteMeasure as base): on a server,
+  // A backend with Lean (server/bridge.py, with Mathlib's PMF in its base): on a server,
   // `/lean` next to the site; else `?backend=http://127.0.0.1:8091` in the address (kept;
   // `?backend=` switches it off). After each move it normalises the state with the rules of the
   // world; a level is solved when the state and the target have the same normal form, for every p.
@@ -114,10 +114,10 @@
       return stored === null ? served : stored || null
     } catch { return served }
   })()
-  const RULES = "coin_not', unitInterval.symm_symm, ProbGame.coin_map_const, ProbGame.map_fun_id, map_pure, Bool.not_true, Bool.not_false, Bool.toNat_true, Bool.toNat_false"
-  // a term of DiscreteMeasure as the proofs write it: `map f μ` and `μ.map f` as `f <$> μ`
+  const RULES = "unitInterval.symm_symm, ProbGame.map_const_pure, ProbGame.map_fun_id, PMF.pure_map, Bool.not_true, Bool.not_false, Bool.toNat_true, Bool.toNat_false"
+  // a term of PMF as the proofs write it: `map f μ` and `μ.map f` as `f <$> μ`
   const functorForm = t => {
-    t = t.trim().replace(/DiscreteMeasure\.pure/g, 'pure')
+    t = t.trim().replace(/PMF\.pure/g, 'pure')
     // the next argument: a bracket, or a word
     const arg = s => {
       s = s.trimStart()
@@ -138,7 +138,7 @@
   }
   const normalForms = new Map()
   // the normal form of a Lean expression (a promise of { result } or { error })
-  const normalise = (context, expr, how = { open: 'MeasureTheory DiscreteMeasure unitInterval', vars: '(p : unitInterval)', rules: RULES }) => {
+  const normalise = (context, expr, how = { open: 'unitInterval ProbGame', vars: '(p : unitInterval)', rules: RULES }) => {
     if (!BACKEND) return Promise.resolve({ error: { message: 'no backend' } })
     if (!normalForms.has(expr))
       normalForms.set(expr, fetch(BACKEND.replace(/\/$/, '') + '/simp', { method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -424,7 +424,7 @@
       return axis(dist.space, ks)
     }
 
-    // the moves played, as a DiscreteMeasure, normalised by Lean
+    // the moves played, as a PMF, normalised by Lean
     leanState() {
       let e = this.leanStart
       for (const s of this.steps) e = `(${e}).map ${s.move.lean}`
@@ -801,7 +801,7 @@
     }
     // the formula of a result, in the names of its inputs
     formula(i) { const n = this.nodes[i]; return n.src ? '' : FUNS[n.fun].show(n.inputs.map(j => this.name(j))) }
-    // node i as a do block of DiscreteMeasure
+    // node i as a do block of PMF
     lean(i) {
       const lines = this.below(i).map(j => {
         const n = this.nodes[j], x = this.name(j).toLowerCase()
@@ -2683,20 +2683,29 @@
   function hoverHide() { HOVER?.remove(); HOVER = null }
   // LEAN_SIGS begin (written by tests/sigs.py)
   const LEAN_SIGS = {
-    "mass_total": "theorem mass_total (μ : DiscreteMeasure Bool) [hμ : Prob μ] : μ true + μ false = 1",
-    "mass_ne_top": "theorem mass_ne_top {μ : DiscreteMeasure Bool} [Prob μ] {b : Bool} : μ b ≠ ⊤",
+    "PMF.tsum_coe": "theorem PMF.tsum_coe {α : Type u_1} (p : PMF α) : ∑' (a : α), p a = 1",
+    "tsum_fintype": "theorem tsum_fintype {α : Type u_1} {β : Type u_2} [AddCommMonoid α] [TopologicalSpace α] {L : SummationFilter β} [L.LeAtTop] [Fintype β] (f : β → α) : ∑'[L] (b : β), f b = ∑ b, f b",
+    "mass_total": "theorem mass_total (μ : PMF Bool) : μ true + μ false = 1",
+    "le_self_add": "theorem le_self_add {α : Type u} [Add α] [LE α] [CanonicallyOrderedAdd α] {a b : α} : a ≤ a + b",
+    "le_add_self": "theorem le_add_self {α : Type u} [Add α] [LE α] [CanonicallyOrderedAdd α] {a b : α} : a ≤ b + a",
+    "mass_le_one": "theorem mass_le_one (μ : PMF Bool) (b : Bool) : μ b ≤ 1",
+    "ne_top_of_le_ne_top": "theorem ne_top_of_le_ne_top {α : Type u} [PartialOrder α] [OrderTop α] {a b : α} (hb : b ≠ ⊤) (hab : a ≤ b) : a ≠ ⊤",
+    "ENNReal.one_ne_top": "theorem ENNReal.one_ne_top : 1 ≠ ⊤",
+    "mass_ne_top": "theorem mass_ne_top {μ : PMF Bool} {b : Bool} : μ b ≠ ⊤",
+    "tsub_self": "theorem tsub_self {α : Type u_1} [AddCommMonoid α] [PartialOrder α] [CanonicallyOrderedAdd α] [Sub α] [OrderedSub α] (a : α) : a - a = 0",
+    "tsub_add_eq_max": "theorem tsub_add_eq_max {α : Type u_1} [AddCommMonoid α] [LinearOrder α] [CanonicallyOrderedAdd α] [Sub α] [OrderedSub α] {a b : α} : a - b + b = max a b",
     "ENNReal.add_sub_cancel_left": "theorem ENNReal.add_sub_cancel_left {a b : ENNReal} (ha : a ≠ ⊤) : a + b - a = b",
-    "bind_apply": "theorem bind_apply {α β : Type} [Fintype α] (μ : DiscreteMeasure α) (f : α → DiscreteMeasure β) (b : β) : (do let a ← μ; f a) b = ∑ a, μ a * (f a) b",
-    "bind_true": "theorem bind_true (μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (do let x ← μ; f x) true = μ true * (f true) true + μ false * (f false) true",
+    "bind_apply": "theorem bind_apply {α β : Type} [Fintype α] (μ : PMF α) (f : α → PMF β) (b : β) : (do let a ← μ; f a) b = ∑ a, μ a * (f a) b",
+    "bind_true": "theorem bind_true (μ : PMF Bool) (f : Bool → PMF Bool) : (do let x ← μ; f x) true = μ true * (f true) true + μ false * (f false) true",
     "mul_one": "theorem mul_one {M : Type u_2} [MulOneClass M] (a : M) : a * 1 = a",
     "mul_zero": "theorem mul_zero {M₀ : Type u} [self : MulZeroClass M₀] (a : M₀) : a * 0 = 0",
     "add_comm": "theorem add_comm {G : Type u_1} [AddCommMagma G] (a b : G) : a + b = b + a",
-    "mass_not": "theorem mass_not (μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b = 1 - μ !b",
-    "bool_ext": "theorem bool_ext (μ ν : DiscreteMeasure Bool) [Prob μ] [Prob ν] (h : μ true = ν true) : μ = ν",
+    "mass_not": "theorem mass_not (μ : PMF Bool) (b : Bool) : μ b = 1 - μ !b",
+    "bool_ext": "theorem bool_ext (μ ν : PMF Bool) (h : μ true = ν true) : μ = ν",
     "coin_true": "theorem coin_true (p : I) : (coin p) true = ↑p",
     "coin_false": "theorem coin_false (p : I) : (coin p) false = ↑(σ p)",
-    "map_true": "theorem map_true (f : Bool → Bool) (μ : DiscreteMeasure Bool) : (f <$> μ) true = (bif f true then μ true else 0) + bif f false then μ false else 0",
-    "map_apply": "theorem map_apply {α : Type} [Fintype α] (f : α → Bool) (μ : DiscreteMeasure α) (b : Bool) : (f <$> μ) b = ∑ a, bif f a == b then μ a else 0",
+    "map_true": "theorem map_true (f : Bool → Bool) (μ : PMF Bool) : (f <$> μ) true = (bif f true then μ true else 0) + bif f false then μ false else 0",
+    "map_apply": "theorem map_apply {α : Type} [Fintype α] (f : α → Bool) (μ : PMF α) (b : Bool) : (f <$> μ) b = ∑ a, bif f a == b then μ a else 0",
     "Fintype.sum_bool": "theorem Fintype.sum_bool {α : Type u_1} [AddCommMonoid α] (f : Bool → α) : ∑ b, f b = f true + f false",
     "beq_true": "theorem beq_true (b : Bool) : (b == true) = b",
     "Bool.not_true": "theorem Bool.not_true : (!true) = false",
@@ -2711,11 +2720,11 @@
     "pure_true": "theorem pure_true (b : Bool) : (pure b) true = bif b then 1 else 0",
     "coin_const": "theorem coin_const (p : I) (b : Bool) : (fun x => b) <$> coin p = pure b",
     "map_pure": "theorem map_pure {f : Type u → Type v} {inst✝ : Applicative f} [self : LawfulApplicative f] {α β : Type u} (g : α → β) (x : α) : g <$> pure x = pure (g x)",
-    "map_map": "theorem map_map {α β γ : Type} (μ : DiscreteMeasure α) (f : α → β) (g : β → γ) : g <$> f <$> μ = (fun x => g (f x)) <$> μ",
+    "map_map": "theorem map_map {α β γ : Type} (μ : PMF α) (f : α → β) (g : β → γ) : g <$> f <$> μ = (fun x => g (f x)) <$> μ",
     "coin_and": "theorem coin_and (p q : I) : (do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)",
     "bind_map_left": "theorem bind_map_left {m : Type u_1 → Type u_2} {α β γ : Type u_1} [Monad m] [LawfulMonad m] (f : α → β) (x : m α) (g : β → m γ) : (do let b ← f <$> x; g b) = do let a ← x; g (f a)",
     "map_bind": "theorem map_bind {m : Type u_1 → Type u_2} {β γ α : Type u_1} [Monad m] [LawfulMonad m] (f : β → γ) (x : m α) (g : α → m β) : f <$> (x >>= g) = do let a ← x; f <$> g a",
-    "coin_unused": "theorem coin_unused {β : Type} (p : I) (ν : DiscreteMeasure β) : (do let _ ← coin p; ν) = ν",
+    "coin_unused": "theorem coin_unused {β : Type} (p : I) (ν : PMF β) : (do let _ ← coin p; ν) = ν",
     "binom_zero": "theorem binom_zero (p : I) : binom p 0 = pure 0",
     "binom_succ": "theorem binom_succ (p : I) (n : ℕ) : binom p (n + 1) = do let X ← coin p; let Y ← binom p n; pure (X.toNat + Y)",
     "bind_assoc": "theorem bind_assoc {m : Type u → Type v} {inst✝ : Monad m} [self : LawfulMonad m] {α β γ : Type u} (x : m α) (f : α → m β) (g : β → m γ) : x >>= f >>= g = x >>= fun x => f x >>= g",
@@ -2730,12 +2739,12 @@
     "id_eq": "theorem id_eq {α : Sort u_1} (a : α) : id a = a",
     "Nat.bodd_succ": "theorem Nat.bodd_succ (n : ℕ) : n.succ.bodd = !n.bodd",
     "mass_mul": "theorem mass_mul (p q : I) : ↑(p * q) = ↑p * ↑q",
-    "coin_bind_apply": "theorem coin_bind_apply {β : Type} (p : I) (f : Bool → DiscreteMeasure β) (x : β) : (do let b ← coin p; f b) x = ↑p * (f true) x + ↑(σ p) * (f false) x",
+    "coin_bind_apply": "theorem coin_bind_apply {β : Type} (p : I) (f : Bool → PMF β) (x : β) : (do let b ← coin p; f b) x = ↑p * (f true) x + ↑(σ p) * (f false) x",
     "beq_self_eq_true": "theorem beq_self_eq_true {α : Type u_1} [BEq α] [ReflBEq α] (a : α) : (a == a) = true",
     "pure_self": "theorem pure_self {α : Type} [DecidableEq α] (a : α) : (pure a) a = 1",
     "pure_zero_succ": "theorem pure_zero_succ (k : ℕ) : (pure 0) (k + 1) = 0",
-    "shift_succ": "theorem shift_succ (μ : DiscreteMeasure ℕ) (k : ℕ) : (do let Y ← μ; pure (1 + Y)) (k + 1) = μ k",
-    "shift_zero": "theorem shift_zero (μ : DiscreteMeasure ℕ) : (do let Y ← μ; pure (1 + Y)) 0 = 0",
+    "shift_succ": "theorem shift_succ (μ : PMF ℕ) (k : ℕ) : (do let Y ← μ; pure (1 + Y)) (k + 1) = μ k",
+    "shift_zero": "theorem shift_zero (μ : PMF ℕ) : (do let Y ← μ; pure (1 + Y)) 0 = 0",
     "Bool.toNat_true": "theorem Bool.toNat_true : true.toNat = 1",
     "Bool.toNat_false": "theorem Bool.toNat_false : false.toNat = 0",
     "pow_zero": "theorem pow_zero {M : Type u_2} [Monoid M] (a : M) : a ^ 0 = 1",
@@ -2747,10 +2756,10 @@
     "Nat.choose_zero_right": "theorem Nat.choose_zero_right (n : ℕ) : n.choose 0 = 1",
     "Nat.cast_add": "theorem Nat.cast_add {R : Type u_1} [AddMonoidWithOne R] (m n : ℕ) : ↑(m + n) = ↑m + ↑n",
     "Nat.cast_one": "theorem Nat.cast_one {R : Type u_1} [AddMonoidWithOne R] : ↑1 = 1",
-    "seq_zero": "theorem seq_zero {α : Type} (μ : DiscreteMeasure α) : iidSequence 0 μ = pure []",
-    "seq_succ": "theorem seq_succ {α : Type} (μ : DiscreteMeasure α) (n : ℕ) : iidSequence (n + 1) μ = do let y ← μ; let l ← iidSequence n μ; pure (y :: l)",
-    "seq_succ_apply": "theorem seq_succ_apply {α : Type} [DecidableEq α] (μ : DiscreteMeasure α) (n : ℕ) (a : α) (l : List α) : (iidSequence (n + 1) μ) (a :: l) = μ a * (iidSequence n μ) l",
-    "seq_zero_nil": "theorem seq_zero_nil {α : Type} (μ : DiscreteMeasure α) : (iidSequence 0 μ) [] = 1",
+    "seq_zero": "theorem seq_zero {α : Type} (μ : PMF α) : iidSequence 0 μ = pure []",
+    "seq_succ": "theorem seq_succ {α : Type} (μ : PMF α) (n : ℕ) : iidSequence (n + 1) μ = do let y ← μ; let l ← iidSequence n μ; pure (y :: l)",
+    "seq_succ_apply": "theorem seq_succ_apply {α : Type} [DecidableEq α] (μ : PMF α) (n : ℕ) (a : α) (l : List α) : (iidSequence (n + 1) μ) (a :: l) = μ a * (iidSequence n μ) l",
+    "seq_zero_nil": "theorem seq_zero_nil {α : Type} (μ : PMF α) : (iidSequence 0 μ) [] = 1",
     "count_true_cons": "theorem count_true_cons (y : Bool) (l : List Bool) : List.count true (y :: l) = y.toNat + List.count true l",
     "binom_eq_count": "theorem binom_eq_count (p : I) (n : ℕ) : binom p n = (fun l => List.count true l) <$> iidSequence n (coin p)",
     "frac_zero": "theorem frac_zero (b : ℕ) : frac 0 b = 0",
@@ -2771,9 +2780,11 @@
     "coin_bind_binom": "theorem coin_bind_binom (p q : I) : (do let C ← coin p; binom q C.toNat) = do let B ← coin (p * q); pure B.toNat",
     "binom_thin": "theorem binom_thin (p q : I) (n : ℕ) : (do let X ← binom p n; binom q X) = binom (p * q) n",
     "binom_symm": "theorem binom_symm (p : I) (k m : ℕ) : (binom (σ p) (k + m)) m = (binom p (k + m)) k",
-    "geom_formula": "theorem geom_formula (p : I) (k : ℕ) : (geom p) k = ↑(σ p) ^ k * ↑p",
-    "geom_memoryless": "theorem geom_memoryless (p : I) (k m : ℕ) : (geom p) (k + m) = ↑(σ p) ^ k * (geom p) m",
-    "bind_comm": "theorem bind_comm {α β γ : Type} (μ : DiscreteMeasure α) (ν : DiscreteMeasure β) (f : α → β → DiscreteMeasure γ) : (do let x ← μ; let y ← ν; f x y) = do let y ← ν; let x ← μ; f x y",
+    "geomMass_formula": "theorem geomMass_formula (p : I) (k : ℕ) : geomMass p k = ↑(σ p) ^ k * ↑p",
+    "geomMass_total": "theorem geomMass_total (p : I) (h : p ≠ 0) : ∑' (k : ℕ), geomMass p k = 1",
+    "geom_formula": "theorem geom_formula (p : I) [Fact (p ≠ 0)] (k : ℕ) : (geom p) k = ↑(σ p) ^ k * ↑p",
+    "geom_memoryless": "theorem geom_memoryless (p : I) [Fact (p ≠ 0)] (k m : ℕ) : (geom p) (k + m) = ↑(σ p) ^ k * (geom p) m",
+    "bind_comm": "theorem bind_comm {α β γ : Type} (μ : PMF α) (ν : PMF β) (f : α → β → PMF γ) : (do let x ← μ; let y ← ν; f x y) = do let y ← ν; let x ← μ; f x y",
     "symm_twice": "theorem symm_twice (p : I) : σ (σ p) = p",
     "Nat.choose_symm_add": "theorem Nat.choose_symm_add {a b : ℕ} : (a + b).choose a = (a + b).choose b",
     "mul_assoc": "theorem mul_assoc {G : Type u_1} [Semigroup G] (a b c : G) : a * b * c = a * (b * c)",
@@ -2783,8 +2794,8 @@
     "ENNReal.inv_mul_cancel": "theorem ENNReal.inv_mul_cancel {a : ENNReal} (h0 : a ≠ 0) (ht : a ≠ ⊤) : a⁻¹ * a = 1",
     "mass_ne_zero": "theorem mass_ne_zero {p : ↑I} (h : p ≠ 0) : ↑p ≠ 0",
     "mass_finite": "theorem mass_finite (p : I) : ↑p ≠ ⊤",
-    "bind_false": "theorem bind_false (μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (do let x ← μ; f x) false = μ true * (f true) false + μ false * (f false) false",
-    "prob_unused": "theorem prob_unused {β : Type} (μ : DiscreteMeasure Bool) [h : Prob μ] (ν : DiscreteMeasure β) : (do let _ ← μ; ν) = ν",
+    "bind_false": "theorem bind_false (μ : PMF Bool) (f : Bool → PMF Bool) : (do let x ← μ; f x) false = μ true * (f true) false + μ false * (f false) false",
+    "prob_unused": "theorem prob_unused {β : Type} (μ : PMF Bool) (ν : PMF β) : (do let _ ← μ; ν) = ν",
     "mass_eq_ofReal": "theorem mass_eq_ofReal (p : I) : ↑p = ENNReal.ofReal ↑p",
     "mass_mul_real": "theorem mass_mul_real (p q : I) : ↑p * ↑q = ENNReal.ofReal (↑p * ↑q)",
     "ENNReal.ofReal_add": "theorem ENNReal.ofReal_add {p q : ℝ} (hp : 0 ≤ p) (hq : 0 ≤ q) : ENNReal.ofReal (p + q) = ENNReal.ofReal p + ENNReal.ofReal q",
@@ -2798,9 +2809,9 @@
     "binom_above": "theorem binom_above (p : I) (n k : ℕ) : (binom p n) (n + k + 1) = 0",
     "binom_diag": "theorem binom_diag (p : I) (n : ℕ) : (binom p n) n = ↑p ^ n",
     "binom_formula": "theorem binom_formula (p : I) (k m : ℕ) : (binom p (k + m)) k = ↑p ^ k * ↑(σ p) ^ m * ↑((k + m).choose k)",
-    "geom_zero": "theorem geom_zero (p : I) : (geom p) 0 = ↑p",
-    "geom_succ": "theorem geom_succ (p : I) (k : ℕ) : (geom p) (k + 1) = ↑(σ p) * (geom p) k",
-    "geom_first": "theorem geom_first (p : I) : geom p = do let x ← coin p; bif x then pure 0 else do let Y ← geom p; pure (1 + Y)"
+    "geom_zero": "theorem geom_zero (p : I) [Fact (p ≠ 0)] : (geom p) 0 = ↑p",
+    "geom_succ": "theorem geom_succ (p : I) [Fact (p ≠ 0)] (k : ℕ) : (geom p) (k + 1) = ↑(σ p) * (geom p) k",
+    "geom_first": "theorem geom_first (p : I) [Fact (p ≠ 0)] : geom p = do let x ← coin p; bif x then pure 0 else do let Y ← geom p; pure (1 + Y)"
     }
   // LEAN_SIGS end
   const INVENTORY = [
@@ -2845,7 +2856,7 @@
     { name: "induction'", kind: 'tactic', insert: "induction' n with n ih", sig: "induction' n with n ih",
       en: 'Induction on the natural number n: first the goal for 0, then the goal for n + 1, with the hypothesis ih for n.',
       de: 'Induktion nach der natürlichen Zahl n: zuerst das Ziel für 0, dann das Ziel für n + 1, mit der Annahme ih für n.' },
-    { name: 'Prob.total', kind: 'rule', sig: 'Prob.total μ : ∑\' a, μ a = 1', en: 'What [Prob μ] says: the masses of μ, summed over all points (∑\'), give one.', de: 'Was [Prob μ] sagt: Die Massen von μ, über alle Punkte summiert (∑\'), ergeben eins.' },
+    { name: 'PMF.tsum_coe', kind: 'rule', sig: 'PMF.tsum_coe μ : ∑\' a, μ a = 1', en: 'What a PMF is: the masses of μ, summed over all points (∑\'), give one.', de: 'Was ein PMF ist: Die Massen von μ, über alle Punkte summiert (∑\'), ergeben eins.' },
     { name: 'tsum_fintype', kind: 'rule', sig: '∑\' a, f a = ∑ a, f a', en: 'Over a finite type (as Bool), the sum over all points is a finite sum.', de: 'Über einem endlichen Typ (wie Bool) ist die Summe über alle Punkte eine endliche Summe.' },
     { name: 'mass_total', kind: 'lemma', sig: 'mass_total μ : μ true + μ false = 1', en: 'Proved by you in Masses: a distribution on Bool has total mass one.', de: 'Von dir bewiesen in „Massen“: Eine Verteilung auf Bool hat die Gesamtmasse eins.' },
     { name: 'le_self_add', kind: 'rule', sig: 'le_self_add : a ≤ a + c', en: 'A sum of masses is at least its first summand.', de: 'Eine Summe von Massen ist mindestens ihr erster Summand.' },
@@ -2974,6 +2985,8 @@
     { name: "coin_bind_binom'", kind: 'lemma', sig: '(do let C ← coin p; let U ← binom q C.toNat; f U) = (do let B ← coin (p * q); f B.toNat)', en: 'Proved by you in Thinning: the same, with something after it.', de: 'Von dir bewiesen in „Ausdünnen“: dasselbe, mit etwas danach.' },
     { name: 'binom_thin', kind: 'lemma', sig: '(do let X ← binom p n; binom q X) = binom (p * q) n', en: 'Proved by you in Thinning: thinning a binomial.', de: 'Von dir bewiesen in „Ausdünnen“: eine Binomialverteilung ausdünnen.' },
     { name: 'binom_symm', kind: 'lemma', sig: 'binom (σ p) (k + m) m = binom p (k + m) k', en: 'Proved by you in Binomial: true and false swapped.', de: 'Von dir bewiesen in „Binomial“: true und false getauscht.' },
+    { name: 'geomMass_formula', kind: 'rule', sig: 'geomMass p k = ↑(σ p) ^ k * ↑p', en: 'The masses of the geometric distribution, before they are a distribution: your formula.', de: 'Die Massen der geometrischen Verteilung, bevor sie eine Verteilung sind: deine Formel.' },
+    { name: 'geomMass_total', kind: 'lemma', sig: 'geomMass_total p (h : p ≠ 0) : ∑\' k, geomMass p k = 1', en: 'Proved by you in Geometric: the masses add up to one, so geom p is a PMF.', de: 'Von dir bewiesen in „Geometrisch“: Die Massen ergeben zusammen eins, also ist geom p ein PMF.' },
     { name: 'geom_formula', kind: 'lemma', sig: 'geom p k = ↑(σ p) ^ k * ↑p', en: 'Proved by you in Geometric: the masses of the geometric distribution.', de: 'Von dir bewiesen in „Geometrisch“: die Massen der geometrischen Verteilung.' },
     { name: 'geom_memoryless', kind: 'lemma', sig: 'geom p (k + m) = ↑(σ p) ^ k * geom p m', en: 'Proved by you in Geometric: without memory.', de: 'Von dir bewiesen in „Geometrisch“: ohne Gedächtnis.' },
     { name: 'bind_comm', kind: 'rule', sig: '(do let x ← μ; let y ← ν; f x y) = (do let y ← ν; let x ← μ; f x y)', en: 'Two independent draws, in the other order.', de: 'Zwei unabhängige Ziehungen, in der anderen Reihenfolge.' },
@@ -3022,7 +3035,7 @@
   })
   // Lean's messages, as the player sees the goals: short names, I for the unit interval; and in front of
   // the usual ones a sentence that says what to do
-  const leanText = m => m.replace(/MeasureTheory\.DiscreteMeasure\./g, '').replace(/ProbGame\./g, '').replace(/↑I/g, 'I')
+  const leanText = m => m.replace(/MeasureTheory\.DiscreteMeasure\./g, '').replace(/PMF\.pure\b/g, 'pure').replace(/ProbGame\./g, '').replace(/↑I/g, 'I')
   const ADVICE = [
     [/Did not find an occurrence of the pattern/, 'The left side of the rule does not occur in the goal as it stands. (Where names of a do block occur, rw cannot rewrite; simp only can.)',
       'Die linke Seite der Regel kommt im Ziel so nicht vor. (Wo Namen eines do-Blocks vorkommen, kann rw nicht umschreiben; simp only kann es.)'],

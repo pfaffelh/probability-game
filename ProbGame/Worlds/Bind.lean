@@ -313,7 +313,7 @@ norm_num [bind_true]
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (do let x ← μ; let y ← pure (!x); pure (!y)) = μ") (new := "pure_bind, bind_pure") (uses := "pure_bind, Bool.not_not, bind_pure")
+::::leanonly (proof := "(μ : PMF Bool) : (do let x ← μ; let y ← pure (!x); pure (!y)) = μ") (new := "pure_bind, bind_pure") (uses := "pure_bind, Bool.not_not, bind_pure")
 :::en
 *Flip back, from any start.* The chain of the last board, for every start: whatever the start `μ`, after two flips the distribution is `μ` again.
 :::
@@ -464,7 +464,7 @@ rw [coin_unused, coin_true]
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (q : I) : (do let x ← μ; bif x then coin q else coin q) = coin q") (new := "prob_unused") (uses := "cond_same, prob_unused, coin_unused")
+::::leanonly (proof := "(μ : PMF Bool) (q : I) : (do let x ← μ; bif x then coin q else coin q) = coin q") (new := "prob_unused") (uses := "cond_same, prob_unused, coin_unused")
 :::en
 *Forgetting, from any start.* If the next step does not depend on where the chain is (`q = r`), one step is enough to forget the start: whatever `μ` was, after the step it is `coin q`.
 :::
@@ -474,13 +474,13 @@ rw [coin_unused, coin_true]
 :::
 
 :::proofen
-`cond_same` as on the last board, and `prob_unused : (do let _ ← μ; ν) = ν` for any distribution `μ` (`[Prob μ]`), not only a coin.
+`cond_same` as on the last board, and `prob_unused : (do let _ ← μ; ν) = ν` for any distribution `μ : PMF Bool`, not only a coin.
 
 *Tip.* `simp only [cond_same]`, `rw [prob_unused]`.
 :::
 
 :::proofde
-`cond_same` wie auf dem letzten Spielfeld, und `prob_unused : (do let _ ← μ; ν) = ν` für jede Verteilung `μ` (`[Prob μ]`), nicht nur eine Münze.
+`cond_same` wie auf dem letzten Spielfeld, und `prob_unused : (do let _ ← μ; ν) = ν` für jede Verteilung `μ : PMF Bool`, nicht nur eine Münze.
 
 *Tipp.* `simp only [cond_same]`, `rw [prob_unused]`.
 :::

@@ -31,7 +31,7 @@ $`n` Münzen nacheinander werfen ergibt eine Liste von $`n` Ergebnissen: `iidSeq
 The definition:
 
 ```
-def iidSequence (n : ℕ) (μ : DiscreteMeasure α) : DiscreteMeasure (List α) :=
+def iidSequence (n : ℕ) (μ : PMF α) : PMF (List α) :=
   sequence (List.replicate n μ)
 ```
 
@@ -47,7 +47,7 @@ For the game two rules: `seq_zero : iidSequence 0 μ = pure []` and `seq_succ : 
 Die Definition:
 
 ```
-def iidSequence (n : ℕ) (μ : DiscreteMeasure α) : DiscreteMeasure (List α) :=
+def iidSequence (n : ℕ) (μ : PMF α) : PMF (List α) :=
   sequence (List.replicate n μ)
 ```
 

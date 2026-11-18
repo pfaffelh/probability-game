@@ -1,18 +1,17 @@
 /-!
 # The rules of the proof game
 
-The context in which the levels are proved (base: `DiscreteMeasure` of the journal,
-`import Journal.Notes.DiscreteMeasure.Thinning`). The player sees `coin p`, `binom p n`, `pure`,
-`do` blocks and `f <$> μ`; the rules below are stated in these forms, with the monad laws of Lean's
-core (`pure_bind`, `bind_pure`, `bind_assoc`, `map_pure`, `bind_map_left`, `map_bind`).
+The context in which the levels are proved (base: Mathlib's `PMF`, the probability mass functions;
+the bridge loads `import Journal.Notes.DiscreteMeasure.Thinning`, which contains it). The player sees
+`coin p`, `binom p n`, `pure`, `do` blocks and `f <$> μ`: `PMF` is a monad in Mathlib, with the laws
+of Lean's core (`pure_bind`, `bind_pure`, `bind_assoc`, `map_pure`, `bind_map_left`, `map_bind`).
+Mathlib's own `PMF.bernoulli` and `PMF.binomial` are deprecated (for measures); the coin and the
+binomial distribution are defined here.
 
 Rules that are given (the axioms of the game, as Peano's in the Natural Number Game) and lemmas
-the player proves in a level are both here, proved from the journal; the game unlocks the lemmas
-one after another.
+the player proves in a level are both here; the game unlocks the lemmas one after another.
 -/
 
-open MeasureTheory (DiscreteMeasure)
-open MeasureTheory.DiscreteMeasure (coin binom iidSequence)
 open unitInterval
 
 namespace ProbGame
@@ -23,79 +22,64 @@ namespace ProbGame
 @[coe] noncomputable def mass (p : I) : ENNReal := ENNReal.ofReal p
 noncomputable instance : CoeTC I ENNReal := ⟨mass⟩
 
-/-- `μ` is a distribution: its total mass is one. -/
-class Prob {α : Type} (μ : DiscreteMeasure α) : Prop where
-  hasSum : HasSum μ.weight 1
+/-- The two masses of a coin add up to one. -/
+theorem coin_sum (p : I) : ∑ b, (bif b then (p : ENNReal) else ↑(σ p)) = 1 := by
+  rw [Fintype.sum_bool, Bool.cond_true, Bool.cond_false]
+  show ENNReal.ofReal p + ENNReal.ofReal (σ p : ℝ) = 1
+  rw [← ENNReal.ofReal_add p.2.1 (σ p).2.1, unitInterval.coe_symm_eq, add_sub_cancel, ENNReal.ofReal_one]
 
-instance (p : I) : Prob (coin p) := ⟨MeasureTheory.DiscreteMeasure.hasSum_coin p⟩
-instance {α β : Type} (μ : DiscreteMeasure α) [h : Prob μ] (f : α → β) : Prob (f <$> μ) :=
-  ⟨MeasureTheory.DiscreteMeasure.hasSum_map h.hasSum f⟩
-instance {α : Type} (a : α) : Prob (pure a : DiscreteMeasure α) := ⟨MeasureTheory.DiscreteMeasure.hasSum_pure a⟩
-instance {α β : Type} (μ : DiscreteMeasure α) [h : Prob μ] (f : α → DiscreteMeasure β) [hf : ∀ a, Prob (f a)] :
-    Prob (μ >>= f) :=
-  ⟨MeasureTheory.DiscreteMeasure.hasSum_bind h.hasSum (fun a _ => (hf a).hasSum)⟩
-instance {α : Type} (c : Bool) (μ ν : DiscreteMeasure α) [h : Prob μ] [h' : Prob ν] :
-    Prob (bif c then μ else ν) := by
-  cases c
-  · exact h'
-  · exact h
+/-- The coin with probability `p`: mass `p` at `true` and `1 - p` at `false`. -/
+noncomputable def coin (p : I) : PMF Bool :=
+  PMF.ofFintype (fun b => bif b then (p : ENNReal) else ↑(σ p)) (coin_sum p)
 
 /-- The mass of a coin at `true`. -/
-theorem coin_true (p : I) : coin p true = p := MeasureTheory.DiscreteMeasure.coin_apply_true p
+theorem coin_true (p : I) : coin p true = p := rfl
 
 /-- The mass of a coin at `false`. -/
-theorem coin_false (p : I) : coin p false = σ p := MeasureTheory.DiscreteMeasure.coin_apply_false p
+theorem coin_false (p : I) : coin p false = σ p := rfl
 
 /-- The total mass of a coin is one. -/
 theorem coin_total (p : I) : coin p true + coin p false = 1 := by
-  have := (MeasureTheory.DiscreteMeasure.hasSum_coin p).tsum_eq
-  rw [tsum_fintype, Fintype.sum_bool] at this; exact this
+  have := coin_sum p
+  rw [Fintype.sum_bool] at this; exact this
 
 /-- The definition of a point mass, as the game writes it: mass one at its point, zero elsewhere. -/
 theorem pure_apply {α : Type} [DecidableEq α] (a b : α) :
-    (pure a : DiscreteMeasure α) b = bif a == b then 1 else 0 := by
+    (pure a : PMF α) b = bif a == b then 1 else 0 := by
+  show PMF.pure a b = _
+  rw [PMF.pure_apply]
   by_cases h : a = b
-  · subst h; simp; exact MeasureTheory.DiscreteMeasure.pure_apply_self
-  · simp [h]; exact MeasureTheory.DiscreteMeasure.pure_apply_nonself (Ne.symm h)
+  · subst h; simp
+  · simp [h, Ne.symm h]
 
 /-- The mass of a point mass at `true`: one if it sits there, else zero. -/
-theorem pure_true (b : Bool) : (pure b : DiscreteMeasure Bool) true = bif b then 1 else 0 := by
-  cases b
-  · exact MeasureTheory.DiscreteMeasure.pure_apply_nonself (by decide)
-  · exact MeasureTheory.DiscreteMeasure.pure_apply_self
-
-/-- What `Prob μ` says: the masses of `μ`, summed over all points, give one. -/
-theorem Prob.total {α : Type} (μ : DiscreteMeasure α) [h : Prob μ] : ∑' a, μ a = 1 :=
-  h.hasSum.tsum_eq
+theorem pure_true (b : Bool) : (pure b : PMF Bool) true = bif b then 1 else 0 := by
+  rw [pure_apply]; cases b <;> rfl
 
 /-- The total mass of a distribution on `Bool` is one. -/
-theorem mass_total (μ : DiscreteMeasure Bool) [hμ : Prob μ] : μ true + μ false = 1 := by
-  have a := hμ.hasSum.tsum_eq
-  rw [tsum_fintype, Fintype.sum_bool] at a
-  simpa only [MeasureTheory.DiscreteMeasure.weight_eq] using a
+theorem mass_total (μ : PMF Bool) : μ true + μ false = 1 := by
+  rw [← PMF.tsum_coe μ, tsum_fintype, Fintype.sum_bool]
 
 /-- A mass of a distribution on `Bool` is at most one. -/
-theorem mass_le_one (μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b ≤ 1 := by
+theorem mass_le_one (μ : PMF Bool) (b : Bool) : μ b ≤ 1 := by
   rw [← mass_total μ]
   cases b
   · exact le_add_self
   · exact le_self_add
 
 /-- A mass of a distribution is finite (at most one). -/
-theorem mass_ne_top {μ : DiscreteMeasure Bool} [Prob μ] {b : Bool} : μ b ≠ ⊤ := by
-  cases b
-  · exact ne_top_of_le_ne_top ENNReal.one_ne_top ((mass_total μ) ▸ le_add_self)
-  · exact ne_top_of_le_ne_top ENNReal.one_ne_top ((mass_total μ) ▸ le_self_add)
+theorem mass_ne_top {μ : PMF Bool} {b : Bool} : μ b ≠ ⊤ :=
+  ne_top_of_le_ne_top ENNReal.one_ne_top (mass_le_one μ b)
 
 /-- One Coin, *The rest of the mass*: what is not at `b` lies at `!b`. -/
-theorem mass_not (μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b = 1 - μ (!b) := by
+theorem mass_not (μ : PMF Bool) (b : Bool) : μ b = 1 - μ (!b) := by
   cases b
   · rw [Bool.not_false, ← mass_total μ, ENNReal.add_sub_cancel_left mass_ne_top]
   · rw [Bool.not_true, ← mass_total μ, add_comm, ENNReal.add_sub_cancel_left mass_ne_top]
 
 /-- One Coin, *One bar is enough*: two distributions on `Bool` are the same when they have the
 same mass at `true`. -/
-theorem bool_ext (μ ν : DiscreteMeasure Bool) [Prob μ] [Prob ν] (h : μ true = ν true) : μ = ν := by
+theorem bool_ext (μ ν : PMF Bool) (h : μ true = ν true) : μ = ν := by
   ext x
   cases x
   · rw [mass_not μ false, mass_not ν false, Bool.not_false, h]
@@ -110,64 +94,72 @@ attribute [simp] coin_true coin_false pure_true
   rw [← coin_true, ← coin_false, coin_total]
 
 /-- The mass at `true`, as a number in `[0, 1]` (for `coin`). -/
-noncomputable def chance (μ : DiscreteMeasure Bool) [Prob μ] : I :=
+noncomputable def chance (μ : PMF Bool) : I :=
   ⟨(μ true).toReal, ENNReal.toReal_nonneg, by
     have h : μ true ≤ 1 := (mass_total μ) ▸ le_self_add
     simpa using ENNReal.toReal_mono ENNReal.one_ne_top h⟩
 
 /-- `chance μ`, as a mass, is the mass at `true`. -/
-theorem chance_eq (μ : DiscreteMeasure Bool) [Prob μ] : (chance μ : ENNReal) = μ true := by
+theorem chance_eq (μ : PMF Bool) : (chance μ : ENNReal) = μ true := by
   show ENNReal.ofReal (μ true).toReal = μ true
   exact ENNReal.ofReal_toReal mass_ne_top
 
 /-- The definition of a move, as the game writes it: the mass of `f <$> μ` at `b` is the sum of the
 masses `μ a` over the points `a` with `f a = b` (a finite sum: finitely many points). -/
-theorem map_apply {α : Type} [Fintype α] (f : α → Bool) (μ : DiscreteMeasure α) (b : Bool) :
+theorem map_apply {α : Type} [Fintype α] (f : α → Bool) (μ : PMF α) (b : Bool) :
     (f <$> μ) b = ∑ a, (bif f a == b then μ a else 0) := by
-  rw [← MeasureTheory.DiscreteMeasure.map_eq_map, MeasureTheory.DiscreteMeasure.map_apply_eq_tsum_mul,
-    tsum_fintype]
+  rw [PMF.monad_map_eq_map, PMF.map_apply, tsum_fintype]
   congr 1; funext a
-  cases h : f a <;> cases b <;> simp [Set.indicator]
+  cases h : f a <;> cases b <;> simp
 
 /-- Where the mass of a move goes: the mass of `f <$> μ` at `true` is the mass of `μ` at the points
 that `f` sends to `true` (`bif c then a else b` is `a` when `c` is `true`, else `b`). -/
-theorem map_true (f : Bool → Bool) (μ : DiscreteMeasure Bool) :
+theorem map_true (f : Bool → Bool) (μ : PMF Bool) :
     (f <$> μ) true = (bif f true then μ true else 0) + (bif f false then μ false else 0) := by
-  rw [← MeasureTheory.DiscreteMeasure.map_eq_map, MeasureTheory.DiscreteMeasure.map_apply_eq_tsum_mul,
-    tsum_fintype, Fintype.sum_bool]
-  cases f true <;> cases f false <;> simp [Set.indicator]
+  rw [map_apply, Fintype.sum_bool]
+  cases f true <;> cases f false <;> rfl
 
 /-- The definition of a bind, as the game writes it for a finite first step: the mass of `μ >>= f` at
 `b` is the sum over the first steps `a` of the mass `μ a` times the mass of `f a` at `b`. -/
-theorem bind_apply {α β : Type} [Fintype α] (μ : DiscreteMeasure α) (f : α → DiscreteMeasure β) (b : β) :
+theorem bind_apply {α β : Type} [Fintype α] (μ : PMF α) (f : α → PMF β) (b : β) :
     (do let a ← μ; f a) b = ∑ a, μ a * f a b := by
-  rw [← MeasureTheory.DiscreteMeasure.bind_eq_bind, MeasureTheory.DiscreteMeasure.bind_apply, tsum_fintype]
+  show (μ.bind f) b = _
+  rw [PMF.bind_apply, tsum_fintype]
 
 /-- The mass of a bind at `true`: through `true` and through `false` (Building with coins). -/
-theorem bind_true (μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) :
+theorem bind_true (μ : PMF Bool) (f : Bool → PMF Bool) :
     (do let x ← μ; f x) true = μ true * f true true + μ false * f false true := by
-  rw [← MeasureTheory.DiscreteMeasure.bind_eq_bind, MeasureTheory.DiscreteMeasure.bind_apply, tsum_fintype, Fintype.sum_bool]
+  rw [bind_apply, Fintype.sum_bool]
 
 /-- A coin whose result is not used changes nothing. -/
-theorem coin_unused {β : Type} (p : I) (ν : DiscreteMeasure β) : (do let _ ← coin p; ν) = ν :=
-  MeasureTheory.DiscreteMeasure.bind_const_of_hasSum (MeasureTheory.DiscreteMeasure.hasSum_coin p) ν
+theorem coin_unused {β : Type} (p : I) (ν : PMF β) : (do let _ ← coin p; ν) = ν :=
+  PMF.bind_const (coin p) ν
 
 /-- Two moves are one move. -/
-theorem map_map {α β γ : Type} (μ : DiscreteMeasure α) (f : α → β) (g : β → γ) :
+theorem map_map {α β γ : Type} (μ : PMF α) (f : α → β) (g : β → γ) :
     g <$> (f <$> μ) = (fun x => g (f x)) <$> μ := (comp_map f g μ).symm
 
 /-- Independence: two coins, both `true`, is a coin `p * q`. -/
 theorem coin_and (p q : I) : (do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q) := by
-  rw [← MeasureTheory.DiscreteMeasure.twoCoins_and_eq_coin]
-  simp only [map_eq_pure_bind, seq_eq_bind_map, bind_assoc, pure_bind]
+  apply bool_ext
+  rw [bind_true, bind_true, bind_true, pure_true, pure_true, pure_true, pure_true]
+  simp only [Bool.and_true, Bool.and_false, Bool.cond_true, Bool.cond_false, mul_one, mul_zero, add_zero]
+  rw [coin_true, coin_true, coin_true]
+  show ENNReal.ofReal p * ENNReal.ofReal q = ENNReal.ofReal ((p : ℝ) * q)
+  rw [ENNReal.ofReal_mul p.2.1]
 
 /-- Independence: the order of two independent draws does not matter. -/
-theorem bind_comm {α β γ : Type} (μ : DiscreteMeasure α) (ν : DiscreteMeasure β) (f : α → β → DiscreteMeasure γ) :
+theorem bind_comm {α β γ : Type} (μ : PMF α) (ν : PMF β) (f : α → β → PMF γ) :
     (do let x ← μ; let y ← ν; f x y) = (do let y ← ν; let x ← μ; f x y) :=
-  MeasureTheory.DiscreteMeasure.bind_comm μ ν f
+  PMF.bind_comm μ ν f
 
 /-- De Morgan. -/
 theorem or_eq (x y : Bool) : (x || y) = !(!x && !y) := by cases x <;> cases y <;> rfl
+
+/-- The binomial distribution: the number of `true` in `n` coins `p`, one after the other. -/
+noncomputable def binom (p : I) : ℕ → PMF ℕ
+  | 0 => pure 0
+  | n + 1 => do let X ← coin p; let Y ← binom p n; pure (X.toNat + Y)
 
 /-- The binomial distribution, by its definition: no throw. -/
 theorem binom_zero (p : I) : binom p 0 = pure 0 := rfl
@@ -194,7 +186,7 @@ theorem coin_const (p : I) (b : Bool) : (fun _ => b) <$> coin p = pure b := by
   rw [Bool.cond_true, Bool.cond_true, Bool.cond_true, coin_total]
 
 /-- One Coin, *Every distribution is a coin*. -/
-theorem eq_coin (μ : DiscreteMeasure Bool) [Prob μ] : μ = coin (chance μ) := by
+theorem eq_coin (μ : PMF Bool) : μ = coin (chance μ) := by
   apply bool_ext
   rw [coin_true, chance_eq]
 
@@ -235,33 +227,33 @@ theorem mass_mul (p q : I) : ((p * q : I) : ENNReal) = (p : ENNReal) * (q : ENNR
   exact ENNReal.ofReal_mul p.2.1
 
 /-- The mass of a draw that starts with a coin, at any point: through `true` and through `false`. -/
-theorem coin_bind_apply {β : Type} (p : I) (f : Bool → DiscreteMeasure β) (x : β) :
+theorem coin_bind_apply {β : Type} (p : I) (f : Bool → PMF β) (x : β) :
     (do let b ← coin p; f b) x = ↑p * f true x + ↑(σ p) * f false x := by
-  rw [← MeasureTheory.DiscreteMeasure.bind_eq_bind, MeasureTheory.DiscreteMeasure.bind_apply,
-    tsum_fintype, Fintype.sum_bool, coin_true, coin_false]
+  rw [bind_apply, Fintype.sum_bool, coin_true, coin_false]
 
 /-- A point mass at its point. -/
-theorem pure_self {α : Type} [DecidableEq α] (a : α) : (pure a : DiscreteMeasure α) a = 1 :=
-  MeasureTheory.DiscreteMeasure.pure_apply_self
+theorem pure_self {α : Type} [DecidableEq α] (a : α) : (pure a : PMF α) a = 1 :=
+  PMF.pure_apply_self a
 
 /-- The point mass at `0`, elsewhere. -/
-theorem pure_zero_succ (k : ℕ) : (pure 0 : DiscreteMeasure ℕ) (k + 1) = 0 :=
-  MeasureTheory.DiscreteMeasure.pure_apply_nonself (Nat.succ_ne_zero k)
+theorem pure_zero_succ (k : ℕ) : (pure 0 : PMF ℕ) (k + 1) = 0 :=
+  PMF.pure_apply_of_ne _ _ (Nat.succ_ne_zero k)
 
 /-- One more: the mass at `k + 1` is the old mass at `k`. -/
-theorem shift_succ (μ : DiscreteMeasure ℕ) (k : ℕ) : (do let Y ← μ; pure (1 + Y)) (k + 1) = μ k := by
-  rw [← MeasureTheory.DiscreteMeasure.bind_eq_bind, MeasureTheory.DiscreteMeasure.bind_apply,
-    tsum_eq_single k]
-  · rw [add_comm 1 k]; erw [MeasureTheory.DiscreteMeasure.pure_apply_self, mul_one]
+theorem shift_succ (μ : PMF ℕ) (k : ℕ) : (do let Y ← μ; pure (1 + Y)) (k + 1) = μ k := by
+  show (μ.bind fun Y => PMF.pure (1 + Y)) (k + 1) = μ k
+  rw [PMF.bind_apply, tsum_eq_single k]
+  · rw [add_comm 1 k, PMF.pure_apply_self, mul_one]
   · intro b hb
-    erw [MeasureTheory.DiscreteMeasure.pure_apply_nonself (by omega), mul_zero]
+    rw [PMF.pure_apply_of_ne _ _ (by omega), mul_zero]
 
 /-- One more is never `0`. -/
-theorem shift_zero (μ : DiscreteMeasure ℕ) : (do let Y ← μ; pure (1 + Y)) 0 = 0 := by
-  rw [← MeasureTheory.DiscreteMeasure.bind_eq_bind, MeasureTheory.DiscreteMeasure.bind_apply]
+theorem shift_zero (μ : PMF ℕ) : (do let Y ← μ; pure (1 + Y)) 0 = 0 := by
+  show (μ.bind fun Y => PMF.pure (1 + Y)) 0 = 0
+  rw [PMF.bind_apply]
   apply ENNReal.tsum_eq_zero.mpr
   intro b
-  erw [MeasureTheory.DiscreteMeasure.pure_apply_nonself (by omega), mul_zero]
+  rw [PMF.pure_apply_of_ne _ _ (by omega), mul_zero]
 
 /-- Thinning, *Keeping with probability q*: a coin `p`, and on `true` a coin `q`. -/
 theorem coin_thin (p q : I) : (do let x ← coin p; bif x then coin q else pure false) = coin (p * q) := by
@@ -282,7 +274,7 @@ theorem coin_bind_binom (p q : I) :
   simp only [pure_bind, add_zero]
 
 /-- The same, with something after it. -/
-theorem coin_bind_binom' {β : Type} (p q : I) (f : ℕ → DiscreteMeasure β) :
+theorem coin_bind_binom' {β : Type} (p q : I) (f : ℕ → PMF β) :
     (do let C ← coin p; let U ← binom q C.toNat; f U) = (do let B ← coin (p * q); f B.toNat) := by
   rw [← bind_assoc, coin_bind_binom, bind_assoc]
   simp only [pure_bind]
@@ -340,25 +332,63 @@ noncomputable def geomMass (p : I) : ℕ → ENNReal
   | 0 => ↑p
   | k + 1 => ↑(σ p) * geomMass p k
 
-noncomputable def geom (p : I) : DiscreteMeasure ℕ := ⟨geomMass p⟩
+/-- `1 - (1 - p) = p`, as masses. -/
+theorem one_sub_symm (p : I) : 1 - (↑(σ p) : ENNReal) = ↑p := by
+  rw [← add_symm_eq_one p, ENNReal.add_sub_cancel_right]
+  exact ENNReal.ofReal_ne_top
 
-theorem geom_zero (p : I) : geom p 0 = ↑p := rfl
+/-- A number `p ≠ 0` is a mass `≠ 0`. -/
+theorem mass_ne_zero {p : I} (h : p ≠ 0) : (↑p : ENNReal) ≠ 0 := by
+  show ENNReal.ofReal p ≠ 0
+  rw [ne_eq, ENNReal.ofReal_eq_zero, not_le]
+  exact lt_of_le_of_ne p.2.1 (fun e => h (Subtype.ext e.symm))
 
-theorem geom_succ (p : I) (k : ℕ) : geom p (k + 1) = ↑(σ p) * geom p k := rfl
+/-- A number in `[0, 1]` is a finite mass. -/
+theorem mass_finite (p : I) : (↑p : ENNReal) ≠ ⊤ := ENNReal.ofReal_ne_top
 
-theorem geom_formula (p : I) (k : ℕ) : geom p k = ↑(σ p) ^ k * ↑p := by
+theorem geomMass_formula (p : I) (k : ℕ) : geomMass p k = ↑(σ p) ^ k * ↑p := by
   induction' k with k ih
-  rw [geom_zero, pow_zero, one_mul]
-  rw [geom_succ, ih, ← mul_assoc, ← pow_succ']
+  · rw [geomMass, pow_zero, one_mul]
+  · rw [geomMass, ih, ← mul_assoc, ← pow_succ']
 
-theorem geom_memoryless (p : I) (k m : ℕ) : geom p (k + m) = ↑(σ p) ^ k * geom p m := by
+/-- Geometric: the masses add up to one (when `p ≠ 0`); so `geom p` is a distribution. -/
+theorem geomMass_total (p : I) (h : p ≠ 0) : ∑' k, geomMass p k = 1 := by
+  simp only [geomMass_formula]
+  rw [ENNReal.tsum_mul_right, ENNReal.tsum_geometric, one_sub_symm,
+    ENNReal.inv_mul_cancel (mass_ne_zero h) (mass_finite p)]
+
+/-- Two numbers `≠ 0` have a product `≠ 0`. -/
+instance (p q : I) [hp : Fact (p ≠ 0)] [hq : Fact (q ≠ 0)] : Fact (p * q ≠ 0) :=
+  ⟨fun h => by
+    have h' : (p : ℝ) * q = 0 := congrArg Subtype.val h
+    rcases mul_eq_zero.mp h' with e | e
+    · exact hp.out (Subtype.ext e)
+    · exact hq.out (Subtype.ext e)⟩
+
+/-- The geometric distribution (for `p ≠ 0`: for `p = 0` the first `true` never comes). -/
+noncomputable def geom (p : I) [h : Fact (p ≠ 0)] : PMF ℕ :=
+  ⟨geomMass p, ENNReal.summable.hasSum_iff.mpr (geomMass_total p h.out)⟩
+
+variable (p : I) [Fact (p ≠ 0)] in
+theorem geom_zero : geom p 0 = ↑p := rfl
+
+variable (p : I) [Fact (p ≠ 0)] in
+theorem geom_succ (k : ℕ) : geom p (k + 1) = ↑(σ p) * geom p k := rfl
+
+variable (p : I) [Fact (p ≠ 0)] in
+theorem geom_formula (k : ℕ) : geom p k = ↑(σ p) ^ k * ↑p := geomMass_formula p k
+
+/-- Geometric: the total mass is one. -/
+theorem geom_total (p : I) [Fact (p ≠ 0)] : ∑' k, geom p k = 1 := PMF.tsum_coe _
+
+theorem geom_memoryless (p : I) [Fact (p ≠ 0)] (k m : ℕ) : geom p (k + m) = ↑(σ p) ^ k * geom p m := by
   induction' k with k ih
   rw [zero_add, pow_zero, one_mul]
   rw [add_right_comm, geom_succ, ih, ← mul_assoc, ← pow_succ']
 
-theorem geom_first (p : I) :
+theorem geom_first (p : I) [Fact (p ≠ 0)] :
     geom p = (do let x ← coin p; bif x then pure 0 else (do let Y ← geom p; pure (1 + Y))) := by
-  ext k
+  apply PMF.ext; intro k
   cases k
   rw [coin_bind_apply, Bool.cond_true, Bool.cond_false, pure_self, shift_zero, mul_zero, add_zero,
     mul_one, geom_zero]
@@ -367,21 +397,32 @@ theorem geom_first (p : I) :
 
 /-! Sequences (2026-11-15): `iidSequence n μ` draws `n` times from `μ`, independently, as a list. -/
 
-theorem seq_zero {α : Type} (μ : DiscreteMeasure α) : iidSequence 0 μ = pure [] :=
-  MeasureTheory.DiscreteMeasure.iidSequence_zero μ
+/-- `n` independent draws from `μ`, as a list. -/
+noncomputable def iidSequence {α : Type} : ℕ → PMF α → PMF (List α)
+  | 0, _ => pure []
+  | n + 1, μ => do let y ← μ; let l ← iidSequence n μ; pure (y :: l)
 
-theorem seq_succ {α : Type} (μ : DiscreteMeasure α) (n : ℕ) :
-    iidSequence (n + 1) μ = (do let y ← μ; let l ← iidSequence n μ; pure (y :: l)) :=
-  (MeasureTheory.DiscreteMeasure.iidSequence_cons μ).symm
+theorem seq_zero {α : Type} (μ : PMF α) : iidSequence 0 μ = pure [] := rfl
 
-theorem seq_succ_apply {α : Type} [DecidableEq α] (μ : DiscreteMeasure α) (n : ℕ) (a : α) (l : List α) :
+theorem seq_succ {α : Type} (μ : PMF α) (n : ℕ) :
+    iidSequence (n + 1) μ = (do let y ← μ; let l ← iidSequence n μ; pure (y :: l)) := rfl
+
+theorem seq_succ_apply {α : Type} [DecidableEq α] (μ : PMF α) (n : ℕ) (a : α) (l : List α) :
     iidSequence (n + 1) μ (a :: l) = μ a * iidSequence n μ l := by
-  rw [MeasureTheory.DiscreteMeasure.iidSequence, List.replicate_succ,
-    MeasureTheory.DiscreteMeasure.sequence_cons_apply_cons]
-  rfl
+  show (μ.bind fun y => (iidSequence n μ).bind fun l' => PMF.pure (y :: l')) (a :: l) = _
+  rw [PMF.bind_apply, tsum_eq_single a]
+  · congr 1
+    rw [PMF.bind_apply, tsum_eq_single l]
+    · rw [PMF.pure_apply_self, mul_one]
+    · intro l' hl
+      rw [PMF.pure_apply_of_ne _ _ (by simp [Ne.symm hl]), mul_zero]
+  · intro y hy
+    rw [PMF.bind_apply, ENNReal.tsum_eq_zero.mpr, mul_zero]
+    intro l'
+    rw [PMF.pure_apply_of_ne _ _ (by simp [Ne.symm hy]), mul_zero]
 
-theorem seq_zero_nil {α : Type} (μ : DiscreteMeasure α) : iidSequence 0 μ [] = 1 := by
-  rw [seq_zero]; exact MeasureTheory.DiscreteMeasure.pure_apply_self
+theorem seq_zero_nil {α : Type} (μ : PMF α) : iidSequence 0 μ [] = 1 := by
+  rw [seq_zero]; exact PMF.pure_apply_self _
 
 theorem count_true_cons (y : Bool) (l : List Bool) : (y :: l).count true = y.toNat + l.count true := by
   cases y <;> simp [add_comm]
@@ -404,26 +445,6 @@ theorem binom_symm (p : I) (k m : ℕ) : binom (σ p) (k + m) m = binom p (k + m
   rw [add_comm k m, binom_formula, add_comm m k, binom_formula, symm_twice, Nat.choose_symm_add]
   ring
 
-/-- `1 - (1 - p) = p`, as masses. -/
-theorem one_sub_symm (p : I) : 1 - (↑(σ p) : ENNReal) = ↑p := by
-  rw [← add_symm_eq_one p, ENNReal.add_sub_cancel_right]
-  exact ENNReal.ofReal_ne_top
-
-/-- A number `p ≠ 0` is a mass `≠ 0`. -/
-theorem mass_ne_zero {p : I} (h : p ≠ 0) : (↑p : ENNReal) ≠ 0 := by
-  show ENNReal.ofReal p ≠ 0
-  rw [ne_eq, ENNReal.ofReal_eq_zero, not_le]
-  exact lt_of_le_of_ne p.2.1 (fun e => h (Subtype.ext e.symm))
-
-/-- A number in `[0, 1]` is a finite mass. -/
-theorem mass_finite (p : I) : (↑p : ENNReal) ≠ ⊤ := ENNReal.ofReal_ne_top
-
-/-- Geometric: the total mass is one (when `p ≠ 0`). -/
-theorem geom_total (p : I) (h : p ≠ 0) : ∑' k, geom p k = 1 := by
-  simp only [geom_formula]
-  rw [ENNReal.tsum_mul_right, ENNReal.tsum_geometric, one_sub_symm,
-    ENNReal.inv_mul_cancel (mass_ne_zero h) (mass_finite p)]
-
 /-! Hypergeometric, drawn ball by ball (2026-11-15). -/
 
 /-- The chance to draw a white ball from an urn with `w` white and `b` black balls (`0` for an empty urn). -/
@@ -433,7 +454,7 @@ noncomputable def frac (w b : ℕ) : I :=
 
 /-- The hypergeometric distribution, drawn ball by ball: the number of white balls in `n` draws
 without replacement from an urn with `w` white and `b` black balls. -/
-noncomputable def hyper : ℕ → ℕ → ℕ → DiscreteMeasure ℕ
+noncomputable def hyper : ℕ → ℕ → ℕ → PMF ℕ
   | _, _, 0 => pure 0
   | w, b, n + 1 => do
       let X ← coin (frac w b)
@@ -491,15 +512,14 @@ theorem hyper_all (w b : ℕ) : hyper w b (w + b) = pure w := by
 /-! Markov chains on `Bool` (Coins that Wait, 2026-11-15). -/
 
 /-- The mass of a bind at `false`: through `true` and through `false`. -/
-theorem bind_false (μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) :
+theorem bind_false (μ : PMF Bool) (f : Bool → PMF Bool) :
     (do let x ← μ; f x) false = μ true * f true false + μ false * f false false := by
-  rw [← MeasureTheory.DiscreteMeasure.bind_eq_bind, MeasureTheory.DiscreteMeasure.bind_apply,
-    tsum_fintype, Fintype.sum_bool]
+  rw [bind_apply, Fintype.sum_bool]
 
 /-- A draw whose outcome is not used changes nothing. -/
-theorem prob_unused {β : Type} (μ : DiscreteMeasure Bool) [h : Prob μ] (ν : DiscreteMeasure β) :
+theorem prob_unused {β : Type} (μ : PMF Bool) (ν : PMF β) :
     (do let _ ← μ; ν) = ν :=
-  MeasureTheory.DiscreteMeasure.bind_const_of_hasSum h.hasSum ν
+  PMF.bind_const μ ν
 
 /-! Real numbers: from masses to `ℝ` (2026-11-15). -/
 

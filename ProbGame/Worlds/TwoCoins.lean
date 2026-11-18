@@ -55,7 +55,7 @@ und `fun x => …` ist diese Funktion. Die Beweise lernen die Regeln der `do`-Bl
 *Monadengesetze*, eine nach der anderen, wenn ein Level sie braucht.
 :::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (do let x ← μ; f x) true = μ true * f true true + μ false * f false true") (new := "bind_apply") (lemma := "bind_true") (uses := "bind_apply, Fintype.sum_bool")
+::::leanonly (proof := "(μ : PMF Bool) (f : Bool → PMF Bool) : (do let x ← μ; f x) true = μ true * f true true + μ false * f false true") (new := "bind_apply") (lemma := "bind_true") (uses := "bind_apply, Fintype.sum_bool")
 :::en
 *Two ways to true.* `do let x ← μ; f x` draws from `μ`, calls the result `x`, and goes on with
 `f x`: `f` says how to go on after each first draw. (Behind `do`, Lean writes `μ >>= f`, read *bind*:
@@ -186,7 +186,7 @@ norm_num [mass_mul]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (f : Bool → DiscreteMeasure Bool) : (do let x ← not <$> coin p; f x) = (do let x ← coin p; f (!x))") (new := "bind_map_left") (uses := "bind_map_left, map_bind")
+::::leanonly (proof := "(p : I) (f : Bool → PMF Bool) : (do let x ← not <$> coin p; f x) = (do let x ← coin p; f (!x))") (new := "bind_map_left") (uses := "bind_map_left, map_bind")
 :::en
 *A move before a draw.* Drawing from a moved coin is drawing from the coin and moving the result.
 :::
@@ -256,7 +256,7 @@ simp only [bind_map_left]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (f : Bool → DiscreteMeasure Bool) : not <$> (do let x ← coin p; f x) = (do let x ← coin p; not <$> f x)") (new := "map_bind") (uses := "map_bind, bind_map_left")
+::::leanonly (proof := "(p : I) (f : Bool → PMF Bool) : not <$> (do let x ← coin p; f x) = (do let x ← coin p; not <$> f x)") (new := "map_bind") (uses := "map_bind, bind_map_left")
 :::en
 *A move after a draw.* A move at the end can go into the `do` block.
 :::
@@ -374,7 +374,7 @@ cases x <;> rfl
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : (do let _ ← coin p; pure true) = (pure true : DiscreteMeasure Bool)") (new := "coin_unused") (uses := "coin_unused, prob_unused")
+::::leanonly (proof := "(p : I) : (do let _ ← coin p; pure true) = (pure true : PMF Bool)") (new := "coin_unused") (uses := "coin_unused, prob_unused")
 :::en
 *An unused coin.* A coin whose outcome is not used changes nothing.
 :::

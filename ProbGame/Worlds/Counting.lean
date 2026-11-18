@@ -117,7 +117,7 @@ rfl
 `binom` is defined by recursion on $`n`, as the natural numbers are; this is its first case:
 
 ```
-def binom (p : I) : ℕ → DiscreteMeasure ℕ
+def binom (p : I) : ℕ → PMF ℕ
   | 0 => pure 0
   | n + 1 => do
     let X ← coin p
@@ -132,7 +132,7 @@ def binom (p : I) : ℕ → DiscreteMeasure ℕ
 `binom` ist durch Rekursion über $`n` definiert, wie die natürlichen Zahlen; das ist ihr erster Fall:
 
 ```
-def binom (p : I) : ℕ → DiscreteMeasure ℕ
+def binom (p : I) : ℕ → PMF ℕ
   | 0 => pure 0
   | n + 1 => do
     let X ← coin p
@@ -176,7 +176,7 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : (do let x ← (pure true : DiscreteMeasure Bool); bif x then coin p else pure false) = coin p") (new := "pure_bind") (group := "chance.count") (uses := "pure_bind, Bool.cond_true, bind_pure, Bool.cond_false")
+::::leanonly (proof := "(p : I) : (do let x ← (pure true : PMF Bool); bif x then coin p else pure false) = coin p") (new := "pure_bind") (group := "chance.count") (uses := "pure_bind, Bool.cond_true, bind_pure, Bool.cond_false")
 :::en
 *Drawing a sure value.* Drawing from `pure a` gives `a`, surely.
 :::

@@ -64,7 +64,7 @@ decide +revert
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) : not <$> (not <$> μ) = (fun x => !(!x)) <$> μ") (new := "map_map") (uses := "map_map")
+::::leanonly (proof := "(μ : PMF Bool) : not <$> (not <$> μ) = (fun x => !(!x)) <$> μ") (new := "map_map") (uses := "map_map")
 :::en
 *Two moves are one.* Two moves one after the other are one move: the composed map.
 :::

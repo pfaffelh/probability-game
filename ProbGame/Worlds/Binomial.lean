@@ -18,7 +18,7 @@ htmlSplit := .never
 `binom p n` ist die Anzahl der `true` in $`n` Würfen einer Münze `p`, durch Rekursion über $`n` definiert (in *Zählen*). Hier ihre Massen: durch Induktion, das Pascalsche Dreieck mit Massen, bis zur Binomialformel.
 :::
 
-::::leanonly (proof := "{β : Type} (p : I) (f : Bool → DiscreteMeasure β) (x : β) : (do let b ← coin p; f b) x = ↑p * f true x + ↑(σ p) * f false x") (lemma := "coin_bind_apply") (group := "chance.count") (uses := "bind_apply, Fintype.sum_bool, coin_true, coin_false, coin_total")
+::::leanonly (proof := "{β : Type} (p : I) (f : Bool → PMF β) (x : β) : (do let b ← coin p; f b) x = ↑p * f true x + ↑(σ p) * f false x") (lemma := "coin_bind_apply") (group := "chance.count") (uses := "bind_apply, Fintype.sum_bool, coin_true, coin_false, coin_total")
 :::en
 *A coin first.* A draw that starts with a coin `p`: the mass at any point `x` comes through `true`
 (mass $`p`) and through `false` (mass $`1 - p`). That is `bind_true` again, now at any point.
@@ -51,7 +51,7 @@ rw [bind_apply, Fintype.sum_bool, coin_true, coin_false]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (μ ν : DiscreteMeasure ℕ) (k : ℕ) : (do let x ← coin p; bif x then μ else ν) k = ↑p * μ k + ↑(σ p) * ν k") (group := "chance.count") (uses := "coin_bind_apply, Bool.cond_true, Bool.cond_false")
+::::leanonly (proof := "(p : I) (μ ν : PMF ℕ) (k : ℕ) : (do let x ← coin p; bif x then μ else ν) k = ↑p * μ k + ↑(σ p) * ν k") (group := "chance.count") (uses := "coin_bind_apply, Bool.cond_true, Bool.cond_false")
 :::en
 *Two branches.* After the coin, one of two distributions: `μ` after `true`, `ν` after `false`.
 :::
@@ -78,7 +78,7 @@ rw [coin_bind_apply, Bool.cond_true, Bool.cond_false]
 :::
 ::::
 
-::::leanonly (proof := "{α : Type} [DecidableEq α] (a : α) : (pure a : DiscreteMeasure α) a = 1") (new := "beq_self_eq_true") (lemma := "pure_self") (group := "chance.count") (uses := "pure_apply, beq_self_eq_true, Bool.cond_true, Bool.cond_false")
+::::leanonly (proof := "{α : Type} [DecidableEq α] (a : α) : (pure a : PMF α) a = 1") (new := "beq_self_eq_true") (lemma := "pure_self") (group := "chance.count") (uses := "pure_apply, beq_self_eq_true, Bool.cond_true, Bool.cond_false")
 :::en
 *At its point.* A point mass has mass one at its point, now on any type.
 :::
@@ -161,7 +161,7 @@ rw [binom_zero, pure_zero_succ]
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure ℕ) (k : ℕ) : (do let Y ← μ; pure (1 + Y)) (k + 1) + (do let Y ← μ; pure (1 + Y)) 0 = μ k") (new := "shift_succ, shift_zero") (group := "chance.count") (uses := "shift_succ, shift_zero, add_zero, zero_add")
+::::leanonly (proof := "(μ : PMF ℕ) (k : ℕ) : (do let Y ← μ; pure (1 + Y)) (k + 1) + (do let Y ← μ; pure (1 + Y)) 0 = μ k") (new := "shift_succ, shift_zero") (group := "chance.count") (uses := "shift_succ, shift_zero, add_zero, zero_add")
 :::en
 *One more.* Adding one to every outcome shifts the bars one place to the right: the mass at `k + 1` is the old mass at `k`, and at `0` there is nothing.
 :::

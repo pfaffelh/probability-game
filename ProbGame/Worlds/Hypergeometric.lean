@@ -31,7 +31,7 @@ Eine Urne mit weißen und schwarzen Kugeln; Kugeln werden eine nach der anderen 
 Drawn ball by ball, as a `do` block:
 
 ```
-def hyper : ℕ → ℕ → ℕ → DiscreteMeasure ℕ
+def hyper : ℕ → ℕ → ℕ → PMF ℕ
   | _, _, 0 => pure 0
   | w, b, n + 1 => do
       let X ← coin (frac w b)
@@ -50,7 +50,7 @@ The first case of the definition.
 Kugel für Kugel gezogen, als `do`-Block:
 
 ```
-def hyper : ℕ → ℕ → ℕ → DiscreteMeasure ℕ
+def hyper : ℕ → ℕ → ℕ → PMF ℕ
   | _, _, 0 => pure 0
   | w, b, n + 1 => do
       let X ← coin (frac w b)
