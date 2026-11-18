@@ -82,7 +82,19 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : (do let x ← coin p; pure (x && x)) = coin p") (new := "simp only, Bool.and_self, bind_pure") (uses := "Bool.and_self, bind_pure, pure_bind")
+:::::leanonly (proof := "(p : I) : (do let x ← coin p; pure (x && x)) = coin p") (new := "simp only, Bool.and_self, bind_pure") (uses := "Bool.and_self, bind_pure, pure_bind")
+::::hint (anchor := "statement")
+:::en
+`x` is not a random variable: it is the name of one draw from `coin p`, and the whole `do` block is a
+distribution.
+:::
+
+:::de
+`x` ist keine Zufallsvariable: Es ist der Name eines Zugs aus `coin p`, und der ganze `do`-Block ist
+eine Verteilung.
+:::
+::::
+
 :::en
 *One draw, used twice.* `x` is not a random variable: it is the name of the result of one draw from
 `coin p`. Used twice, it is the same value twice, and `x && x` is `x`. What is left, draw `x` and give
@@ -121,9 +133,19 @@ selbst liest `do let x ← μ; pure x` sofort als `μ`, wenn du es eintippst.)
 simp only [Bool.and_self, bind_pure]
 ```
 :::
+:::::
+
+:::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → Bool) : (do let x ← μ; pure (f x)) = μ.map f") (new := "map_eq_pure_bind") (uses := "map_eq_pure_bind")
+::::hint (anchor := "statement")
+:::en
+A move `μ.map f` is a `do` block: draw `x` from `μ`, then `f x` for sure.
+:::
+
+:::de
+Ein Zug `μ.map f` ist ein `do`-Block: `x` aus `μ` ziehen, dann sicher `f x`.
+:::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → Bool) : (do let x ← μ; pure (f x)) = μ.map f") (new := "map_eq_pure_bind") (uses := "map_eq_pure_bind")
 :::en
 *A move is a `do` block.* A move `μ.map f` draws `x` from `μ` and computes `f x`, for sure:
 `pure (f x)`.
@@ -150,7 +172,7 @@ simp only [Bool.and_self, bind_pure]
 rw [map_eq_pure_bind]
 ```
 :::
-::::
+:::::
 
 ::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (do let x ← μ; f x) true = μ true * f true true + μ false * f false true") (new := "bind_apply") (lemma := "bind_true") (uses := "bind_apply, Fintype.sum_bool")
 :::en
