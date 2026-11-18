@@ -203,7 +203,7 @@ header .pg-langs { align-self: center; margin: 0 0.8em 0 0.5em; flex-shrink: 0; 
 .pg-stage .pg-level.pg-view-proof .pg-board { display: none; }
 .pg-stage .pg-level:not(.pg-view-proof) .pg-proof { display: none; }
 .pg-stage .pg-level.pg-view-proof .pg-proof { flex: 1; min-height: 0; overflow-y: auto; margin: 0; border: none; padding: 0; }
-.pg-stage .pg-proof-head { margin-top: 0; }
+.pg-stage .pg-proof-head { margin: 0.7rem 0 0.3rem; }
 .pg-stage .pg-solved .pg-next { display: inline-block; margin: 0.3rem 0 0; }
 .pg-world-text[hidden] { display: none; }
 html.pg-playing main, html.pg-playing .content-wrapper, html.pg-playing section { padding-top: 0; padding-bottom: 0; margin-top: 0; }

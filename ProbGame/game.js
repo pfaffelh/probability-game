@@ -3464,7 +3464,8 @@
         if (f !== undefined) { g.title = tr('Fill the gaps anew'); g.addEventListener('click', () => this.reopen(k)) }
         stmt.append(g)
       }
-      const parts = STAGE ? [head, stmt] : [head, ...this.texts, stmt]
+      // (in the stage: the statement first, the heading Proof under it, over the lines)
+      const parts = STAGE ? [stmt] : [head, ...this.texts, stmt]
       if (this.gapCount && !this.gapsOpen) {
         const again = el('button', 'pg-tool pg-gap-again', '✎ ' + tr('Fill the gaps anew')); again.type = 'button'; again.disabled = this.busy
         again.addEventListener('click', () => this.reopen(0))
@@ -3476,6 +3477,7 @@
       if (!BACKEND) {
         parts.push(el('div', 'pg-info pg-warn', tr('The proof needs Lean: open the game with ?backend=… (the address of a bridge).')))
         if (sol) parts.push(sol)
+        if (STAGE) parts.push(head)
         if (STAGE) { const main = el('div', 'pg-proof-main'); main.append(...parts); this.box.replaceChildren(main) } else this.box.replaceChildren(...parts)
         return
       }
@@ -3649,7 +3651,7 @@
         }
         inv.append(group)
       }
-      parts.push(hist, goals, err)
+      parts.push(...(STAGE ? [head] : []), hist, goals, err)
       const below = STAGE && PHONE()
       if (!this.done && !below) parts.push(row)
       if (!STAGE) parts.push(tools)
