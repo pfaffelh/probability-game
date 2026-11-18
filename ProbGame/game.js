@@ -3389,6 +3389,7 @@
         case 'have': return this.put(`have ${this.fresh('h2', 'h3', 'h4')} := `)
         case 'rw': return this.put('rw [')
         case 'simp only': return this.put('simp only [')
+        case 'simp_rw': return this.put('simp_rw [')
         case 'norm_num': return this.put('norm_num')
         case 'apply': case 'exists': return this.put(it.name + ' ')
         default: return this.put(it.insert.trim())
@@ -3397,7 +3398,8 @@
     // A tapped rule. In open brackets (rw [, simp only [, norm_num [): right after [ or ←, after a comma
     // with a space, after a space (␣: an argument of the rule before) right there, else as the next rule
     // with a comma. After apply, exact or have: there, or as an argument. After rw [a]: into its brackets.
-    // Else it starts a line rw [rule].
+    // Else it starts a line: with which tactic, the player chooses (a bubble at the rule: rw, simp_rw,
+    // apply, exact, those of the inventory), since that is what is to be learnt; with rw alone, rw [rule].
     tapRule(it) {
       const v = this.input?.value ?? '', n = it.name, t = v.replace(/\s+$/, '')
       this.choice = null
@@ -3412,6 +3414,9 @@
       if (/^norm_num$/.test(t)) return this.put(`norm_num [${n}]`)
       if (/\[[^\]]*\S[^\]]*\]$/.test(t)) return set(t.replace(/\s*\]$/, `, ${n}]`))
       if (/:=$/.test(t) || /^exists$/.test(t) || /^(apply|exact|have|exists)\b/.test(t)) return set(t + ' ' + n)
+      const ways = [['rw', `rw [${n}]`], ['simp_rw', `simp_rw [${n}]`], ['apply', `apply ${n}`], ['exact', `exact ${n}`]]
+        .filter(([k]) => { const i = INVENTORY.find(x => x.name === k); return i && this.available(i) })
+      if (ways.length > 1) { this.choice = { from: n, options: ways.map(([label, text]) => ({ text, label })) }; return this.render() }
       this.put(`rw [${n}]`)
     }
 
