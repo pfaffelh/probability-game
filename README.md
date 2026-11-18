@@ -65,7 +65,7 @@ without "always `false`" (a composition); `toNat` (to ℕ); the order matters; a
 $p$ of the picture: it turns in the air, lands, goes through the moves played and lands beside the bar
 of where it ends up; the frequencies are thin bars beside the masses (they decide nothing). The proofs: `rw`, `rfl`, `congr`, `funext`, `cases`.
 
-**Draw, then compute** — a move is a draw and a computation, `f <$> μ = do let x ← μ; pure (f x)`; on
+**Draw, then compute** — a move is a draw and a computation, `μ.map f = do let x ← μ; pure (f x)`; on
 the board of *One coin*, the proofs learn the monad laws for `DiscreteMeasure` before the circuits need
 them: `map_eq_pure_bind`, `pure_bind`, `bind_pure`, `bind_assoc` (with `simp only`, which rewrites
 inside `do` blocks), `bind_map_left`, a draw that is not used; boss: three flips (in exactly three
@@ -116,14 +116,14 @@ block with its picture, and every tactic and rule, of the worlds of the edition.
 ## The proofs
 
 * `Lean/Rules.lean` is the context of the proofs: the rules, stated with `coin p`, `binom p n`,
-  `pure`, `do` and `<$>`, proved from the journal, and the lemmas of the player. The bridge loads it
+  `pure`, `do` and `μ.map f`, proved from the journal, and the lemmas of the player. The bridge loads it
   once (`/start` with the context and `example <statement>`) and checks a proof line by line
   (`/check`).
 * A level is one block, with all that belongs to it, and no number:
 
   ```
   ::::level (start := "bernoulli p") (target := "pure true") (moves := "not, heads")
-      (proof := "(p : I) (b : Bool) : (fun _ => b) <$> coin p = pure b") (lemma := "coin_const")
+      (proof := "(p : I) (b : Bool) : (coin p).map (fun _ => b) = pure b") (lemma := "coin_const")
       (new := "apply, bool_ext") (play := "heads")
   :::en … ::: :::de … :::            the texts of the board
   :::proofen … ::: :::proofde … :::  the texts of the proof (a paragraph *Tip.* … is folded)

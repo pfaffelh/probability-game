@@ -43,7 +43,7 @@ Monadengesetze (`bind_assoc`, `pure_bind`) bringen ihn in die Form des Spielfeld
 einmal brauchst du *Induktion*, wie im Natural Number Game.
 :::
 
-::::circuit (height := "440") (route := "count") (inputs := "x") (gates := "not, toNat") (coins := "p") (target := "nat 0:1-p 1:p") (context := "Lean/Rules.lean") (proof := "(p : I) : Bool.toNat <$> coin p = (fun b => if b then 1 else 0) <$> coin p") (play := "a=toNat; x>a.0; a>out") (uses := "-")
+::::circuit (height := "440") (route := "count") (inputs := "x") (gates := "not, toNat") (coins := "p") (target := "nat 0:1-p 1:p") (context := "Lean/Rules.lean") (proof := "(p : I) : (coin p).map Bool.toNat = (coin p).map (fun b => if b then 1 else 0)") (play := "a=toNat; x>a.0; a>out") (uses := "-")
 :::en
 *From sides to numbers.* `Bool.toNat` counts `true` as $`1` and `false` as $`0`: the distribution
 moves to the natural numbers. This is how a coin becomes a random number.
@@ -80,7 +80,7 @@ cases b <;> rfl
 :::
 ::::
 
-::::circuit (height := "540") (route := "count") (inputs := "x") (gates := "not, alwaysT, alwaysF, toNat") (coins := "p") (target := "pure 0") (context := "Lean/Rules.lean") (proof := "(p : I) : Bool.toNat <$> ((fun _ => false) <$> coin p) = pure 0") (play := "a=alwaysF; b=toNat; x>a.0; a>b.0; b>out") (uses := "coin_const, map_pure")
+::::circuit (height := "540") (route := "count") (inputs := "x") (gates := "not, alwaysT, alwaysF, toNat") (coins := "p") (target := "pure 0") (context := "Lean/Rules.lean") (proof := "(p : I) : ((coin p).map (fun _ => false)).map Bool.toNat = pure 0") (play := "a=alwaysF; b=toNat; x>a.0; a>b.0; b>out") (uses := "coin_const, map_pure")
 :::en
 *Surely zero.* A point mass on the numbers, however you get there.
 :::
@@ -472,7 +472,7 @@ simp only [bind_assoc, pure_bind, add_assoc]
 :::
 ::::
 
-::::circuit (height := "660") (route := "count") (size := "big") (inputs := "x y z") (gates := "and, or") (coins := "p p p") (target := "bool true:3p^2-2p^3 false:1-3p^2+2p^3") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; let z ← coin p; pure ((x && y) || (x && z) || (y && z))) = (fun n => decide (2 ≤ n)) <$> binom p 3") (play := "a=and; b=and; c=and; d=or; e=or; x>a.0; y>a.1; x>b.0; z>b.1; y>c.0; z>c.1; a>d.0; b>d.1; d>e.0; c>e.1; e>out") (uses := "binom_succ, binom_zero, map_bind, bind_assoc, pure_bind, map_pure, add_zero, bind_map_left, bind_pure, zero_add")
+::::circuit (height := "660") (route := "count") (size := "big") (inputs := "x y z") (gates := "and, or") (coins := "p p p") (target := "bool true:3p^2-2p^3 false:1-3p^2+2p^3") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; let z ← coin p; pure ((x && y) || (x && z) || (y && z))) = (binom p 3).map (fun n => decide (2 ≤ n))") (play := "a=and; b=and; c=and; d=or; e=or; x>a.0; y>a.1; x>b.0; z>b.1; y>c.0; z>c.1; a>d.0; b>d.1; d>e.0; c>e.1; e>out") (uses := "binom_succ, binom_zero, map_bind, bind_assoc, pure_bind, map_pure, add_zero, bind_map_left, bind_pure, zero_add")
 :::en
 *Boss: the majority of three.* `true` when at least two of three coins show `true`. Each coin has to
 go into two functions.

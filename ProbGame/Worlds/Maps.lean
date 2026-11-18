@@ -64,7 +64,7 @@ decide +revert
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) : not <$> (not <$> μ) = (fun x => !(!x)) <$> μ") (new := "map_map") (uses := "map_map")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (μ.map not).map not = μ.map (fun x => !(!x))") (new := "map_map") (uses := "map_map")
 :::en
 *Two moves are one.* Two moves one after the other are one move: the composed map.
 :::
@@ -74,13 +74,13 @@ decide +revert
 :::
 
 :::proofen
-`map_map : g <$> (f <$> μ) = (fun x => g (f x)) <$> μ`.
+`map_map : (μ.map f).map g = μ.map (fun x => g (f x))`.
 
 *Tip.* `rw [map_map]`.
 :::
 
 :::proofde
-`map_map : g <$> (f <$> μ) = (fun x => g (f x)) <$> μ`.
+`map_map : (μ.map f).map g = μ.map (fun x => g (f x))`.
 
 *Tipp.* `rw [map_map]`.
 :::
@@ -91,7 +91,7 @@ rw [map_map]
 :::
 ::::
 
-::::leanonly (proof := "(f : Bool → Bool) (p : I) : f <$> (f <$> (f <$> coin p)) = f <$> coin p") (new := "congr, funext") (uses := "map_map, Bool.apply_apply_apply")
+::::leanonly (proof := "(f : Bool → Bool) (p : I) : (((coin p).map f).map f).map f = (coin p).map f") (new := "congr, funext") (uses := "map_map, Bool.apply_apply_apply")
 :::en
 *Three times is once, with a coin.* The same, now on a coin: three moves with `f` move the coin as
 one move with `f` does.
@@ -104,7 +104,7 @@ die Münze wie ein Zug mit `f`.
 
 :::proofen
 Three moves one after the other are one move: the rule
-`map_map : g <$> (f <$> μ) = (fun x => g (f x)) <$> μ`, twice. Then both sides move the same coin,
+`map_map : (μ.map f).map g = μ.map (fun x => g (f x))`, twice. Then both sides move the same coin,
 with two maps. Two new tactics: `congr 1` reduces the goal to the two maps being equal, and `funext b`
 to their being equal at every point `b`. That is the lemma of the first level of this world:
 `exact Bool.apply_apply_apply f b`.
@@ -114,7 +114,7 @@ to their being equal at every point `b`. That is the lemma of the first level of
 
 :::proofde
 Drei Züge hintereinander sind ein Zug: die Regel
-`map_map : g <$> (f <$> μ) = (fun x => g (f x)) <$> μ`, zweimal. Dann bewegen beide Seiten dieselbe
+`map_map : (μ.map f).map g = μ.map (fun x => g (f x))`, zweimal. Dann bewegen beide Seiten dieselbe
 Münze, mit zwei Abbildungen. Zwei neue Taktiken: `congr 1` führt das Ziel darauf zurück, dass die
 beiden Abbildungen gleich sind, und `funext b` darauf, dass sie an jeder Stelle `b` gleich sind. Das
 ist das Lemma des ersten Levels dieser Welt: `exact Bool.apply_apply_apply f b`.

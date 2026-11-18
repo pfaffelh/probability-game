@@ -369,7 +369,7 @@ rw [pure_apply, beq_true]
 :::
 ::::
 
-::::circuit (height := "440") (inputs := "x") (gates := "not, alwaysT") (coins := "p") (target := "pure true") (context := "Lean/Rules.lean") (proof := "(p : I) (b : Bool) : (fun _ => b) <$> coin p = pure b") (lemma := "coin_const") (play := "a=alwaysT; x>a.0; a>out") (new := "apply") (uses := "bool_ext, map_true, pure_true, Bool.cond_false, zero_add, Bool.cond_true, coin_total, add_zero, mul_zero, mass_total, coin_true, coin_false")
+::::circuit (height := "440") (inputs := "x") (gates := "not, alwaysT") (coins := "p") (target := "pure true") (context := "Lean/Rules.lean") (proof := "(p : I) (b : Bool) : (coin p).map (fun _ => b) = pure b") (lemma := "coin_const") (play := "a=alwaysT; x>a.0; a>out") (new := "apply") (uses := "bool_ext, map_true, pure_true, Bool.cond_false, zero_add, Bool.cond_true, coin_total, add_zero, mul_zero, mass_total, coin_true, coin_false")
 :::en
 *Always `true`.* A constant map sends both outcomes to the same point: all the mass goes together.
 The result is sure, a point mass (Dirac measure).
@@ -426,7 +426,7 @@ rw [Bool.cond_true, Bool.cond_true, Bool.cond_true, coin_total]
 :::
 ::::
 
-::::leanonly (proof := ": (not <$> (pure true : DiscreteMeasure Bool)) = pure false") (new := "map_pure") (uses := "map_pure, Bool.not_true, Bool.not_false")
+::::leanonly (proof := ": (pure true : DiscreteMeasure Bool).map not = pure false") (new := "map_pure") (uses := "map_pure, Bool.not_true, Bool.not_false")
 :::en
 *A sure thing, moved.* A move applied to a sure value is the sure value of its image.
 :::
@@ -436,13 +436,13 @@ rw [Bool.cond_true, Bool.cond_true, Bool.cond_true, coin_total]
 :::
 
 :::proofen
-`map_pure : f <$> pure a = pure (f a)`.
+`map_pure : (pure a).map f = pure (f a)`.
 
 *Tip.* `rw [map_pure, Bool.not_true]`.
 :::
 
 :::proofde
-`map_pure : f <$> pure a = pure (f a)`.
+`map_pure : (pure a).map f = pure (f a)`.
 
 *Tipp.* `rw [map_pure, Bool.not_true]`.
 :::
@@ -453,7 +453,7 @@ rw [map_pure, Bool.not_true]
 :::
 ::::
 
-::::circuit (height := "540") (inputs := "x") (gates := "not, alwaysT") (coins := "p") (target := "pure false") (context := "Lean/Rules.lean") (proof := "(p : I) : not <$> ((fun _ => true) <$> coin p) = pure false") (play := "a=alwaysT; b=not; x>a.0; a>b.0; b>out") (uses := "coin_const, map_pure")
+::::circuit (height := "540") (inputs := "x") (gates := "not, alwaysT") (coins := "p") (target := "pure false") (context := "Lean/Rules.lean") (proof := "(p : I) : ((coin p).map (fun _ => true)).map not = pure false") (play := "a=alwaysT; b=not; x>a.0; a>b.0; b>out") (uses := "coin_const, map_pure")
 :::en
 *Surely `false`, but there is no “always `false`”.* Two gates one after the other: the image measure of
 the image measure is the image measure of the composition, $`(P \circ f^{-1}) \circ g^{-1} = P \circ (g \circ f)^{-1}`.
@@ -465,7 +465,7 @@ das Bildmaß der Verkettung, $`(P \circ f^{-1}) \circ g^{-1} = P \circ (g \circ 
 :::
 
 :::proofen
-A new rule: `map_pure : f <$> pure a = pure (f a)`: a gate on a point mass moves the point. Then
+A new rule: `map_pure : (pure a).map f = pure (f a)`: a gate on a point mass moves the point. Then
 `rfl` from *Circuits*: the two sides are the same after computing, `!true` is `false`.
 
 *Tip.* `rw [coin_const]`, then `rw [map_pure]` (or both at once: `rw [coin_const, map_pure]`), then
@@ -473,7 +473,7 @@ A new rule: `map_pure : f <$> pure a = pure (f a)`: a gate on a point mass moves
 :::
 
 :::proofde
-Eine neue Regel: `map_pure : f <$> pure a = pure (f a)`: Ein Baustein auf einer Punktmasse verschiebt
+Eine neue Regel: `map_pure : (pure a).map f = pure (f a)`: Ein Baustein auf einer Punktmasse verschiebt
 den Punkt. Dann `rfl` aus *Schaltungen*: Beide Seiten sind nach Ausrechnen gleich, `!true` ist `false`.
 
 *Tipp.* `rw [coin_const]`, dann `rw [map_pure]` (oder beides auf einmal: `rw [coin_const, map_pure]`),
@@ -488,7 +488,7 @@ rfl
 :::
 ::::
 
-::::circuit (height := "440") (inputs := "x") (gates := "not, alwaysT, alwaysF") (coins := "p") (target := "bernoulli 1-p") (context := "Lean/Rules.lean") (proof := "(p : I) : not <$> coin p = coin (σ p)") (lemma := "coin_not") (play := "a=not; x>a.0; a>out") (uses := "bool_ext, map_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, coin_false, coin_true, add_zero, mul_zero, coin_total")
+::::circuit (height := "440") (inputs := "x") (gates := "not, alwaysT, alwaysF") (coins := "p") (target := "bernoulli 1-p") (context := "Lean/Rules.lean") (proof := "(p : I) : (coin p).map not = coin (σ p)") (lemma := "coin_not") (play := "a=not; x>a.0; a>out") (uses := "bool_ext, map_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, coin_false, coin_true, add_zero, mul_zero, coin_total")
 :::en
 *The boss: flip the coin.* Not just the mass at `true`: the whole coin.
 :::

@@ -249,9 +249,9 @@ cases c <;> rfl
 :::
 ::::
 
-::::leanonly (proof := "(f : Bool → Bool) (μ : DiscreteMeasure Bool) : (f <$> μ) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)") (new := "map_apply") (lemma := "map_true") (uses := "map_apply, Fintype.sum_bool, beq_true")
+::::leanonly (proof := "(f : Bool → Bool) (μ : DiscreteMeasure Bool) : (μ.map f) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)") (new := "map_apply") (lemma := "map_true") (uses := "map_apply, Fintype.sum_bool, beq_true")
 :::en
-*Where the mass goes.* A move `f <$> μ` takes each point `a` with its mass `μ a` to `f a`. So the
+*Where the mass goes.* A move `μ.map f` takes each point `a` with its mass `μ a` to `f a`. So the
 mass at `b` afterwards is the sum of the masses `μ a` of the points with `f a = b`. Lean defines it
 so:
 
@@ -264,14 +264,14 @@ def map (f : α → β) (μ : DiscreteMeasure α) : DiscreteMeasure β where
 is a sum over possibly infinitely many points.) On a finite type, as `Bool`, it is a finite sum `∑`,
 and the game writes the definition as the rule
 
-`map_apply : (f <$> μ) b = ∑ a, (bif f a == b then μ a else 0)`.
+`map_apply : (μ.map f) b = ∑ a, (bif f a == b then μ a else 0)`.
 
 From it you prove the rule of the gates, `map_true`: to `true` comes the mass at `true` when `f true`
 is `true`, and the mass at `false` when `f false` is `true`.
 :::
 
 :::de
-*Wohin die Masse geht.* Ein Zug `f <$> μ` bringt jeden Punkt `a` mit seiner Masse `μ a` nach `f a`.
+*Wohin die Masse geht.* Ein Zug `μ.map f` bringt jeden Punkt `a` mit seiner Masse `μ a` nach `f a`.
 Die Masse bei `b` danach ist also die Summe der Massen `μ a` der Punkte mit `f a = b`. Lean definiert
 es so:
 
@@ -284,7 +284,7 @@ def map (f : α → β) (μ : DiscreteMeasure α) : DiscreteMeasure β where
 eine Summe über möglicherweise unendlich viele Punkte.) Auf einem endlichen Typ, wie `Bool`, ist es
 eine endliche Summe `∑`, und das Spiel schreibt die Definition als Regel
 
-`map_apply : (f <$> μ) b = ∑ a, (bif f a == b then μ a else 0)`.
+`map_apply : (μ.map f) b = ∑ a, (bif f a == b then μ a else 0)`.
 
 Daraus beweist du die Regel der Bausteine, `map_true`: Nach `true` kommt die Masse bei `true`, wenn
 `f true` gleich `true` ist, und die Masse bei `false`, wenn `f false` gleich `true` ist.
@@ -311,7 +311,7 @@ rw [beq_true, beq_true]
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) : ((fun _ => true) <$> μ) true = μ true + μ false") (uses := "map_true, Bool.cond_true, Bool.cond_false")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (μ.map (fun _ => true)) true = μ true + μ false") (uses := "map_true, Bool.cond_true, Bool.cond_false")
 :::en
 *All to true.* The move *always `true`*, `fun _ => true`, sends both points to `true`; so all the
 mass of `μ` comes to `true`. Your rule `map_true` says so.
@@ -455,7 +455,7 @@ exact mass_le_one μ b
 :::
 ::::
 
-:::::circuit (height := "440") (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : (not <$> coin p) true = ⟦σ p ‖ p, σ p, 1, 0⟧") (play := "a=not; x>a.0; a>out") (uses := "map_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, coin_false, add_zero, mul_zero, coin_true, coin_total")
+:::::circuit (height := "440") (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : ((coin p).map not) true = ⟦σ p ‖ p, σ p, 1, 0⟧") (play := "a=not; x>a.0; a>out") (uses := "map_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, coin_false, add_zero, mul_zero, coin_true, coin_total")
 :::hint (anchor := "none")
 :::
 
@@ -475,7 +475,7 @@ Masse kam von `false`.
 :::
 
 :::proofen
-*Now the proof.* Everything it needs you know from *Circuits* and this world: `coin p` and its masses, `f <$> μ`, and
+*Now the proof.* Everything it needs you know from *Circuits* and this world: `coin p` and its masses, `μ.map f`, and
 the rules. First the rule of the gates, `map_true`; then computing, one rule after another:
 `Bool.not_true`, `Bool.not_false`, `Bool.cond_false`, `Bool.cond_true`, `zero_add` and `coin_false`.
 
@@ -486,7 +486,7 @@ and press *Run*).
 
 :::proofde
 *Jetzt der Beweis.* Alles, was er braucht, kennst du aus *Schaltungen* und dieser Welt: `coin p` und seine Massen,
-`f <$> μ` und die Regeln. Zuerst die Regel der Bausteine, `map_true`; dann Rechnen, eine Regel nach der
+`μ.map f` und die Regeln. Zuerst die Regel der Bausteine, `map_true`; dann Rechnen, eine Regel nach der
 anderen: `Bool.not_true`, `Bool.not_false`, `Bool.cond_false`, `Bool.cond_true`, `zero_add` und
 `coin_false`.
 
