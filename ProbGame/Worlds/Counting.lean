@@ -400,33 +400,6 @@ simp only [bind_assoc, pure_bind, add_assoc]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : coin p >>= pure = coin p") (new := "bind_pure") (group := "chance.count") (uses := "bind_pure, pure_bind")
-:::en
-*Drawing and giving back.* Drawing from `μ` and giving back what was drawn is `μ`.
-:::
-
-:::de
-*Ziehen und zurückgeben.* Aus `μ` ziehen und das Gezogene zurückgeben ist `μ`.
-:::
-
-:::proofen
-`bind_pure : μ >>= pure = μ` (`do let x ← μ; pure x` is `μ`).
-
-*Tip.* `rw [bind_pure]`.
-:::
-
-:::proofde
-`bind_pure : μ >>= pure = μ` (`do let x ← μ; pure x` ist `μ`).
-
-*Tipp.* `rw [bind_pure]`.
-:::
-:::solution
-```
-rw [bind_pure]
-```
-:::
-::::
-
 ::::circuit (height := "540") (route := "count") (inputs := "x y z w") (gates := "plus") (coins := "p p p p") (target := "nat 0:(1-p)^4 1:4p(1-p)^3 2:6p^2(1-p)^2 3:4p^3(1-p) 4:p^4") (start := "a=toNat@62,150; b=toNat@176,150; c=plus@119,255; d=toNat@304,150; e=toNat@418,150; f=plus@361,255; x>a.0; y>b.0; a>c.0; b>c.1; z>d.0; w>e.0; d>f.0; e>f.1") (context := "Lean/Rules.lean") (proof := "(p : I) (n m : ℕ) : (do let X ← binom p n; let Y ← binom p m; pure (X + Y)) = binom p (n + m)") (lemma := "binom_add") (play := "g=plus; c>g.0; f>g.1; g>out") (uses := "binom_zero, pure_bind, add_zero, bind_pure, binom_succ', add_assoc, bind_assoc, binom_succ, zero_add, add_comm, add_right_comm")
 :::en
 *$`B(2, p) * B(2, p) = B(4, p)`.* Two independent binomials, both already built: add them. The sum
@@ -440,9 +413,7 @@ sie. Die Summe unabhängiger Zufallszahlen hat die *Faltung* $`*` ihrer Verteilu
 
 :::proofen
 *For all $`n` and $`m`.* On the board it was $`B(2, p) * B(2, p) = B(4, p)`; here it is for all $`n` and $`m`: the
-sum of independent binomials is binomial. A new rule: to draw and give back what was drawn changes
-nothing, `bind_pure : (μ >>= fun x => pure x) = μ`. (In a `do` block, Lean shortens
-`let x ← μ; pure x` to `μ` at once; so the rule is written with `>>=`.)
+sum of independent binomials is binomial.
 
 *Tip.* Induction on `m`. Case $`0`: `rw [binom_zero]`, `simp only [pure_bind, add_zero, bind_pure]`.
 Case $`m + 1`: write `binom p (m + 1)` with `← binom_succ' p m`, then `n + (m + 1)` as
@@ -452,9 +423,7 @@ with `simp only [bind_assoc, pure_bind, add_assoc]`.
 
 :::proofde
 *Für alle $`n` und $`m`.* Auf dem Spielfeld war es $`B(2, p) * B(2, p) = B(4, p)`; hier gilt es für alle $`n`
-und $`m`: Die Summe unabhängiger Binomialverteilungen ist binomial. Eine neue Regel: Ziehen und das
-Gezogene zurückgeben ändert nichts, `bind_pure : (μ >>= fun x => pure x) = μ`. (In einem `do`-Block
-kürzt Lean `let x ← μ; pure x` sofort zu `μ`; deshalb steht die Regel mit `>>=`.)
+und $`m`: Die Summe unabhängiger Binomialverteilungen ist binomial.
 
 *Tipp.* Induktion nach `m`. Fall $`0`: `rw [binom_zero]`, `simp only [pure_bind, add_zero, bind_pure]`.
 Fall $`m + 1`: schreibe `binom p (m + 1)` mit `← binom_succ' p m` um, dann `n + (m + 1)` als

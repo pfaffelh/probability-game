@@ -26,10 +26,8 @@ account.
 :::proofen
 The circuit, read from top to bottom, is a `do` block in Lean: each coin a line `let x ← coin p`,
 which *draws* `x` from the distribution `coin p`, and at the end `pure (…)`, a sure result, with what
-the gates compute. A single gate is such a block too: `μ.map f` is `do let x ← μ; pure (f x)`. Without
-the words of `do`, the same reads `μ >>= fun x => pure (f x)`: `>>=` (*bind*) passes what `μ` drew to
-the function after it, and `fun x => …` is that function. The proofs learn the rules of `do` blocks,
-the *monad laws*, one at a time, when a level needs them.
+the gates compute. The proofs learn the rules of `do` blocks one at a time, when a level needs them;
+first, what a `do` block is.
 :::
 
 :::de
@@ -48,26 +46,121 @@ berücksichtigt das.
 :::proofde
 Die Schaltung, von oben nach unten gelesen, ist ein `do`-Block in Lean: jede Münze eine Zeile
 `let x ← coin p`, die `x` aus der Verteilung `coin p` *zieht*, und am Ende `pure (…)`, ein sicheres
-Ergebnis, mit dem, was die Bausteine rechnen. Auch ein einzelner Baustein ist so ein Block: `μ.map f`
-ist `do let x ← μ; pure (f x)`. Ohne die Wörter von `do` liest sich dasselbe
-`μ >>= fun x => pure (f x)`: `>>=` (*bind*) gibt, was `μ` gezogen hat, an die Funktion danach weiter,
-und `fun x => …` ist diese Funktion. Die Beweise lernen die Regeln der `do`-Blöcke, die
-*Monadengesetze*, eine nach der anderen, wenn ein Level sie braucht.
+Ergebnis, mit dem, was die Bausteine rechnen. Die Beweise lernen die Regeln der `do`-Blöcke eine nach
+der anderen, wenn ein Level sie braucht; zuerst, was ein `do`-Block ist.
 :::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (do let x ← μ; f x) true = μ true * f true true + μ false * f false true") (new := "bind_apply") (lemma := "bind_true") (uses := "bind_apply, Fintype.sum_bool")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (do let x ← μ; f x) = μ.bind f") (uses := "-")
 :::en
-*Two ways to true.* `do let x ← μ; f x` draws from `μ`, calls the result `x`, and goes on with
-`f x`: `f` says how to go on after each first draw. (Behind `do`, Lean writes `μ >>= f`, read *bind*:
-draw, then go on; the rules here are written with `do`.) Its mass at `true` comes two ways: the
-first draw is `true`, or it is `false`.
+*`do` is `bind`.* `do let x ← μ; f x` draws `x` from `μ` and goes on with `f x`: `f` says, for each
+result of the first draw, how to go on. As a distribution, this is `μ.bind f`, as `Measure.bind` for
+measures. `do` is only a way to write it, easier to read when several draws follow each other.
 :::
 
 :::de
-*Zwei Wege zu true.* `do let x ← μ; f x` zieht aus `μ`, nennt das Ergebnis `x` und macht mit `f x`
-weiter: `f` sagt, wie es nach jedem ersten Zug weitergeht. (Hinter `do` schreibt Lean `μ >>= f`, lies
-*bind*: ziehen, dann weiter; die Regeln hier sind mit `do` geschrieben.) Seine Masse bei `true` kommt
-auf zwei Wegen: Der erste Zug ist `true`, oder er ist `false`.
+*`do` ist `bind`.* `do let x ← μ; f x` zieht `x` aus `μ` und macht mit `f x` weiter: `f` sagt für
+jedes Ergebnis des ersten Zugs, wie es weitergeht. Als Verteilung ist das `μ.bind f`, wie
+`Measure.bind` für Maße. `do` ist nur eine Schreibweise dafür, leichter zu lesen, wenn mehrere Züge
+aufeinander folgen.
+:::
+
+:::proofen
+Both sides are the same, only written differently.
+
+*Tip.* `rfl`.
+:::
+
+:::proofde
+Beide Seiten sind dasselbe, nur anders geschrieben.
+
+*Tipp.* `rfl`.
+:::
+:::solution
+```
+rfl
+```
+:::
+::::
+
+::::leanonly (proof := "(p : I) : (do let x ← coin p; pure (x && x)) = coin p") (new := "simp only, Bool.and_self, bind_pure") (uses := "Bool.and_self, bind_pure, pure_bind")
+:::en
+*One draw, used twice.* `x` is not a random variable: it is the name of the result of one draw from
+`coin p`. Used twice, it is the same value twice, and `x && x` is `x`. What is left, draw `x` and give
+it back, is `coin p` itself. The whole `do` block is a distribution; nowhere is a random variable
+defined. (Two draws `x` and `y` are another thing: soon, in `coin_and`.)
+:::
+
+:::de
+*Ein Zug, zweimal benutzt.* `x` ist keine Zufallsvariable: Es ist der Name des Ergebnisses eines Zugs
+aus `coin p`. Zweimal benutzt ist es zweimal derselbe Wert, und `x && x` ist `x`. Was bleibt, `x`
+ziehen und zurückgeben, ist `coin p` selbst. Der ganze `do`-Block ist eine Verteilung; nirgends wird
+eine Zufallsvariable definiert. (Zwei Züge `x` und `y` sind etwas anderes: bald, in `coin_and`.)
+:::
+
+:::proofen
+Two rules: `Bool.and_self : (x && x) = x`, and `bind_pure : (do let x ← μ; pure x) = μ`. But `x && x`
+stands after `let x ← coin p`, where `x` is a name of the `do` block, and there `rw` cannot rewrite.
+The new tactic `simp only [rules]` can: it rewrites with the rules everywhere, also inside `do`
+blocks, as often as it can, and closes the goal when the two sides become the same. (Lean itself reads
+`do let x ← μ; pure x` as `μ` at once, when you type it.)
+
+*Tip.* `simp only [Bool.and_self, bind_pure]`.
+:::
+
+:::proofde
+Zwei Regeln: `Bool.and_self : (x && x) = x` und `bind_pure : (do let x ← μ; pure x) = μ`. Aber
+`x && x` steht nach `let x ← coin p`, wo `x` ein Name des `do`-Blocks ist, und dort kann `rw` nicht
+umschreiben. Die neue Taktik `simp only [Regeln]` kann es: Sie schreibt mit den Regeln überall um,
+auch in `do`-Blöcken, so oft es geht, und schließt das Ziel, wenn beide Seiten gleich werden. (Lean
+selbst liest `do let x ← μ; pure x` sofort als `μ`, wenn du es eintippst.)
+
+*Tipp.* `simp only [Bool.and_self, bind_pure]`.
+:::
+:::solution
+```
+simp only [Bool.and_self, bind_pure]
+```
+:::
+::::
+
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → Bool) : (do let x ← μ; pure (f x)) = μ.map f") (new := "map_eq_pure_bind") (uses := "map_eq_pure_bind")
+:::en
+*A move is a `do` block.* A move `μ.map f` draws `x` from `μ` and computes `f x`, for sure:
+`pure (f x)`.
+:::
+
+:::de
+*Ein Zug ist ein `do`-Block.* Ein Zug `μ.map f` zieht `x` aus `μ` und rechnet `f x` aus, sicher:
+`pure (f x)`.
+:::
+
+:::proofen
+`map_eq_pure_bind : μ.map f = do let x ← μ; pure (f x)`.
+
+*Tip.* `rw [map_eq_pure_bind]`.
+:::
+
+:::proofde
+`map_eq_pure_bind : μ.map f = do let x ← μ; pure (f x)`.
+
+*Tipp.* `rw [map_eq_pure_bind]`.
+:::
+:::solution
+```
+rw [map_eq_pure_bind]
+```
+:::
+::::
+
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (do let x ← μ; f x) true = μ true * f true true + μ false * f false true") (new := "bind_apply") (lemma := "bind_true") (uses := "bind_apply, Fintype.sum_bool")
+:::en
+*Two ways to true.* The mass of `do let x ← μ; f x` at `true` comes two ways: the first draw is
+`true`, or it is `false`.
+:::
+
+:::de
+*Zwei Wege zu true.* Die Masse von `do let x ← μ; f x` bei `true` kommt auf zwei Wegen: Der erste
+Zug ist `true`, oder er ist `false`.
 :::
 
 :::proofen
@@ -213,7 +306,7 @@ rw [bind_map_left]
 :::
 ::::
 
-::::circuit (height := "540") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:p(1-p) false:1-p(1-p)") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && !y)) = coin (p * σ p)") (new := "simp only") (play := "a=not; b=and; y>a.0; x>b.0; a>b.1; b>out") (uses := "coin_and, coin_not, bind_map_left, map_bind")
+::::circuit (height := "540") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:p(1-p) false:1-p(1-p)") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && !y)) = coin (p * σ p)") (play := "a=not; b=and; y>a.0; x>b.0; a>b.1; b>out") (uses := "coin_and, coin_not, bind_map_left, map_bind")
 :::en
 *First `true`, then `false`.*
 :::
@@ -228,9 +321,7 @@ Work backwards, on the right side: `rw [← coin_and]` uses the rule from right 
 in `let y ← (coin p).map not`. The new rule
 `bind_map_left : (do let x ← μ.map f; g x) = (do let x ← μ; g (f x))` takes the gate out of the draw
 and into what is computed. But it is needed after `let x ← coin p`, where the name `x` of the `do`
-block occurs, and there `rw` cannot rewrite. The new tactic `simp only [rules]` can: it rewrites with
-the rules everywhere, also inside `do` blocks, as often as it can, and closes the goal when the two
-sides become the same.
+block occurs: there `simp only`, not `rw`.
 
 *Tip.* `rw [← coin_and]`, `rw [← coin_not]`, `simp only [bind_map_left]`.
 :::
@@ -241,9 +332,7 @@ links, und `rw [← coin_not]` macht aus `coin (σ p)` ein `(coin p).map not`. D
 `do`-Block, in `let y ← (coin p).map not`. Die neue Regel
 `bind_map_left : (do let x ← μ.map f; g x) = (do let x ← μ; g (f x))` holt den Baustein aus dem Ziehen
 heraus und in das Rechnen hinein. Gebraucht wird sie aber nach `let x ← coin p`, wo der Name `x` des
-`do`-Blocks vorkommt, und dort kann `rw` nicht umschreiben. Die neue Taktik `simp only [Regeln]` kann
-es: Sie schreibt mit den Regeln überall um, auch in `do`-Blöcken, so oft es geht, und schließt das
-Ziel, wenn beide Seiten gleich werden.
+`do`-Blocks vorkommt: dort `simp only`, nicht `rw`.
 
 *Tipp.* `rw [← coin_and]`, `rw [← coin_not]`, `simp only [bind_map_left]`.
 :::
