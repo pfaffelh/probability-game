@@ -91,6 +91,44 @@ rw [map_map]
 :::
 ::::
 
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (μ.map not).map not = μ") (new := "simp_rw, map_id") (uses := "map_map, Bool.not_not, map_id")
+:::en
+*Turned over twice.* Turning the coin over twice does nothing: `(μ.map not).map not = μ`.
+:::
+
+:::de
+*Zweimal umgedreht.* Zweimal umdrehen tut nichts: `(μ.map not).map not = μ`.
+:::
+
+:::proofen
+`rw [map_map]` makes the two moves one, `μ.map (fun x => !(!x))`. Your lemma from *Circuits*,
+`Bool.not_not : (!(!b)) = b`, should make `!(!x)` into `x`. But `rw [Bool.not_not]` does not find
+`!(!x)`, though it stands there: the `x` in `fun x => …` is a *bound* name, like the index `x` of a
+sum `∑ x, …`, and `rw` rewrites only parts without bound names. The new tactic `simp_rw [rules]` is
+`rw`, also under bound names. Then the move does nothing: `map_id : μ.map (fun x => x) = μ`.
+
+*Tip.* `rw [map_map]`, `simp_rw [Bool.not_not]`, `rw [map_id]`.
+:::
+
+:::proofde
+`rw [map_map]` macht aus den zwei Zügen einen, `μ.map (fun x => !(!x))`. Dein Lemma aus
+*Schaltungen*, `Bool.not_not : (!(!b)) = b`, soll aus `!(!x)` ein `x` machen. Aber `rw [Bool.not_not]`
+findet `!(!x)` nicht, obwohl es dasteht: Das `x` in `fun x => …` ist ein *gebundener* Name, wie der
+Index `x` einer Summe `∑ x, …`, und `rw` schreibt nur Teile ohne gebundene Namen um. Die neue Taktik
+`simp_rw [Regeln]` ist `rw`, auch unter gebundenen Namen. Dann tut der Zug nichts:
+`map_id : μ.map (fun x => x) = μ`.
+
+*Tipp.* `rw [map_map]`, `simp_rw [Bool.not_not]`, `rw [map_id]`.
+:::
+:::solution
+```
+rw [map_map]
+simp_rw [Bool.not_not]
+rw [map_id]
+```
+:::
+::::
+
 ::::leanonly (proof := "(f : Bool → Bool) (p : I) : (((coin p).map f).map f).map f = (coin p).map f") (new := "congr, funext") (uses := "map_map, Bool.apply_apply_apply")
 :::en
 *Three times is once, with a coin.* The same, now on a coin: three moves with `f` move the coin as

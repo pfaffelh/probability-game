@@ -2721,6 +2721,7 @@
     "pure_true": "theorem pure_true (b : Bool) : (pure b) true = bif b then 1 else 0",
     "coin_const": "theorem coin_const (p : I) (b : Bool) : ((coin p).map fun x => b) = pure b",
     "map_pure": "theorem map_pure {α β : Type} (a : α) (f : α → β) : (pure a).map f = pure (f a)",
+    "map_id": "theorem map_id {α : Type} (μ : DiscreteMeasure α) : (μ.map fun x => x) = μ",
     "map_map": "theorem map_map {α β γ : Type} (μ : DiscreteMeasure α) (f : α → β) (g : β → γ) : (μ.map f).map g = μ.map fun x => g (f x)",
     "coin_and": "theorem coin_and (p q : I) : (do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)",
     "bind_map_left": "theorem bind_map_left {α β γ : Type} (μ : DiscreteMeasure α) (f : α → β) (g : β → DiscreteMeasure γ) : (do let x ← μ.map f; g x) = do let x ← μ; g (f x)",
@@ -2841,6 +2842,9 @@
     { name: 'norm_num', kind: 'tactic', insert: 'norm_num', sig: 'norm_num   norm_num [h₁, h₂, …]',
       en: 'Computes: numbers and masses (p * 1, a + 0, bif true then a else b, coin p true = p, pure masses, taking away a finite mass). With [h] it also uses your rules h.',
       de: 'Rechnet: Zahlen und Massen (p * 1, a + 0, bif true then a else b, coin p true = p, Punktmassen, Wegnehmen einer endlichen Masse). Mit [h] benutzt es auch deine Regeln h.' },
+    { name: 'simp_rw', kind: 'tactic', insert: 'simp_rw []', sig: 'simp_rw [h₁, h₂, …]',
+      en: 'Like rw, but also under bound names (the x in fun x => …, ∑ x, …, let x ← μ): rewrites with each rule in turn, as often as it can.',
+      de: 'Wie rw, aber auch unter gebundenen Namen (das x in fun x => …, ∑ x, …, let x ← μ): schreibt mit jeder Regel der Reihe nach um, so oft es geht.' },
     { name: 'simp only', kind: 'tactic', insert: 'simp only []', sig: 'simp only [h₁, h₂, …]',
       en: 'Rewrites with the given rules everywhere, also inside do blocks, as often as it can; closes the goal when both sides become the same.',
       de: 'Schreibt mit den angegebenen Regeln überall um, auch in do-Blöcken, so oft es geht; schließt das Ziel, wenn beide Seiten gleich werden.' },
@@ -2893,6 +2897,7 @@
     { name: 'pure_true', kind: 'lemma', sig: '(pure b) true = bif b then 1 else 0', en: 'Proved by you in One Coin: the mass of a point mass at true.', de: 'Von dir bewiesen in „Eine Münze“: die Masse einer Punktmasse bei true.' },
     { name: 'coin_const', kind: 'lemma', sig: '(coin p).map (fun _ => b) = pure b', en: 'Proved by you in One Coin: a constant move sends all the mass to one point.', de: 'Von dir bewiesen in „Eine Münze“: Ein konstanter Zug schickt die ganze Masse an einen Punkt.' },
     { name: 'map_pure', kind: 'rule', sig: '(pure a).map f = pure (f a)', en0: 'A move on a sure point moves the point.', de0: 'Ein Zug auf einem sicheren Punkt verschiebt den Punkt.', en: 'A move on a point mass moves the point.', de: 'Ein Zug auf einer Punktmasse verschiebt den Punkt.' },
+    { name: 'map_id', kind: 'rule', sig: 'μ.map (fun x => x) = μ', en: 'A move that does nothing.', de: 'Ein Zug, der nichts tut.' },
     { name: 'map_map', kind: 'rule', sig: '(μ.map f).map g = μ.map (fun x => g (f x))', sig0: 'g <$> (f <$> s) = (fun x => g (f x)) <$> s', en: 'Two moves are one move.', de: 'Zwei Züge sind ein Zug.' },
     { name: 'coin_and', kind: 'lemma', sig: '(do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)', en: 'Proved by you in Building with Coins: independence, both true with probability p · q.', de: 'Von dir bewiesen in „Bauen mit Münzen“: Unabhängigkeit, beide true mit Wahrscheinlichkeit p · q.' },
     { name: 'bind_map_left', kind: 'rule', sig: '(do let x ← μ.map f; g x) = (do let x ← μ; g (f x))', en: 'A move on a throw goes into the result.', de: 'Ein Zug auf einem Wurf wandert ins Ergebnis.' },
@@ -3036,10 +3041,10 @@
   // the usual ones a sentence that says what to do
   const leanText = m => m.replace(/MeasureTheory\.DiscreteMeasure\./g, '').replace(/ProbGame\./g, '').replace(/↑I/g, 'I')
   const ADVICE = [
-    // (the left side may stand there after all, with a name of a do block in it: then that is the reason)
-    [/Did not find an occurrence of the pattern[\s\S]*in the target expression[\s\S]*\bdo\b/,
-      'rw rewrites only parts in which no name of a do block occurs: such a name (x in let x ← μ) is bound, like the index of a sum. So rw may not see a part that stands there, such as x && x. simp only can rewrite there: simp only [rule].',
-      'rw schreibt nur Teile um, in denen kein Name eines do-Blocks vorkommt: So ein Name (x in let x ← μ) ist gebunden, wie der Index einer Summe. Deshalb sieht rw einen Teil nicht, auch wenn er dasteht, etwa x && x. simp only kann dort umschreiben: simp only [Regel].'],
+    // (the left side may stand there after all, with a bound name in it: then that is the reason)
+    [/Did not find an occurrence of the pattern[\s\S]*in the target expression[\s\S]*(\bdo\b|\bfun\b|∑)/,
+      'rw rewrites only parts without a bound name (the x in fun x => …, ∑ x, …, let x ← μ). So rw may not see a part that stands there, such as !!x. simp_rw can rewrite there.',
+      'rw schreibt nur Teile ohne gebundenen Namen um (das x in fun x => …, ∑ x, …, let x ← μ). Deshalb sieht rw einen Teil nicht, auch wenn er dasteht, etwa !!x. simp_rw kann dort umschreiben.'],
     [/Did not find an occurrence of the pattern/, 'The left side of the rule does not occur in the goal as it stands.',
       'Die linke Seite der Regel kommt im Ziel so nicht vor.'],
     [/motive is not type correct/, 'rw cannot rewrite here; try simp only.', 'rw kann hier nicht umschreiben; versuche simp only.'],
@@ -3233,12 +3238,12 @@
       if (parts.length > 1 && !this.available(INVENTORY.find(i => i.name === '<;>'))) return tr('This tactic is not in your inventory: {x}', { x: '<;>' })
       for (let t of parts) {
         t = t.trim()
-        const tac = /^(rw|simp only|norm_num|ring|linear_combination|rfl|decide|congr|funext|ext|cases|induction'|exists|intro|have|apply|exact|constructor)(?=\s|\[|$)/.exec(t)?.[1]
+        const tac = /^(rw|simp_rw|simp only|norm_num|ring|linear_combination|rfl|decide|congr|funext|ext|cases|induction'|exists|intro|have|apply|exact|constructor)(?=\s|\[|$)/.exec(t)?.[1]
         const item = INVENTORY.find(i => i.name === tac)
         if (!item || !this.available(item)) return tr('This tactic is not in your inventory: {x}', { x: t.split(/\s/)[0] || t })
         // the rules: in brackets, or the term of `have h := rule args`
         const inside = tac === 'have' ? /:=(.*)$/.exec(t)?.[1]?.trim().split(/\s+/)[0] : tac === 'apply' || tac === 'exact' ? t.slice(5).trim().split(/\s+/)[0] : /\[(.*)\]/.exec(t)?.[1]
-        if ((tac === 'rw' || tac === 'simp only') && inside === undefined) return tr('This tactic is not in your inventory: {x}', { x: t })
+        if ((tac === 'rw' || tac === 'simp_rw' || tac === 'simp only') && inside === undefined) return tr('This tactic is not in your inventory: {x}', { x: t })
         // each rule: its name is in the inventory (or a hypothesis of the goal, as ih), and so are the
         // names in its arguments
         for (const arg of (inside ?? '').split(',').map(a => a.replace('←', '').trim()).filter(Boolean)) {

@@ -82,7 +82,7 @@ rfl
 :::
 ::::
 
-:::::circuit (height := "440") (inputs := "x y") (gates := "") (coins := "p p") (target := "bool true:p false:1-p") (start := "a=and; a>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; pure (x && x)) = coin p") (new := "simp only, Bool.and_self, bind_pure") (play := "x>a.0; x>a.1") (uses := "Bool.and_self, bind_pure, pure_bind")
+:::::circuit (height := "440") (inputs := "x y") (gates := "") (coins := "p p") (target := "bool true:p false:1-p") (start := "a=and; a>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; pure (x && x)) = coin p") (new := "Bool.and_self, bind_pure") (play := "x>a.0; x>a.1") (uses := "Bool.and_self, bind_pure, pure_bind")
 ::::hint (anchor := "statement")
 :::en
 `x` is not a random variable: it is the name of one draw from `coin p`, and the whole `do` block is a
@@ -111,15 +111,11 @@ one draw from `coin p`, not a random variable: used twice, it is the same value 
 and `y` would be two draws, with $`p^2` (soon, in `coin_and`). What is left, draw `x` and give it
 back, is `coin p` itself.
 
-Two rules: `Bool.and_self : (x && x) = x`, and `bind_pure : (do let x ← μ; pure x) = μ`. But `x && x`
-stands after `let x ← coin p`, where `x` is a name of the `do` block, bound like the index `x` of a
-sum `∑ x, …`; and `rw` rewrites only parts without such a name (`rw [Bool.and_self]` does not find
-`x && x`, though it stands there).
-The new tactic `simp only [rules]` can: it rewrites with the rules everywhere, also inside `do`
-blocks, as often as it can, and closes the goal when the two sides become the same. (Lean itself reads
-`do let x ← μ; pure x` as `μ` at once, when you type it.)
+Two rules: `Bool.and_self : (x && x) = x`, and `bind_pure : (do let x ← μ; pure x) = μ`. The `x` of
+`let x ← coin p` is bound, as the `x` of `fun x => …` in *Maps*: so `simp_rw`, not `rw`. (Lean itself
+reads `do let x ← μ; pure x` as `μ` at once, when you type it.)
 
-*Tip.* `simp only [Bool.and_self, bind_pure]`.
+*Tip.* `simp_rw [Bool.and_self, bind_pure]`.
 :::
 
 :::proofde
@@ -128,18 +124,15 @@ eines Zugs aus `coin p`, keine Zufallsvariable: Zweimal benutzt ist es zweimal d
 Münzen `x` und `y` wären zwei Züge, mit $`p^2` (bald, in `coin_and`). Was bleibt, `x` ziehen und
 zurückgeben, ist `coin p` selbst.
 
-Zwei Regeln: `Bool.and_self : (x && x) = x` und `bind_pure : (do let x ← μ; pure x) = μ`. Aber
-`x && x` steht nach `let x ← coin p`, wo `x` ein Name des `do`-Blocks ist, gebunden wie der Index `x`
-einer Summe `∑ x, …`; und `rw` schreibt nur Teile ohne so einen Namen um (`rw [Bool.and_self]` findet
-`x && x` nicht, obwohl es dasteht). Die neue Taktik `simp only [Regeln]` kann es: Sie schreibt mit den Regeln überall um,
-auch in `do`-Blöcken, so oft es geht, und schließt das Ziel, wenn beide Seiten gleich werden. (Lean
-selbst liest `do let x ← μ; pure x` sofort als `μ`, wenn du es eintippst.)
+Zwei Regeln: `Bool.and_self : (x && x) = x` und `bind_pure : (do let x ← μ; pure x) = μ`. Das `x` von
+`let x ← coin p` ist gebunden, wie das `x` von `fun x => …` in *Abbildungen*: also `simp_rw`, nicht
+`rw`. (Lean selbst liest `do let x ← μ; pure x` sofort als `μ`, wenn du es eintippst.)
 
-*Tipp.* `simp only [Bool.and_self, bind_pure]`.
+*Tipp.* `simp_rw [Bool.and_self, bind_pure]`.
 :::
 :::solution
 ```
-simp only [Bool.and_self, bind_pure]
+simp_rw [Bool.and_self, bind_pure]
 ```
 :::
 :::::
@@ -337,7 +330,7 @@ rw [bind_map_left]
 :::
 ::::
 
-::::circuit (height := "540") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:p(1-p) false:1-p(1-p)") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && !y)) = coin (p * σ p)") (play := "a=not; b=and; y>a.0; x>b.0; a>b.1; b>out") (uses := "coin_and, coin_not, bind_map_left, map_bind")
+::::circuit (height := "540") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:p(1-p) false:1-p(1-p)") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && !y)) = coin (p * σ p)") (new := "simp only") (play := "a=not; b=and; y>a.0; x>b.0; a>b.1; b>out") (uses := "coin_and, coin_not, bind_map_left, map_bind")
 :::en
 *First `true`, then `false`.*
 :::
@@ -352,7 +345,9 @@ Work backwards, on the right side: `rw [← coin_and]` uses the rule from right 
 in `let y ← (coin p).map not`. The new rule
 `bind_map_left : (do let x ← μ.map f; g x) = (do let x ← μ; g (f x))` takes the gate out of the draw
 and into what is computed. But it is needed after `let x ← coin p`, where the name `x` of the `do`
-block occurs: there `simp only`, not `rw`.
+block occurs, bound. There `simp_rw [bind_map_left]` works; here the new tactic `simp only [rules]`
+does too: it rewrites with all the rules at once, in any order, as often as it can, and closes the goal
+when the two sides become the same.
 
 *Tip.* `rw [← coin_and]`, `rw [← coin_not]`, `simp only [bind_map_left]`.
 :::
@@ -363,7 +358,9 @@ links, und `rw [← coin_not]` macht aus `coin (σ p)` ein `(coin p).map not`. D
 `do`-Block, in `let y ← (coin p).map not`. Die neue Regel
 `bind_map_left : (do let x ← μ.map f; g x) = (do let x ← μ; g (f x))` holt den Baustein aus dem Ziehen
 heraus und in das Rechnen hinein. Gebraucht wird sie aber nach `let x ← coin p`, wo der Name `x` des
-`do`-Blocks vorkommt: dort `simp only`, nicht `rw`.
+`do`-Blocks vorkommt, gebunden. Dort geht `simp_rw [bind_map_left]`; hier tut es auch die neue Taktik
+`simp only [Regeln]`: Sie schreibt mit allen Regeln zugleich um, in beliebiger Reihenfolge, so oft es
+geht, und schließt das Ziel, wenn beide Seiten gleich werden.
 
 *Tipp.* `rw [← coin_and]`, `rw [← coin_not]`, `simp only [bind_map_left]`.
 :::

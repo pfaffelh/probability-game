@@ -188,6 +188,10 @@ theorem bind_true (μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool
 theorem coin_unused {β : Type} (p : I) (ν : DiscreteMeasure β) : (do let _ ← coin p; ν) = ν :=
   MeasureTheory.DiscreteMeasure.bind_const_of_hasSum (MeasureTheory.DiscreteMeasure.hasSum_coin p) ν
 
+/-- A move that does nothing: the distribution stays. -/
+theorem map_id {α : Type} (μ : DiscreteMeasure α) : μ.map (fun x => x) = μ :=
+  MeasureTheory.DiscreteMeasure.id_map μ
+
 /-- Two moves are one move. -/
 theorem map_map {α β γ : Type} (μ : DiscreteMeasure α) (f : α → β) (g : β → γ) :
     (μ.map f).map g = μ.map (fun x => g (f x)) := (comp_map f g μ).symm
