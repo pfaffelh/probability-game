@@ -82,7 +82,7 @@ rfl
 :::
 ::::
 
-:::::leanonly (proof := "(p : I) : (do let x ← coin p; pure (x && x)) = coin p") (new := "simp only, Bool.and_self, bind_pure") (uses := "Bool.and_self, bind_pure, pure_bind")
+:::::circuit (height := "440") (inputs := "x y") (gates := "") (coins := "p p") (target := "bool true:p false:1-p") (start := "a=and; a>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; pure (x && x)) = coin p") (new := "simp only, Bool.and_self, bind_pure") (play := "x>a.0; x>a.1") (uses := "Bool.and_self, bind_pure, pure_bind")
 ::::hint (anchor := "statement")
 :::en
 `x` is not a random variable: it is the name of one draw from `coin p`, and the whole `do` block is a
@@ -96,20 +96,21 @@ eine Verteilung.
 ::::
 
 :::en
-*One draw, used twice.* `x` is not a random variable: it is the name of the result of one draw from
-`coin p`. Used twice, it is the same value twice, and `x && x` is `x`. What is left, draw `x` and give
-it back, is `coin p` itself. The whole `do` block is a distribution; nowhere is a random variable
-defined. (Two draws `x` and `y` are another thing: soon, in `coin_and`.)
+*One draw, used twice.* An `and` lies on the board already, and the target is the coin itself:
+`true` with $`p`.
 :::
 
 :::de
-*Ein Zug, zweimal benutzt.* `x` ist keine Zufallsvariable: Es ist der Name des Ergebnisses eines Zugs
-aus `coin p`. Zweimal benutzt ist es zweimal derselbe Wert, und `x && x` ist `x`. Was bleibt, `x`
-ziehen und zurückgeben, ist `coin p` selbst. Der ganze `do`-Block ist eine Verteilung; nirgends wird
-eine Zufallsvariable definiert. (Zwei Züge `x` und `y` sind etwas anderes: bald, in `coin_and`.)
+*Ein Zug, zweimal benutzt.* Ein `and` liegt schon auf dem Spielfeld, und das Ziel ist die Münze
+selbst: `true` mit $`p`.
 :::
 
 :::proofen
+On the board, the coin `x` went into the `and` twice; in Lean that is `x && x`. `x` is the name of
+one draw from `coin p`, not a random variable: used twice, it is the same value twice. Two coins `x`
+and `y` would be two draws, with $`p^2` (soon, in `coin_and`). What is left, draw `x` and give it
+back, is `coin p` itself.
+
 Two rules: `Bool.and_self : (x && x) = x`, and `bind_pure : (do let x ← μ; pure x) = μ`. But `x && x`
 stands after `let x ← coin p`, where `x` is a name of the `do` block, and there `rw` cannot rewrite.
 The new tactic `simp only [rules]` can: it rewrites with the rules everywhere, also inside `do`
@@ -120,6 +121,11 @@ blocks, as often as it can, and closes the goal when the two sides become the sa
 :::
 
 :::proofde
+Auf dem Spielfeld ging die Münze `x` zweimal ins `and`; in Lean ist das `x && x`. `x` ist der Name
+eines Zugs aus `coin p`, keine Zufallsvariable: Zweimal benutzt ist es zweimal derselbe Wert. Zwei
+Münzen `x` und `y` wären zwei Züge, mit $`p^2` (bald, in `coin_and`). Was bleibt, `x` ziehen und
+zurückgeben, ist `coin p` selbst.
+
 Zwei Regeln: `Bool.and_self : (x && x) = x` und `bind_pure : (do let x ← μ; pure x) = μ`. Aber
 `x && x` steht nach `let x ← coin p`, wo `x` ein Name des `do`-Blocks ist, und dort kann `rw` nicht
 umschreiben. Die neue Taktik `simp only [Regeln]` kann es: Sie schreibt mit den Regeln überall um,

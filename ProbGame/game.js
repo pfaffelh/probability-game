@@ -3053,7 +3053,7 @@
     [/unexpected token|expected/, 'Lean cannot read this line: a typo?', 'Lean kann diese Zeile nicht lesen: ein Tippfehler?'],
   ]
   const advice = m => { const a = ADVICE.find(([r]) => r.test(m)); return a ? (LANG === 'de' ? a[2] : a[1]) : '' }
-  Object.assign(DE, { 'What Lean says': 'Was Lean sagt' })
+  Object.assign(DE, { 'What Lean says': 'Was Lean sagt', 'Rows and masses': 'Zeilen und Massen' })
 
   // On a phone the proof is played without the keyboard (it would cover the screen): the input line is
   // put together by taps (inventory, names of the goal, ⌫), unless the player asks for the keyboard (⌨).
