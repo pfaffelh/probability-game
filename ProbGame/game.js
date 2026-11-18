@@ -3036,8 +3036,12 @@
   // the usual ones a sentence that says what to do
   const leanText = m => m.replace(/MeasureTheory\.DiscreteMeasure\./g, '').replace(/ProbGame\./g, '').replace(/↑I/g, 'I')
   const ADVICE = [
-    [/Did not find an occurrence of the pattern/, 'The left side of the rule does not occur in the goal as it stands. (Where names of a do block occur, rw cannot rewrite; simp only can.)',
-      'Die linke Seite der Regel kommt im Ziel so nicht vor. (Wo Namen eines do-Blocks vorkommen, kann rw nicht umschreiben; simp only kann es.)'],
+    // (the left side may stand there after all, with a name of a do block in it: then that is the reason)
+    [/Did not find an occurrence of the pattern[\s\S]*in the target expression[\s\S]*\bdo\b/,
+      'rw rewrites only parts in which no name of a do block occurs: such a name (x in let x ← μ) is bound, like the index of a sum. So rw may not see a part that stands there, such as x && x. simp only can rewrite there: simp only [rule].',
+      'rw schreibt nur Teile um, in denen kein Name eines do-Blocks vorkommt: So ein Name (x in let x ← μ) ist gebunden, wie der Index einer Summe. Deshalb sieht rw einen Teil nicht, auch wenn er dasteht, etwa x && x. simp only kann dort umschreiben: simp only [Regel].'],
+    [/Did not find an occurrence of the pattern/, 'The left side of the rule does not occur in the goal as it stands.',
+      'Die linke Seite der Regel kommt im Ziel so nicht vor.'],
     [/motive is not type correct/, 'rw cannot rewrite here; try simp only.', 'rw kann hier nicht umschreiben; versuche simp only.'],
     [/simp made no progress/, 'simp only found nothing to rewrite with these rules.', 'simp only hat mit diesen Regeln nichts gefunden, was es umschreiben kann.'],
     [/could not unify the conclusion of `@funext`/, 'funext needs a goal g = h between functions (first congr 1?).', 'funext braucht ein Ziel g = h zwischen Funktionen (vorher congr 1?).'],

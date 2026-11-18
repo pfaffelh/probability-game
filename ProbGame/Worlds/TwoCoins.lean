@@ -112,7 +112,9 @@ and `y` would be two draws, with $`p^2` (soon, in `coin_and`). What is left, dra
 back, is `coin p` itself.
 
 Two rules: `Bool.and_self : (x && x) = x`, and `bind_pure : (do let x ← μ; pure x) = μ`. But `x && x`
-stands after `let x ← coin p`, where `x` is a name of the `do` block, and there `rw` cannot rewrite.
+stands after `let x ← coin p`, where `x` is a name of the `do` block, bound like the index `x` of a
+sum `∑ x, …`; and `rw` rewrites only parts without such a name (`rw [Bool.and_self]` does not find
+`x && x`, though it stands there).
 The new tactic `simp only [rules]` can: it rewrites with the rules everywhere, also inside `do`
 blocks, as often as it can, and closes the goal when the two sides become the same. (Lean itself reads
 `do let x ← μ; pure x` as `μ` at once, when you type it.)
@@ -127,8 +129,9 @@ Münzen `x` und `y` wären zwei Züge, mit $`p^2` (bald, in `coin_and`). Was ble
 zurückgeben, ist `coin p` selbst.
 
 Zwei Regeln: `Bool.and_self : (x && x) = x` und `bind_pure : (do let x ← μ; pure x) = μ`. Aber
-`x && x` steht nach `let x ← coin p`, wo `x` ein Name des `do`-Blocks ist, und dort kann `rw` nicht
-umschreiben. Die neue Taktik `simp only [Regeln]` kann es: Sie schreibt mit den Regeln überall um,
+`x && x` steht nach `let x ← coin p`, wo `x` ein Name des `do`-Blocks ist, gebunden wie der Index `x`
+einer Summe `∑ x, …`; und `rw` schreibt nur Teile ohne so einen Namen um (`rw [Bool.and_self]` findet
+`x && x` nicht, obwohl es dasteht). Die neue Taktik `simp only [Regeln]` kann es: Sie schreibt mit den Regeln überall um,
 auch in `do`-Blöcken, so oft es geht, und schließt das Ziel, wenn beide Seiten gleich werden. (Lean
 selbst liest `do let x ← μ; pure x` sofort als `μ`, wenn du es eintippst.)
 
