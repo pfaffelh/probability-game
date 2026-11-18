@@ -23,6 +23,34 @@ def ProbGame.unexpandMap : Lean.PrettyPrinter.Unexpander
   | `($_ $f $μ) => `(($μ).$(Lean.mkIdent `map):ident $f)
   | _ => throw ()
 
+/-- The names in a piece of syntax (for `unexpandBind`). -/
+partial def ProbGame.namesIn : Lean.Syntax → List Lean.Name
+  | .ident _ _ n _ => [n]
+  | .node _ _ args => args.toList.flatMap ProbGame.namesIn
+  | _ => []
+
+/-- A bind is printed as the game writes it, as a `do` block, also where the function after it is not
+written out: `μ >>= f`, `μ >>= pure`, or a hole `?f` in a message of Lean (a `fun` Lean prints as a
+`do` block itself). The draw gets a name that `μ` and `f` do not use. -/
+@[app_unexpander Bind.bind]
+def ProbGame.unexpandBind : Lean.PrettyPrinter.Unexpander
+  | `($_ $m $f) => do
+    if f.raw.isOfKind ``Lean.Parser.Term.fun then throw ()
+    let names := ProbGame.namesIn m.raw ++ ProbGame.namesIn f.raw
+    let x := Lean.mkIdent <| ([`x, `y, `z, `a, `b, `c].find? (!names.contains ·)).getD `x
+    let body ← `($f $x)
+    `(do
+        let $x:ident ← $m:term
+        $body:term)
+  | _ => throw ()
+
+/-- A functor map is printed as the game writes a move: `μ.map f`, not `f <$> μ`. -/
+@[app_unexpander Functor.map]
+def ProbGame.unexpandFunctorMap : Lean.PrettyPrinter.Unexpander
+  | `($_ $f $μ:ident) => `($(Lean.mkIdent (μ.getId ++ `map)) $f)
+  | `($_ $f $μ) => `(($μ).$(Lean.mkIdent `map):ident $f)
+  | _ => throw ()
+
 namespace ProbGame
 
 /-! World 1: what a distribution on `Bool` is, and where the mass of a move goes. -/

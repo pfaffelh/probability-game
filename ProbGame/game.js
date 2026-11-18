@@ -2728,12 +2728,12 @@
     "coin_unused": "theorem coin_unused {β : Type} (p : I) (ν : DiscreteMeasure β) : (do let _ ← coin p; ν) = ν",
     "binom_zero": "theorem binom_zero (p : I) : binom p 0 = pure 0",
     "binom_succ": "theorem binom_succ (p : I) (n : ℕ) : binom p (n + 1) = do let X ← coin p; let Y ← binom p n; pure (X.toNat + Y)",
-    "bind_assoc": "theorem bind_assoc {m : Type u → Type v} {inst✝ : Monad m} [self : LawfulMonad m] {α β γ : Type u} (x : m α) (f : α → m β) (g : β → m γ) : x >>= f >>= g = x >>= fun x => f x >>= g",
-    "pure_bind": "theorem pure_bind {m : Type u → Type v} {inst✝ : Monad m} [self : LawfulMonad m] {α β : Type u} (x : α) (f : α → m β) : pure x >>= f = f x",
+    "bind_assoc": "theorem bind_assoc {m : Type u → Type v} {inst✝ : Monad m} [self : LawfulMonad m] {α β γ : Type u} (x : m α) (f : α → m β) (g : β → m γ) : (do let z ←; do let y ← x; f y g z) = x >>= fun x => do let y ← f x; g y",
+    "pure_bind": "theorem pure_bind {m : Type u → Type v} {inst✝ : Monad m} [self : LawfulMonad m] {α β : Type u} (x : α) (f : α → m β) : (do let y ← pure x; f y) = f x",
     "add_zero": "theorem add_zero {M : Type u_2} [AddZeroClass M] (a : M) : a + 0 = a",
     "add_assoc": "theorem add_assoc {G : Type u_1} [AddSemigroup G] (a b c : G) : a + b + c = a + (b + c)",
     "map_eq_pure_bind": "theorem map_eq_pure_bind {α β : Type} (μ : DiscreteMeasure α) (f : α → β) : μ.map f = do let x ← μ; pure (f x)",
-    "bind_pure": "theorem bind_pure {m : Type u_1 → Type u_2} {α : Type u_1} [Monad m] [LawfulMonad m] (x : m α) : x >>= pure = x",
+    "bind_pure": "theorem bind_pure {m : Type u_1 → Type u_2} {α : Type u_1} [Monad m] [LawfulMonad m] (x : m α) : (do let y ← x; pure y) = x",
     "Bool.and_self": "theorem Bool.and_self (b : Bool) : (b && b) = b",
     "Bool.not_not": "theorem Bool.not_not (b : Bool) : (!!b) = b",
     "Bool.apply_apply_apply": "theorem Bool.apply_apply_apply (f : Bool → Bool) (x : Bool) : f (f (f x)) = f x",
@@ -3618,8 +3618,8 @@
       inv.append(ihead)
       const sigOf = item => (this.world0 && item.sig0) || item.sig || ''
       // (a theorem: its whole statement in Lean, as Lean prints it; a tactic: how it is written)
-      // (but in do form: where Lean prints a monad law with >>=, as the core of Lean states it, the game's own do form)
-      const fullOf = item => (!this.world0 && LEAN_SIGS[item.name] && !LEAN_SIGS[item.name].includes('>>=') && LEAN_SIGS[item.name]) || sigOf(item)
+      // (but where Lean states a monad law for every monad m, as the core of Lean does, the game's own form)
+      const fullOf = item => (!this.world0 && LEAN_SIGS[item.name] && !/>>=|<\$>|Monad m/.test(LEAN_SIGS[item.name]) && LEAN_SIGS[item.name]) || sigOf(item)
       const textOf = item => this.world0 && item.en0 ? (LANG === 'de' ? item.de0 : item.en0) : this.worldB && item.enb ? (LANG === 'de' ? item.deb : item.enb) : (LANG === 'de' ? item.de : item.en)
       for (const [kind, title] of [['tactic', tr('Tactics')], ['rule', tr('Theorems')]]) {
         const group = el('div', 'pg-inv-group')
