@@ -28,6 +28,13 @@ const L = '.pg-level:not([hidden]) '
 const status = () => page.locator('.pg-status').first().innerText()
 const ids = () => page.evaluate(() => [...document.querySelectorAll('.pg-level:not([hidden]) .pg-csvg .pg-cblock[data-id]')].map(g => g.dataset.id))
 const idle = () => page.waitForFunction(() => !/thinking|denkt/.test(document.querySelector('.pg-status')?.textContent ?? ''), null, { timeout: 120000 }).catch(() => {})
+// The monad's notations `>>=` and `<$>` must not show anywhere (statement, goals, texts, inventory): the
+// game writes `do` and `μ.map f`. Checked on the visible page after each step; each place reported once.
+const seen = new Set()
+async function notation(where) {
+  const hits = await page.evaluate(() => [...document.body.innerText.matchAll(/.{0,60}(>>=|<\$>).{0,40}/g)].map(m => m[0]))
+  for (const h of hits) if (!seen.has(h)) { seen.add(h); fail(`${where}: shows "${h}"`) }
+}
 const port = (id, kind, i = 0) => page.locator(`${L}.pg-cport[data-block="${id}"][data-kind="${kind}"][data-i="${i}"]`)
 
 async function tapPalette(kind) {
@@ -60,10 +67,10 @@ async function playCircuit(play) {
   await page.waitForTimeout(300)
 }
 
-async function prove(lines) {
+async function prove(lines, where) {
   const input = page.locator(`${L}.pg-proof-input textarea`)
   await input.waitFor({ timeout: 30000 }).catch(() => {})
-  await idle()
+  await idle(); await notation(`${where} start`)
   for (const line of lines) {
     // (a phone: no keyboard until ⌨ is tapped)
     if (await input.evaluate(i => i.readOnly)) await page.locator(`${L}.pg-key[aria-label="Keyboard"], ${L}.pg-key[aria-label="Tastatur"]`).first().click()
@@ -71,6 +78,7 @@ async function prove(lines) {
     await page.waitForTimeout(80); await idle()
     const err = await page.locator(`${L}.pg-proof-error`).isVisible() ? await page.locator(`${L}.pg-proof-error`).innerText() : ''
     if (err) return `line "${line}": ${err.slice(0, 300)}`
+    await notation(`${where} after "${line}"`)
   }
   return (await page.locator(`${L}.pg-proof-done`).count()) ? '' : 'not done after the last line'
 }
@@ -88,7 +96,9 @@ for (const path of paths) {
     if (shown !== i) fail(`${path} level ${i + 1}: level ${shown + 1} is shown`)
     let board = 'none', green = false
     if (lv.kind === 'circuit') {
+      await notation(`${path} level ${i + 1} board`)
       await playCircuit(lv.play)
+      await notation(`${path} level ${i + 1} board played`)
       board = /goals accomplished/.test(await status()) ? 'ok' : `NOT (${await status()})`
       green = await page.locator(`${L}.pg-level-done, .pg-level-done:not([hidden])`).count() > 0
       if (board !== 'ok' || !green) fail(`${path} level ${i + 1}: board ${board}, green ${green}`)
@@ -98,7 +108,7 @@ for (const path of paths) {
     let proof = 'none'
     if (withProofs && lv.proof) {
       if (lv.kind !== 'leanonly') { await page.locator('.pg-next-button').click(); await page.waitForTimeout(400) }
-      const r = await prove([...(lv.gaps ?? []), ...lv.solution])  // (the gaps of the statement first)
+      const r = await prove([...(lv.gaps ?? []), ...lv.solution], `${path} level ${i + 1}`)  // (the gaps of the statement first)
       proof = r ? `NOT: ${r}` : 'ok'
       if (r) fail(`${path} level ${i + 1}: proof ${r}`)
     }

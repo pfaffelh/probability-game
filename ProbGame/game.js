@@ -2734,6 +2734,7 @@
     "add_assoc": "theorem add_assoc {G : Type u_1} [AddSemigroup G] (a b c : G) : a + b + c = a + (b + c)",
     "map_eq_pure_bind": "theorem map_eq_pure_bind {α β : Type} (μ : DiscreteMeasure α) (f : α → β) : μ.map f = do let x ← μ; pure (f x)",
     "bind_pure": "theorem bind_pure {m : Type u_1 → Type u_2} {α : Type u_1} [Monad m] [LawfulMonad m] (x : m α) : x >>= pure = x",
+    "Bool.and_self": "theorem Bool.and_self (b : Bool) : (b && b) = b",
     "Bool.not_not": "theorem Bool.not_not (b : Bool) : (!!b) = b",
     "Bool.apply_apply_apply": "theorem Bool.apply_apply_apply (f : Bool → Bool) (x : Bool) : f (f (f x)) = f x",
     "Function.comp_apply": "theorem Function.comp_apply {β : Sort u_1} {δ : Sort u_2} {α : Sort u_3} {f : β → δ} {g : α → β} {x : α} : (f ∘ g) x = f (g x)",
@@ -2906,7 +2907,8 @@
     { name: 'add_assoc', kind: 'rule', sig: 'a + b + c = a + (b + c)', en: 'Brackets in sums.', de: 'Klammern in Summen.' },
     { name: 'map_eq_pure_bind', kind: 'rule', sig: 'μ.map f = do let x ← μ; pure (f x)', sig0: 'f <$> s = s >>= fun x => pure (f x)',
       en0: 'Applying f to every point, as a walk.', de0: 'f auf jeden Punkt anwenden, als Weg.', en: 'A move as a do block.', de: 'Ein Zug als do-Block.' },
-    { name: 'bind_pure', kind: 'rule', sig: '(μ >>= fun x => pure x) = μ', en: 'A throw whose result is the result.', de: 'Ein Wurf, dessen Ergebnis das Ergebnis ist.' },
+    { name: 'bind_pure', kind: 'rule', sig: '(do let x ← μ; pure x) = μ', en: 'Draw and give back: that is μ itself.', de: 'Ziehen und zurückgeben: Das ist μ selbst.' },
+    { name: 'Bool.and_self', kind: 'rule', sig: '(x && x) = x', en: 'x and x is x.', de: 'x und x ist x.' },
     { name: "binom_succ'", kind: 'lemma', sig: "(do let X ← binom p n; let Y ← coin p; pure (X + Y.toNat)) = binom p (n + 1)", en: 'Proved by you in Building with Coins.', de: 'Von dir bewiesen in „Bauen mit Münzen“.' },
     // the first world only
     { name: 'Bool.not_not', kind: 'lemma', sig: '(!(!b)) = b', en: 'Proved by you in Circuits: flipped twice is not flipped.', de: 'Von dir bewiesen in „Schaltungen“: Zweimal umgedreht ist nicht umgedreht.' },

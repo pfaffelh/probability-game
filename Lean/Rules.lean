@@ -145,7 +145,7 @@ theorem map_true (f : Bool → Bool) (μ : DiscreteMeasure Bool) :
     tsum_fintype, Fintype.sum_bool]
   cases f true <;> cases f false <;> simp [Set.indicator]
 
-/-- The definition of a bind, as the game writes it for a finite first step: the mass of `μ >>= f` at
+/-- The definition of a bind, as the game writes it for a finite first step: the mass of `do let a ← μ; f a` at
 `b` is the sum over the first steps `a` of the mass `μ a` times the mass of `f a` at `b`. -/
 theorem bind_apply {α β : Type} [Fintype α] (μ : DiscreteMeasure α) (f : α → DiscreteMeasure β) (b : β) :
     (do let a ← μ; f a) b = ∑ a, μ a * f a b := by
