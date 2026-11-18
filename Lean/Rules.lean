@@ -3,8 +3,9 @@
 
 The context in which the levels are proved (base: `DiscreteMeasure` of the journal,
 `import Journal.Notes.DiscreteMeasure.Thinning`). The player sees `coin p`, `binom p n`, `pure`,
-`do` blocks and `f <$> μ`; the rules below are stated in these forms, with the monad laws of Lean's
-core (`pure_bind`, `bind_pure`, `bind_assoc`, `map_pure`, `bind_map_left`, `map_bind`).
+`do` blocks and `μ.map f`; the rules below are stated in these forms, with the monad laws of Lean's
+core (`pure_bind`, `bind_pure`, `bind_assoc`) and those of a move, stated here with `μ.map f`
+(`map_pure`, `bind_map_left`, `map_bind`, `map_map`).
 
 Rules that are given (the axioms of the game, as Peano's in the Natural Number Game) and lemmas
 the player proves in a level are both here, proved from the journal; the game unlocks the lemmas
@@ -14,6 +15,13 @@ one after another.
 open MeasureTheory (DiscreteMeasure)
 open MeasureTheory.DiscreteMeasure (coin binom iidSequence)
 open unitInterval
+
+/-- A move is printed as the game writes it: `μ.map f`, not `DiscreteMeasure.map f μ`. -/
+@[app_unexpander MeasureTheory.DiscreteMeasure.map]
+def ProbGame.unexpandMap : Lean.PrettyPrinter.Unexpander
+  | `($_ $f $μ:ident) => `($(Lean.mkIdent (μ.getId ++ `map)) $f)
+  | `($_ $f $μ) => `(($μ).$(Lean.mkIdent `map):ident $f)
+  | _ => throw ()
 
 namespace ProbGame
 
@@ -28,7 +36,7 @@ class Prob {α : Type} (μ : DiscreteMeasure α) : Prop where
   hasSum : HasSum μ.weight 1
 
 instance (p : I) : Prob (coin p) := ⟨MeasureTheory.DiscreteMeasure.hasSum_coin p⟩
-instance {α β : Type} (μ : DiscreteMeasure α) [h : Prob μ] (f : α → β) : Prob (f <$> μ) :=
+instance {α β : Type} (μ : DiscreteMeasure α) [h : Prob μ] (f : α → β) : Prob (μ.map f) :=
   ⟨MeasureTheory.DiscreteMeasure.hasSum_map h.hasSum f⟩
 instance {α : Type} (a : α) : Prob (pure a : DiscreteMeasure α) := ⟨MeasureTheory.DiscreteMeasure.hasSum_pure a⟩
 instance {α β : Type} (μ : DiscreteMeasure α) [h : Prob μ] (f : α → DiscreteMeasure β) [hf : ∀ a, Prob (f a)] :
@@ -120,20 +128,20 @@ theorem chance_eq (μ : DiscreteMeasure Bool) [Prob μ] : (chance μ : ENNReal) 
   show ENNReal.ofReal (μ true).toReal = μ true
   exact ENNReal.ofReal_toReal mass_ne_top
 
-/-- The definition of a move, as the game writes it: the mass of `f <$> μ` at `b` is the sum of the
+/-- The definition of a move, as the game writes it: the mass of `μ.map f` at `b` is the sum of the
 masses `μ a` over the points `a` with `f a = b` (a finite sum: finitely many points). -/
 theorem map_apply {α : Type} [Fintype α] (f : α → Bool) (μ : DiscreteMeasure α) (b : Bool) :
-    (f <$> μ) b = ∑ a, (bif f a == b then μ a else 0) := by
-  rw [← MeasureTheory.DiscreteMeasure.map_eq_map, MeasureTheory.DiscreteMeasure.map_apply_eq_tsum_mul,
+    (μ.map f) b = ∑ a, (bif f a == b then μ a else 0) := by
+  rw [MeasureTheory.DiscreteMeasure.map_apply_eq_tsum_mul,
     tsum_fintype]
   congr 1; funext a
   cases h : f a <;> cases b <;> simp [Set.indicator]
 
-/-- Where the mass of a move goes: the mass of `f <$> μ` at `true` is the mass of `μ` at the points
+/-- Where the mass of a move goes: the mass of `μ.map f` at `true` is the mass of `μ` at the points
 that `f` sends to `true` (`bif c then a else b` is `a` when `c` is `true`, else `b`). -/
 theorem map_true (f : Bool → Bool) (μ : DiscreteMeasure Bool) :
-    (f <$> μ) true = (bif f true then μ true else 0) + (bif f false then μ false else 0) := by
-  rw [← MeasureTheory.DiscreteMeasure.map_eq_map, MeasureTheory.DiscreteMeasure.map_apply_eq_tsum_mul,
+    (μ.map f) true = (bif f true then μ true else 0) + (bif f false then μ false else 0) := by
+  rw [MeasureTheory.DiscreteMeasure.map_apply_eq_tsum_mul,
     tsum_fintype, Fintype.sum_bool]
   cases f true <;> cases f false <;> simp [Set.indicator]
 
@@ -154,12 +162,28 @@ theorem coin_unused {β : Type} (p : I) (ν : DiscreteMeasure β) : (do let _ �
 
 /-- Two moves are one move. -/
 theorem map_map {α β γ : Type} (μ : DiscreteMeasure α) (f : α → β) (g : β → γ) :
-    g <$> (f <$> μ) = (fun x => g (f x)) <$> μ := (comp_map f g μ).symm
+    (μ.map f).map g = μ.map (fun x => g (f x)) := (comp_map f g μ).symm
+
+/-- A move on a point mass moves the point. -/
+theorem map_pure {α β : Type} (a : α) (f : α → β) : (pure a : DiscreteMeasure α).map f = pure (f a) :=
+  LawfulApplicative.map_pure f a
+
+/-- A move after a draw goes into it. -/
+theorem map_bind {α β γ : Type} (μ : DiscreteMeasure α) (g : α → DiscreteMeasure β) (f : β → γ) :
+    (do let x ← μ; g x).map f = (do let x ← μ; (g x).map f) := _root_.map_bind f μ g
+
+/-- A move on a draw goes into what follows. -/
+theorem bind_map_left {α β γ : Type} (μ : DiscreteMeasure α) (f : α → β) (g : β → DiscreteMeasure γ) :
+    (do let x ← μ.map f; g x) = (do let x ← μ; g (f x)) := _root_.bind_map_left f μ g
+
+/-- A move is a draw and then a point mass. -/
+theorem map_eq_pure_bind {α β : Type} (μ : DiscreteMeasure α) (f : α → β) :
+    μ.map f = (do let x ← μ; pure (f x)) := _root_.map_eq_pure_bind f μ
 
 /-- Independence: two coins, both `true`, is a coin `p * q`. -/
 theorem coin_and (p q : I) : (do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q) := by
   rw [← MeasureTheory.DiscreteMeasure.twoCoins_and_eq_coin]
-  simp only [map_eq_pure_bind, seq_eq_bind_map, bind_assoc, pure_bind]
+  simp only [_root_.map_eq_pure_bind, seq_eq_bind_map, bind_assoc, pure_bind]
 
 /-- Independence: the order of two independent draws does not matter. -/
 theorem bind_comm {α β γ : Type} (μ : DiscreteMeasure α) (ν : DiscreteMeasure β) (f : α → β → DiscreteMeasure γ) :
@@ -179,14 +203,14 @@ theorem binom_succ (p : I) (n : ℕ) :
 /-! The lemmas the player proves; the game unlocks each after its level. -/
 
 /-- One Coin, *Where does the mass go?*: flipped, the coin has the mass `1 - p` at `true`. -/
-theorem coin_not_true (p : I) : (not <$> coin p) true = σ p := by
+theorem coin_not_true (p : I) : ((coin p).map not) true = σ p := by
   rw [map_true]
   rw [Bool.not_true, Bool.not_false]
   rw [Bool.cond_false, Bool.cond_true, zero_add]
   rw [coin_false]
 
 /-- One Coin, *Always true*: a constant move sends all the mass to one point. -/
-theorem coin_const (p : I) (b : Bool) : (fun _ => b) <$> coin p = pure b := by
+theorem coin_const (p : I) (b : Bool) : (coin p).map (fun _ => b) = pure b := by
   apply bool_ext
   rw [map_true, pure_true]
   cases b
@@ -199,12 +223,12 @@ theorem eq_coin (μ : DiscreteMeasure Bool) [Prob μ] : μ = coin (chance μ) :=
   rw [coin_true, chance_eq]
 
 /-- World 1, the boss: flipping a coin swaps the masses `p` and `1 - p`. -/
-theorem coin_not (p : I) : not <$> coin p = coin (σ p) := by
+theorem coin_not (p : I) : (coin p).map not = coin (σ p) := by
   apply bool_ext
   rw [coin_not_true, coin_true]
 
 /-- `B(1, p)` is a coin as a number. -/
-theorem binom_one (p : I) : Bool.toNat <$> coin p = binom p 1 := by
+theorem binom_one (p : I) : (coin p).map Bool.toNat = binom p 1 := by
   rw [binom_succ, binom_zero]
   simp only [pure_bind, add_zero]
   rw [map_eq_pure_bind]
@@ -388,7 +412,7 @@ theorem count_true_cons (y : Bool) (l : List Bool) : (y :: l).count true = y.toN
 
 /-- Sequences, the boss: `binom p n` counts the `true` in `n` independent coins. -/
 theorem binom_eq_count (p : I) (n : ℕ) :
-    binom p n = (fun l => l.count true) <$> iidSequence n (coin p) := by
+    binom p n = (iidSequence n (coin p)).map (fun l => l.count true) := by
   induction' n with n ih
   rw [seq_zero, map_pure, binom_zero]
   rfl

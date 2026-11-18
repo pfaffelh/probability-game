@@ -26,7 +26,7 @@ account.
 :::proofen
 The circuit, read from top to bottom, is a `do` block in Lean: each coin a line `let x ← coin p`,
 which *draws* `x` from the distribution `coin p`, and at the end `pure (…)`, a sure result, with what
-the gates compute. A single gate is such a block too: `f <$> μ` is `do let x ← μ; pure (f x)`. Without
+the gates compute. A single gate is such a block too: `μ.map f` is `do let x ← μ; pure (f x)`. Without
 the words of `do`, the same reads `μ >>= fun x => pure (f x)`: `>>=` (*bind*) passes what `μ` drew to
 the function after it, and `fun x => …` is that function. The proofs learn the rules of `do` blocks,
 the *monad laws*, one at a time, when a level needs them.
@@ -48,7 +48,7 @@ berücksichtigt das.
 :::proofde
 Die Schaltung, von oben nach unten gelesen, ist ein `do`-Block in Lean: jede Münze eine Zeile
 `let x ← coin p`, die `x` aus der Verteilung `coin p` *zieht*, und am Ende `pure (…)`, ein sicheres
-Ergebnis, mit dem, was die Bausteine rechnen. Auch ein einzelner Baustein ist so ein Block: `f <$> μ`
+Ergebnis, mit dem, was die Bausteine rechnen. Auch ein einzelner Baustein ist so ein Block: `μ.map f`
 ist `do let x ← μ; pure (f x)`. Ohne die Wörter von `do` liest sich dasselbe
 `μ >>= fun x => pure (f x)`: `>>=` (*bind*) gibt, was `μ` gezogen hat, an die Funktion danach weiter,
 und `fun x => …` ist diese Funktion. Die Beweise lernen die Regeln der `do`-Blöcke, die
@@ -186,7 +186,7 @@ norm_num [mass_mul]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (f : Bool → DiscreteMeasure Bool) : (do let x ← not <$> coin p; f x) = (do let x ← coin p; f (!x))") (new := "bind_map_left") (uses := "bind_map_left, map_bind")
+::::leanonly (proof := "(p : I) (f : Bool → DiscreteMeasure Bool) : (do let x ← (coin p).map not; f x) = (do let x ← coin p; f (!x))") (new := "bind_map_left") (uses := "bind_map_left, map_bind")
 :::en
 *A move before a draw.* Drawing from a moved coin is drawing from the coin and moving the result.
 :::
@@ -196,13 +196,13 @@ norm_num [mass_mul]
 :::
 
 :::proofen
-`bind_map_left : (do let x ← f <$> μ; g x) = (do let x ← μ; g (f x))`.
+`bind_map_left : (do let x ← μ.map f; g x) = (do let x ← μ; g (f x))`.
 
 *Tip.* `rw [bind_map_left]`.
 :::
 
 :::proofde
-`bind_map_left : (do let x ← f <$> μ; g x) = (do let x ← μ; g (f x))`.
+`bind_map_left : (do let x ← μ.map f; g x) = (do let x ← μ; g (f x))`.
 
 *Tipp.* `rw [bind_map_left]`.
 :::
@@ -224,9 +224,9 @@ rw [bind_map_left]
 
 :::proofen
 Work backwards, on the right side: `rw [← coin_and]` uses the rule from right to left, and
-`rw [← coin_not]` turns `coin (σ p)` into `not <$> coin p`. Then a gate sits inside the `do` block,
-in `let y ← not <$> coin p`. The new rule
-`bind_map_left : (do let x ← f <$> μ; g x) = (do let x ← μ; g (f x))` takes the gate out of the draw
+`rw [← coin_not]` turns `coin (σ p)` into `(coin p).map not`. Then a gate sits inside the `do` block,
+in `let y ← (coin p).map not`. The new rule
+`bind_map_left : (do let x ← μ.map f; g x) = (do let x ← μ; g (f x))` takes the gate out of the draw
 and into what is computed. But it is needed after `let x ← coin p`, where the name `x` of the `do`
 block occurs, and there `rw` cannot rewrite. The new tactic `simp only [rules]` can: it rewrites with
 the rules everywhere, also inside `do` blocks, as often as it can, and closes the goal when the two
@@ -237,9 +237,9 @@ sides become the same.
 
 :::proofde
 Arbeite rückwärts, auf der rechten Seite: `rw [← coin_and]` benutzt die Regel von rechts nach
-links, und `rw [← coin_not]` macht aus `coin (σ p)` ein `not <$> coin p`. Dann steht ein Baustein im
-`do`-Block, in `let y ← not <$> coin p`. Die neue Regel
-`bind_map_left : (do let x ← f <$> μ; g x) = (do let x ← μ; g (f x))` holt den Baustein aus dem Ziehen
+links, und `rw [← coin_not]` macht aus `coin (σ p)` ein `(coin p).map not`. Dann steht ein Baustein im
+`do`-Block, in `let y ← (coin p).map not`. Die neue Regel
+`bind_map_left : (do let x ← μ.map f; g x) = (do let x ← μ; g (f x))` holt den Baustein aus dem Ziehen
 heraus und in das Rechnen hinein. Gebraucht wird sie aber nach `let x ← coin p`, wo der Name `x` des
 `do`-Blocks vorkommt, und dort kann `rw` nicht umschreiben. Die neue Taktik `simp only [Regeln]` kann
 es: Sie schreibt mit den Regeln überall um, auch in `do`-Blöcken, so oft es geht, und schließt das
@@ -256,7 +256,7 @@ simp only [bind_map_left]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (f : Bool → DiscreteMeasure Bool) : not <$> (do let x ← coin p; f x) = (do let x ← coin p; not <$> f x)") (new := "map_bind") (uses := "map_bind, bind_map_left")
+::::leanonly (proof := "(p : I) (f : Bool → DiscreteMeasure Bool) : (do let x ← coin p; f x).map not = (do let x ← coin p; (f x).map not)") (new := "map_bind") (uses := "map_bind, bind_map_left")
 :::en
 *A move after a draw.* A move at the end can go into the `do` block.
 :::
@@ -266,13 +266,13 @@ simp only [bind_map_left]
 :::
 
 :::proofen
-`map_bind : f <$> (do let x ← μ; g x) = (do let x ← μ; f <$> g x)`.
+`map_bind : (do let x ← μ; g x).map f = (do let x ← μ; (g x).map f)`.
 
 *Tip.* `rw [map_bind]`.
 :::
 
 :::proofde
-`map_bind : f <$> (do let x ← μ; g x) = (do let x ← μ; f <$> g x)`.
+`map_bind : (do let x ← μ; g x).map f = (do let x ← μ; (g x).map f)`.
 
 *Tipp.* `rw [map_bind]`.
 :::
@@ -321,7 +321,7 @@ cases x <;> cases y <;> rfl
 
 :::proofen
 At least one `true` is: not both `false`, with probability $`1 - (1 - p)^2`. Two new rules: De
-Morgan, `or_eq : (x || y) = !(!x && !y)`, and `map_bind : f <$> (do let x ← μ; g x) = (do let x ← μ; f <$> g x)`:
+Morgan, `or_eq : (x || y) = !(!x && !y)`, and `map_bind : (do let x ← μ; g x).map f = (do let x ← μ; (g x).map f)`:
 a move after a `do` block goes into it.
 
 *Tip.* On the right side, backwards: `rw [← coin_not]`, `rw [← coin_and]`, `rw [← coin_not]`; then
@@ -331,7 +331,7 @@ a move after a `do` block goes into it.
 :::proofde
 Mindestens einmal `true` heißt: nicht beide `false`, mit Wahrscheinlichkeit $`1 - (1 - p)^2`. Zwei
 neue Regeln: De Morgan, `or_eq : (x || y) = !(!x && !y)`, und
-`map_bind : f <$> (do let x ← μ; g x) = (do let x ← μ; f <$> g x)`: Ein Zug nach einem `do`-Block
+`map_bind : (do let x ← μ; g x).map f = (do let x ← μ; (g x).map f)`: Ein Zug nach einem `do`-Block
 wandert in ihn hinein.
 
 *Tipp.* Auf der rechten Seite, rückwärts: `rw [← coin_not]`, `rw [← coin_and]`, `rw [← coin_not]`;

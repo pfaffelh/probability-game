@@ -120,7 +120,7 @@ rw [count_true_cons, Bool.toNat_true]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (n : ℕ) : binom p n = (fun l => l.count true) <$> iidSequence n (coin p)") (lemma := "binom_eq_count") (group := "chance.count") (uses := "seq_zero, map_pure, binom_zero, binom_succ, seq_succ, map_bind, bind_map_left, count_true_cons")
+::::leanonly (proof := "(p : I) (n : ℕ) : binom p n = (iidSequence n (coin p)).map (fun l => l.count true)") (lemma := "binom_eq_count") (group := "chance.count") (uses := "seq_zero, map_pure, binom_zero, binom_succ, seq_succ, map_bind, bind_map_left, count_true_cons")
 :::en
 *Boss: binom counts.* `binom p n` was defined by recursion, one coin and then the rest. It is what one thinks: throw $`n` coins and count the `true`.
 :::
