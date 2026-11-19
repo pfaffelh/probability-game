@@ -368,6 +368,18 @@ are two of them.
 :::
 ::::
 
+::::hint (anchor := "back")
+:::en
+New: `←`. `rw [← h]` rewrites from right to left: it puts the left side of `h` where its right side
+stands. Here `rw [← Prob.total μ]` makes the `1` of the goal the sum of the masses. Tap `←`, or type `\l`.
+:::
+
+:::de
+Neu: `←`. `rw [← h]` schreibt von rechts nach links um: Es setzt die linke Seite von `h` dorthin, wo
+ihre rechte steht. Hier macht `rw [← Prob.total μ]` aus der `1` des Ziels die Summe der Massen. Tippe `←` an, oder tippe `\l`.
+:::
+::::
+
 :::proofen
 `Prob.total μ : ∑' a, μ a = 1` is a sum over all points, `∑'`. Read from right to left,
 `rw [← Prob.total μ]` makes the `1` of the goal this sum. `tsum_fintype` turns a sum over all points

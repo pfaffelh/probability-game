@@ -3477,7 +3477,7 @@
       const goal = String(this.goals?.[0] ?? this.statement ?? '')
       const nums = /ℝ/.test(goal) ? [...new Set(goal.match(/(?<![\w₀-₉.])\d+(?![\w₀-₉])/g) ?? [])].slice(0, 4) : []
       for (const n of [...names, ...(bool ? ['true', 'false'] : []), ...nums, ...(nums.length ? ['*'] : [])]) key(n, n, () => this.putTerm(n), ' pg-key-name')
-      key('←', tr('backwards (in rw)'), () => this.putTerm('←'), ' pg-key-name')
+      key('←', tr('backwards (in rw)'), () => this.putTerm('←'), ' pg-key-name pg-key-back')
       key('␣', tr('a space: what comes next is an argument'), () => this.putTerm(' '), ' pg-key-name')
       key('⌫', tr('Delete the last word'), () => this.erase(), ' pg-key-op')
       key('✕', tr('Clear the input'), () => { this.choice = null; this.input.value = this.typed = ''; this.render() }, ' pg-key-op')
@@ -4074,7 +4074,8 @@
     // (`move:not`: at the move or building block not, in place of its card)
     // (hints in the proof: at an item, `item:rfl`; at the gap to fill, `gap`; at the keys, `keys`; at the statement, `statement`)
     // (and `lean`: a tip of the proof at nothing, in the middle)
-    const PROOF_AT = { gap: '.pg-gap-now', keys: '.pg-keys', statement: '.pg-proof-statement', lean: null }
+    // (`back`: at the key ←)
+    const PROOF_AT = { gap: '.pg-gap-now', keys: '.pg-keys', back: '.pg-key-back', statement: '.pg-proof-statement', lean: null }
     const proofHint = h => h.dataset.at.startsWith('item:') || h.dataset.at in PROOF_AT
     const boardHints = k => [...roots[k].querySelectorAll(':scope > .pg-text > .pg-hint:not([data-at="none"])')].filter(h => !proofHint(h) && !h.dataset.at.startsWith('after:'))
     // (a hint in between: `after:cases`, once a line of the proof with the tactic cases is taken, at the
