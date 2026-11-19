@@ -274,6 +274,18 @@ Lean die zwei Fälle unterscheiden, `x = false` und `x = true`.
 :::
 ::::
 
+::::hint (anchor := "after:cases")
+:::en
+`cases x` has made two new goals out of one: in the first `x` is `false`, in the second `true`. Prove
+them one after the other.
+:::
+
+:::de
+`cases x` hat aus einem Ziel zwei neue gemacht: Im ersten ist `x` gleich `false`, im zweiten `true`.
+Beweise sie nacheinander.
+:::
+::::
+
 :::proofen
 `!(!x) = x` for every `x`. Now `rfl` does not help: `not` is defined by its cases, and Lean cannot
 reduce `!x` as long as it does not know `x`. The tactic `cases x` splits into the cases `false` and
@@ -369,17 +381,6 @@ condition `c : Bool`.
 Bedingung `c : Bool`.
 :::
 
-:::proofen
-`bif` is defined by the two cases of `c`; here `c` is `true`.
-
-*Tip.* `rfl`.
-:::
-
-:::proofde
-`bif` ist durch die zwei Fälle von `c` definiert; hier ist `c` gleich `true`.
-
-*Tipp.* `rfl`.
-:::
 :::solution
 ```
 rfl

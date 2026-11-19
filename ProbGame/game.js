@@ -3258,12 +3258,18 @@
       return null
     }
 
+    gapFirst(v) {
+      this.error = tr('First, fill in the gaps in the statement.'); this.failed = v || null
+      this.input.value = this.typed = ''; this.choice = null; this.render()
+    }
     async run() {
       // (a gap open: the input fills it; with the last one Lean starts on the statement as filled)
       if (this.gapsOpen) {
         const v = this.input.value.trim()
         if (!v || this.busy) return
-        this.fill.push(v); this.saveFill(); this.typed = ''; this.choice = null
+        // (a line of the proof while a gap is open: not yet, the statement first)
+        if (this.gapChoices ? !this.gapChoices.includes(v) : INVENTORY.some(i => i.kind === 'tactic' && i.name === v.split(/[\s\[]/)[0])) return this.gapFirst(v)
+        this.fill.push(v); this.saveFill(); this.typed = ''; this.choice = null; this.error = ''; this.failed = null
         this.statement = this.filledStatement()
         if (this.gapsOpen) { this.render(); this.input?.focus({ preventScroll: true }); return }
         this.lines = []; this.session = null; this.goals = null; this.states = null; this.error = ''
@@ -3287,8 +3293,11 @@
       this.failed = null
       if (no) { this.error = no; this.failed = line; this.typed = ''; this.render(); return }
       this.busy = true; this.render()
-      try { if (!(await this.check([...this.lines, line]))) this.failed = line; this.typed = '' } catch (e) { this.error = tr('Lean cannot be reached: {e}', { e: String(e) }) }
+      let ok = false
+      try { ok = await this.check([...this.lines, line]); if (!ok) this.failed = line; this.typed = '' } catch (e) { this.error = tr('Lean cannot be reached: {e}', { e: String(e) }) }
       this.busy = false; this.render(); this.input?.focus({ preventScroll: true }); this.reveal()
+      // (a tip that comes in between, after a line with this tactic: `:::hint (anchor := "after:cases")`)
+      if (ok) this.onLine?.(line)
     }
     async back() {
       if (!this.lines.length && this.fill.length) return this.reopen(this.fill.length - 1)
@@ -3652,6 +3661,7 @@
           b.addEventListener('contextmenu', e => e.preventDefault())
           b.addEventListener('click', () => {
             if (this.pressed) { this.pressed = false; return }
+            if (this.gapsOpen) return this.gapFirst()
             if (!this.busy && !this.done) (item.kind === 'tactic' ? this.tapTactic(item) : this.tapRule(item))
           })
           if (sigs) { const r = el('div', 'pg-inv-row'); r.append(b, el('code', 'pg-inv-sig', sigOf(item))); group.append(r) } else group.append(b)
@@ -3753,7 +3763,7 @@
     'backwards (in rw)': 'rückwärts (in rw)', 'a space: what comes next is an argument': 'ein Leerzeichen: was danach kommt, ist ein Argument', 'Delete the last word': 'Das letzte Wort löschen', 'Clear the input': 'Die Eingabe leeren',
     'Keyboard': 'Tastatur', 'No keyboard': 'Keine Tastatur',
     'Zoom in': 'Vergrößern', 'Zoom out': 'Verkleinern', 'Whole board': 'Ganzes Spielfeld',
-    'Fill the gap ▢ in the statement first.': 'Erst die Lücke ▢ in der Aussage füllen.', 'Fill the gaps anew': 'Lücken neu füllen',
+    'Fill the gap ▢ in the statement first.': 'Erst die Lücke ▢ in der Aussage füllen.', 'First, fill in the gaps in the statement.': 'Fülle zuerst die Lücken in der Aussage.', 'Fill the gaps anew': 'Lücken neu füllen',
     'what goes into ▢: choose it above': 'was in ▢ gehört: wähl es oben aus',
     'What belongs in the gap ▢? Choose it below. Then you prove the statement as you filled it: if it is wrong, the proof will not come to an end.': 'Was gehört in die Lücke ▢? Wähl es unten aus. Dann beweist du die Aussage so, wie du sie gefüllt hast: Ist sie falsch, kommt der Beweis nie ans Ende.',
     'What belongs in the gap ▢? Put it together below and take it with Run. Then you prove the statement as you filled it: if it is wrong, the proof will not come to an end.': 'Was gehört in die Lücke ▢? Setz es unten zusammen und übernimm es mit Ausführen. Dann beweist du die Aussage so, wie du sie gefüllt hast: Ist sie falsch, kommt der Beweis nie ans Ende.',
@@ -4065,7 +4075,13 @@
     // (and `lean`: a tip of the proof at nothing, in the middle)
     const PROOF_AT = { gap: '.pg-gap-now', keys: '.pg-keys', statement: '.pg-proof-statement', lean: null }
     const proofHint = h => h.dataset.at.startsWith('item:') || h.dataset.at in PROOF_AT
-    const boardHints = k => [...roots[k].querySelectorAll(':scope > .pg-text > .pg-hint:not([data-at="none"])')].filter(h => !proofHint(h))
+    const boardHints = k => [...roots[k].querySelectorAll(':scope > .pg-text > .pg-hint:not([data-at="none"])')].filter(h => !proofHint(h) && !h.dataset.at.startsWith('after:'))
+    // (a hint in between: `after:cases`, once a line of the proof with the tactic cases is taken, at the
+    // goals; the button Tips shows it again when the proof has such a line)
+    const tacOf = line => line.trim().split(/[\s\[]/)[0]
+    const afterTips = (k, tac) => [...roots[k].querySelectorAll(':scope > .pg-text > .pg-hint')].filter(h => h.dataset.at === `after:${tac}`)
+      .map(h => ({ nodes: hintText(h), anchor: () => visible(roots[k].querySelector('.pg-goal-now')) ?? visible(roots[k].querySelector('.pg-goals')) }))
+    const afterTipsNow = k => [...new Set((levels[k].proof?.lines ?? []).map(tacOf))].flatMap(t => afterTips(k, t))
     const levelHints = k => boardHints(k).map(h => ({
       nodes: hintText(h), anchor: h.dataset.at.startsWith('move:') ? atMove(k, h.dataset.at) : () => visible(roots[k].querySelector(HINT_AT[h.dataset.at] ?? h.dataset.at)) }))
     // the moves new in a level: not offered by a level before it on this page
@@ -4156,7 +4172,7 @@
     // (the button Tips: the same tips as those that came by themselves; in a level without any, the
     // text of the level)
     const sameTips = k => view() !== 'proof' ? (quiet(k) ? [] : boardTip(k, k === 0, true))
-      : levels[k] instanceof LeanOnly ? (quiet(k) ? [] : [...(pointing(k) ? [] : boardTip(k, k === 0, true)), ...proofTip(k, true)]) : proofTip(k, true)
+      : [...(levels[k] instanceof LeanOnly ? (quiet(k) ? [] : [...(pointing(k) ? [] : boardTip(k, k === 0, true)), ...proofTip(k, true)]) : proofTip(k, true)), ...afterTipsNow(k)]
     const allTips = k => view() !== 'proof' ? boardTip(k, true) : levels[k] instanceof LeanOnly ? [...boardTip(k, true), ...proofTip(k)] : proofTip(k)
     tips.addEventListener('click', () => { const t = sameTips(current).filter(s => s.nodes.length); tipBox(tr('Tips'), t.length ? t : allTips(current)) })
     tabBoard.addEventListener('click', () => setView('board'))
@@ -4227,6 +4243,10 @@
     }
     levels.forEach((l, k) => {
       l.onNextLevel = l.onNext = () => { if (levels[current] === l) goNext() }
+      if (l.proof) l.proof.onLine = line => {
+        const t = tacOf(line), steps = afterTips(k, t)
+        if (steps.length && levels[current] === l) once(`${l.key}:after:${t}`, mark => tipBox(tr('Tip'), steps, mark))
+      }
     })
     // ← and → go to the previous and next level (not while typing)
     document.addEventListener('keydown', ev => {
