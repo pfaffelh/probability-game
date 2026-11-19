@@ -360,13 +360,11 @@ are two of them.
 
 ::::hint (anchor := "statement")
 :::en
-`[Prob μ]` is an assumption about `μ`: in Lean, `class Prob (μ) : Prop where hasSum : HasSum μ.weight 1`,
-the masses of `μ`, summed over all points, give one. The rule `Prob.total` says it as a sum.
+`[Prob μ]` is an assumption about `μ`. The weights sum to 1.
 :::
 
 :::de
-`[Prob μ]` ist eine Annahme über `μ`: in Lean `class Prob (μ) : Prop where hasSum : HasSum μ.weight 1`,
-die Massen von `μ`, über alle Punkte summiert, ergeben eins. Die Regel `Prob.total` sagt es als Summe.
+`[Prob μ]` ist eine Annahme über `μ`. Die Gewichte summieren sich zu 1.
 :::
 ::::
 
