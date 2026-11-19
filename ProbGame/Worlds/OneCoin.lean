@@ -69,7 +69,7 @@ rw [← mass_total μ, h, zero_add]
 :::
 ::::
 
-:::::leanonly (proof := "(a b : ENNReal) : ⟦a - a + b ‖ a + b - a, b - a + a, a - a + b⟧ = b") (new := "tsub_self") (uses := "tsub_self, zero_add, add_zero, mul_zero")
+:::::leanonly (proof := "(a b : ℝ≥0∞) : ⟦a - a + b ‖ a + b - a, b - a + a, a - a + b⟧ = b") (new := "tsub_self") (uses := "tsub_self, zero_add, add_zero, mul_zero")
 :::en
 *Subtracting masses.* In Lean, masses are numbers in `ℝ≥0∞ = [0, ∞]` (`ENNReal`). Adding is as
 usual, with `a + ∞ = ∞`. But `a - b : ℝ≥0∞` cannot be negative: `a - b = 0` when `b > a`. And with
@@ -115,62 +115,6 @@ rw [tsub_self, zero_add]
 :::
 :::::
 
-::::leanonly (proof := "(a b : ENNReal) : b - a + a = ⟦max b a ‖ b, a, max b a, a + b⟧") (new := "tsub_add_eq_max") (uses := "tsub_add_eq_max")
-:::en
-*Taking away and putting back.* `b - a + a` is not always `b`. What is it, for all `a b : ℝ≥0∞`?
-:::
-
-:::de
-*Wegnehmen und wieder dazu.* `b - a + a` ist nicht immer `b`. Was ist es, für alle `a b : ℝ≥0∞`?
-:::
-
-:::proofen
-For `a ≤ b` (and `a` finite) it is `b`; for `b < a` it is `0 + a = a`; with `a = ∞` it is `∞`. Always
-the larger of the two: the rule `tsub_add_eq_max : b - a + a = max b a`.
-
-*Tip.* `max b a`; then `rw [tsub_add_eq_max]`.
-:::
-
-:::proofde
-Für `a ≤ b` (und endliches `a`) ist es `b`; für `b < a` ist es `0 + a = a`; mit `a = ∞` ist es `∞`.
-Immer das größere der beiden: die Regel `tsub_add_eq_max : b - a + a = max b a`.
-
-*Tipp.* `max b a`; dann `rw [tsub_add_eq_max]`.
-:::
-:::solution
-```
-rw [tsub_add_eq_max]
-```
-:::
-::::
-
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ true + μ false - μ true = μ false") (new := "ENNReal.add_sub_cancel_left") (uses := "ENNReal.add_sub_cancel_left, mass_ne_top")
-:::en
-*Taking away.* What is added and taken away again is gone, when it is finite.
-:::
-
-:::de
-*Wegnehmen.* Was dazukommt und wieder weggenommen wird, ist weg, wenn es endlich ist.
-:::
-
-:::proofen
-`ENNReal.add_sub_cancel_left (h : a ≠ ⊤) : a + b - a = b` (in $`[0, \infty]`, $`\infty - \infty` would make no sense, hence `h`). A rule with a hypothesis gets it in the brackets: here `mass_ne_top`.
-
-*Tip.* `rw [ENNReal.add_sub_cancel_left mass_ne_top]`.
-:::
-
-:::proofde
-`ENNReal.add_sub_cancel_left (h : a ≠ ⊤) : a + b - a = b` (in $`[0, \infty]` ergäbe $`\infty - \infty` keinen Sinn, daher `h`). Eine Regel mit Annahme bekommt sie in die Klammer: hier `mass_ne_top`.
-
-*Tipp.* `rw [ENNReal.add_sub_cancel_left mass_ne_top]`.
-:::
-:::solution
-```
-rw [ENNReal.add_sub_cancel_left mass_ne_top]
-```
-:::
-::::
-
 ::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ false + μ true = 1") (uses := "add_comm, mass_total, add_assoc, coin_total")
 :::en
 *The other way round.* The total mass, with the summands swapped.
@@ -198,7 +142,7 @@ rw [add_comm, mass_total μ]
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b = 1 - μ (!b)") (lemma := "mass_not") (uses := "Bool.not_false, mass_total, ENNReal.add_sub_cancel_left, mass_ne_top, Bool.not_true, add_comm, coin_total, add_assoc")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b = 1 - μ (!b)") (lemma := "mass_not") (new := "ENNReal.add_sub_cancel_left") (uses := "Bool.not_false, mass_total, ENNReal.add_sub_cancel_left, mass_ne_top, Bool.not_true, add_comm, coin_total, add_assoc")
 :::en
 *The rest of the mass.* Now in Lean only: a statement about *every* distribution on `Bool`, which no
 board can show. What is not at `b` lies at `!b`.
@@ -217,7 +161,7 @@ other side misses to one.
 `cases b` (from *Circuits*): the point `b` is `false` or `true`, two goals one after the other
 (`!false` is `true`: `Bool.not_false`, from *Circuits*).
 
-Masses are numbers in $`[0, \infty]` (`ENNReal`); taking away is allowed when what is taken away is
+Masses are numbers in $`[0, \infty]` (`ℝ≥0∞`); taking away is allowed when what is taken away is
 finite: `ENNReal.add_sub_cancel_left (h : a ≠ ⊤) : a + b - a = b`, and `mass_ne_top : μ b ≠ ⊤` says
 that a mass is finite. `rw [← mass_total μ]` rewrites from right to left: the `1` becomes
 `μ true + μ false`. At `true`, `μ false` is taken away, and it stands second in the sum:
@@ -238,7 +182,7 @@ der einen Seite das, was der anderen zu eins fehlt.
 `cases b` (aus *Schaltungen*): Der Punkt `b` ist `false` oder `true`, zwei Ziele nacheinander
 (`!false` ist `true`: `Bool.not_false`, aus *Schaltungen*).
 
-Massen sind Zahlen in $`[0, \infty]` (`ENNReal`); wegnehmen darf man, wenn das Weggenommene endlich
+Massen sind Zahlen in $`[0, \infty]` (`ℝ≥0∞`); wegnehmen darf man, wenn das Weggenommene endlich
 ist: `ENNReal.add_sub_cancel_left (h : a ≠ ⊤) : a + b - a = b`, und `mass_ne_top : μ b ≠ ⊤` sagt,
 dass eine Masse endlich ist. `rw [← mass_total μ]` schreibt von rechts nach links um: Die `1` wird zu
 `μ true + μ false`. Bei `true` wird `μ false` weggenommen, und das steht in der Summe an zweiter
@@ -300,7 +244,7 @@ exact h
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : ↑p + ↑(σ p) = (1 : ENNReal)") (new := "coin_total") (uses := "coin_true, coin_false, coin_total, mass_total")
+::::leanonly (proof := "(p : I) : ↑p + ↑(σ p) = (1 : ℝ≥0∞)") (new := "coin_total") (uses := "coin_true, coin_false, coin_total, mass_total")
 :::en
 *The coin is whole.* $`p + (1 - p) = 1`: the two masses of the coin add up to one.
 :::

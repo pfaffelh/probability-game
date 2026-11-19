@@ -222,7 +222,7 @@ rw [bind_apply, Fintype.sum_bool]
 :::
 ::::
 
-::::leanonly (proof := "(p q : I) : coin (p * q) true = (↑p * ↑q : ENNReal)") (new := "mass_mul") (uses := "coin_true, mass_mul, coin_false, coin_total")
+::::leanonly (proof := "(p q : I) : coin (p * q) true = (↑p * ↑q : ℝ≥0∞)") (new := "mass_mul") (uses := "coin_true, mass_mul, coin_false, coin_total")
 :::en
 *A product of chances.* `p * q` is again a number in $`[0, 1]`, and as a mass it is the product of
 the masses.

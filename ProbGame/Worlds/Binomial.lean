@@ -337,7 +337,7 @@ rw [binom_succ_succ, ih, binom_above p n 0, mul_zero, add_zero, pow_succ, mul_co
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (k m : ℕ) : binom p (k + m) k = ↑p ^ k * ↑(σ p) ^ m * ((k + m).choose k : ENNReal)") (lemma := "binom_formula") (new := "ring, one_mul, Nat.choose_self, Nat.choose_zero_right, Nat.choose_succ_succ', Nat.cast_add, Nat.cast_one") (group := "chance.count") (uses := "add_zero, binom_diag, pow_zero, mul_one, Nat.choose_self, Nat.cast_one, zero_add, binom_all_false, one_mul, Nat.choose_zero_right, add_assoc, binom_succ_succ, add_right_comm, Nat.choose_succ_succ', Nat.cast_add, pow_succ, mul_zero, add_comm, binom_succ_zero")
+::::leanonly (proof := "(p : I) (k m : ℕ) : binom p (k + m) k = ↑p ^ k * ↑(σ p) ^ m * ((k + m).choose k : ℝ≥0∞)") (lemma := "binom_formula") (new := "ring, one_mul, Nat.choose_self, Nat.choose_zero_right, Nat.choose_succ_succ', Nat.cast_add, Nat.cast_one") (group := "chance.count") (uses := "add_zero, binom_diag, pow_zero, mul_one, Nat.choose_self, Nat.cast_one, zero_add, binom_all_false, one_mul, Nat.choose_zero_right, add_assoc, binom_succ_succ, add_right_comm, Nat.choose_succ_succ', Nat.cast_add, pow_succ, mul_zero, add_comm, binom_succ_zero")
 :::en
 *Boss: the binomial formula.* $`k` times `true` and $`m` times `false` in $`k + m` throws has the mass $`p^k (1 - p)^m \binom{k + m}{k}`. (Written with $`k + m` throws, there is no $`n - k`.)
 :::

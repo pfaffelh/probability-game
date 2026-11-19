@@ -150,7 +150,7 @@ decide +revert
 :::
 ::::
 
-::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:p^2 false:1-p^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then coin p else pure false); pure y) true = (↑p * ↑p : ENNReal)") (play := "y.T=p; y.F=0") (uses := "bind_true, bind_false")
+::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:p^2 false:1-p^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then coin p else pure false); pure y) true = (↑p * ↑p : ℝ≥0∞)") (play := "y.T=p; y.F=0") (uses := "bind_true, bind_false")
 :::en
 *Only after true.* `y` is a coin when `x` showed `true`, and surely `false` otherwise: choose its two
 coins. Compare with *Both `true`* of *Building with Coins*: the same distribution,
@@ -186,7 +186,7 @@ norm_num
 :::
 ::::
 
-::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bernoulli p") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else pure false); pure y) true = (↑p : ENNReal)") (play := "y.T=1; y.F=0") (uses := "bind_true, bind_false")
+::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bernoulli p") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else pure false); pure y) true = (↑p : ℝ≥0∞)") (play := "y.T=1; y.F=0") (uses := "bind_true, bind_false")
 :::en
 *Copying.* `y` is surely `true` after `true`, and surely `false` after `false`: it copies `x`. The
 output `y` has the distribution of the coin `x`.
@@ -216,7 +216,7 @@ norm_num
 :::
 ::::
 
-::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:2p-p^2 false:(1-p)^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else coin p); pure y) true = (↑p + ↑(σ p) * ↑p : ENNReal)") (play := "y.T=1; y.F=p") (uses := "bind_true, bind_false")
+::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:2p-p^2 false:(1-p)^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else coin p); pure y) true = (↑p + ↑(σ p) * ↑p : ℝ≥0∞)") (play := "y.T=1; y.F=p") (uses := "bind_true, bind_false")
 :::en
 *One more try.* When `x` showed `true`, that is enough: `y` is surely `true`. When it showed `false`,
 throw again. Compare with *At least one `true`* of *Building with Coins*: the same as `x || y`, but the
@@ -248,7 +248,7 @@ norm_num
 :::
 ::::
 
-::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:1-2p+2p^2 false:2p-2p^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then coin p else coin (σ p)); pure y) true = (↑p * ↑p + ↑(σ p) * ↑(σ p) : ENNReal)") (play := "y.T=p; y.F=1-p") (uses := "bind_true, bind_false")
+::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:1-2p+2p^2 false:2p-2p^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then coin p else coin (σ p)); pure y) true = (↑p * ↑p + ↑(σ p) * ↑(σ p) : ℝ≥0∞)") (play := "y.T=p; y.F=1-p") (uses := "bind_true, bind_false")
 :::en
 *A coin that remembers.* After `true` the coin `p` again, after `false` the flipped coin $`1 - p`:
 the second throw tends to repeat the first.
@@ -280,7 +280,7 @@ norm_num
 :::
 ::::
 
-::::circuit (inputs := "x y z") (gates := "") (coins := "p ?|? ?|?") (target := "bernoulli p") (start := "x>y.0; y>z.0; z>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure false else pure true); let z ← (bif y then pure false else pure true); pure z) true = (↑p : ENNReal)") (play := "y.T=0; y.F=1; z.T=0; z.F=1") (uses := "bind_true, bind_false")
+::::circuit (inputs := "x y z") (gates := "") (coins := "p ?|? ?|?") (target := "bernoulli p") (start := "x>y.0; y>z.0; z>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure false else pure true); let z ← (bif y then pure false else pure true); pure z) true = (↑p : ℝ≥0∞)") (play := "y.T=0; y.F=1; z.T=0; z.F=1") (uses := "bind_true, bind_false")
 :::en
 *A chain: flip, and flip back.* A *Markov chain* goes step by step, and each step depends only on
 where the chain is now: `y` waits for `x`, `z` waits for `y`. Make each step flip: from `true` to
@@ -340,7 +340,7 @@ simp only [pure_bind, Bool.not_not, bind_pure]
 :::
 ::::
 
-::::leanonly (proof := "(p q r : I) : (do let x ← coin p; bif x then coin q else coin r) true = (↑p * ↑q + ↑(σ p) * ↑r : ENNReal)") (uses := "bind_true, bind_false")
+::::leanonly (proof := "(p q r : I) : (do let x ← coin p; bif x then coin q else coin r) true = (↑p * ↑q + ↑(σ p) * ↑r : ℝ≥0∞)") (uses := "bind_true, bind_false")
 :::en
 *One step forward.* A chain starts with `coin p`. From `true` the next step is `coin q`, from `false` it is `coin r`. The start distribution is carried one step forward: at `true` arrives $`p q + (1 - p) r`.
 :::
@@ -368,7 +368,7 @@ norm_num
 :::
 ::::
 
-::::leanonly (proof := "(p q r : I) : (do let x ← coin p; bif x then coin q else coin r) false = (↑p * ↑(σ q) + ↑(σ p) * ↑(σ r) : ENNReal)") (new := "bind_false") (uses := "bind_false, bind_true")
+::::leanonly (proof := "(p q r : I) : (do let x ← coin p; bif x then coin q else coin r) false = (↑p * ↑(σ q) + ↑(σ p) * ↑(σ r) : ℝ≥0∞)") (new := "bind_false") (uses := "bind_false, bind_true")
 :::en
 *...and at false.* The rest of the distribution after the step: at `false` arrives $`p (1 - q) + (1 - p)(1 - r)`. Now the whole distribution after one step is known.
 :::
@@ -400,7 +400,7 @@ norm_num
 :::
 ::::
 
-::::leanonly (proof := "(p q r : I) (h : ↑p * ↑q + ↑(σ p) * ↑r = (↑p : ENNReal)) : (do let x ← coin p; bif x then coin q else coin r) = coin p") (uses := "bool_ext, bind_true, bind_false")
+::::leanonly (proof := "(p q r : I) (h : ↑p * ↑q + ↑(σ p) * ↑r = (↑p : ℝ≥0∞)) : (do let x ← coin p; bif x then coin q else coin r) = coin p") (uses := "bool_ext, bind_true, bind_false")
 :::en
 *A distribution that stays.* When does the step carry `coin p` to itself? When the mass at `true` after the step is $`p` again: $`p = p q + (1 - p) r`. Then `coin p` is *stationary*: the chain started there stays there, step after step.
 :::
@@ -430,7 +430,7 @@ exact h
 :::
 ::::
 
-::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bernoulli 1-p") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then coin (σ p) else coin (σ p)); pure y) true = (↑(σ p) : ENNReal)") (new := "cond_same") (play := "y.T=1-p; y.F=1-p") (uses := "cond_same, coin_unused, coin_true, prob_unused, coin_false, coin_total")
+::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bernoulli 1-p") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then coin (σ p) else coin (σ p)); pure y) true = (↑(σ p) : ℝ≥0∞)") (new := "cond_same") (play := "y.T=1-p; y.F=1-p") (uses := "cond_same, coin_unused, coin_true, prob_unused, coin_false, coin_total")
 :::en
 *A chain that forgets.* The target is `coin (1 - p)`, whatever `x` shows. Fill both fields of `y`
 with the same coin: then it does not matter where the chain was, and the start is forgotten after
@@ -492,7 +492,7 @@ rw [prob_unused]
 :::
 ::::
 
-::::circuit (inputs := "x y z") (gates := "") (coins := "p ?|? ?|?") (target := "bool true:3p-3p^2+p^3 false:(1-p)^3") (start := "x>y.0; y>z.0; z>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else coin p); let z ← (bif y then pure true else coin p); pure z) true = (↑p + ↑(σ p) * (↑p + ↑(σ p) * ↑p) : ENNReal)") (play := "y.T=1; y.F=p; z.T=1; z.F=p") (uses := "bind_true, bind_false")
+::::circuit (inputs := "x y z") (gates := "") (coins := "p ?|? ?|?") (target := "bool true:3p-3p^2+p^3 false:(1-p)^3") (start := "x>y.0; y>z.0; z>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else coin p); let z ← (bif y then pure true else coin p); pure z) true = (↑p + ↑(σ p) * (↑p + ↑(σ p) * ↑p) : ℝ≥0∞)") (play := "y.T=1; y.F=p; z.T=1; z.F=p") (uses := "bind_true, bind_false")
 :::en
 *Boss: three tries.* Throw until `true` comes, at most three times. `y` waits for `x`, and `z` waits
 for `y`. `false` only when all three tries fail: $`(1 - p)^3`.

@@ -186,7 +186,7 @@ rw [coin_true]
 :::
 ::::
 
-::::leanonly (proof := "(x y : ENNReal) : ∑ a, (bif a then x else y) = x + y") (new := "Fintype.sum_bool") (uses := "Fintype.sum_bool, Bool.cond_true, Bool.cond_false")
+::::leanonly (proof := "(x y : ℝ≥0∞) : ∑ a, (bif a then x else y) = x + y") (new := "Fintype.sum_bool") (uses := "Fintype.sum_bool, Bool.cond_true, Bool.cond_false")
 :::en
 *A sum over Bool.* A move collects masses: it adds up the masses of all points that go to the same
 place. So we need sums. `∑ a, g a` is the sum of `g a` over all points `a` of a finite type; over `Bool`

@@ -31,7 +31,7 @@ Wie lange bis zum ersten `true`? Die geometrische Verteilung, Schritt für Schri
 The definition:
 
 ```
-def geomMass (p : I) : ℕ → ENNReal
+def geomMass (p : I) : ℕ → ℝ≥0∞
   | 0 => ↑p
   | k + 1 => ↑(σ p) * geomMass p k
 
@@ -47,7 +47,7 @@ The first case.
 Die Definition:
 
 ```
-def geomMass (p : I) : ℕ → ENNReal
+def geomMass (p : I) : ℕ → ℝ≥0∞
   | 0 => ↑p
   | k + 1 => ↑(σ p) * geomMass p k
 
@@ -150,7 +150,7 @@ rw [add_right_comm, geom_succ, ih, ← mul_assoc, ← pow_succ']
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : ∑' k, (↑(σ p) : ENNReal) ^ k = (↑p)⁻¹") (new := "ENNReal.tsum_geometric, one_sub_symm") (group := "chance.count") (uses := "ENNReal.tsum_geometric, one_sub_symm")
+::::leanonly (proof := "(p : I) : ∑' k, (↑(σ p) : ℝ≥0∞) ^ k = (↑p)⁻¹") (new := "ENNReal.tsum_geometric, one_sub_symm") (group := "chance.count") (uses := "ENNReal.tsum_geometric, one_sub_symm")
 :::en
 *A geometric series.* $`\sum_k (1 - p)^k = 1 / p`. `∑' k, a k` is the sum over all $`k`, as a mass (it may be $`\infty`: for $`p = 0`).
 :::
@@ -177,7 +177,7 @@ rw [ENNReal.tsum_geometric, one_sub_symm]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : ∑' k, (↑(σ p) : ENNReal) ^ k * ↑p = (↑p : ENNReal)⁻¹ * ↑p") (new := "ENNReal.tsum_mul_right") (group := "chance.count") (uses := "ENNReal.tsum_mul_right, ENNReal.tsum_geometric, one_sub_symm")
+::::leanonly (proof := "(p : I) : ∑' k, (↑(σ p) : ℝ≥0∞) ^ k * ↑p = (↑p : ℝ≥0∞)⁻¹ * ↑p") (new := "ENNReal.tsum_mul_right") (group := "chance.count") (uses := "ENNReal.tsum_mul_right, ENNReal.tsum_geometric, one_sub_symm")
 :::en
 *Factoring out.* A factor that does not depend on $`k` comes out of the sum.
 :::

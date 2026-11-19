@@ -8,6 +8,7 @@ The context in which the moves of world 1 are normalised (base: `DiscreteMeasure
 -/
 
 open MeasureTheory DiscreteMeasure unitInterval
+open scoped ENNReal
 
 namespace ProbGame
 

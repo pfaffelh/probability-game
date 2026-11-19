@@ -15,6 +15,7 @@ one after another.
 open MeasureTheory (DiscreteMeasure)
 open MeasureTheory.DiscreteMeasure (coin binom iidSequence)
 open unitInterval
+open scoped ENNReal
 
 /-- A move is printed as the game writes it: `μ.map f`, not `DiscreteMeasure.map f μ`. -/
 @[app_unexpander MeasureTheory.DiscreteMeasure.map]

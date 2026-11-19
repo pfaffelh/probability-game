@@ -18,23 +18,23 @@ Masses are numbers in $`[0, \infty]`; there a minus does not undo a plus, and on
 Massen sind Zahlen in $`[0, \infty]`; dort macht ein Minus kein Plus rückgängig, und man kann nicht nach $`p` auflösen. Diese Welt ist der Wechsel zu den reellen Zahlen: was er kostet, und warum er sich lohnt. Nur in Lean.
 :::
 
-::::leanonly (proof := "(p : I) : (↑p : ENNReal) = ENNReal.ofReal (p : ℝ)") (lemma := "mass_eq_ofReal") (uses := "-")
+::::leanonly (proof := "(p : I) : (↑p : ℝ≥0∞) = ENNReal.ofReal (p : ℝ)") (lemma := "mass_eq_ofReal") (uses := "-")
 :::en
-*A mass is a real number.* Masses live in $`[0, \infty]` (`ENNReal`): there is no minus there that would undo a plus, and `ring` cannot use $`p + (1 - p) = 1`. Real numbers (`ℝ`) can. The way there: `↑p` is the real number $`p`, made a mass by `ENNReal.ofReal`.
+*A mass is a real number.* Masses live in $`[0, \infty]` (`ℝ≥0∞`): there is no minus there that would undo a plus, and `ring` cannot use $`p + (1 - p) = 1`. Real numbers (`ℝ`) can. The way there: `↑p` is the real number $`p`, made a mass by `ENNReal.ofReal`.
 :::
 
 :::de
-*Eine Masse ist eine reelle Zahl.* Massen leben in $`[0, \infty]` (`ENNReal`): Dort gibt es kein Minus, das ein Plus rückgängig macht, und `ring` kann $`p + (1 - p) = 1` nicht benutzen. Reelle Zahlen (`ℝ`) können das. Der Weg dorthin: `↑p` ist die reelle Zahl $`p`, durch `ENNReal.ofReal` zur Masse gemacht.
+*Eine Masse ist eine reelle Zahl.* Massen leben in $`[0, \infty]` (`ℝ≥0∞`): Dort gibt es kein Minus, das ein Plus rückgängig macht, und `ring` kann $`p + (1 - p) = 1` nicht benutzen. Reelle Zahlen (`ℝ`) können das. Der Weg dorthin: `↑p` ist die reelle Zahl $`p`, durch `ENNReal.ofReal` zur Masse gemacht.
 :::
 
 :::proofen
-By definition: `rfl`. (Two arrows, two meanings: in `(p : ℝ)` the number $`p` of $`[0, 1]` as a real number, in `(↑p : ENNReal)` as a mass.)
+By definition: `rfl`. (Two arrows, two meanings: in `(p : ℝ)` the number $`p` of $`[0, 1]` as a real number, in `(↑p : ℝ≥0∞)` as a mass.)
 
 *Tip.* `rfl`.
 :::
 
 :::proofde
-Nach Definition: `rfl`. (Zwei Pfeile, zwei Bedeutungen: in `(p : ℝ)` die Zahl $`p` aus $`[0, 1]` als reelle Zahl, in `(↑p : ENNReal)` als Masse.)
+Nach Definition: `rfl`. (Zwei Pfeile, zwei Bedeutungen: in `(p : ℝ)` die Zahl $`p` aus $`[0, 1]` als reelle Zahl, in `(↑p : ℝ≥0∞)` als Masse.)
 
 *Tipp.* `rfl`.
 :::
@@ -45,7 +45,7 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(p q : I) : (↑p * ↑q : ENNReal) = ENNReal.ofReal ((p : ℝ) * q)") (new := "mass_mul_real") (uses := "mass_mul_real")
+::::leanonly (proof := "(p q : I) : (↑p * ↑q : ℝ≥0∞) = ENNReal.ofReal ((p : ℝ) * q)") (new := "mass_mul_real") (uses := "mass_mul_real")
 :::en
 *Products.* A product of masses is the mass of the product of the real numbers.
 :::
