@@ -168,7 +168,7 @@ rw [ENNReal.add_sub_cancel_left mass_ne_top]
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ false + μ true = 1") (new := "add_comm") (uses := "add_comm, mass_total, add_assoc, coin_total")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ false + μ true = 1") (uses := "add_comm, mass_total, add_assoc, coin_total")
 :::en
 *The other way round.* The total mass, with the summands swapped.
 :::
@@ -178,13 +178,13 @@ rw [ENNReal.add_sub_cancel_left mass_ne_top]
 :::
 
 :::proofen
-`add_comm : a + b = b + a` turns a sum round; then it is `mass_total μ`.
+`add_comm : a + b = b + a` (from *Masses*) turns a sum round; then it is `mass_total μ`.
 
 *Tip.* `rw [add_comm, mass_total μ]`.
 :::
 
 :::proofde
-`add_comm : a + b = b + a` dreht eine Summe um; dann ist es `mass_total μ`.
+`add_comm : a + b = b + a` (aus *Massen*) dreht eine Summe um; dann ist es `mass_total μ`.
 
 *Tipp.* `rw [add_comm, mass_total μ]`.
 :::

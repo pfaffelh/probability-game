@@ -403,7 +403,7 @@ rw [← Prob.total μ, tsum_fintype, Fintype.sum_bool]
 :::
 :::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b ≤ 1") (lemma := "mass_le_one") (new := "exact, le_self_add, le_add_self") (uses := "mass_total, le_add_self, le_self_add, coin_total")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b ≤ 1") (lemma := "mass_le_one") (new := "exact, le_self_add, add_comm") (uses := "mass_total, add_comm, le_self_add, coin_total, add_assoc")
 :::en
 *At most one.* Each mass is a part of the whole mass, so at most one.
 :::
@@ -413,25 +413,26 @@ rw [← Prob.total μ, tsum_fintype, Fintype.sum_bool]
 :::
 
 :::proofen
-`rw [← mass_total μ]` makes the `1` the whole mass; `cases b` gives the two points. Then the goal is
-exactly a rule: `le_self_add : a ≤ a + c` or `le_add_self : a ≤ c + a`. `exact h` closes a goal that
-is exactly `h`.
+`rw [← mass_total μ]` makes the `1` the whole mass; `cases b` gives the two points. At `true` the
+goal is exactly the rule `le_self_add : a ≤ a + c`; `exact h` closes a goal that is exactly `h`. At
+`false` the summands are the wrong way round: `add_comm : a + b = b + a` turns the sum round.
 
-*Tip.* `rw [← mass_total μ]`, `cases b`, `exact le_add_self`, `exact le_self_add`.
+*Tip.* `rw [← mass_total μ]`, `cases b`, `rw [add_comm]`, `exact le_self_add`, `exact le_self_add`.
 :::
 
 :::proofde
-`rw [← mass_total μ]` macht die `1` zur ganzen Masse; `cases b` gibt die zwei Punkte. Dann ist das
-Ziel genau eine Regel: `le_self_add : a ≤ a + c` oder `le_add_self : a ≤ c + a`. `exact h` schließt
-ein Ziel, das genau `h` ist.
+`rw [← mass_total μ]` macht die `1` zur ganzen Masse; `cases b` gibt die zwei Punkte. Bei `true` ist
+das Ziel genau die Regel `le_self_add : a ≤ a + c`; `exact h` schließt ein Ziel, das genau `h` ist.
+Bei `false` stehen die Summanden falsch herum: `add_comm : a + b = b + a` dreht die Summe um.
 
-*Tipp.* `rw [← mass_total μ]`, `cases b`, `exact le_add_self`, `exact le_self_add`.
+*Tipp.* `rw [← mass_total μ]`, `cases b`, `rw [add_comm]`, `exact le_self_add`, `exact le_self_add`.
 :::
 :::solution
 ```
 rw [← mass_total μ]
 cases b
-exact le_add_self
+rw [add_comm]
+exact le_self_add
 exact le_self_add
 ```
 :::
