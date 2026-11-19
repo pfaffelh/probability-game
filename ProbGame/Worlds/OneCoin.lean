@@ -40,6 +40,9 @@ Spielfeld die Säulen für ein Beispiel-$`p` (der Schieberegler ändert es).
 :::
 
 ::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (h : μ true = 0) : μ false = 1") (uses := "mass_total, zero_add, coin_total, add_zero, mul_zero")
+:::hint (anchor := "none")
+:::
+
 :::en
 *The whole mass.* A distribution has the total mass one. If nothing lies at `true`, everything lies at `false`.
 :::
