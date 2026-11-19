@@ -20,8 +20,8 @@ below it the gates, at the bottom the output box with the target. A gate applies
 outcome: the mass of each outcome goes to its image, and where several outcomes have the same image,
 their masses add up. What comes out is the distribution of $`f(X)`, the *image measure*
 $`P \circ f^{-1}`: $`P(f(X) = b) = P(X \in f^{-1}(\{b\}))`. The output box shows the target and your
-output, as masses and as a small histogram (the target dashed); beside the board the bars for an
-example $`p` (the slider changes it).
+output, as masses and as a small histogram (the target dashed), drawn for an example $`p`; the slider
+in the bar at the bottom changes it.
 :::
 
 :::de
@@ -35,8 +35,8 @@ Das Spielfeld wird von oben nach unten gespielt, wie in *Schaltungen*: Oben wird
 eine Abbildung $`f` auf das Ergebnis an: Die Masse jedes Ergebnisses geht zu seinem Bild, und wo mehrere
 Ergebnisse dasselbe Bild haben, addieren sich ihre Massen. Was herauskommt, ist die Verteilung von
 $`f(X)`, das *Bildmaß* $`P \circ f^{-1}`: $`P(f(X) = b) = P(X \in f^{-1}(\{b\}))`. Der Ausgabekasten
-zeigt Ziel und Ausgang, als Massen und als kleines Histogramm (das Ziel gestrichelt); neben dem
-Spielfeld die Säulen für ein Beispiel-$`p` (der Schieberegler ändert es).
+zeigt Ziel und Ausgang, als Massen und als kleines Histogramm (das Ziel gestrichelt), gezeichnet für ein
+Beispiel-$`p`; der Schieberegler in der Leiste unten ändert es.
 :::
 
 ::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (h : μ true = 0) : μ false = 1") (uses := "mass_total, zero_add, coin_total, add_zero, mul_zero")
