@@ -111,14 +111,17 @@ rfl
 :::::leanonly (proof := "(p : I) : coin p false = σ p") (lemma := "coin_false") (uses := "-")
 ::::hint (anchor := "statement")
 :::en
-`σ p := 1 - p`, computed in the unit interval: `σ p : I` (`unitInterval`), a probability again. As
-a mass, `1 - p` would be `1 - ↑p : ℝ≥0∞`. The statement takes `σ p` and makes it a mass, `↑(σ p)`.
+We have `p : I`, and `I` is a subtype of `ℝ`: the real numbers `x` with `0 ≤ x ≤ 1`. As a mass, `p`
+becomes `↑p : ℝ≥0∞`. We have `1 - ↑p : ℝ≥0∞`, but also `σ p := 1 - p : I`. In other words, `σ p` and
+`1 - ↑p` are the same number, but `σ p` has type `I` and `1 - ↑p` has type `ℝ≥0∞`. The statement
+makes `σ p` a mass: `↑(σ p)`.
 :::
 
 :::de
-`σ p := 1 - p`, gerechnet im Einheitsintervall: `σ p : I` (`unitInterval`), wieder eine
-Wahrscheinlichkeit. Als Masse wäre `1 - p` dagegen `1 - ↑p : ℝ≥0∞`. Die Aussage nimmt `σ p` und
-macht es zur Masse, `↑(σ p)`.
+Wir haben `p : I`, und `I` ist ein Subtyp von `ℝ`: die reellen Zahlen `x` mit `0 ≤ x ≤ 1`. Als Masse
+wird `p` zu `↑p : ℝ≥0∞`. Es gibt `1 - ↑p : ℝ≥0∞`, aber auch `σ p := 1 - p : I`. Mit anderen Worten:
+`σ p` und `1 - ↑p` sind dieselbe Zahl, aber `σ p` hat den Typ `I` und `1 - ↑p` den Typ `ℝ≥0∞`. Die
+Aussage macht `σ p` zur Masse: `↑(σ p)`.
 :::
 ::::
 
