@@ -2513,7 +2513,8 @@
       }
       const rowEl = el('div', 'pg-row pg-crow')
       const zoomed = this.zoomBox(s)
-      if (this.random) rowEl.append(zoomed, side)
+      // (on the stage: no table of rows and masses, the user; the slider for p is in the tool bar)
+      if (this.random) rowEl.append(zoomed, ...(STAGE ? [] : [side]))
       else { const col = el('div', 'pg-cboard-col'); col.append(zoomed); rowEl.append(col) }
       this.fitting = { s: zoomed, box: this.random ? zoomed : rowEl.firstChild, bar: null }
 
@@ -4186,7 +4187,16 @@
     }
     next.addEventListener('click', goNext)
     // (the Lean line of a board is gone, the user: the inventory of a board are its gates)
-    bar.append(undo, restart, tips, next)
+    // (the slider for p, in the tool bar: in a board with coins p; the picture for this p)
+    const pBox = el('label', 'pg-slider pg-bar-slider'), pIn = el('input'), pVal = el('span', 'pg-slider-val')
+    pIn.type = 'range'; pIn.min = '0.05'; pIn.max = '0.95'; pIn.step = '0.05'
+    pIn.addEventListener('input', () => {
+      P = Number(pIn.value); try { localStorage.setItem('pg:p', pIn.value) } catch {}
+      const l = levels[current]; l.counts = l.rows?.map(() => 0); l.thrown = 0; l.render(); refresh()
+    })
+    pBox.title = tr('(only an example; the masses hold for every p)')
+    pBox.append(pVal, pIn)
+    bar.append(undo, restart, pBox, tips, next)
     bar.before(pop)
 
     const refresh = () => {
@@ -4211,6 +4221,8 @@
       restart.disabled = v === 'proof' ? !l.proof.canUndo : !(l.canReset ?? l.canUndo)
       lean.hidden = v === 'proof'
       add.hidden = !(l instanceof Circuit) || v === 'proof'
+      pBox.hidden = !(l instanceof Circuit && l.random) || v === 'proof'
+      pIn.value = String(P); pVal.textContent = `p = ${P.toFixed(2)}`
       if (add.hidden || pop.dataset.level !== String(current)) { closePop(); pop.dataset.level = String(current) }
       lean.setAttribute('aria-pressed', String(leanOpen))
       leanBox.hidden = true

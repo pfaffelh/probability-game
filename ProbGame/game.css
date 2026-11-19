@@ -232,6 +232,10 @@ html.pg-playing .prev-next-buttons { display: none !important; }
 .pg-toolbar .pg-button:disabled { background: #dcc8a6; border-color: #dcc8a6; cursor: default; }
 .pg-toolbar .pg-button[hidden] { display: none; }
 .pg-toolbar .pg-tips-button { margin-left: auto; }
+.pg-toolbar .pg-bar-slider { display: flex; align-items: center; gap: 0.4em; margin: 0 0 0 0.6em; white-space: nowrap; }
+.pg-toolbar .pg-bar-slider[hidden] { display: none; }
+.pg-toolbar .pg-bar-slider input { width: 8rem; accent-color: #b07a2a; }
+@media (max-width: 600px) { .pg-toolbar .pg-bar-slider { margin: 0; } .pg-toolbar .pg-bar-slider input { width: 5.5rem; } }
 .pg-toolbar .pg-ico, .pg-toolbar .pg-short { display: none; }
 .pg-toolbar .pg-next-button { background: #2e8b37; border-color: #2e8b37; }
 .pg-toolbar .pg-next-button:disabled { background: #a9cdb0; border-color: #a9cdb0; }

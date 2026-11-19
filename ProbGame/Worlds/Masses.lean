@@ -58,10 +58,10 @@ auf `Bool` hat sie zwei Massen: $`p` bei `true` und $`1 - p` bei `false`.
 
 ```
 structure DiscreteMeasure (α : Type) where
-  weight : α → ENNReal
+  weight : α → ℝ≥0∞
 ```
 
-and the coin is defined by its two masses:
+`ℝ≥0∞` (in Lean `ENNReal`) are the numbers from 0 to ∞, ∞ included: a mass is never negative. And the coin is defined by its two masses:
 
 ```
 def coin (p : I) : DiscreteMeasure Bool where
@@ -70,7 +70,8 @@ def coin (p : I) : DiscreteMeasure Bool where
     | false => ↑(σ p)
 ```
 
-(`μ x` is `μ.weight x`.) So Lean computes the left side to `↑p`: `rfl`, as in *Circuits*. The
+`I` is the unit interval $`[0, 1]`, where the probability `p` lies; `σ p` is $`1 - p`, again in
+`I`. The arrow `↑` makes a number of `I` a mass in `ℝ≥0∞`. (`μ x` is `μ.weight x`.) So Lean computes the left side to `↑p`: `rfl`, as in *Circuits*. The
 statement is the rule `coin_true`; once proved, it is in your inventory.
 
 *Tip.* `rfl`.
@@ -81,10 +82,10 @@ statement is the rule `coin_true`; once proved, it is in your inventory.
 
 ```
 structure DiscreteMeasure (α : Type) where
-  weight : α → ENNReal
+  weight : α → ℝ≥0∞
 ```
 
-und die Münze ist durch ihre zwei Massen definiert:
+`ℝ≥0∞` (in Lean `ENNReal`) sind die Zahlen von 0 bis ∞, ∞ eingeschlossen: Eine Masse ist nie negativ. Und die Münze ist durch ihre zwei Massen definiert:
 
 ```
 def coin (p : I) : DiscreteMeasure Bool where
@@ -93,7 +94,9 @@ def coin (p : I) : DiscreteMeasure Bool where
     | false => ↑(σ p)
 ```
 
-(`μ x` ist `μ.weight x`.) Also rechnet Lean die linke Seite zu `↑p` aus: `rfl`, wie in *Schaltungen*.
+`I` ist das Einheitsintervall $`[0, 1]`, in dem die Wahrscheinlichkeit `p` liegt; `σ p` ist $`1 - p`,
+wieder in `I`. Der Pfeil `↑` macht aus einer Zahl aus `I` eine Masse in `ℝ≥0∞`. (`μ x` ist
+`μ.weight x`.) Also rechnet Lean die linke Seite zu `↑p` aus: `rfl`, wie in *Schaltungen*.
 Die Aussage ist die Regel `coin_true`; bewiesen, ist sie in deinem Inventar.
 
 *Tipp.* `rfl`.
