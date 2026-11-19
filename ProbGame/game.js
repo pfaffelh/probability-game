@@ -3840,8 +3840,8 @@
   }
   // A tip as speech bubbles, one after the other. Nothing is dimmed and the board stays playable: a
   // tap beside the bubble closes it (and still does what it does). A bubble at something of the proof
-  // (an item, the gap) stands right below or above it; one at something of the board stands beside the
-  // level, the thing ringed (on a large screen); a bubble with nothing to point at, and one at the board
+  // (an item, the gap) stands right below or above it; one at something of the board stands right
+  // beside it, the thing ringed (on a large screen); a bubble with nothing to point at, and one at the board
   // on a phone, is a strip in the stage: above the board on a large screen, above the tool bar
   // on a phone; the board makes room for it. ✕ or Escape close them all; Next goes on. (a tip asked
   // for while one is open goes after it: a level in Lean only has its text, then its proof)
@@ -3892,11 +3892,9 @@
         return
       }
       tail.hidden = false
-      // beside the level, over the list of worlds, when there is room; else beside the thing, where
-      // there is more room; else below or above it
-      const box = (a.closest('.pg-level') ?? a).getBoundingClientRect(), cy = r.top + r.height / 2
-      const outR = W - box.right - GAP - M, outL = box.left - GAP - M
-      const out = Math.max(outR, outL) >= 260, R = out ? box.right : r.right, L = out ? box.left : r.left
+      // right beside the thing, where there is more room (it may cover a part of the board); else below
+      // or above it
+      const cy = r.top + r.height / 2, R = r.right, L = r.left
       const right = W - R - GAP - M, left = L - GAP - M
       if (!near && Math.max(right, left) >= 260) {
         const toRight = right >= left
