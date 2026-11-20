@@ -101,6 +101,10 @@ theorem pure_true (b : Bool) : (pure b : DiscreteMeasure Bool) true = bif b then
   · exact MeasureTheory.DiscreteMeasure.pure_apply_nonself (by decide)
   · exact MeasureTheory.DiscreteMeasure.pure_apply_self
 
+/-- The mass of a point mass at `false`: zero if it sits at `true`, else one. -/
+theorem pure_false (b : Bool) : (pure b : DiscreteMeasure Bool) false = bif b then 0 else 1 := by
+  rw [pure_apply]; cases b <;> rfl
+
 /-- What `Prob μ` says: the masses of `μ`, summed over all points, give one. -/
 theorem Prob.total {α : Type} (μ : DiscreteMeasure α) [h : Prob μ] : ∑' a, μ a = 1 :=
   h.hasSum.tsum_eq

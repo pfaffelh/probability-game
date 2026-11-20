@@ -396,7 +396,47 @@ rw [Bool.cond_true, Bool.cond_true, Bool.cond_true, coin_total]
 :::
 ::::
 
-:::::leanonly (proof := "(f : Bool → Bool) (b : Bool) : (pure b : DiscreteMeasure Bool).map f = ⟦pure (f b) ‖ pure b, pure (f b), pure (f (f b))⟧") (lemma := "map_pure") (uses := "bool_ext, map_true, pure_true, pure_apply, Bool.cond_false, Bool.cond_self, zero_add, beq_self_eq_true, Bool.cond_true, Bool.true_beq, add_comm, add_zero, mul_zero, add_assoc")
+:::::leanonly (proof := "(b : Bool) : (pure b : DiscreteMeasure Bool) false = bif b then ⟦0 ‖ 0, 1⟧ else ⟦1 ‖ 0, 1⟧") (lemma := "pure_false") (uses := "pure_apply")
+::::hint (anchor := "gap")
+:::en
+All the mass of `pure b` lies at `b`: how much of it lies at `false`?
+:::
+
+:::de
+Die ganze Masse von `pure b` liegt bei `b`: Wie viel davon liegt bei `false`?
+:::
+::::
+
+:::en
+*Surely not false.* The mass of `pure b` at `false`: the counterpart of `pure_true`.
+:::
+
+:::de
+*Sicher nicht false.* Die Masse von `pure b` bei `false`: das Gegenstück zu `pure_true`.
+:::
+
+:::proofen
+`pure_apply` gives `bif b == false then 1 else 0`. For `b = false` and `b = true` both sides compute to
+the same number. What you prove is unlocked as `pure_false`.
+
+*Tip.* `rw [pure_apply]`, then `cases b <;> rfl`.
+:::
+
+:::proofde
+`pure_apply` gibt `bif b == false then 1 else 0`. Für `b = false` und `b = true` rechnen beide Seiten
+zur selben Zahl. Was du beweist, wird als `pure_false` freigeschaltet.
+
+*Tipp.* `rw [pure_apply]`, dann `cases b <;> rfl`.
+:::
+:::solution
+```
+rw [pure_apply]
+cases b <;> rfl
+```
+:::
+:::::
+
+:::::leanonly (proof := "(f : Bool → Bool) (b : Bool) : (pure b : DiscreteMeasure Bool).map f = ⟦pure (f b) ‖ pure b, pure (f b), pure (f (f b))⟧") (lemma := "map_pure") (uses := "bool_ext, map_true, pure_true, pure_false, Bool.cond_false, Bool.cond_self, zero_add, Bool.cond_true, add_comm, add_zero, mul_zero, add_assoc")
 ::::hint (anchor := "gap")
 :::en
 The sure `b`, moved by `f`: where does all the mass lie then?
@@ -416,35 +456,33 @@ Das sichere `b`, von `f` bewegt: Wo liegt dann die ganze Masse?
 :::
 
 :::proofen
-Compare the bars at `true`: `apply bool_ext`, then `map_true`, `pure_true` and, for the mass of
-`pure b` at `false`, `pure_apply`. Then `cases b`. What `f` does stays unknown, but where both
-branches of a `bif` are equal, `Bool.cond_self` (from *Bool*) helps; `beq_self_eq_true` and
-`Bool.true_beq` (from *Masses*) compute the tests `==`. You prove it on `Bool`; it holds for every type,
+Compare the bars at `true`: `apply bool_ext`, then `map_true`, and `pure_true` and `pure_false` for the
+masses of the sure values. Then `cases b`. What `f` does stays unknown, but where both branches of a
+`bif` are equal, `Bool.cond_self` (from *Bool*) helps. You prove it on `Bool`; it holds for every type,
 and it is unlocked as `map_pure` in this general form.
 
-*Tip.* `apply bool_ext`, `rw [map_true, pure_true, pure_true, pure_apply]`, `cases b`, then
-`rw [Bool.cond_false, Bool.cond_self, zero_add, beq_self_eq_true, Bool.cond_true]` and
-`rw [Bool.cond_true, Bool.true_beq, Bool.cond_false, Bool.cond_self, add_comm, zero_add]`.
+*Tip.* `apply bool_ext`, `rw [map_true, pure_true, pure_true, pure_false]`, `cases b`, then
+`rw [Bool.cond_false, Bool.cond_false, Bool.cond_self, zero_add]` and
+`rw [Bool.cond_true, Bool.cond_true, Bool.cond_self, add_comm, zero_add]`.
 :::
 
 :::proofde
-Vergleiche die Säulen bei `true`: `apply bool_ext`, dann `map_true`, `pure_true` und, für die Masse von
-`pure b` bei `false`, `pure_apply`. Dann `cases b`. Was `f` tut, bleibt unbekannt, aber wo beide Zweige
-eines `bif` gleich sind, hilft `Bool.cond_self` (aus *Bool*); `beq_self_eq_true` und
-`Bool.true_beq` (aus *Massen*) rechnen die Tests `==` aus. Du beweist es auf `Bool`; es gilt für jeden
-Typ und wird in dieser allgemeinen Form als `map_pure` freigeschaltet.
+Vergleiche die Säulen bei `true`: `apply bool_ext`, dann `map_true`, und `pure_true` und `pure_false` für
+die Massen der sicheren Werte. Dann `cases b`. Was `f` tut, bleibt unbekannt, aber wo beide Zweige eines
+`bif` gleich sind, hilft `Bool.cond_self` (aus *Bool*). Du beweist es auf `Bool`; es gilt für jeden Typ
+und wird in dieser allgemeinen Form als `map_pure` freigeschaltet.
 
-*Tipp.* `apply bool_ext`, `rw [map_true, pure_true, pure_true, pure_apply]`, `cases b`, dann
-`rw [Bool.cond_false, Bool.cond_self, zero_add, beq_self_eq_true, Bool.cond_true]` und
-`rw [Bool.cond_true, Bool.true_beq, Bool.cond_false, Bool.cond_self, add_comm, zero_add]`.
+*Tipp.* `apply bool_ext`, `rw [map_true, pure_true, pure_true, pure_false]`, `cases b`, dann
+`rw [Bool.cond_false, Bool.cond_false, Bool.cond_self, zero_add]` und
+`rw [Bool.cond_true, Bool.cond_true, Bool.cond_self, add_comm, zero_add]`.
 :::
 :::solution
 ```
 apply bool_ext
-rw [map_true, pure_true, pure_true, pure_apply]
+rw [map_true, pure_true, pure_true, pure_false]
 cases b
-rw [Bool.cond_false, Bool.cond_self, zero_add, beq_self_eq_true, Bool.cond_true]
-rw [Bool.cond_true, Bool.true_beq, Bool.cond_false, Bool.cond_self, add_comm, zero_add]
+rw [Bool.cond_false, Bool.cond_false, Bool.cond_self, zero_add]
+rw [Bool.cond_true, Bool.cond_true, Bool.cond_self, add_comm, zero_add]
 ```
 :::
 :::::
