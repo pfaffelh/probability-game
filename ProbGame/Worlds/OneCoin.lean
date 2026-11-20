@@ -271,7 +271,7 @@ rw [← coin_true, ← coin_false, coin_total]
 :::
 ::::
 
-::::leanonly (proof := "(b : Bool) : (pure b : DiscreteMeasure Bool) true = bif b then 1 else 0") (new := "pure_apply") (lemma := "pure_true") (uses := "pure_apply, beq_true")
+:::::leanonly (proof := "(b : Bool) : (pure b : DiscreteMeasure Bool) true = bif b then 1 else 0") (new := "pure_apply") (lemma := "pure_true") (uses := "pure_apply, beq_true")
 :::en
 *Surely true.* `pure b` is the distribution that is surely `b`: all its mass lies at `b`. Its mass at
 `true` is one if `b` is `true`, else zero.
@@ -281,6 +281,26 @@ rw [← coin_true, ← coin_false, coin_total]
 *Sicher true.* `pure b` ist die Verteilung, die sicher `b` ist: Ihre ganze Masse liegt bei `b`. Ihre
 Masse bei `true` ist eins, wenn `b` gleich `true` ist, sonst null.
 :::
+
+::::hint (anchor := "statement")
+:::en
+`pure b : DiscreteMeasure Bool` is the distribution that puts mass `1` on `b`.
+:::
+
+:::de
+`pure b : DiscreteMeasure Bool` ist die Verteilung, die Masse `1` auf `b` legt.
+:::
+::::
+
+::::hint (anchor := "item:pure_apply")
+:::en
+`rw [pure_apply]` writes the mass of `pure b` at `true` as `bif b == true then 1 else 0`.
+:::
+
+:::de
+`rw [pure_apply]` schreibt die Masse von `pure b` bei `true` als `bif b == true then 1 else 0`.
+:::
+::::
 
 :::proofen
 By the definition,
@@ -314,7 +334,7 @@ aus *Massen*). Was du beweist, wird als `pure_true` freigeschaltet.
 rw [pure_apply, beq_true]
 ```
 :::
-::::
+:::::
 
 ::::circuit (height := "440") (inputs := "x") (gates := "not, alwaysT") (coins := "p") (target := "pure true") (context := "Lean/Rules.lean") (proof := "(p : I) (b : Bool) : (coin p).map (fun _ => b) = pure b") (lemma := "coin_const") (play := "a=alwaysT; x>a.0; a>out") (new := "apply") (uses := "bool_ext, map_true, pure_true, Bool.cond_false, zero_add, Bool.cond_true, coin_total, add_zero, mul_zero, mass_total, coin_true, coin_false")
 :::en
