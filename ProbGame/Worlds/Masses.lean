@@ -255,6 +255,43 @@ cases c <;> rfl
 :::
 ::::
 
+:::::leanonly (proof := "(b : Bool) : (true == b) = b") (lemma := "Bool.true_beq") (new := "beq_self_eq_true") (uses := "beq_self_eq_true")
+::::hint (anchor := "item:beq_self_eq_true")
+:::en
+`beq_self_eq_true : (a == a) = true`: a point tested against itself. After `cases b` it settles the
+case `true`.
+:::
+
+:::de
+`beq_self_eq_true : (a == a) = true`: ein Punkt, mit sich selbst verglichen. Nach `cases b` erledigt es
+den Fall `true`.
+:::
+::::
+
+:::en
+*true tested.* Now `true` stands in front: `true == b` is `b`.
+:::
+
+:::de
+*true getestet.* Jetzt steht `true` vorne: `true == b` ist `b`.
+:::
+
+:::proofen
+*Tip.* `cases b`, then `rfl` and `rw [beq_self_eq_true]`.
+:::
+
+:::proofde
+*Tipp.* `cases b`, dann `rfl` und `rw [beq_self_eq_true]`.
+:::
+:::solution
+```
+cases b
+rfl
+rw [beq_self_eq_true]
+```
+:::
+:::::
+
 ::::leanonly (proof := "(f : Bool → Bool) (μ : DiscreteMeasure Bool) : (μ.map f) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)") (new := "map_apply") (lemma := "map_true") (uses := "map_apply, Fintype.sum_bool, beq_true")
 :::en
 *Where the mass goes.* A move `μ.map f` takes each point `a` with its mass `μ a` to `f a`. So the

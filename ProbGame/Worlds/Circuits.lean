@@ -414,6 +414,34 @@ rfl
 :::
 ::::
 
+::::leanonly (proof := "(c a : Bool) : (bif c then a else a) = ⟦a ‖ a, c, true, false⟧") (lemma := "Bool.cond_self") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "Bool.cond_false, Bool.cond_true")
+:::hint (anchor := "none")
+:::
+
+:::en
+*bif with the same twice.* When both branches are the same, the condition does not matter.
+:::
+
+:::de
+*bif mit zweimal demselben.* Sind beide Zweige gleich, ist die Bedingung egal.
+:::
+
+:::proofen
+*Tip.* `cases c`, then `rw [Bool.cond_false]` and `rw [Bool.cond_true]`.
+:::
+
+:::proofde
+*Tipp.* `cases c`, dann `rw [Bool.cond_false]` und `rw [Bool.cond_true]`.
+:::
+:::solution
+```
+cases c
+rw [Bool.cond_false]
+rw [Bool.cond_true]
+```
+:::
+::::
+
 ::::circuit (inputs := "x y") (gates := "and, or, not") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : ((x || y) && !(x && y)) = (bif x then (bif y then ⟦false ‖ true, false⟧ else ⟦true ‖ true, false⟧) else (bif y then ⟦true ‖ true, false⟧ else ⟦false ‖ true, false⟧))") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out") (new := "<;>") (uses := "-")
 :::hint (anchor := "none")
 :::

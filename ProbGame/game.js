@@ -2709,10 +2709,12 @@
     "map_true": "theorem map_true (f : Bool → Bool) (μ : DiscreteMeasure Bool) : (μ.map f) true = (bif f true then μ true else 0) + bif f false then μ false else 0",
     "map_apply": "theorem map_apply {α : Type} [Fintype α] (f : α → Bool) (μ : DiscreteMeasure α) (b : Bool) : (μ.map f) b = ∑ a, bif f a == b then μ a else 0",
     "Fintype.sum_bool": "theorem Fintype.sum_bool {α : Type u_1} [AddCommMonoid α] (f : Bool → α) : ∑ b, f b = f true + f false",
+    "Bool.true_beq": "theorem Bool.true_beq (b : Bool) : (true == b) = b",
     "beq_true": "theorem beq_true (b : Bool) : (b == true) = b",
     "Bool.not_true": "theorem Bool.not_true : (!true) = false",
     "Bool.not_false": "theorem Bool.not_false : (!false) = true",
     "Bool.cond_true": "theorem Bool.cond_true {α : Sort u} {a b : α} : (bif true then a else b) = a",
+    "Bool.cond_self": "theorem Bool.cond_self {α : Sort u_1} (c : Bool) (t : α) : (bif c then t else t) = t",
     "Bool.cond_false": "theorem Bool.cond_false {α : Sort u} {a b : α} : (bif false then a else b) = b",
     "zero_add": "theorem zero_add {M : Type u_2} [AddZeroClass M] (a : M) : 0 + a = a",
     "coin_not_true": "theorem coin_not_true (p : I) : ((coin p).map not) true = ↑(σ p)",
@@ -2886,10 +2888,12 @@
     { name: 'map_true', kind: 'lemma', sig: '(μ.map f) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)', en: 'Proved by you in Masses: where the mass of a move goes; to true comes the mass of the points that f sends to true.', de: 'Von dir bewiesen in „Massen“: wohin die Masse eines Zuges geht; nach true kommt die Masse der Punkte, die f nach true schickt.' },
     { name: 'map_apply', kind: 'rule', sig: '(μ.map f) b = ∑ a, (bif f a == b then μ a else 0)', en: 'The definition of a move: the mass at b is the sum of the masses of the points that f sends to b.', de: 'Die Definition eines Zuges: Die Masse bei b ist die Summe der Massen der Punkte, die f nach b schickt.' },
     { name: 'Fintype.sum_bool', kind: 'rule', sig: '∑ a, g a = g true + g false', en: 'A sum over Bool: its two summands.', de: 'Eine Summe über Bool: ihre zwei Summanden.' },
+    { name: 'Bool.true_beq', kind: 'lemma', sig: '(true == b) = b', en: 'Proved by you in Masses: testing true against b gives b itself.', de: 'Von dir bewiesen in „Massen“: Der Test von true gegen b gibt b selbst.' },
     { name: 'beq_true', kind: 'lemma', sig: '(c == true) = c', en: 'Proved by you in Masses: testing for true gives c itself.', de: 'Von dir bewiesen in „Massen“: Der Test auf true gibt c selbst.' },
     { name: 'Bool.not_true', kind: 'lemma', sig: '(!true) = false', en: 'Proved by you in Circuits: not true is false.', de: 'Von dir bewiesen in „Schaltungen“: Nicht true ist false.' },
     { name: 'Bool.not_false', kind: 'lemma', sig: '(!false) = true', en: 'Proved by you in Circuits: not false is true.', de: 'Von dir bewiesen in „Schaltungen“: Nicht false ist true.' },
     { name: 'Bool.cond_true', kind: 'lemma', sig: '(bif true then a else b) = a', en: 'Proved by you in Circuits: bif with true is the first.', de: 'Von dir bewiesen in „Schaltungen“: bif mit true ist das Erste.' },
+    { name: 'Bool.cond_self', kind: 'lemma', sig: '(bif c then a else a) = a', en: 'Proved by you in Circuits: twice the same, whatever the condition.', de: 'Von dir bewiesen in „Schaltungen“: zweimal dasselbe, egal welche Bedingung.' },
     { name: 'Bool.cond_false', kind: 'lemma', sig: '(bif false then a else b) = b', en: 'Proved by you in Circuits: bif with false is the second.', de: 'Von dir bewiesen in „Schaltungen“: bif mit false ist das Zweite.' },
     { name: 'zero_add', kind: 'rule', sig: '0 + a = a', en: 'Adding to zero.', de: 'Zu null addieren.' },
     { name: 'coin_not_true', kind: 'lemma', sig: '((coin p).map not) true = ↑(σ p)', en: 'Proved by you in One Coin.', de: 'Von dir bewiesen in „Eine Münze“.' },
@@ -2899,7 +2903,7 @@
     { name: 'add_symm_eq_one', kind: 'lemma', sig: 'add_symm_eq_one p : ↑p + ↑(σ p) = 1', en: 'Proved by you in One Coin: the two masses of the coin add up to one.', de: 'Von dir bewiesen in „Eine Münze“: Die beiden Massen der Münze ergeben zusammen eins.' },
     { name: 'pure_true', kind: 'lemma', sig: '(pure b) true = bif b then 1 else 0', en: 'Proved by you in One Coin: the mass of a point mass at true.', de: 'Von dir bewiesen in „Eine Münze“: die Masse einer Punktmasse bei true.' },
     { name: 'coin_const', kind: 'lemma', sig: '(coin p).map (fun _ => b) = pure b', en: 'Proved by you in One Coin: a constant move sends all the mass to one point.', de: 'Von dir bewiesen in „Eine Münze“: Ein konstanter Zug schickt die ganze Masse an einen Punkt.' },
-    { name: 'map_pure', kind: 'rule', sig: '(pure a).map f = pure (f a)', en0: 'A move on a sure point moves the point.', de0: 'Ein Zug auf einem sicheren Punkt verschiebt den Punkt.', en: 'A move on a point mass moves the point.', de: 'Ein Zug auf einer Punktmasse verschiebt den Punkt.' },
+    { name: 'map_pure', kind: 'lemma', sig: '(pure a).map f = pure (f a)', en0: 'A move on a sure point moves the point.', de0: 'Ein Zug auf einem sicheren Punkt verschiebt den Punkt.', en: 'Proved by you in One Coin, for Bool; it holds for every type: a move on a point mass moves the point.', de: 'Von dir bewiesen in „Eine Münze“, für Bool; es gilt für jeden Typ: Ein Zug auf einer Punktmasse verschiebt den Punkt.' },
     { name: 'map_id', kind: 'rule', sig: 'μ.map (fun x => x) = μ', en: 'A move that does nothing.', de: 'Ein Zug, der nichts tut.' },
     { name: 'map_map', kind: 'rule', sig: '(μ.map f).map g = μ.map (fun x => g (f x))', sig0: 'g <$> (f <$> s) = (fun x => g (f x)) <$> s', en: 'Two moves are one move.', de: 'Zwei Züge sind ein Zug.' },
     { name: 'coin_and', kind: 'lemma', sig: '(do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)', en: 'Proved by you in Building with Coins: independence, both true with probability p · q.', de: 'Von dir bewiesen in „Bauen mit Münzen“: Unabhängigkeit, beide true mit Wahrscheinlichkeit p · q.' },
@@ -4154,11 +4158,12 @@
       f(() => { try { localStorage.setItem(key, '1') } catch {} })
     }
     // (a level with `:::hint (anchor := "none")`: no tip comes by itself on the board (in a level in Lean
-    // only: none at all); the button Tips still shows them)
+    // only: none at all; in the proof of a board: only its anchored hints, not its text); the button
+    // Tips still shows them)
     const quiet = k => !!roots[k].querySelector(':scope > .pg-text > .pg-hint[data-at="none"]')
     const pointing = k => levels[k] instanceof LeanOnly && !(k === 0 && worldHint()) && proofTip(k, true).some(s => s.anchor)
     const showBoardTip = k => quiet(k) || pointing(k) || once(`${levels[k].key}:tip`, mark => tipBox(tr('Tip'), boardTip(k, k === 0, true), mark))
-    const showProofTip = k => (quiet(k) && levels[k] instanceof LeanOnly) || once(`${levels[k].key}:proof-tip`, mark => tipBox(tr('Tip'), proofTip(k, true), mark))
+    const showProofTip = k => (quiet(k) && (levels[k] instanceof LeanOnly || !proofTip(k, true).some(s => s.anchor))) || once(`${levels[k].key}:proof-tip`, mark => tipBox(tr('Tip'), proofTip(k, true), mark))
 
     // the tool bar
     const undo = barButton('pg-undo', '↶', tr('Undo')), restart = barButton('pg-restart', '⟲', tr('Start over'), tr('Restart'))

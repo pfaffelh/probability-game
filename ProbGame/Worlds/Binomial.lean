@@ -78,7 +78,7 @@ rw [coin_bind_apply, Bool.cond_true, Bool.cond_false]
 :::
 ::::
 
-::::leanonly (proof := "{α : Type} [DecidableEq α] (a : α) : (pure a : DiscreteMeasure α) a = 1") (new := "beq_self_eq_true") (lemma := "pure_self") (group := "chance.count") (uses := "pure_apply, beq_self_eq_true, Bool.cond_true, Bool.cond_false")
+::::leanonly (proof := "{α : Type} [DecidableEq α] (a : α) : (pure a : DiscreteMeasure α) a = 1") (lemma := "pure_self") (group := "chance.count") (uses := "pure_apply, beq_self_eq_true, Bool.cond_true, Bool.cond_false")
 :::en
 *At its point.* A point mass has mass one at its point, now on any type.
 :::

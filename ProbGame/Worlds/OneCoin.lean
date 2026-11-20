@@ -396,24 +396,68 @@ rw [Bool.cond_true, Bool.cond_true, Bool.cond_true, coin_total]
 :::
 ::::
 
-::::leanonly (proof := ": (pure true : DiscreteMeasure Bool).map not = pure false") (new := "map_pure") (uses := "map_pure, Bool.not_true, Bool.not_false")
+::::leanonly (proof := "(f : Bool → Bool) (b : Bool) : (pure b : DiscreteMeasure Bool).map f = pure (f b)") (lemma := "map_pure") (uses := "bool_ext, map_true, pure_true, pure_apply, Bool.cond_false, Bool.cond_self, zero_add, beq_self_eq_true, Bool.cond_true, Bool.true_beq, add_comm, add_zero, mul_zero, add_assoc")
 :::en
-*A sure thing, moved.* A move applied to a sure value is the sure value of its image.
+*A sure thing, moved.* A move applied to a sure value is the sure value of its image:
+`(pure b).map f = pure (f b)`.
 :::
 
 :::de
-*Eine sichere Sache, bewegt.* Ein Zug, angewandt auf einen sicheren Wert, ist der sichere Wert seines Bildes.
+*Eine sichere Sache, bewegt.* Ein Zug, angewandt auf einen sicheren Wert, ist der sichere Wert seines
+Bildes: `(pure b).map f = pure (f b)`.
 :::
 
 :::proofen
-`map_pure : (pure a).map f = pure (f a)`.
+Compare the bars at `true`: `apply bool_ext`, then `map_true`, `pure_true` and, for the mass of
+`pure b` at `false`, `pure_apply`. Then `cases b`. What `f` does stays unknown, but where both
+branches of a `bif` are equal, `Bool.cond_self` (from *Circuits*) helps; `beq_self_eq_true` and
+`Bool.true_beq` (from *Masses*) compute the tests `==`. You prove it on `Bool`; it holds for every type,
+and it is unlocked as `map_pure` in this general form.
 
+*Tip.* `apply bool_ext`, `rw [map_true, pure_true, pure_true, pure_apply]`, `cases b`, then
+`rw [Bool.cond_false, Bool.cond_self, zero_add, beq_self_eq_true, Bool.cond_true]` and
+`rw [Bool.cond_true, Bool.true_beq, Bool.cond_false, Bool.cond_self, add_comm, zero_add]`.
+:::
+
+:::proofde
+Vergleiche die Säulen bei `true`: `apply bool_ext`, dann `map_true`, `pure_true` und, für die Masse von
+`pure b` bei `false`, `pure_apply`. Dann `cases b`. Was `f` tut, bleibt unbekannt, aber wo beide Zweige
+eines `bif` gleich sind, hilft `Bool.cond_self` (aus *Schaltungen*); `beq_self_eq_true` und
+`Bool.true_beq` (aus *Massen*) rechnen die Tests `==` aus. Du beweist es auf `Bool`; es gilt für jeden
+Typ und wird in dieser allgemeinen Form als `map_pure` freigeschaltet.
+
+*Tipp.* `apply bool_ext`, `rw [map_true, pure_true, pure_true, pure_apply]`, `cases b`, dann
+`rw [Bool.cond_false, Bool.cond_self, zero_add, beq_self_eq_true, Bool.cond_true]` und
+`rw [Bool.cond_true, Bool.true_beq, Bool.cond_false, Bool.cond_self, add_comm, zero_add]`.
+:::
+:::solution
+```
+apply bool_ext
+rw [map_true, pure_true, pure_true, pure_apply]
+cases b
+rw [Bool.cond_false, Bool.cond_self, zero_add, beq_self_eq_true, Bool.cond_true]
+rw [Bool.cond_true, Bool.true_beq, Bool.cond_false, Bool.cond_self, add_comm, zero_add]
+```
+:::
+::::
+
+::::leanonly (proof := ": (pure true : DiscreteMeasure Bool).map not = pure false") (uses := "map_pure, Bool.not_true, Bool.not_false")
+:::hint (anchor := "none")
+:::
+
+:::en
+*Turned over, surely.* The sure `true`, turned over.
+:::
+
+:::de
+*Sicher umgedreht.* Das sichere `true`, umgedreht.
+:::
+
+:::proofen
 *Tip.* `rw [map_pure, Bool.not_true]`.
 :::
 
 :::proofde
-`map_pure : (pure a).map f = pure (f a)`.
-
 *Tipp.* `rw [map_pure, Bool.not_true]`.
 :::
 :::solution
@@ -424,6 +468,9 @@ rw [map_pure, Bool.not_true]
 ::::
 
 ::::circuit (height := "540") (inputs := "x") (gates := "not, alwaysT") (coins := "p") (target := "pure false") (context := "Lean/Rules.lean") (proof := "(p : I) : ((coin p).map (fun _ => true)).map not = pure false") (play := "a=alwaysT; b=not; x>a.0; a>b.0; b>out") (uses := "coin_const, map_pure")
+:::hint (anchor := "none")
+:::
+
 :::en
 *Surely `false`, but there is no “always `false`”.* Two gates one after the other: the image measure of
 the image measure is the image measure of the composition, $`(P \circ f^{-1}) \circ g^{-1} = P \circ (g \circ f)^{-1}`.
@@ -435,7 +482,7 @@ das Bildmaß der Verkettung, $`(P \circ f^{-1}) \circ g^{-1} = P \circ (g \circ 
 :::
 
 :::proofen
-A new rule: `map_pure : (pure a).map f = pure (f a)`: a gate on a point mass moves the point. Then
+Your lemma `map_pure : (pure a).map f = pure (f a)`: a gate on a point mass moves the point. Then
 `rfl` from *Circuits*: the two sides are the same after computing, `!true` is `false`.
 
 *Tip.* `rw [coin_const]`, then `rw [map_pure]` (or both at once: `rw [coin_const, map_pure]`), then
@@ -443,7 +490,7 @@ A new rule: `map_pure : (pure a).map f = pure (f a)`: a gate on a point mass mov
 :::
 
 :::proofde
-Eine neue Regel: `map_pure : (pure a).map f = pure (f a)`: Ein Baustein auf einer Punktmasse verschiebt
+Dein Lemma `map_pure : (pure a).map f = pure (f a)`: Ein Baustein auf einer Punktmasse verschiebt
 den Punkt. Dann `rfl` aus *Schaltungen*: Beide Seiten sind nach Ausrechnen gleich, `!true` ist `false`.
 
 *Tipp.* `rw [coin_const]`, dann `rw [map_pure]` (oder beides auf einmal: `rw [coin_const, map_pure]`),
