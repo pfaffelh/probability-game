@@ -3040,6 +3040,9 @@
   })
   // Lean's messages, as the player sees the goals: short names, I for the unit interval; and in front of
   // the usual ones a sentence that says what to do
+  // (is a hypothesis's type a statement, h : μ true = ν true, or a kind of thing, μ : DiscreteMeasure Bool,
+  // f : Bool → Bool? A statement has a relation or a connective in it; ℝ≥0∞ and ℝ≥0 are names)
+  const isFact = type => /[=≠≤≥<>↔∧∨¬∃∀∈∉⊆]|\bTrue\b|\bFalse\b/.test(String(type).replace(/ℝ≥0∞?/g, ''))
   const leanText = m => m.replace(/MeasureTheory\.DiscreteMeasure\./g, '').replace(/ProbGame\./g, '').replace(/↑I/g, 'I')
   const ADVICE = [
     // (the left side may stand there after all, with a bound name in it: then that is the reason)
@@ -3430,6 +3433,19 @@
       this.put(`rw [${n}]`)
     }
 
+    // the choice of a tapped theorem or fact, right at it: rw, apply, exact, …
+    choicePop() {
+      const pop = el('span', 'pg-chip-pop')
+      for (const o of this.choice.options) {
+        const c = el('button', 'pg-chip pg-chip-choice', o.label); c.type = 'button'; c.title = o.text
+        c.addEventListener('click', () => this.put(o.text))
+        pop.append(c)
+      }
+      const x = el('button', 'pg-chip-x', '✕'); x.type = 'button'; x.addEventListener('click', () => { this.choice = null; this.render() })
+      pop.append(x)
+      return pop
+    }
+
     // A name into the input: after a word with a space (rw [mass_not μ false]), after [ or ← right away.
     putTerm(t) {
       const v = this.input?.value ?? '', r = v.replace(/\s+$/, '')
@@ -3476,7 +3492,14 @@
       // (in the real numbers: the numbers of the goal and ×, for a factor as in linear_combination 2 * h)
       const goal = String(this.goals?.[0] ?? this.statement ?? '')
       const nums = /ℝ/.test(goal) ? [...new Set(goal.match(/(?<![\w₀-₉.])\d+(?![\w₀-₉])/g) ?? [])].slice(0, 4) : []
-      for (const n of [...names, ...(bool ? ['true', 'false'] : []), ...nums, ...(nums.length ? ['*'] : [])]) key(n, n, () => this.putTerm(n), ' pg-key-name')
+      // (a name of a fact, a hypothesis as h : μ true = ν true, is used as a theorem of the inventory:
+      // at the start of a line it asks with which tactic; a name of a thing, μ or true, goes in as it is)
+      const facts = new Set(this.vars().filter(v => isFact(v.type)).map(v => v.name))
+      for (const n of [...names, ...(bool ? ['true', 'false'] : []), ...nums, ...(nums.length ? ['*'] : [])]) {
+        if (!facts.has(n)) { key(n, n, () => this.putTerm(n), ' pg-key-name'); continue }
+        key(n, n, () => this.tapRule({ name: n }), ' pg-key-name pg-key-fact')
+        if (this.choice?.from === n) box.append(this.choicePop())
+      }
       key('←', tr('backwards (in rw)'), () => this.putTerm('←'), ' pg-key-name pg-key-back')
       key('␣', tr('a space: what comes next is an argument'), () => this.putTerm(' '), ' pg-key-name')
       key('⌫', tr('Delete the last word'), () => this.erase(), ' pg-key-op')
@@ -3674,17 +3697,7 @@
             group.append(pk)
           }
           // its choice, right at it: x or y
-          if (this.choice?.from === item.name && !this.done) {
-            const pop = el('span', 'pg-chip-pop')
-            for (const o of this.choice.options) {
-              const c = el('button', 'pg-chip pg-chip-choice', o.label); c.type = 'button'; c.title = o.text
-              c.addEventListener('click', () => this.put(o.text))
-              pop.append(c)
-            }
-            const x = el('button', 'pg-chip-x', '✕'); x.type = 'button'; x.addEventListener('click', () => { this.choice = null; this.render() })
-            pop.append(x)
-            group.append(pop)
-          }
+          if (this.choice?.from === item.name && !this.done) group.append(this.choicePop())
         }
         inv.append(group)
       }
