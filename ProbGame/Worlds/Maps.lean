@@ -93,7 +93,48 @@ rw [map_map]
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (μ.map not).map not = ⟦μ ‖ μ, μ.map not⟧") (new := "simp_rw, map_id") (uses := "map_map, Bool.not_not, map_id")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) : μ.map (fun x => x) = ⟦μ ‖ μ, μ.map not⟧") (lemma := "map_id") (new := "Bool.false_beq") (uses := "map_apply, Fintype.sum_bool, Bool.true_beq, Bool.false_beq, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, Bool.not_true, add_comm, add_zero, mul_zero, add_assoc")
+:::en
+*Doing nothing.* The move `fun x => x` leaves every point where it is.
+:::
+
+:::de
+*Nichts tun.* Der Zug `fun x => x` lässt jeden Punkt, wo er ist.
+:::
+
+:::proofen
+Compare the masses at every point: `ext b`. `map_apply` and `Fintype.sum_bool` write the mass as two
+summands; the tests `true == b` and `false == b` are `b` and `!b` (`Bool.true_beq` from *Masses*,
+and the new rule `Bool.false_beq`). Then `cases b`. You prove it on `Bool`; it holds for every type,
+and it is unlocked as `map_id` in this general form.
+
+*Tip.* `ext b`, `rw [map_apply, Fintype.sum_bool, Bool.true_beq, Bool.false_beq]`, `cases b`, then
+`rw [Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add]` and
+`rw [Bool.not_true, Bool.cond_true, Bool.cond_false, add_comm, zero_add]`.
+:::
+
+:::proofde
+Vergleiche die Massen an jedem Punkt: `ext b`. `map_apply` und `Fintype.sum_bool` schreiben die Masse
+als zwei Summanden; die Tests `true == b` und `false == b` sind `b` und `!b` (`Bool.true_beq` aus
+*Massen*, und die neue Regel `Bool.false_beq`). Dann `cases b`. Du beweist es auf `Bool`; es gilt für
+jeden Typ und wird in dieser allgemeinen Form als `map_id` freigeschaltet.
+
+*Tipp.* `ext b`, `rw [map_apply, Fintype.sum_bool, Bool.true_beq, Bool.false_beq]`, `cases b`, dann
+`rw [Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add]` und
+`rw [Bool.not_true, Bool.cond_true, Bool.cond_false, add_comm, zero_add]`.
+:::
+:::solution
+```
+ext b
+rw [map_apply, Fintype.sum_bool, Bool.true_beq, Bool.false_beq]
+cases b
+rw [Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add]
+rw [Bool.not_true, Bool.cond_true, Bool.cond_false, add_comm, zero_add]
+```
+:::
+::::
+
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (μ.map not).map not = ⟦μ ‖ μ, μ.map not⟧") (new := "simp_rw") (uses := "map_map, Bool.not_not, map_id")
 :::en
 *Turned over twice.* The coin turned over, and turned over again.
 :::
@@ -107,7 +148,7 @@ rw [map_map]
 `Bool.not_not : (!(!b)) = b`, should make `!(!x)` into `x`. But `rw [Bool.not_not]` does not find
 `!(!x)`, though it stands there: the `x` in `fun x => …` is a *bound* name, like the index `x` of a
 sum `∑ x, …`, and `rw` rewrites only parts without bound names. The new tactic `simp_rw [rules]` is
-`rw`, also under bound names. Then the move does nothing: `map_id : μ.map (fun x => x) = μ`.
+`rw`, also under bound names. Then the move does nothing: your lemma `map_id : μ.map (fun x => x) = μ`.
 
 *Tip.* `rw [map_map]`, `simp_rw [Bool.not_not]`, `rw [map_id]`.
 :::
@@ -118,7 +159,7 @@ sum `∑ x, …`, and `rw` rewrites only parts without bound names. The new tact
 findet `!(!x)` nicht, obwohl es dasteht: Das `x` in `fun x => …` ist ein *gebundener* Name, wie der
 Index `x` einer Summe `∑ x, …`, und `rw` schreibt nur Teile ohne gebundene Namen um. Die neue Taktik
 `simp_rw [Regeln]` ist `rw`, auch unter gebundenen Namen. Dann tut der Zug nichts:
-`map_id : μ.map (fun x => x) = μ`.
+dein Lemma `map_id : μ.map (fun x => x) = μ`.
 
 *Tipp.* `rw [map_map]`, `simp_rw [Bool.not_not]`, `rw [map_id]`.
 :::
