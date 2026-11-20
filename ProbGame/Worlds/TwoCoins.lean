@@ -617,24 +617,24 @@ rw [coin_unused]
 :::
 
 :::proofen
-*Boss.* Exactly one `true` is `xor`. Both sides throw the same coins; go under the throws, with `congr 1`
-and `funext x` (and again for `y`), and look at all four cases, with `<;>` in one line.
+*Boss.* Exactly one `true` is `xor`. Both sides throw the same coins; go under the throws, with `congr`
+and `ext x` (and again for `y`), and look at all four cases, with `<;>` in one line.
 
-*Tip.* `congr 1`, `funext x`, `congr 1`, `funext y`, `cases x <;> cases y <;> rfl`.
+*Tip.* `congr`, `ext x`, `congr`, `ext y`, `cases x <;> cases y <;> rfl`.
 :::
 
 :::proofde
 *Endgegner.* Genau einmal `true` ist `xor`. Beide Seiten werfen dieselben Münzen; geh unter die Würfe, mit
-`congr 1` und `funext x` (und nochmal für `y`), und sieh dir alle vier Fälle an, mit `<;>` in einer Zeile.
+`congr` und `ext x` (und nochmal für `y`), und sieh dir alle vier Fälle an, mit `<;>` in einer Zeile.
 
-*Tipp.* `congr 1`, `funext x`, `congr 1`, `funext y`, `cases x <;> cases y <;> rfl`.
+*Tipp.* `congr`, `ext x`, `congr`, `ext y`, `cases x <;> cases y <;> rfl`.
 :::
 :::solution
 ```
-congr 1
-funext x
-congr 1
-funext y
+congr
+ext x
+congr
+ext y
 cases x <;> cases y <;> rfl
 ```
 :::

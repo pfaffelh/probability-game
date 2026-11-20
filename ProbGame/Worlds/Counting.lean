@@ -56,25 +56,25 @@ wandert zu den natürlichen Zahlen. So wird aus einer Münze eine Zufallszahl.
 
 :::proofen
 `Bool.toNat` counts `true` as $`1` and `false` as $`0`. Both sides move the same coin, with two
-maps that agree. As in *Maps*: `congr 1` reduces the goal to the two maps being equal, `funext b`
+maps that agree. As in *Maps*: `congr` reduces the goal to the two maps being equal, `ext b`
 to their being equal at every `b`; then, as in *Circuits*, `cases b <;> rfl` does both cases in one
 line.
 
-*Tip.* `congr 1`, `funext b`, `cases b <;> rfl`.
+*Tip.* `congr`, `ext b`, `cases b <;> rfl`.
 :::
 
 :::proofde
 `Bool.toNat` zählt `true` als $`1` und `false` als $`0`. Beide Seiten bewegen dieselbe Münze, mit
-zwei Abbildungen, die übereinstimmen. Wie in *Abbildungen*: `congr 1` führt das Ziel darauf zurück,
-dass die beiden Abbildungen gleich sind, `funext b` darauf, dass sie an jeder Stelle `b` gleich sind;
+zwei Abbildungen, die übereinstimmen. Wie in *Abbildungen*: `congr` führt das Ziel darauf zurück,
+dass die beiden Abbildungen gleich sind, `ext b` darauf, dass sie an jeder Stelle `b` gleich sind;
 dann erledigt, wie in *Schaltungen*, `cases b <;> rfl` beide Fälle in einer Zeile.
 
-*Tipp.* `congr 1`, `funext b`, `cases b <;> rfl`.
+*Tipp.* `congr`, `ext b`, `cases b <;> rfl`.
 :::
 :::solution
 ```
-congr 1
-funext b
+congr
+ext b
 cases b <;> rfl
 ```
 :::
@@ -473,12 +473,12 @@ sieh dir alle acht Fälle an.
 ```
 rw [binom_succ, binom_succ, binom_succ, binom_zero]
 simp only [map_bind, bind_assoc, pure_bind, map_pure, add_zero]
-congr 1
-funext x
-congr 1
-funext y
-congr 1
-funext z
+congr
+ext x
+congr
+ext y
+congr
+ext z
 cases x <;> cases y <;> cases z <;> rfl
 ```
 :::

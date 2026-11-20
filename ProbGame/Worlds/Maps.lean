@@ -172,7 +172,7 @@ rw [map_id]
 :::
 ::::
 
-::::leanonly (proof := "(f : Bool → Bool) (p : I) : (((coin p).map f).map f).map f = (coin p).map f") (new := "congr, funext") (uses := "map_map, Bool.apply_apply_apply")
+::::leanonly (proof := "(f : Bool → Bool) (p : I) : (((coin p).map f).map f).map f = (coin p).map f") (new := "congr") (uses := "map_map, Bool.apply_apply_apply")
 :::en
 *Three times is once, with a coin.* The same, now on a coin: three moves with `f` move the coin as
 one move with `f` does.
@@ -186,27 +186,28 @@ die Münze wie ein Zug mit `f`.
 :::proofen
 Three moves one after the other are one move: the rule
 `map_map : (μ.map f).map g = μ.map (fun x => g (f x))`, twice. Then both sides move the same coin,
-with two maps. Two new tactics: `congr 1` reduces the goal to the two maps being equal, and `funext b`
-to their being equal at every point `b`. That is the lemma of the first level of this world:
+with two maps. A new tactic: `congr` reduces the goal to the two maps being equal; then `ext b`
+(from *One Coin*) to their being equal at every point `b`. That is the lemma of the first level of this world:
 `exact Bool.apply_apply_apply f b`.
 
-*Tip.* `rw [map_map, map_map]`, `congr 1`, `funext b`, `exact Bool.apply_apply_apply f b`.
+*Tip.* `rw [map_map, map_map]`, `congr`, `ext b`, `exact Bool.apply_apply_apply f b`.
 :::
 
 :::proofde
 Drei Züge hintereinander sind ein Zug: die Regel
 `map_map : (μ.map f).map g = μ.map (fun x => g (f x))`, zweimal. Dann bewegen beide Seiten dieselbe
-Münze, mit zwei Abbildungen. Zwei neue Taktiken: `congr 1` führt das Ziel darauf zurück, dass die
-beiden Abbildungen gleich sind, und `funext b` darauf, dass sie an jeder Stelle `b` gleich sind. Das
+Münze, mit zwei Abbildungen. Eine neue Taktik: `congr` führt das Ziel darauf zurück, dass die
+beiden Abbildungen gleich sind; dann `ext b` (aus *Eine Münze*) darauf, dass sie an jeder Stelle `b`
+gleich sind. Das
 ist das Lemma des ersten Levels dieser Welt: `exact Bool.apply_apply_apply f b`.
 
-*Tipp.* `rw [map_map, map_map]`, `congr 1`, `funext b`, `exact Bool.apply_apply_apply f b`.
+*Tipp.* `rw [map_map, map_map]`, `congr`, `ext b`, `exact Bool.apply_apply_apply f b`.
 :::
 :::solution
 ```
 rw [map_map, map_map]
-congr 1
-funext b
+congr
+ext b
 exact Bool.apply_apply_apply f b
 ```
 :::

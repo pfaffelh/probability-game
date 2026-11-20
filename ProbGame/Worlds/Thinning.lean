@@ -148,22 +148,22 @@ Auf dem Spielfeld mit `q = p`: die Münze `p`, ausgedünnt durch eine Münze, di
 :::
 
 :::proofen
-`rw [← coin_thin]` writes the coin on the right as a thinned coin. Then both sides start with `coin p`: `congr 1`, `funext x`, `cases x`.
+`rw [← coin_thin]` writes the coin on the right as a thinned coin. Then both sides start with `coin p`: `congr`, `ext x`, `cases x`.
 
-*Tip.* `rw [← coin_thin]`, `simp only [bind_assoc]`, `congr 1`, `funext x`, `cases x`; at `false`: `norm_num [binom_zero]`; at `true`: `norm_num [binom_succ, binom_zero]`.
+*Tip.* `rw [← coin_thin]`, `simp only [bind_assoc]`, `congr`, `ext x`, `cases x`; at `false`: `norm_num [binom_zero]`; at `true`: `norm_num [binom_succ, binom_zero]`.
 :::
 
 :::proofde
-`rw [← coin_thin]` schreibt die Münze rechts als ausgedünnte Münze. Dann beginnen beide Seiten mit `coin p`: `congr 1`, `funext x`, `cases x`.
+`rw [← coin_thin]` schreibt die Münze rechts als ausgedünnte Münze. Dann beginnen beide Seiten mit `coin p`: `congr`, `ext x`, `cases x`.
 
-*Tipp.* `rw [← coin_thin]`, `simp only [bind_assoc]`, `congr 1`, `funext x`, `cases x`; bei `false`: `norm_num [binom_zero]`; bei `true`: `norm_num [binom_succ, binom_zero]`.
+*Tipp.* `rw [← coin_thin]`, `simp only [bind_assoc]`, `congr`, `ext x`, `cases x`; bei `false`: `norm_num [binom_zero]`; bei `true`: `norm_num [binom_succ, binom_zero]`.
 :::
 :::solution
 ```
 rw [← coin_thin]
 simp only [bind_assoc]
-congr 1
-funext x
+congr
+ext x
 cases x
 norm_num [binom_zero]
 norm_num [binom_succ, binom_zero]
