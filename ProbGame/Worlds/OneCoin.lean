@@ -505,7 +505,7 @@ rfl
 :::
 ::::
 
-::::circuit (height := "440") (inputs := "x") (gates := "not, alwaysT, alwaysF") (coins := "p") (target := "bernoulli 1-p") (context := "Lean/Rules.lean") (proof := "(p : I) : (coin p).map not = coin (σ p)") (lemma := "coin_not") (play := "a=not; x>a.0; a>out") (uses := "bool_ext, map_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, coin_false, coin_true, add_zero, mul_zero, coin_total")
+::::leanonly (proof := "(p : I) : (coin p).map not = coin (σ p)") (lemma := "coin_not") (uses := "bool_ext, map_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, coin_false, coin_true, add_zero, mul_zero, coin_total")
 :::en
 *The boss: flip the coin.* Not just the mass at `true`: the whole coin.
 :::
