@@ -28,15 +28,11 @@ Wahrscheinlichkeit $`p` `true` zeigt und mit Wahrscheinlichkeit $`1 - p` `false`
 
 :::::circuit (height := "400") (inputs := "x") (gates := "") (coins := "p") (target := "bool true:p false:1-p") (context := "Lean/Rules.lean") (proof := "(p : I) : coin p true = p") (lemma := "coin_true") (play := "x>out") (uses := "-")
 :::en
-*The mass at true.* A coin shows `true` (heads) or `false` (tails); `coin p` is the coin
-that shows `true` with probability $`p` and `false` with probability $`1 - p`. As a distribution on
-`Bool` it has two masses: $`p` at `true` and $`1 - p` at `false`.
+*The mass at true.* Wire the coin `x` to the output.
 :::
 
 :::de
-*Die Masse bei true.* Eine Münze zeigt `true` (Kopf) oder `false` (Zahl); `coin p`
-ist die Münze, die mit Wahrscheinlichkeit $`p` `true` zeigt und mit Wahrscheinlichkeit $`1 - p`
-`false`. Als Verteilung auf `Bool` hat sie zwei Massen: $`p` bei `true` und $`1 - p` bei `false`.
+*Die Masse bei true.* Verbinde die Münze `x` mit dem Ausgang.
 :::
 
 ::::hint (anchor := "input")
@@ -108,7 +104,7 @@ rfl
 :::
 :::::
 
-:::::leanonly (proof := "(p : I) : coin p false = σ p") (lemma := "coin_false") (uses := "-")
+:::::leanonly (proof := "(p : I) : coin p false = ⟦σ p ‖ p, σ p, 1, 0⟧") (lemma := "coin_false") (uses := "-")
 ::::hint (anchor := "statement")
 :::en
 We have `p : I`, and `I` is a subtype of `ℝ`: the real numbers `x` with `0 ≤ x ≤ 1`. As a mass, `p`
@@ -222,7 +218,7 @@ rw [Fintype.sum_bool, Bool.cond_true, Bool.cond_false]
 :::
 ::::
 
-::::leanonly (proof := "(c : Bool) : (c == true) = c") (lemma := "beq_true") (uses := "-")
+::::leanonly (proof := "(c : Bool) : (c == true) = ⟦c ‖ c, !c, true⟧") (lemma := "beq_true") (uses := "-")
 :::hint (anchor := "none")
 :::
 
@@ -255,7 +251,7 @@ cases c <;> rfl
 :::
 ::::
 
-:::::leanonly (proof := "(b : Bool) : (true == b) = b") (lemma := "Bool.true_beq") (new := "beq_self_eq_true") (uses := "beq_self_eq_true")
+:::::leanonly (proof := "(b : Bool) : (true == b) = ⟦b ‖ b, !b, true⟧") (lemma := "Bool.true_beq") (new := "beq_self_eq_true") (uses := "beq_self_eq_true")
 ::::hint (anchor := "item:beq_self_eq_true")
 :::en
 `beq_self_eq_true : (a == a) = true`: a point tested against itself. After `cases b` it settles the
@@ -354,15 +350,23 @@ rw [beq_true, beq_true]
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (μ.map (fun _ => true)) true = μ true + μ false") (uses := "map_true, Bool.cond_true, Bool.cond_false")
+:::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (μ.map (fun _ => true)) true = ⟦μ true + μ false ‖ μ true, μ false, μ true + μ false, 0⟧") (uses := "map_true, Bool.cond_true, Bool.cond_false")
+::::hint (anchor := "gap")
 :::en
-*All to true.* The move *always `true`*, `fun _ => true`, sends both points to `true`; so all the
-mass of `μ` comes to `true`. Your rule `map_true` says so.
+Which masses of `μ` come to `true`?
 :::
 
 :::de
-*Alles nach true.* Der Zug *immer `true`*, `fun _ => true`, schickt beide Punkte nach `true`; also
-kommt die ganze Masse von `μ` nach `true`. Deine Regel `map_true` sagt das.
+Welche Massen von `μ` kommen bei `true` an?
+:::
+::::
+
+:::en
+*All to true.* The move *always `true`*, `fun _ => true`, sends both points to `true`.
+:::
+
+:::de
+*Alles nach true.* Der Zug *immer `true`*, `fun _ => true`, schickt beide Punkte nach `true`.
 :::
 
 :::proofen
@@ -382,7 +386,7 @@ rw [map_true]
 rw [Bool.cond_true, Bool.cond_true]
 ```
 :::
-::::
+:::::
 
 :::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ true + μ false = 1") (lemma := "mass_total") (new := "Prob.total, tsum_fintype") (uses := "Prob.total, tsum_fintype, Fintype.sum_bool")
 :::en
@@ -475,7 +479,7 @@ exact le_self_add
 :::
 ::::
 
-:::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b ≠ ⊤") (lemma := "mass_ne_top") (new := "apply, ne_top_of_le_ne_top, ENNReal.one_ne_top") (uses := "ne_top_of_le_ne_top, ENNReal.one_ne_top, mass_le_one")
+:::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b ≠ ⟦⊤ ‖ 0, 1, ⊤⟧") (lemma := "mass_ne_top") (new := "apply, ne_top_of_le_ne_top, ENNReal.one_ne_top") (uses := "ne_top_of_le_ne_top, ENNReal.one_ne_top, mass_le_one")
 :::en
 *Finite.* Masses are numbers in $`[0, \infty]`; a mass of a distribution is finite, `≠ ⊤`
 (`⊤` is $`\infty`): it is at most one, and one is finite.

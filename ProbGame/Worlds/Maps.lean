@@ -22,16 +22,15 @@ Abbildungen auf `Bool`, und Züge mit ihnen. Es gibt genau vier Abbildungen `Boo
 unbekannte Abbildung `f : Bool → Bool` gilt für jede Abbildung, wenn sie für jede der vier gilt.
 :::
 
-::::leanonly (proof := "(f : Bool → Bool) (b : Bool) : f (f (f b)) = f b") (lemma := "Bool.apply_apply_apply") (new := "revert, decide") (group := "bool") (uses := "-")
+::::leanonly (proof := "(f : Bool → Bool) (b : Bool) : f (f (f b)) = ⟦f b ‖ b, f b, f (f b)⟧") (lemma := "Bool.apply_apply_apply") (new := "revert, decide") (group := "bool") (uses := "-")
 :::en
-*Three times is once.* Whatever map `f : Bool → Bool` is, applied three times it does the same as
-once: `f (f (f b)) = f b`. Check it for `not`: three times `not` is `not`; and for always `true`. In Lean the new tactics `revert` and `decide` check it, in every case at once.
+*Three times.* Whatever map `f : Bool → Bool` is: what does it do, applied three times? Check it for
+`not` and for always `true`. In Lean the new tactics `revert` and `decide` check it, in every case at once.
 :::
 
 :::de
-*Dreimal ist einmal.* Welche Abbildung `f : Bool → Bool` auch immer: dreimal angewandt tut sie
-dasselbe wie einmal, `f (f (f b)) = f b`. Prüf es für `not`: dreimal `not` ist `not`; und für immer
-`true`. In Lean prüfen es die neuen Taktiken `revert` und `decide`, in allen Fällen auf einmal.
+*Dreimal.* Welche Abbildung `f : Bool → Bool` auch immer: Was tut sie, dreimal angewandt? Prüf es
+für `not` und für immer `true`. In Lean prüfen es die neuen Taktiken `revert` und `decide`, in allen Fällen auf einmal.
 :::
 
 :::proofen
@@ -67,7 +66,7 @@ decide
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (μ.map not).map not = μ.map (fun x => !(!x))") (new := "map_map") (uses := "map_map")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (μ.map not).map not = μ.map ⟦fun x => !(!x) ‖ fun x => !(!x), fun x => !x, not⟧") (new := "map_map") (uses := "map_map")
 :::en
 *Two moves are one.* Two moves one after the other are one move: the composed map.
 :::
@@ -94,13 +93,13 @@ rw [map_map]
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (μ.map not).map not = μ") (new := "simp_rw, map_id") (uses := "map_map, Bool.not_not, map_id")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (μ.map not).map not = ⟦μ ‖ μ, μ.map not⟧") (new := "simp_rw, map_id") (uses := "map_map, Bool.not_not, map_id")
 :::en
-*Turned over twice.* Turning the coin over twice does nothing: `(μ.map not).map not = μ`.
+*Turned over twice.* The coin turned over, and turned over again.
 :::
 
 :::de
-*Zweimal umgedreht.* Zweimal umdrehen tut nichts: `(μ.map not).map not = μ`.
+*Zweimal umgedreht.* Die Münze umgedreht, und noch einmal umgedreht.
 :::
 
 :::proofen

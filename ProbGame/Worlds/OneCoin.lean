@@ -39,7 +39,7 @@ zeigt Ziel und Ausgang, als Massen und als kleines Histogramm (das Ziel gestrich
 Beispiel-$`p`; der Schieberegler in der Leiste unten ändert es.
 :::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (h : μ true = 0) : μ false = 1") (uses := "mass_total, zero_add, coin_total, add_zero, mul_zero")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (h : μ true = 0) : μ false = ⟦1 ‖ 0, 1⟧") (uses := "mass_total, zero_add, coin_total, add_zero, mul_zero")
 :::hint (anchor := "none")
 :::
 
@@ -142,7 +142,7 @@ rw [add_comm, mass_total μ]
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b = 1 - μ (!b)") (lemma := "mass_not") (new := "ENNReal.add_sub_cancel_left") (uses := "Bool.not_false, mass_total, ENNReal.add_sub_cancel_left, mass_ne_top, Bool.not_true, add_comm, coin_total, add_assoc")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b = ⟦1 - μ (!b) ‖ 1 - μ (!b), μ (!b) - 1, 1 - μ b⟧") (lemma := "mass_not") (new := "ENNReal.add_sub_cancel_left") (uses := "Bool.not_false, mass_total, ENNReal.add_sub_cancel_left, mass_ne_top, Bool.not_true, add_comm, coin_total, add_assoc")
 :::en
 *The rest of the mass.* Now in Lean only: a statement about *every* distribution on `Bool`, which no
 board can show. What is not at `b` lies at `!b`.
@@ -206,7 +206,7 @@ rw [ENNReal.add_sub_cancel_left mass_ne_top]
 :::
 ::::
 
-::::leanonly (proof := "(μ ν : DiscreteMeasure Bool) [Prob μ] [Prob ν] (h : μ true = ν true) : μ = ν") (lemma := "bool_ext") (new := "ext") (uses := "mass_not, Bool.not_false, Bool.not_true")
+::::leanonly (proof := "(μ ν : DiscreteMeasure Bool) [Prob μ] [Prob ν] (h : μ true = ν ⟦true ‖ true, false⟧) : μ = ν") (lemma := "bool_ext") (new := "ext") (uses := "mass_not, Bool.not_false, Bool.not_true")
 :::en
 *One bar is enough.* Two distributions on `Bool` with the same mass at `true` are the same. That is
 why the board only had to look at one bar.
@@ -271,7 +271,7 @@ rw [← coin_true, ← coin_false, coin_total]
 :::
 ::::
 
-:::::leanonly (proof := "(b : Bool) : (pure b : DiscreteMeasure Bool) true = bif b then 1 else 0") (new := "pure_apply") (lemma := "pure_true") (uses := "pure_apply, beq_true")
+:::::leanonly (proof := "(b : Bool) : (pure b : DiscreteMeasure Bool) true = bif b then ⟦1 ‖ 0, 1⟧ else ⟦0 ‖ 0, 1⟧") (new := "pure_apply") (lemma := "pure_true") (uses := "pure_apply, beq_true")
 :::en
 *Surely true.* `pure b` is the distribution that is surely `b`: all its mass lies at `b`. Its mass at
 `true` is one if `b` is `true`, else zero.
@@ -336,7 +336,7 @@ rw [pure_apply, beq_true]
 :::
 :::::
 
-::::circuit (height := "440") (inputs := "x") (gates := "not, alwaysT") (coins := "p") (target := "pure true") (context := "Lean/Rules.lean") (proof := "(p : I) (b : Bool) : (coin p).map (fun _ => b) = pure b") (lemma := "coin_const") (play := "a=alwaysT; x>a.0; a>out") (uses := "bool_ext, map_true, pure_true, Bool.cond_false, zero_add, Bool.cond_true, coin_total, add_zero, mul_zero, mass_total, coin_true, coin_false")
+::::circuit (height := "440") (inputs := "x") (gates := "not, alwaysT") (coins := "p") (target := "pure true") (context := "Lean/Rules.lean") (proof := "(p : I) (b : Bool) : (coin p).map (fun _ => b) = ⟦pure b ‖ pure b, coin p, pure true⟧") (lemma := "coin_const") (play := "a=alwaysT; x>a.0; a>out") (uses := "bool_ext, map_true, pure_true, Bool.cond_false, zero_add, Bool.cond_true, coin_total, add_zero, mul_zero, mass_total, coin_true, coin_false")
 :::hint (anchor := "old:not")
 :::
 
@@ -396,15 +396,23 @@ rw [Bool.cond_true, Bool.cond_true, Bool.cond_true, coin_total]
 :::
 ::::
 
-::::leanonly (proof := "(f : Bool → Bool) (b : Bool) : (pure b : DiscreteMeasure Bool).map f = pure (f b)") (lemma := "map_pure") (uses := "bool_ext, map_true, pure_true, pure_apply, Bool.cond_false, Bool.cond_self, zero_add, beq_self_eq_true, Bool.cond_true, Bool.true_beq, add_comm, add_zero, mul_zero, add_assoc")
+:::::leanonly (proof := "(f : Bool → Bool) (b : Bool) : (pure b : DiscreteMeasure Bool).map f = ⟦pure (f b) ‖ pure b, pure (f b), pure (f (f b))⟧") (lemma := "map_pure") (uses := "bool_ext, map_true, pure_true, pure_apply, Bool.cond_false, Bool.cond_self, zero_add, beq_self_eq_true, Bool.cond_true, Bool.true_beq, add_comm, add_zero, mul_zero, add_assoc")
+::::hint (anchor := "gap")
 :::en
-*A sure thing, moved.* A move applied to a sure value is the sure value of its image:
-`(pure b).map f = pure (f b)`.
+The sure `b`, moved by `f`: where does all the mass lie then?
 :::
 
 :::de
-*Eine sichere Sache, bewegt.* Ein Zug, angewandt auf einen sicheren Wert, ist der sichere Wert seines
-Bildes: `(pure b).map f = pure (f b)`.
+Das sichere `b`, von `f` bewegt: Wo liegt dann die ganze Masse?
+:::
+::::
+
+:::en
+*A sure thing, moved.* A move applied to a sure value.
+:::
+
+:::de
+*Eine sichere Sache, bewegt.* Ein Zug, angewandt auf einen sicheren Wert.
 :::
 
 :::proofen
@@ -439,33 +447,7 @@ rw [Bool.cond_false, Bool.cond_self, zero_add, beq_self_eq_true, Bool.cond_true]
 rw [Bool.cond_true, Bool.true_beq, Bool.cond_false, Bool.cond_self, add_comm, zero_add]
 ```
 :::
-::::
-
-::::leanonly (proof := ": (pure true : DiscreteMeasure Bool).map not = pure false") (uses := "map_pure, Bool.not_true, Bool.not_false")
-:::hint (anchor := "none")
-:::
-
-:::en
-*Turned over, surely.* The sure `true`, turned over.
-:::
-
-:::de
-*Sicher umgedreht.* Das sichere `true`, umgedreht.
-:::
-
-:::proofen
-*Tip.* `rw [map_pure, Bool.not_true]`.
-:::
-
-:::proofde
-*Tipp.* `rw [map_pure, Bool.not_true]`.
-:::
-:::solution
-```
-rw [map_pure, Bool.not_true]
-```
-:::
-::::
+:::::
 
 ::::circuit (height := "540") (inputs := "x") (gates := "not, alwaysT") (coins := "p") (target := "pure false") (context := "Lean/Rules.lean") (proof := "(p : I) : ((coin p).map (fun _ => true)).map not = pure false") (play := "a=alwaysT; b=not; x>a.0; a>b.0; b>out") (uses := "coin_const, map_pure")
 :::hint (anchor := "none")
@@ -505,7 +487,17 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : (coin p).map not = coin (σ p)") (lemma := "coin_not") (uses := "bool_ext, map_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, coin_false, coin_true, add_zero, mul_zero, coin_total")
+:::::leanonly (proof := "(p : I) : (coin p).map not = coin ⟦σ p ‖ p, σ p⟧") (lemma := "coin_not") (uses := "bool_ext, map_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, coin_false, coin_true, add_zero, mul_zero, coin_total")
+::::hint (anchor := "gap")
+:::en
+Flip the coin `p`: what is its mass at `true` now?
+:::
+
+:::de
+Dreh die Münze `p` um: Was ist jetzt ihre Masse bei `true`?
+:::
+::::
+
 :::en
 *The boss: flip the coin.* Not just the mass at `true`: the whole coin.
 :::
@@ -542,9 +534,9 @@ rw [Bool.cond_false, Bool.cond_true, zero_add]
 rw [coin_false, coin_true]
 ```
 :::
-::::
+:::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (p : I) (h : μ true = p) : μ = coin p") (lemma := "eq_coin") (uses := "bool_ext, coin_true, coin_false, coin_total")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (p : I) (h : μ true = p) : μ = coin ⟦p ‖ p, σ p⟧") (lemma := "eq_coin") (uses := "bool_ext, coin_true, coin_false, coin_total")
 :::hint (anchor := "none")
 :::
 
