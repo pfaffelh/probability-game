@@ -3698,7 +3698,14 @@
             group.append(pk)
           }
           // its choice, right at it: x or y
-          if (this.choice?.from === item.name && !this.done) group.append(this.choicePop())
+          // (above the item, so that the box of its statement, below it on hover, covers nothing)
+          if (this.choice?.from === item.name && !this.done) {
+            const pop = this.choicePop(); pop.classList.add('pg-chip-pop-above'); group.append(pop)
+            requestAnimationFrame(() => {
+              pop.style.left = `${Math.max(0, Math.min(b.offsetLeft, group.clientWidth - pop.offsetWidth))}px`
+              pop.style.top = `${b.offsetTop - pop.offsetHeight - 4}px`; pop.style.visibility = 'visible'
+            })
+          }
         }
         inv.append(group)
       }
