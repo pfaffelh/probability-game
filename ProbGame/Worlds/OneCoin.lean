@@ -543,3 +543,36 @@ rw [coin_false, coin_true]
 ```
 :::
 ::::
+
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (p : I) (h : μ true = p) : μ = coin p") (lemma := "eq_coin") (uses := "bool_ext, coin_true, coin_false, coin_total")
+:::hint (anchor := "none")
+:::
+
+:::en
+*Every distribution is a coin.* A distribution on `Bool` with mass `p` at `true` is the coin `p`.
+So the coins are all there is on `Bool`.
+:::
+
+:::de
+*Jede Verteilung ist eine Münze.* Eine Verteilung auf `Bool` mit Masse `p` bei `true` ist die Münze
+`p`. Mehr als Münzen gibt es auf `Bool` also nicht.
+:::
+
+:::proofen
+Again `apply bool_ext`: the masses at `true` decide. Then `coin_true` and the hypothesis `h`.
+
+*Tip.* `apply bool_ext`, then `rw [coin_true, h]`.
+:::
+
+:::proofde
+Wieder `apply bool_ext`: Die Massen bei `true` entscheiden. Dann `coin_true` und die Annahme `h`.
+
+*Tipp.* `apply bool_ext`, dann `rw [coin_true, h]`.
+:::
+:::solution
+```
+apply bool_ext
+rw [coin_true, h]
+```
+:::
+::::

@@ -146,17 +146,6 @@ attribute [simp] coin_true coin_false pure_true
 @[simp] theorem add_symm_eq_one (p : I) : (↑p : ENNReal) + ↑(σ p) = 1 := by
   rw [← coin_true, ← coin_false, coin_total]
 
-/-- The mass at `true`, as a number in `[0, 1]` (for `coin`). -/
-noncomputable def chance (μ : DiscreteMeasure Bool) [Prob μ] : I :=
-  ⟨(μ true).toReal, ENNReal.toReal_nonneg, by
-    have h : μ true ≤ 1 := (mass_total μ) ▸ le_self_add
-    simpa using ENNReal.toReal_mono ENNReal.one_ne_top h⟩
-
-/-- `chance μ`, as a mass, is the mass at `true`. -/
-theorem chance_eq (μ : DiscreteMeasure Bool) [Prob μ] : (chance μ : ENNReal) = μ true := by
-  show ENNReal.ofReal (μ true).toReal = μ true
-  exact ENNReal.ofReal_toReal mass_ne_top
-
 /-- The definition of a move, as the game writes it: the mass of `μ.map f` at `b` is the sum of the
 masses `μ a` over the points `a` with `f a = b` (a finite sum: finitely many points). -/
 theorem map_apply {α : Type} [Fintype α] (f : α → Bool) (μ : DiscreteMeasure α) (b : Bool) :
@@ -250,10 +239,11 @@ theorem coin_const (p : I) (b : Bool) : (coin p).map (fun _ => b) = pure b := by
   rw [Bool.cond_false, Bool.cond_false, Bool.cond_false, zero_add]
   rw [Bool.cond_true, Bool.cond_true, Bool.cond_true, coin_total]
 
-/-- One Coin, *Every distribution is a coin*. -/
-theorem eq_coin (μ : DiscreteMeasure Bool) [Prob μ] : μ = coin (chance μ) := by
+/-- One Coin, *Every distribution is a coin*: with the mass `p` at `true`, it is the coin `p` (as
+Mathlib's `eq_bernoulliMeasure`: the parameter given, not computed from `μ`). -/
+theorem eq_coin (μ : DiscreteMeasure Bool) [Prob μ] (p : I) (h : μ true = p) : μ = coin p := by
   apply bool_ext
-  rw [coin_true, chance_eq]
+  rw [coin_true, h]
 
 /-- World 1, the boss: flipping a coin swaps the masses `p` and `1 - p`. -/
 theorem coin_not (p : I) : (coin p).map not = coin (σ p) := by
