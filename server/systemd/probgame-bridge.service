@@ -8,6 +8,7 @@ Environment="BASE=import Journal.Notes.DiscreteMeasure.Thinning"
 Environment=REPL=%h/lean/repl/.lake/build/bin/repl
 Environment=SANDBOX=1 POOL=4 TIMEOUT=30 MEMORY_GB=5
 Environment=ALLOWED=%h/lean/allowed.txt
+Environment=WARM=%h/lean/contexts
 ExecStart=/usr/bin/python3 -I %h/lean/probability-game/server/bridge.py 8091
 Restart=always
 RestartSec=5

@@ -29,6 +29,8 @@ Settings (environment):
              with IO) can neither reach out nor read the home directory
   ALLOWED    a file with a SHA-256 of an accepted context per line (`sha256sum Lean/*.lean`);
              without it, any context
+  WARM       a folder of contexts (*.lean): each process elaborates them after its start, in the
+             background, so that the first player of a context does not wait for it (some seconds)
 
 A session whose process was restarted is started again by the next /check, which plays the whole
 proof anyway; /step on it answers that the session is gone.
@@ -46,6 +48,7 @@ SANDBOX = os.environ.get('SANDBOX') == '1'
 # the contexts this server accepts (SHA-256 of their text, one per line); without the file, any
 ALLOWED = ({l.split()[0] for l in Path(os.environ['ALLOWED']).read_text().splitlines() if l.strip() and not l.startswith('#')}
            if os.environ.get('ALLOWED') else None)
+WARM = Path(os.environ['WARM']) if os.environ.get('WARM') else None
 QUEUE = 8          # requests waiting for one process; beyond that the server is busy
 BODY = 64 * 1024   # the largest request
 IDLE = 3 * 3600    # a session not used for this long is forgotten
@@ -102,6 +105,19 @@ class Repl:
         t0 = time.time()
         self.base = self.ask({'cmd': BASE}, 900)['env']
         print(f"{time.strftime('%H:%M:%S')} REPL {self.n} started (generation {self.generation}, {time.time() - t0:.0f} s)", flush=True)
+        if WARM:
+            threading.Thread(target=self.warm, args=(self.generation,), daemon=True).start()
+
+    def warm(self, generation):
+        """The contexts of WARM elaborated, one at a time (a request waits for one context at most)."""
+        t0, n = time.time(), 0
+        for f in sorted(WARM.glob('*.lean')):
+            with contextlib.suppress(Exception), self.lock:
+                if self.generation != generation:
+                    return
+                self.context(f.read_text())
+                n += 1
+        print(f"{time.strftime('%H:%M:%S')} REPL {self.n}: {n} contexts ready ({time.time() - t0:.0f} s)", flush=True)
 
     @contextlib.contextmanager
     def use(self):

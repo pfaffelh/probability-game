@@ -14,6 +14,7 @@ trees=$(realpath -m "$repo/../probability-game-branches")
 mkdir -p "$sites"
 git -C "$repo" fetch -q origin
 : > "$sites/allowed.txt.new"
+rm -rf "$sites/contexts.new" && mkdir -p "$sites/contexts.new"
 for b in "${branches[@]}"; do
   dir=$(git -C "$repo" worktree list --porcelain | awk -v b="refs/heads/$b" '/^worktree /{w=substr($0,10)} $0=="branch "b{print w}')
   if [ -z "$dir" ]; then
@@ -32,6 +33,9 @@ for b in "${branches[@]}"; do
   rm -rf "$sites/$b.new" && cp -r "$dir/_out/html-multi" "$sites/$b.new"
   rm -rf "$sites/$b.old" && { [ -d "$sites/$b" ] && mv "$sites/$b" "$sites/$b.old" || true; } && mv "$sites/$b.new" "$sites/$b" && rm -rf "$sites/$b.old"
   (cd "$dir" && sha256sum Lean/Rules.lean Lean/World*.lean) >> "$sites/allowed.txt.new"
+  # (the contexts themselves, for the bridge to elaborate ahead: WARM)
+  for f in "$dir"/Lean/Rules.lean "$dir"/Lean/World*.lean; do cp "$f" "$sites/contexts.new/$(sha256sum "$f" | cut -c1-16).lean"; done
 done
 sort -u -k1,1 "$sites/allowed.txt.new" > "$sites/allowed.txt" && rm "$sites/allowed.txt.new"
+rm -rf "$sites/contexts" && mv "$sites/contexts.new" "$sites/contexts"
 echo "built: ${branches[*]} into $sites"

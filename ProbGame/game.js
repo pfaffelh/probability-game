@@ -4089,7 +4089,7 @@
     // (`back`: at the key ←)
     const PROOF_AT = { gap: '.pg-gap-now', keys: '.pg-keys', back: '.pg-key-back', statement: '.pg-proof-statement', lean: null }
     const proofHint = h => h.dataset.at.startsWith('item:') || h.dataset.at in PROOF_AT
-    const boardHints = k => [...roots[k].querySelectorAll(':scope > .pg-text > .pg-hint:not([data-at="none"])')].filter(h => !proofHint(h) && !h.dataset.at.startsWith('after:'))
+    const boardHints = k => [...roots[k].querySelectorAll(':scope > .pg-text > .pg-hint:not([data-at="none"])')].filter(h => !proofHint(h) && !/^(after|old):/.test(h.dataset.at))
     // (a hint in between: `after:cases`, once a line of the proof with the tactic cases is taken, at the
     // goals; the button Tips shows it again when the proof has such a line)
     const tacOf = line => line.trim().split(/[\s\[]/)[0]
@@ -4118,7 +4118,9 @@
     // (the tip that comes by itself: no text of the level when it has bubbles at the board, never the
     // text of the world, only its short hint)
     const boardTip = (k, withWorld, auto = false) => {
-      const hinted = new Set(boardHints(k).map(h => h.dataset.at).filter(a => a.startsWith('move:')).map(a => a.slice(5)))
+      // (`:::hint (anchor := "old:not")`, without text: `not` is not new here, though new on this page)
+      const old = [...roots[k].querySelectorAll(':scope > .pg-text > .pg-hint')].map(h => h.dataset.at).filter(a => a.startsWith('old:')).map(a => a.slice(4))
+      const hinted = new Set([...boardHints(k).map(h => h.dataset.at).filter(a => a.startsWith('move:')).map(a => a.slice(5)), ...old])
       const at = [...levelHints(k), ...newMoves(k).filter(m => !hinted.has(m[0].slice(m[0].indexOf(':') + 1))).map(m => ({ head: tr('New in this level'), nodes: [moveCard(m)], anchor: atMove(k, m[0]) }))]
       const first = auto && k === 0 && worldHint() ? [{ nodes: hintText(worldHint()) }]
         : auto && at.length ? []
