@@ -82,7 +82,7 @@ rfl
 :::
 ::::
 
-:::::circuit (height := "440") (inputs := "x y") (gates := "") (coins := "p p") (target := "bool true:p false:1-p") (start := "a=and; a>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; pure (x && x)) = coin p") (new := "Bool.and_self, bind_pure") (play := "x>a.0; x>a.1") (uses := "Bool.and_self, bind_pure, pure_bind")
+:::::circuit (height := "440") (inputs := "x y") (gates := "") (coins := "p p") (target := "bool true:p false:1-p") (start := "a=and; a>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; pure (x && x)) = coin p") (new := "bind_pure") (play := "x>a.0; x>a.1") (uses := "Bool.and_self, bind_pure, pure_bind")
 ::::hint (anchor := "statement")
 :::en
 `x` is not a random variable: it is the name of one draw from `coin p`, and the whole `do` block is a
@@ -111,7 +111,7 @@ one draw from `coin p`, not a random variable: used twice, it is the same value 
 and `y` would be two draws, with $`p^2` (soon, in `coin_and`). What is left, draw `x` and give it
 back, is `coin p` itself.
 
-Two rules: `Bool.and_self : (x && x) = x`, and `bind_pure : (do let x ← μ; pure x) = μ`. The `x` of
+Your lemma `Bool.and_self : (x && x) = x` from *Circuits*, and the rule `bind_pure : (do let x ← μ; pure x) = μ`. The `x` of
 `let x ← coin p` is bound, as the `x` of `fun x => …` in *Maps*: so `simp_rw`, not `rw`. (Lean itself
 reads `do let x ← μ; pure x` as `μ` at once, when you type it.)
 
@@ -124,7 +124,7 @@ eines Zugs aus `coin p`, keine Zufallsvariable: Zweimal benutzt ist es zweimal d
 Münzen `x` und `y` wären zwei Züge, mit $`p^2` (bald, in `coin_and`). Was bleibt, `x` ziehen und
 zurückgeben, ist `coin p` selbst.
 
-Zwei Regeln: `Bool.and_self : (x && x) = x` und `bind_pure : (do let x ← μ; pure x) = μ`. Das `x` von
+Dein Lemma `Bool.and_self : (x && x) = x` aus *Schaltungen* und die Regel `bind_pure : (do let x ← μ; pure x) = μ`. Das `x` von
 `let x ← coin p` ist gebunden, wie das `x` von `fun x => …` in *Abbildungen*: also `simp_rw`, nicht
 `rw`. (Lean selbst liest `do let x ← μ; pure x` sofort als `μ`, wenn du es eintippst.)
 
@@ -603,6 +603,47 @@ Die neue Regel `Bool.or_not_self : (x || !x) = true`; der Rest wie im Level davo
 ```
 simp only [Bool.or_not_self]
 rw [coin_unused]
+```
+:::
+::::
+
+::::leanonly (proof := "(f : Bool → Bool) (p : I) : (((coin p).map f).map f).map f = (coin p).map f") (new := "congr") (uses := "map_map, Bool.apply_apply_apply")
+:::en
+*Three times is once, with a coin.* The first level of *Maps*, now on a coin: three moves with `f` move the coin as
+one move with `f` does.
+:::
+
+:::de
+*Dreimal ist einmal, mit einer Münze.* Das erste Level von *Abbildungen*, jetzt auf einer Münze: Drei Züge mit `f` bewegen
+die Münze wie ein Zug mit `f`.
+:::
+
+:::proofen
+Three moves one after the other are one move: your lemma
+`map_map : (μ.map f).map g = μ.map (fun x => g (f x))` (the boss of *Maps*), twice. Then both sides move the same coin,
+with two maps. A new tactic: `congr` reduces the goal to the two maps being equal; then `ext b`
+(from *One Coin*) to their being equal at every point `b`. That is your lemma from the first level of *Maps*:
+`exact Bool.apply_apply_apply f b`.
+
+*Tip.* `rw [map_map, map_map]`, `congr`, `ext b`, `exact Bool.apply_apply_apply f b`.
+:::
+
+:::proofde
+Drei Züge hintereinander sind ein Zug: dein Lemma
+`map_map : (μ.map f).map g = μ.map (fun x => g (f x))` (der Boss von *Abbildungen*), zweimal. Dann bewegen beide Seiten dieselbe
+Münze, mit zwei Abbildungen. Eine neue Taktik: `congr` führt das Ziel darauf zurück, dass die
+beiden Abbildungen gleich sind; dann `ext b` (aus *Eine Münze*) darauf, dass sie an jeder Stelle `b`
+gleich sind. Das
+ist dein Lemma aus dem ersten Level von *Abbildungen*: `exact Bool.apply_apply_apply f b`.
+
+*Tipp.* `rw [map_map, map_map]`, `congr`, `ext b`, `exact Bool.apply_apply_apply f b`.
+:::
+:::solution
+```
+rw [map_map, map_map]
+congr
+ext b
+exact Bool.apply_apply_apply f b
 ```
 :::
 ::::

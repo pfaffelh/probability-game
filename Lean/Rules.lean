@@ -178,6 +178,13 @@ theorem bind_true (μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool
 theorem coin_unused {β : Type} (p : I) (ν : DiscreteMeasure β) : (do let _ ← coin p; ν) = ν :=
   MeasureTheory.DiscreteMeasure.bind_const_of_hasSum (MeasureTheory.DiscreteMeasure.hasSum_coin p) ν
 
+/-- Two masses behind one test are one mass behind it (Maps). -/
+theorem cond_add_cond (c : Bool) (x y : ENNReal) :
+    (bif c then x else 0) + (bif c then y else 0) = bif c then x + y else 0 := by
+  cases c
+  · simp only [Bool.cond_false, add_zero]
+  · rfl
+
 /-- A move that does nothing: the distribution stays. -/
 theorem map_id {α : Type} (μ : DiscreteMeasure α) : μ.map (fun x => x) = μ :=
   MeasureTheory.DiscreteMeasure.id_map μ

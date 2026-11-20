@@ -388,6 +388,40 @@ rfl
 :::
 ::::
 
+::::circuit (height := "500") (inputs := "x") (gates := "not, or, and") (table := "01") (goal := "x") (proof := "(x : Bool) : (x && x) = ⟦x ‖ x, !x, true, false⟧") (lemma := "Bool.and_self") (play := "a=and; x>a.0; x>a.1; a>out") (uses := "-")
+:::hint (anchor := "none")
+:::
+
+:::en
+*Twice the same.* `x` and `x`: wire `x` into both inputs of an `and`.
+:::
+
+:::de
+*Zweimal dasselbe.* `x` und `x`: Verdrahte `x` in beide Eingänge eines `und`.
+:::
+
+:::proofen
+What is `x && x`? `&&` is defined by cases of its left side, as `||`: so `cases x`, then `rfl` in
+each case. Your result becomes the lemma `Bool.and_self`.
+
+*Tip.* `cases x`, `rfl`, `rfl`.
+:::
+
+:::proofde
+Was ist `x && x`? `&&` ist durch Fälle seiner linken Seite definiert, wie `||`: also `cases x`,
+dann in jedem Fall `rfl`. Dein Ergebnis wird das Lemma `Bool.and_self`.
+
+*Tipp.* `cases x`, `rfl`, `rfl`.
+:::
+:::solution
+```
+cases x
+rfl
+rfl
+```
+:::
+::::
+
 ::::leanonly (proof := "(a b : Bool) : (bif false then a else b) = ⟦b ‖ a, b, true, false⟧") (lemma := "Bool.cond_false") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "-")
 :::hint (anchor := "none")
 :::

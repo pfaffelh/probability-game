@@ -66,33 +66,6 @@ decide
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (μ.map not).map not = μ.map ⟦fun x => !(!x) ‖ fun x => !(!x), fun x => !x, not⟧") (new := "map_map") (uses := "map_map")
-:::en
-*Two moves are one.* Two moves one after the other are one move: the composed map.
-:::
-
-:::de
-*Zwei Züge sind einer.* Zwei Züge nacheinander sind ein Zug: die zusammengesetzte Abbildung.
-:::
-
-:::proofen
-`map_map : (μ.map f).map g = μ.map (fun x => g (f x))`.
-
-*Tip.* `rw [map_map]`.
-:::
-
-:::proofde
-`map_map : (μ.map f).map g = μ.map (fun x => g (f x))`.
-
-*Tipp.* `rw [map_map]`.
-:::
-:::solution
-```
-rw [map_map]
-```
-:::
-::::
-
 ::::leanonly (proof := "(μ : DiscreteMeasure Bool) : μ.map (fun x => x) = ⟦μ ‖ μ, μ.map not⟧") (lemma := "map_id") (new := "Bool.false_beq") (uses := "map_apply, Fintype.sum_bool, Bool.true_beq, Bool.false_beq, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, Bool.not_true, add_comm, add_zero, mul_zero, add_assoc")
 :::en
 *Doing nothing.* The move `fun x => x` leaves every point where it is.
@@ -134,81 +107,131 @@ rw [Bool.not_true, Bool.cond_true, Bool.cond_false, add_comm, zero_add]
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (μ.map not).map not = ⟦μ ‖ μ, μ.map not⟧") (new := "simp_rw") (uses := "map_map, Bool.not_not, map_id")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) : μ.map (fun x => !(!x)) = ⟦μ ‖ μ, μ.map not⟧") (new := "simp_rw") (uses := "Bool.not_not, map_id")
 :::en
-*Turned over twice.* The coin turned over, and turned over again.
+*Turned over twice, in one move.* The move `fun x => !(!x)`: turn over, and turn over again.
 :::
 
 :::de
-*Zweimal umgedreht.* Die Münze umgedreht, und noch einmal umgedreht.
+*Zweimal umgedreht, in einem Zug.* Der Zug `fun x => !(!x)`: umdrehen, und nochmal umdrehen.
 :::
 
 :::proofen
-`rw [map_map]` makes the two moves one, `μ.map (fun x => !(!x))`. Your lemma from *Circuits*,
-`Bool.not_not : (!(!b)) = b`, should make `!(!x)` into `x`. But `rw [Bool.not_not]` does not find
-`!(!x)`, though it stands there: the `x` in `fun x => …` is a *bound* name, like the index `x` of a
-sum `∑ x, …`, and `rw` rewrites only parts without bound names. The new tactic `simp_rw [rules]` is
-`rw`, also under bound names. Then the move does nothing: your lemma `map_id : μ.map (fun x => x) = μ`.
+Your lemma from *Circuits*, `Bool.not_not : (!(!b)) = b`, should make `!(!x)` into `x`. But
+`rw [Bool.not_not]` does not find `!(!x)`, though it stands there: the `x` in `fun x => …` is a
+*bound* name, like the index `x` of a sum `∑ x, …`, and `rw` rewrites only parts without bound names.
+The new tactic `simp_rw [rules]` is `rw`, also under bound names. Then the move does nothing: your
+lemma `map_id : μ.map (fun x => x) = μ`.
 
-*Tip.* `rw [map_map]`, `simp_rw [Bool.not_not]`, `rw [map_id]`.
+*Tip.* `simp_rw [Bool.not_not]`, `rw [map_id]`.
 :::
 
 :::proofde
-`rw [map_map]` macht aus den zwei Zügen einen, `μ.map (fun x => !(!x))`. Dein Lemma aus
-*Schaltungen*, `Bool.not_not : (!(!b)) = b`, soll aus `!(!x)` ein `x` machen. Aber `rw [Bool.not_not]`
-findet `!(!x)` nicht, obwohl es dasteht: Das `x` in `fun x => …` ist ein *gebundener* Name, wie der
-Index `x` einer Summe `∑ x, …`, und `rw` schreibt nur Teile ohne gebundene Namen um. Die neue Taktik
-`simp_rw [Regeln]` ist `rw`, auch unter gebundenen Namen. Dann tut der Zug nichts:
-dein Lemma `map_id : μ.map (fun x => x) = μ`.
+Dein Lemma aus *Schaltungen*, `Bool.not_not : (!(!b)) = b`, soll aus `!(!x)` ein `x` machen. Aber
+`rw [Bool.not_not]` findet `!(!x)` nicht, obwohl es dasteht: Das `x` in `fun x => …` ist ein
+*gebundener* Name, wie der Index `x` einer Summe `∑ x, …`, und `rw` schreibt nur Teile ohne
+gebundene Namen um. Die neue Taktik `simp_rw [Regeln]` ist `rw`, auch unter gebundenen Namen. Dann
+tut der Zug nichts: dein Lemma `map_id : μ.map (fun x => x) = μ`.
 
-*Tipp.* `rw [map_map]`, `simp_rw [Bool.not_not]`, `rw [map_id]`.
+*Tipp.* `simp_rw [Bool.not_not]`, `rw [map_id]`.
 :::
 :::solution
 ```
-rw [map_map]
 simp_rw [Bool.not_not]
 rw [map_id]
 ```
 :::
 ::::
 
-::::leanonly (proof := "(f : Bool → Bool) (p : I) : (((coin p).map f).map f).map f = (coin p).map f") (new := "congr") (uses := "map_map, Bool.apply_apply_apply")
+::::leanonly (proof := "(f : Bool → Bool) (x y : ℝ≥0∞) : (bif f true then x else 0) + (bif f true then y else 0) = bif f true then ⟦x + y ‖ x + y, x, y, x * y⟧ else 0") (lemma := "cond_add_cond") (uses := "Bool.cond_false, zero_add, Bool.cond_true, add_zero, mul_zero")
 :::en
-*Three times is once, with a coin.* The same, now on a coin: three moves with `f` move the coin as
-one move with `f` does.
+*Two masses behind one test.* Twice the same test `f true`: once with the mass `x`, once with the
+mass `y`.
 :::
 
 :::de
-*Dreimal ist einmal, mit einer Münze.* Dasselbe, jetzt auf einer Münze: Drei Züge mit `f` bewegen
-die Münze wie ein Zug mit `f`.
+*Zwei Massen hinter einem Test.* Zweimal derselbe Test `f true`: einmal mit der Masse `x`, einmal
+mit der Masse `y`.
 :::
 
 :::proofen
-Three moves one after the other are one move: the rule
-`map_map : (μ.map f).map g = μ.map (fun x => g (f x))`, twice. Then both sides move the same coin,
-with two maps. A new tactic: `congr` reduces the goal to the two maps being equal; then `ext b`
-(from *One Coin*) to their being equal at every point `b`. That is the lemma of the first level of this world:
-`exact Bool.apply_apply_apply f b`.
+`f true` is not a variable, but it is a `Bool`, so it is `true` or `false`: `cases f true` goes
+through both values, as `cases x` does for a variable. Then the rules from *Circuits*; with
+`simp_rw` every `bif false then … else …` goes at once. You prove it for the test `f true`; it holds
+for every test `c : Bool`, and it is unlocked as
+`cond_add_cond : (bif c then x else 0) + (bif c then y else 0) = bif c then x + y else 0`.
 
-*Tip.* `rw [map_map, map_map]`, `congr`, `ext b`, `exact Bool.apply_apply_apply f b`.
+*Tip.* `cases f true`, `simp_rw [Bool.cond_false]`, `rw [zero_add]`, `simp_rw [Bool.cond_true]`.
 :::
 
 :::proofde
-Drei Züge hintereinander sind ein Zug: die Regel
-`map_map : (μ.map f).map g = μ.map (fun x => g (f x))`, zweimal. Dann bewegen beide Seiten dieselbe
-Münze, mit zwei Abbildungen. Eine neue Taktik: `congr` führt das Ziel darauf zurück, dass die
-beiden Abbildungen gleich sind; dann `ext b` (aus *Eine Münze*) darauf, dass sie an jeder Stelle `b`
-gleich sind. Das
-ist das Lemma des ersten Levels dieser Welt: `exact Bool.apply_apply_apply f b`.
+`f true` ist keine Variable, aber ein `Bool`, also `true` oder `false`: `cases f true` geht beide
+Werte durch, wie `cases x` für eine Variable. Dann die Regeln aus *Schaltungen*; mit `simp_rw` geht
+jedes `bif false then … else …` auf einmal. Du beweist es für den Test `f true`; es gilt für jeden
+Test `c : Bool` und wird freigeschaltet als
+`cond_add_cond : (bif c then x else 0) + (bif c then y else 0) = bif c then x + y else 0`.
 
-*Tipp.* `rw [map_map, map_map]`, `congr`, `ext b`, `exact Bool.apply_apply_apply f b`.
+*Tipp.* `cases f true`, `simp_rw [Bool.cond_false]`, `rw [zero_add]`, `simp_rw [Bool.cond_true]`.
 :::
 :::solution
 ```
-rw [map_map, map_map]
-congr
+cases f true
+simp_rw [Bool.cond_false]
+rw [zero_add]
+simp_rw [Bool.cond_true]
+```
+:::
+::::
+
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f g : Bool → Bool) : (μ.map f).map g = μ.map ⟦fun x => g (f x) ‖ fun x => g (f x), fun x => f (g x), g⟧") (lemma := "map_map") (uses := "map_apply, Fintype.sum_bool, Bool.false_beq, Bool.not_true, beq_self_eq_true, Bool.cond_false, Bool.cond_true, zero_add, Bool.cond_self, cond_add_cond, Bool.true_beq, Bool.not_false, add_comm, add_zero, mul_zero, add_assoc")
+:::en
+*Boss: two moves are one.* First the move `f`, then the move `g`: which one move is that?
+:::
+
+:::de
+*Boss: Zwei Züge sind einer.* Erst der Zug `f`, dann der Zug `g`: Welcher eine Zug ist das?
+:::
+
+:::proofen
+Compare the masses at every point `b`, and write each mass as its two summands, also the inner ones
+under the sum: `simp_rw`. Then `f` is one of the four maps: `cases f true`, `cases f false`. In each
+case the tests with `true` and `false` are your rules from *Masses* and *Circuits*, and your lemma
+`cond_add_cond` puts two masses behind one test. You prove it on `Bool`; it holds for every type,
+and it is unlocked as `map_map` in this general form.
+
+*Tip.* `ext b`, `simp_rw [map_apply, Fintype.sum_bool]`, `cases f true`, `cases f false`, and then
+case by case.
+:::
+
+:::proofde
+Vergleiche die Massen an jedem Punkt `b`, und schreib jede Masse als ihre zwei Summanden, auch die
+inneren unter der Summe: `simp_rw`. Dann ist `f` eine der vier Abbildungen: `cases f true`,
+`cases f false`. In jedem Fall sind die Tests mit `true` und `false` deine Regeln aus *Massen* und
+*Schaltungen*, und dein Lemma `cond_add_cond` bringt zwei Massen hinter einen Test. Du beweist es
+auf `Bool`; es gilt für jeden Typ und wird in dieser allgemeinen Form als `map_map` freigeschaltet.
+
+*Tipp.* `ext b`, `simp_rw [map_apply, Fintype.sum_bool]`, `cases f true`, `cases f false`, und dann
+Fall für Fall.
+:::
+:::solution
+```
 ext b
-exact Bool.apply_apply_apply f b
+simp_rw [map_apply, Fintype.sum_bool]
+cases f true
+cases f false
+rw [Bool.false_beq, Bool.not_true, beq_self_eq_true]
+simp_rw [Bool.cond_false, Bool.cond_true]
+rw [zero_add, Bool.cond_self, zero_add, cond_add_cond]
+simp_rw [Bool.false_beq, Bool.true_beq, Bool.not_true, Bool.not_false]
+simp_rw [Bool.cond_false, Bool.cond_true]
+rw [zero_add, add_comm (μ true), zero_add, add_comm]
+cases f false
+simp_rw [Bool.false_beq, Bool.true_beq, Bool.not_true, Bool.not_false]
+simp_rw [Bool.cond_false, Bool.cond_true]
+rw [add_comm (μ true), zero_add, zero_add]
+simp_rw [Bool.true_beq]
+simp_rw [Bool.cond_false, Bool.cond_true]
+rw [zero_add, Bool.cond_self, add_comm, zero_add, cond_add_cond]
 ```
 :::
 ::::
