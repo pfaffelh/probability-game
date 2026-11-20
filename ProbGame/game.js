@@ -3310,12 +3310,11 @@
       await this.check(this.lines.slice(0, -1)); this.done = false
       this.busy = false; this.render()
     }
-    // the proof from line k on removed (✕ at the line): it is in the input again, to change it
+    // the proof from line k on removed (✕ at the line), and the input empty
     async cut(k) {
       if (this.busy || k < 1 || k > this.lines.length) return
-      const line = this.lines[k - 1]
-      this.busy = true; this.error = ''; this.choice = null; this.view = null; this.render()
-      try { if (await this.check(this.lines.slice(0, k - 1))) this.typed = line } catch (e) { this.error = tr('Lean cannot be reached: {e}', { e: String(e) }) }
+      this.busy = true; this.error = ''; this.failed = null; this.choice = null; this.view = null; this.typed = ''; this.render()
+      try { await this.check(this.lines.slice(0, k - 1)) } catch (e) { this.error = tr('Lean cannot be reached: {e}', { e: String(e) }) }
       this.done = false
       this.busy = false; this.render(); this.input?.focus({ preventScroll: true }); this.reveal()
     }
