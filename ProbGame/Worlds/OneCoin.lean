@@ -244,7 +244,7 @@ exact h
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : ↑p + ↑(σ p) = (1 : ℝ≥0∞)") (new := "coin_total") (uses := "coin_true, coin_false, coin_total, mass_total")
+::::leanonly (proof := "(p : I) : ↑p + ↑(σ p) = (1 : ℝ≥0∞)") (lemma := "add_symm_eq_one") (new := "coin_total") (uses := "coin_true, coin_false, coin_total, mass_total")
 :::en
 *The coin is whole.* $`p + (1 - p) = 1`: the two masses of the coin add up to one.
 :::
@@ -254,13 +254,13 @@ exact h
 :::
 
 :::proofen
-`coin_total : coin p true + coin p false = 1`. To use it, first write the masses as masses of the coin: your rules `coin_true` and `coin_false`, from right to left.
+`coin_total : coin p true + coin p false = 1`. To use it, first write the masses as masses of the coin: your rules `coin_true` and `coin_false`, from right to left. What you prove is unlocked as `add_symm_eq_one`.
 
 *Tip.* `rw [← coin_true, ← coin_false, coin_total]`.
 :::
 
 :::proofde
-`coin_total : coin p true + coin p false = 1`. Um sie zu benutzen, schreib die Massen zuerst als Massen der Münze: deine Regeln `coin_true` und `coin_false`, von rechts nach links.
+`coin_total : coin p true + coin p false = 1`. Um sie zu benutzen, schreib die Massen zuerst als Massen der Münze: deine Regeln `coin_true` und `coin_false`, von rechts nach links. Was du beweist, wird als `add_symm_eq_one` freigeschaltet.
 
 *Tipp.* `rw [← coin_true, ← coin_false, coin_total]`.
 :::
