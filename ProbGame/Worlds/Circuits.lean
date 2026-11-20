@@ -4,10 +4,11 @@ import ProbGame.Level
 open Verso.Genre Manual
 open ProbGame
 
-#doc (Manual) "Circuits" =>
+#doc (Manual) "Bool" =>
 
 %%%
 htmlSplit := .never
+file := "Circuits"
 number := false
 %%%
 
@@ -476,7 +477,20 @@ rw [Bool.cond_true]
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "and, or, not") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : ((x || y) && !(x && y)) = (bif x then (bif y then ⟦false ‖ true, false⟧ else ⟦true ‖ true, false⟧) else (bif y then ⟦true ‖ true, false⟧ else ⟦false ‖ true, false⟧))") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out") (new := "<;>") (uses := "-")
+::::quiz (tactic := "cases x <;> rfl") (statements := "(x : Bool) : (x && x) = x ;; (x : Bool) : x = true ;; (x : Bool) : (x || !x) = true ;; (x y : Bool) : (x && y) = (y && x) ;; (x : Bool) : (!x) = x ;; (x : Bool) : (true && x) = x") (answer := "1, 3, 6") (new := "<;>")
+:::en
+*Which ones?* New: `t₁ <;> t₂` runs `t₂` on every goal that `t₁` leaves. So `cases x <;> rfl` is
+`cases x`, and then `rfl` in both cases, in one line. Which of these statements does it prove?
+:::
+
+:::de
+*Welche?* Neu: `t₁ <;> t₂` führt `t₂` auf jedem Ziel aus, das `t₁` übrig lässt. Also ist
+`cases x <;> rfl` erst `cases x` und dann `rfl` in beiden Fällen, in einer Zeile. Welche dieser
+Aussagen beweist es?
+:::
+::::
+
+::::circuit (inputs := "x y") (gates := "and, or, not") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : ((x || y) && !(x && y)) = (bif x then (bif y then ⟦false ‖ true, false⟧ else ⟦true ‖ true, false⟧) else (bif y then ⟦true ‖ true, false⟧ else ⟦false ‖ true, false⟧))") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out") (uses := "-")
 :::hint (anchor := "none")
 :::
 
@@ -494,7 +508,7 @@ genau ein Eingang `true` ist: mindestens einer, aber nicht beide. In Lean ist da
 :::proofen
 The table has four rows now, one for each pair of values: first `x` decides, then `y`, a `bif` in
 each branch of a `bif`. `cases x` makes two goals; in each, `cases y` makes two more: four goals, the
-four rows. New: `t₁ <;> t₂` runs `t₂` on every goal that `t₁` leaves; so all in one line.
+four rows. With `<;>` from the level before, all in one line.
 
 *Tip.* `cases x <;> cases y <;> rfl`.
 :::
@@ -502,8 +516,7 @@ four rows. New: `t₁ <;> t₂` runs `t₂` on every goal that `t₁` leaves; so
 :::proofde
 Die Tafel hat jetzt vier Zeilen, eine für jedes Paar von Werten: erst entscheidet `x`, dann `y`, ein
 `bif` in jedem Zweig eines `bif`. `cases x` macht zwei Ziele; in jedem macht `cases y` zwei weitere:
-vier Ziele, die vier Zeilen. Neu: `t₁ <;> t₂` führt `t₂` auf jedem Ziel aus, das `t₁` übrig lässt; so
-alles in einer Zeile.
+vier Ziele, die vier Zeilen. Mit `<;>` aus dem Level davor alles in einer Zeile.
 
 *Tipp.* `cases x <;> cases y <;> rfl`.
 :::

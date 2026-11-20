@@ -11,7 +11,7 @@ htmlSplit := .never
 %%%
 
 :::en
-The circuits of the world *Circuits*, now with a coin at each input: `x ← coin p`, `y ← coin p`, …,
+The circuits of the world *Bool*, now with a coin at each input: `x ← coin p`, `y ← coin p`, …,
 all with the same $`p` and thrown independently of each other. Then the output is random too: its
 distribution is the target. Each row of the truth table has a mass, the product of the masses of its
 inputs ($`p` for `true`, $`1 - p` for `false`): with two coins, `true`–`true` has mass $`p^2`,
@@ -31,7 +31,7 @@ first, what a `do` block is.
 :::
 
 :::de
-Die Schaltungen der Welt *Schaltungen*, jetzt mit einer Münze an jedem Eingang: `x ← coin p`,
+Die Schaltungen der Welt *Bool*, jetzt mit einer Münze an jedem Eingang: `x ← coin p`,
 `y ← coin p`, …, alle mit demselben $`p` und unabhängig voneinander geworfen. Dann ist auch der Ausgang
 zufällig: Seine Verteilung ist das Ziel. Jede Zeile der Wahrheitstafel hat eine Masse, das Produkt der
 Massen ihrer Eingänge ($`p` für `true`, $`1 - p` für `false`): Bei zwei Münzen hat `true`–`true` die
@@ -111,7 +111,7 @@ one draw from `coin p`, not a random variable: used twice, it is the same value 
 and `y` would be two draws, with $`p^2` (soon, in `coin_and`). What is left, draw `x` and give it
 back, is `coin p` itself.
 
-Your lemma `Bool.and_self : (x && x) = x` from *Circuits*, and the rule `bind_pure : (do let x ← μ; pure x) = μ`. The `x` of
+Your lemma `Bool.and_self : (x && x) = x` from *Bool*, and the rule `bind_pure : (do let x ← μ; pure x) = μ`. The `x` of
 `let x ← coin p` is bound, as the `x` of `fun x => …` in *Maps*: so `simp_rw`, not `rw`. (Lean itself
 reads `do let x ← μ; pure x` as `μ` at once, when you type it.)
 
@@ -124,7 +124,7 @@ eines Zugs aus `coin p`, keine Zufallsvariable: Zweimal benutzt ist es zweimal d
 Münzen `x` und `y` wären zwei Züge, mit $`p^2` (bald, in `coin_and`). Was bleibt, `x` ziehen und
 zurückgeben, ist `coin p` selbst.
 
-Dein Lemma `Bool.and_self : (x && x) = x` aus *Schaltungen* und die Regel `bind_pure : (do let x ← μ; pure x) = μ`. Das `x` von
+Dein Lemma `Bool.and_self : (x && x) = x` aus *Bool* und die Regel `bind_pure : (do let x ← μ; pure x) = μ`. Das `x` von
 `let x ← coin p` ist gebunden, wie das `x` von `fun x => …` in *Abbildungen*: also `simp_rw`, nicht
 `rw`. (Lean selbst liest `do let x ← μ; pure x` sofort als `μ`, wenn du es eintippst.)
 

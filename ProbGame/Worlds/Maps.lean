@@ -117,7 +117,7 @@ rw [Bool.not_true, Bool.cond_true, Bool.cond_false, add_comm, zero_add]
 :::
 
 :::proofen
-Your lemma from *Circuits*, `Bool.not_not : (!(!b)) = b`, should make `!(!x)` into `x`. But
+Your lemma from *Bool*, `Bool.not_not : (!(!b)) = b`, should make `!(!x)` into `x`. But
 `rw [Bool.not_not]` does not find `!(!x)`, though it stands there: the `x` in `fun x => …` is a
 *bound* name, like the index `x` of a sum `∑ x, …`, and `rw` rewrites only parts without bound names.
 The new tactic `simp_rw [rules]` is `rw`, also under bound names. Then the move does nothing: your
@@ -127,7 +127,7 @@ lemma `map_id : μ.map (fun x => x) = μ`.
 :::
 
 :::proofde
-Dein Lemma aus *Schaltungen*, `Bool.not_not : (!(!b)) = b`, soll aus `!(!x)` ein `x` machen. Aber
+Dein Lemma aus *Bool*, `Bool.not_not : (!(!b)) = b`, soll aus `!(!x)` ein `x` machen. Aber
 `rw [Bool.not_not]` findet `!(!x)` nicht, obwohl es dasteht: Das `x` in `fun x => …` ist ein
 *gebundener* Name, wie der Index `x` einer Summe `∑ x, …`, und `rw` schreibt nur Teile ohne
 gebundene Namen um. Die neue Taktik `simp_rw [Regeln]` ist `rw`, auch unter gebundenen Namen. Dann
@@ -156,7 +156,7 @@ mit der Masse `y`.
 
 :::proofen
 `f true` is not a variable, but it is a `Bool`, so it is `true` or `false`: `cases f true` goes
-through both values, as `cases x` does for a variable. Then the rules from *Circuits*; with
+through both values, as `cases x` does for a variable. Then the rules from *Bool*; with
 `simp_rw` every `bif false then … else …` goes at once. You prove it for the test `f true`; it holds
 for every test `c : Bool`, and it is unlocked as
 `cond_add_cond : (bif c then x else 0) + (bif c then y else 0) = bif c then x + y else 0`.
@@ -166,7 +166,7 @@ for every test `c : Bool`, and it is unlocked as
 
 :::proofde
 `f true` ist keine Variable, aber ein `Bool`, also `true` oder `false`: `cases f true` geht beide
-Werte durch, wie `cases x` für eine Variable. Dann die Regeln aus *Schaltungen*; mit `simp_rw` geht
+Werte durch, wie `cases x` für eine Variable. Dann die Regeln aus *Bool*; mit `simp_rw` geht
 jedes `bif false then … else …` auf einmal. Du beweist es für den Test `f true`; es gilt für jeden
 Test `c : Bool` und wird freigeschaltet als
 `cond_add_cond : (bif c then x else 0) + (bif c then y else 0) = bif c then x + y else 0`.
@@ -195,7 +195,7 @@ simp_rw [Bool.cond_true]
 :::proofen
 Compare the masses at every point `b`, and write each mass as its two summands, also the inner ones
 under the sum: `simp_rw`. Then `f` is one of the four maps: `cases f true`, `cases f false`. In each
-case the tests with `true` and `false` are your rules from *Masses* and *Circuits*, and your lemma
+case the tests with `true` and `false` are your rules from *Masses* and *Bool*, and your lemma
 `cond_add_cond` puts two masses behind one test. You prove it on `Bool`; it holds for every type,
 and it is unlocked as `map_map` in this general form.
 
@@ -207,7 +207,7 @@ case by case.
 Vergleiche die Massen an jedem Punkt `b`, und schreib jede Masse als ihre zwei Summanden, auch die
 inneren unter der Summe: `simp_rw`. Dann ist `f` eine der vier Abbildungen: `cases f true`,
 `cases f false`. In jedem Fall sind die Tests mit `true` und `false` deine Regeln aus *Massen* und
-*Schaltungen*, und dein Lemma `cond_add_cond` bringt zwei Massen hinter einen Test. Du beweist es
+*Bool*, und dein Lemma `cond_add_cond` bringt zwei Massen hinter einen Test. Du beweist es
 auf `Bool`; es gilt für jeden Typ und wird in dieser allgemeinen Form als `map_map` freigeschaltet.
 
 *Tipp.* `ext b`, `simp_rw [map_apply, Fintype.sum_bool]`, `cases f true`, `cases f false`, und dann

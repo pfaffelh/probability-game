@@ -9,11 +9,12 @@ import json, re, sys
 from pathlib import Path
 
 here = Path(__file__).resolve().parent.parent
-HEAD = re.compile(r'^(::::+)(level|build|boolean|walk|circuit|leanonly) ')
+HEAD = re.compile(r'^(::::+)(level|build|boolean|walk|circuit|leanonly|quiz) ')
 # the rules the proofs of a kind of level are checked in, when the level names none
 CONTEXT = {'level': ('proofContext', 'Lean/Rules.lean'), 'build': ('proofContext', 'Lean/Rules.lean'),
            'boolean': ('context', 'Lean/WorldBool.lean'), 'walk': ('context', 'Lean/WorldWalk.lean'),
-           'circuit': ('context', 'Lean/WorldBool.lean'), 'leanonly': ('context', 'Lean/Rules.lean')}
+           'circuit': ('context', 'Lean/WorldBool.lean'), 'leanonly': ('context', 'Lean/Rules.lean'),
+           'quiz': ('context', 'Lean/WorldBool.lean')}
 
 
 def attr(line, k):
@@ -45,6 +46,9 @@ def levels_of(path):
                         'proof': re.sub(r'⟦([^⟧‖]*)(‖[^⟧]*)?⟧', lambda m: '(' + m.group(1).strip() + ')', attr(l, 'proof')) if attr(l, 'proof') else None,
                         'gaps': [g.strip() for g in re.findall(r'⟦([^⟧‖]*)(?:‖[^⟧]*)?⟧', attr(l, 'proof') or '')],
                         'lemma': attr(l, 'lemma'), 'solution': solution,
+                        # (a choice: the statements, the tactic, the numbers of those it proves)
+                        'tactic': attr(l, 'tactic'), 'statements': [s.strip() for s in (attr(l, 'statements') or '').split(';;') if s.strip()],
+                        'answer': [int(n) for n in re.findall(r'\d+', attr(l, 'answer') or '')],
                         'context': attr(l, key) or default})
             i = end
         i += 1

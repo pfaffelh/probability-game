@@ -1722,6 +1722,99 @@
     reset() {}
   }
 
+  // A choice (`::::quiz`): which of the statements does the tactic prove? The player taps them and
+  // checks; Lean (the bridge) decides each statement. Wrong: only that something is wrong. Right: what
+  // Lean says about each statement. (Without Lean: the answer the level gives.)
+  class Quiz {
+    constructor(root, index, onSolved) {
+      this.root = root; this.index = index; this.onSolved = onSolved
+      const d = root.dataset
+      this.tactic = d.tactic; this.statements = JSON.parse(d.statements || '[]'); this.context = d.context ?? ''
+      this.answer = new Set((d.answer || '').split(',').map(s => Number(s.trim()) - 1).filter(i => i >= 0))
+      this.board = root.querySelector('.pg-board'); this.picture = null
+      this.key = `pg:${location.pathname}:${index}`
+      this.picked = new Set(); this.verdicts = null; this.msg = ''; this.busy = false
+      try { for (const i of JSON.parse(localStorage.getItem(this.key + ':picked') ?? '[]')) this.picked.add(i) } catch {}
+      if (this.solved) this.ask().then(() => this.render())
+      this.render()
+    }
+    get solved() { try { return localStorage.getItem(this.key) === '1' } catch { return false } }
+    get done() { return this.solved && !!this.verdicts && this.same() }
+    get canUndo() { return false }
+    get canReset() { return this.picked.size > 0 || !!this.msg }
+    status() { return this.msg }
+    undo() {}
+    reset() { this.picked.clear(); this.msg = ''; this.save(); this.render() }
+    save() { try { localStorage.setItem(this.key + ':picked', JSON.stringify([...this.picked])) } catch {} }
+    same() { return this.statements.every((_, i) => this.picked.has(i) === this.verdicts[i].ok) }
+    async post(path, body) {
+      const r = await fetch(BACKEND.replace(/\/$/, '') + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+      return JSON.parse(await r.text())
+    }
+    // what Lean says about each statement: proved by the tactic, or the first error
+    async ask() {
+      if (this.verdicts) return
+      if (!BACKEND) { this.verdicts = this.statements.map((_, i) => ({ ok: this.answer.has(i), text: '' })); return }
+      this.verdicts = await Promise.all(this.statements.map(async s => {
+        const st = await this.post('/start', { context: this.context, statement: `example ${s}` })
+        if (st.error) return { ok: false, text: st.error.message }
+        const r = await this.post('/check', { session: st.session, proof: this.tactic })
+        if (r.error) return { ok: false, text: r.error.message }
+        const bad = r.steps.flatMap(x => x.diags.filter(g => g.severity === 1).map(g => g.message.text))
+        if (!bad.length && r.completed) return { ok: true, text: '' }
+        // (t₁ <;> t₂ that fails: the goals t₂ does not close, with t₁ <;> try (t₂))
+        const k = this.tactic.lastIndexOf('<;>')
+        if (k >= 0) {
+          const st2 = await this.post('/start', { context: this.context, statement: `example ${s}` })
+          const r2 = st2.error ? st2 : await this.post('/check', { session: st2.session, proof: `${this.tactic.slice(0, k)}<;> try (${this.tactic.slice(k + 3).trim()})` })
+          const gs = r2.error ? [] : r2.steps[r2.steps.length - 1].goals.map(g => g.goal.text.split('\n').filter(l => !/^case /.test(l)).join('\n'))
+          if (gs.length) return { ok: false, text: tr('{t} does not close:', { t: this.tactic.slice(k + 3).trim() }) + '\n' + gs.join('\n\n') }
+        }
+        return { ok: false, text: bad[0] ?? tr('Goals remain.') }
+      }))
+    }
+    async check() {
+      this.busy = true; this.msg = tr('Lean is thinking …'); this.render()
+      try { await this.ask() } catch (e) { this.verdicts = null; this.busy = false; this.msg = tr('Lean cannot be reached: {e}', { e: String(e) }); this.render(); return }
+      this.busy = false
+      if (this.same()) {
+        this.msg = tr('Right: this is what Lean says.')
+        try { localStorage.setItem(this.key, '1') } catch {}
+        this.render(); this.onSolved?.()
+      } else { this.msg = tr('Not quite: at least one choice is wrong.'); this.render() }
+    }
+    render() {
+      const box = el('div', 'pg-quiz-box'), list = el('div', 'pg-quiz-list')
+      const shown = this.done
+      this.statements.forEach((s, i) => {
+        const b = el('button', 'pg-quiz-item' + (this.picked.has(i) ? ' pg-quiz-on' : ''))
+        b.type = 'button'; b.disabled = this.busy || shown; b.setAttribute('aria-pressed', String(this.picked.has(i)))
+        const k = s.indexOf(') : '), binders = k < 0 ? '' : s.slice(0, k + 1), stmt = k < 0 ? s : s.slice(k + 4)
+        b.title = binders
+        b.append(el('span', 'pg-quiz-mark', this.picked.has(i) ? '☑' : '☐'), el('code', 'pg-quiz-stmt', stmt))
+        b.addEventListener('click', () => { if (this.picked.has(i)) this.picked.delete(i); else this.picked.add(i); this.msg = ''; this.save(); this.render() })
+        const row = el('div', 'pg-quiz-row'); row.append(b)
+        if (shown) {
+          const v = this.verdicts[i]
+          const say = el('div', 'pg-quiz-say' + (v.ok ? ' pg-quiz-ok' : ''), v.ok ? tr('✓ Lean: proved by {t}', { t: this.tactic }) : tr('✗ Lean: not proved'))
+          if (v.text) say.append(el('pre', 'pg-quiz-err', leanText(v.text).split('\n').slice(0, 6).join('\n')))
+          row.append(say)
+        }
+        list.append(row)
+      })
+      const q = el('div', 'pg-quiz-q'); q.append(tr('Tap every statement that '), el('code', '', this.tactic), tr(' proves.'))
+      const go = el('button', 'pg-quiz-check', tr('Check')); go.type = 'button'; go.disabled = this.busy || shown
+      go.addEventListener('click', () => this.check())
+      box.append(q, list, go)
+      this.board.replaceChildren(box)
+      this.onRendered?.()
+    }
+  }
+  Object.assign(DE, { 'Goals remain.': 'Es bleiben Ziele.', '{t} does not close:': '{t} schließt nicht:', 'Right: this is what Lean says.': 'Richtig: Das sagt Lean.',
+    'Not quite: at least one choice is wrong.': 'Noch nicht: Mindestens eine Wahl stimmt nicht.',
+    '✓ Lean: proved by {t}': '✓ Lean: bewiesen mit {t}', '✗ Lean: not proved': '✗ Lean: nicht bewiesen',
+    'Tap every statement that ': 'Tippe jede Aussage an, die ', ' proves.': ' beweist.', Check: 'Prüfen' })
+
   class Circuit {
     constructor(root, index, onSolved) {
       this.root = root; this.index = index; this.onSolved = onSolved
@@ -2896,11 +2989,11 @@
     { name: 'Fintype.sum_bool', kind: 'rule', sig: '∑ a, g a = g true + g false', en: 'A sum over Bool: its two summands.', de: 'Eine Summe über Bool: ihre zwei Summanden.' },
     { name: 'Bool.true_beq', kind: 'lemma', sig: '(true == b) = b', en: 'Proved by you in Masses: testing true against b gives b itself.', de: 'Von dir bewiesen in „Massen“: Der Test von true gegen b gibt b selbst.' },
     { name: 'beq_true', kind: 'lemma', sig: '(c == true) = c', en: 'Proved by you in Masses: testing for true gives c itself.', de: 'Von dir bewiesen in „Massen“: Der Test auf true gibt c selbst.' },
-    { name: 'Bool.not_true', kind: 'lemma', sig: '(!true) = false', en: 'Proved by you in Circuits: not true is false.', de: 'Von dir bewiesen in „Schaltungen“: Nicht true ist false.' },
-    { name: 'Bool.not_false', kind: 'lemma', sig: '(!false) = true', en: 'Proved by you in Circuits: not false is true.', de: 'Von dir bewiesen in „Schaltungen“: Nicht false ist true.' },
-    { name: 'Bool.cond_true', kind: 'lemma', sig: '(bif true then a else b) = a', en: 'Proved by you in Circuits: bif with true is the first.', de: 'Von dir bewiesen in „Schaltungen“: bif mit true ist das Erste.' },
-    { name: 'Bool.cond_self', kind: 'lemma', sig: '(bif c then a else a) = a', en: 'Proved by you in Circuits: twice the same, whatever the condition.', de: 'Von dir bewiesen in „Schaltungen“: zweimal dasselbe, egal welche Bedingung.' },
-    { name: 'Bool.cond_false', kind: 'lemma', sig: '(bif false then a else b) = b', en: 'Proved by you in Circuits: bif with false is the second.', de: 'Von dir bewiesen in „Schaltungen“: bif mit false ist das Zweite.' },
+    { name: 'Bool.not_true', kind: 'lemma', sig: '(!true) = false', en: 'Proved by you in Bool: not true is false.', de: 'Von dir bewiesen in „Bool“: Nicht true ist false.' },
+    { name: 'Bool.not_false', kind: 'lemma', sig: '(!false) = true', en: 'Proved by you in Bool: not false is true.', de: 'Von dir bewiesen in „Bool“: Nicht false ist true.' },
+    { name: 'Bool.cond_true', kind: 'lemma', sig: '(bif true then a else b) = a', en: 'Proved by you in Bool: bif with true is the first.', de: 'Von dir bewiesen in „Bool“: bif mit true ist das Erste.' },
+    { name: 'Bool.cond_self', kind: 'lemma', sig: '(bif c then a else a) = a', en: 'Proved by you in Bool: twice the same, whatever the condition.', de: 'Von dir bewiesen in „Bool“: zweimal dasselbe, egal welche Bedingung.' },
+    { name: 'Bool.cond_false', kind: 'lemma', sig: '(bif false then a else b) = b', en: 'Proved by you in Bool: bif with false is the second.', de: 'Von dir bewiesen in „Bool“: bif mit false ist das Zweite.' },
     { name: 'zero_add', kind: 'rule', sig: '0 + a = a', en: 'Adding to zero.', de: 'Zu null addieren.' },
     { name: 'coin_not_true', kind: 'lemma', sig: '((coin p).map not) true = ↑(σ p)', en: 'Proved by you in One Coin.', de: 'Von dir bewiesen in „Eine Münze“.' },
     { name: 'coin_not', kind: 'lemma', sig: '(coin p).map not = coin (σ p)', en: 'Proved by you: the boss of One Coin. Flipping a coin swaps the masses.', de: 'Von dir bewiesen: der Endgegner von „Eine Münze“. Umdrehen tauscht die Massen.' },
@@ -2931,8 +3024,8 @@
     { name: 'bind_pure', kind: 'rule', sig: '(do let x ← μ; pure x) = μ', en: 'Draw and give back: that is μ itself.', de: 'Ziehen und zurückgeben: Das ist μ selbst.' },
     { name: "binom_succ'", kind: 'lemma', sig: "(do let X ← binom p n; let Y ← coin p; pure (X + Y.toNat)) = binom p (n + 1)", en: 'Proved by you in Building with Coins.', de: 'Von dir bewiesen in „Bauen mit Münzen“.' },
     // the first world only
-    { name: 'Bool.and_self', kind: 'lemma', sig: '(x && x) = x', en: 'Proved by you in Circuits: x and x is x.', de: 'Von dir bewiesen in „Schaltungen“: x und x ist x.' },
-    { name: 'Bool.not_not', kind: 'lemma', sig: '(!(!b)) = b', en: 'Proved by you in Circuits: flipped twice is not flipped.', de: 'Von dir bewiesen in „Schaltungen“: Zweimal umgedreht ist nicht umgedreht.' },
+    { name: 'Bool.and_self', kind: 'lemma', sig: '(x && x) = x', en: 'Proved by you in Bool: x and x is x.', de: 'Von dir bewiesen in „Bool“: x und x ist x.' },
+    { name: 'Bool.not_not', kind: 'lemma', sig: '(!(!b)) = b', en: 'Proved by you in Bool: flipped twice is not flipped.', de: 'Von dir bewiesen in „Bool“: Zweimal umgedreht ist nicht umgedreht.' },
     { name: 'Bool.apply_apply_apply', kind: 'lemma', sig: 'f (f (f b)) = f b', en: 'Proved by you in Maps: for a map Bool → Bool, three times is once.', de: 'Von dir bewiesen in „Abbildungen“: Für eine Abbildung Bool → Bool ist dreimal dasselbe wie einmal.' },
     { name: 'Function.comp_apply', kind: 'rule', sig: '(g ∘ f) x = g (f x)', en: 'First f, then g.', de: 'Erst f, dann g.' },
     { name: 'id_eq', kind: 'rule', sig: 'id a = a', en: 'id does nothing.', de: 'id tut nichts.' },
@@ -3868,7 +3961,7 @@
       ...level.funs.map(f => ['build:' + f, funLabel(f), el('div', 'pg-map-sym', FUNS[f].sym)])]
     if (level instanceof Grid) return level.moves.map(m => ['walk:' + m, tr(LABEL0[m]), null])
     if (level instanceof Bools) return level.moves.map(m => ['bool:' + m, tr(MOVESB[m].label), mapPicture(k => String(MOVESB[m].f(k === 'true')))])
-    if (level instanceof LeanOnly) return []
+    if (level instanceof LeanOnly || level instanceof Quiz) return []
     if (level instanceof Circuit) return level.gates.map(g => ['circuit:' + g, tr(GATES[g].label), el('div', 'pg-map-sym', GATES[g].sym)])
     return r.dataset.moves.split(',').map(x => x.trim()).filter(Boolean).map(spec => {
       const m = parseMove(spec)
@@ -4053,7 +4146,7 @@
     if (!roots.length) return
     STAGE = true
     // (a level whose saved state no longer fits it, after the level changed: started afresh, its state forgotten)
-    const make = (r, i) => new (r.classList.contains('pg-build') ? Builder : r.classList.contains('pg-walk') ? Grid : r.classList.contains('pg-bool') ? Bools : r.classList.contains('pg-circuit') ? Circuit : r.classList.contains('pg-leanonly') ? LeanOnly : Level)(r, i, () => refresh())
+    const make = (r, i) => new (r.classList.contains('pg-build') ? Builder : r.classList.contains('pg-walk') ? Grid : r.classList.contains('pg-bool') ? Bools : r.classList.contains('pg-circuit') ? Circuit : r.classList.contains('pg-leanonly') ? LeanOnly : r.classList.contains('pg-quiz') ? Quiz : Level)(r, i, () => refresh())
     const levels = roots.map((r, i) => {
       try { return make(r, i) } catch (e) {
         console.warn('level', i + 1, 'started afresh:', e)

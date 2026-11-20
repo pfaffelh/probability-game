@@ -15,7 +15,7 @@ A coin shows `true` with probability $`p` and `false` with probability $`1 - p`,
 Lean, where a coin is a random `Bool`. Its distribution gives each outcome its *mass*, here $`1 - p`
 and $`p`; the masses add up to $`1`. A distribution is the same as a probability measure.
 
-The board is played from top to bottom, as in *Circuits*: at the top the coin `x ← coin p` is thrown,
+The board is played from top to bottom, as in *Bool*: at the top the coin `x ← coin p` is thrown,
 below it the gates, at the bottom the output box with the target. A gate applies a map $`f` to the
 outcome: the mass of each outcome goes to its image, and where several outcomes have the same image,
 their masses add up. What comes out is the distribution of $`f(X)`, the *image measure*
@@ -30,7 +30,7 @@ ein beliebiges $`p`, wie in Lean, wo eine Münze ein zufälliges `Bool` ist. Ihr
 Ergebnis seine *Masse*, hier $`1 - p` und $`p`; die Massen ergeben zusammen $`1`. Eine Verteilung ist
 dasselbe wie ein Wahrscheinlichkeitsmaß.
 
-Das Spielfeld wird von oben nach unten gespielt, wie in *Schaltungen*: Oben wird die Münze
+Das Spielfeld wird von oben nach unten gespielt, wie in *Bool*: Oben wird die Münze
 `x ← coin p` geworfen, darunter die Bausteine, unten der Ausgabekasten mit dem Ziel. Ein Baustein wendet
 eine Abbildung $`f` auf das Ergebnis an: Die Masse jedes Ergebnisses geht zu seinem Bild, und wo mehrere
 Ergebnisse dasselbe Bild haben, addieren sich ihre Massen. Was herauskommt, ist die Verteilung von
@@ -158,8 +158,8 @@ Spielfeld zeigen kann. Was nicht bei `b` liegt, liegt bei `!b`.
 one. That is the rule `mass_total μ : μ true + μ false = 1`. So the mass at one side is what the
 other side misses to one.
 
-`cases b` (from *Circuits*): the point `b` is `false` or `true`, two goals one after the other
-(`!false` is `true`: `Bool.not_false`, from *Circuits*).
+`cases b` (from *Bool*): the point `b` is `false` or `true`, two goals one after the other
+(`!false` is `true`: `Bool.not_false`, from *Bool*).
 
 Masses are numbers in $`[0, \infty]` (`ℝ≥0∞`); taking away is allowed when what is taken away is
 finite: `ENNReal.add_sub_cancel_left (h : a ≠ ⊤) : a + b - a = b`, and `mass_ne_top : μ b ≠ ⊤` says
@@ -179,8 +179,8 @@ goal that is exactly `h`.
 Gesamtmasse eins ist. Das ist die Regel `mass_total μ : μ true + μ false = 1`. Also ist die Masse auf
 der einen Seite das, was der anderen zu eins fehlt.
 
-`cases b` (aus *Schaltungen*): Der Punkt `b` ist `false` oder `true`, zwei Ziele nacheinander
-(`!false` ist `true`: `Bool.not_false`, aus *Schaltungen*).
+`cases b` (aus *Bool*): Der Punkt `b` ist `false` oder `true`, zwei Ziele nacheinander
+(`!false` ist `true`: `Bool.not_false`, aus *Bool*).
 
 Massen sind Zahlen in $`[0, \infty]` (`ℝ≥0∞`); wegnehmen darf man, wenn das Weggenommene endlich
 ist: `ENNReal.add_sub_cancel_left (h : a ≠ ⊤) : a + b - a = b`, und `mass_ne_top : μ b ≠ ⊤` sagt,
@@ -418,7 +418,7 @@ Das sichere `b`, von `f` bewegt: Wo liegt dann die ganze Masse?
 :::proofen
 Compare the bars at `true`: `apply bool_ext`, then `map_true`, `pure_true` and, for the mass of
 `pure b` at `false`, `pure_apply`. Then `cases b`. What `f` does stays unknown, but where both
-branches of a `bif` are equal, `Bool.cond_self` (from *Circuits*) helps; `beq_self_eq_true` and
+branches of a `bif` are equal, `Bool.cond_self` (from *Bool*) helps; `beq_self_eq_true` and
 `Bool.true_beq` (from *Masses*) compute the tests `==`. You prove it on `Bool`; it holds for every type,
 and it is unlocked as `map_pure` in this general form.
 
@@ -430,7 +430,7 @@ and it is unlocked as `map_pure` in this general form.
 :::proofde
 Vergleiche die Säulen bei `true`: `apply bool_ext`, dann `map_true`, `pure_true` und, für die Masse von
 `pure b` bei `false`, `pure_apply`. Dann `cases b`. Was `f` tut, bleibt unbekannt, aber wo beide Zweige
-eines `bif` gleich sind, hilft `Bool.cond_self` (aus *Schaltungen*); `beq_self_eq_true` und
+eines `bif` gleich sind, hilft `Bool.cond_self` (aus *Bool*); `beq_self_eq_true` und
 `Bool.true_beq` (aus *Massen*) rechnen die Tests `==` aus. Du beweist es auf `Bool`; es gilt für jeden
 Typ und wird in dieser allgemeinen Form als `map_pure` freigeschaltet.
 
@@ -465,7 +465,7 @@ das Bildmaß der Verkettung, $`(P \circ f^{-1}) \circ g^{-1} = P \circ (g \circ 
 
 :::proofen
 Your lemma `map_pure : (pure a).map f = pure (f a)`: a gate on a point mass moves the point. Then
-`rfl` from *Circuits*: the two sides are the same after computing, `!true` is `false`.
+`rfl` from *Bool*: the two sides are the same after computing, `!true` is `false`.
 
 *Tip.* `rw [coin_const]`, then `rw [map_pure]` (or both at once: `rw [coin_const, map_pure]`), then
 `rfl`.
@@ -473,7 +473,7 @@ Your lemma `map_pure : (pure a).map f = pure (f a)`: a gate on a point mass move
 
 :::proofde
 Dein Lemma `map_pure : (pure a).map f = pure (f a)`: Ein Baustein auf einer Punktmasse verschiebt
-den Punkt. Dann `rfl` aus *Schaltungen*: Beide Seiten sind nach Ausrechnen gleich, `!true` ist `false`.
+den Punkt. Dann `rfl` aus *Bool*: Beide Seiten sind nach Ausrechnen gleich, `!true` ist `false`.
 
 *Tipp.* `rw [coin_const]`, dann `rw [map_pure]` (oder beides auf einmal: `rw [coin_const, map_pure]`),
 dann `rfl`.

@@ -67,7 +67,7 @@ def coin (p : I) : DiscreteMeasure Bool where
 ```
 
 `I` is the unit interval $`[0, 1]`, where the probability `p` lies; `σ p` is $`1 - p`, again in
-`I`. The arrow `↑` makes a number of `I` a mass in `ℝ≥0∞`. (`μ x` is `μ.weight x`.) So Lean computes the left side to `↑p`: `rfl`, as in *Circuits*. The
+`I`. The arrow `↑` makes a number of `I` a mass in `ℝ≥0∞`. (`μ x` is `μ.weight x`.) So Lean computes the left side to `↑p`: `rfl`, as in *Bool*. The
 statement is the rule `coin_true`; once proved, it is in your inventory.
 
 *Tip.* `rfl`.
@@ -92,7 +92,7 @@ def coin (p : I) : DiscreteMeasure Bool where
 
 `I` ist das Einheitsintervall $`[0, 1]`, in dem die Wahrscheinlichkeit `p` liegt; `σ p` ist $`1 - p`,
 wieder in `I`. Der Pfeil `↑` macht aus einer Zahl aus `I` eine Masse in `ℝ≥0∞`. (`μ x` ist
-`μ.weight x`.) Also rechnet Lean die linke Seite zu `↑p` aus: `rfl`, wie in *Schaltungen*.
+`μ.weight x`.) Also rechnet Lean die linke Seite zu `↑p` aus: `rfl`, wie in *Bool*.
 Die Aussage ist die Regel `coin_true`; bewiesen, ist sie in deinem Inventar.
 
 *Tipp.* `rfl`.
@@ -233,13 +233,13 @@ rw [Fintype.sum_bool, Bool.cond_true, Bool.cond_false]
 :::
 
 :::proofen
-Two cases, as in *Circuits*: `c` is `true` or `false`, and in each Lean computes both sides.
+Two cases, as in *Bool*: `c` is `true` or `false`, and in each Lean computes both sides.
 
 *Tip.* `cases c <;> rfl`.
 :::
 
 :::proofde
-Zwei Fälle, wie in *Schaltungen*: `c` ist `true` oder `false`, und in jedem rechnet Lean beide Seiten
+Zwei Fälle, wie in *Bool*: `c` ist `true` oder `false`, und in jedem rechnet Lean beide Seiten
 aus.
 
 *Tipp.* `cases c <;> rfl`.
@@ -533,7 +533,7 @@ Masse kam von `false`.
 :::
 
 :::proofen
-*Now the proof.* Everything it needs you know from *Circuits* and this world: `coin p` and its masses, `μ.map f`, and
+*Now the proof.* Everything it needs you know from *Bool* and this world: `coin p` and its masses, `μ.map f`, and
 the rules. First the rule of the gates, `map_true`; then computing, one rule after another:
 `Bool.not_true`, `Bool.not_false`, `Bool.cond_false`, `Bool.cond_true`, `zero_add` and `coin_false`.
 
@@ -543,7 +543,7 @@ and press *Run*).
 :::
 
 :::proofde
-*Jetzt der Beweis.* Alles, was er braucht, kennst du aus *Schaltungen* und dieser Welt: `coin p` und seine Massen,
+*Jetzt der Beweis.* Alles, was er braucht, kennst du aus *Bool* und dieser Welt: `coin p` und seine Massen,
 `μ.map f` und die Regeln. Zuerst die Regel der Bausteine, `map_true`; dann Rechnen, eine Regel nach der
 anderen: `Bool.not_true`, `Bool.not_false`, `Bool.cond_false`, `Bool.cond_true`, `zero_add` und
 `coin_false`.

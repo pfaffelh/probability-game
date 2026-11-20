@@ -30,13 +30,19 @@ tmp, here = Path(sys.argv[1]), Path(sys.argv[2])
 files = {}
 for world, levels in json.loads((tmp / 'levels.json').read_text()).items():
     for l in levels:
+        if l['kind'] == 'quiz':
+            # (a choice: the tactic proves the statements of the answer, and no other)
+            key = (world.split('.')[-1], l['context'])
+            for i, s in enumerate(l['statements']):
+                if i + 1 in l['answer']: files.setdefault(key, []).append(f"example {s} := by\n  {l['tactic']}\n")
+                else: files.setdefault(key, []).append(f"example {s} := by\n  fail_if_success ({l['tactic']})\n  exact quizNotProved\n")
         if l['proof']:
             key = (world.split('.')[-1], l['context'])
             body = '\n'.join('  ' + x for x in l['solution']) or '  sorry'
             files.setdefault(key, []).append(f"example {l['proof']} := by\n{body}\n")
 for (world, context), exs in files.items():
     name = f"Solutions{world}-{Path(context).stem}.lean"
-    (tmp / name).write_text('import Journal.Notes.DiscreteMeasure.Thinning\n' + (here / context).read_text() + '\n' + '\n'.join(exs))
+    (tmp / name).write_text('import Journal.Notes.DiscreteMeasure.Thinning\n' + (here / context).read_text() + '\n' + "axiom quizNotProved {p : Prop} : p\n" + '\n'.join(exs))
 PY
 for f in "$tmp"/Solutions*.lean; do
   echo "checking the solutions $(basename "$f")"

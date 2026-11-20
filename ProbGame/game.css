@@ -777,3 +777,19 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 .pg-gap-filled { background: #e3edf9; box-shadow: inset 0 -2px 0 #2e6fb8; cursor: pointer; }
 .pg-gap-again { margin: 0.2rem 0 0.4rem; }
 .pg-hint { display: none; }
+
+/* A choice (::::quiz): which statements does the tactic prove? */
+.pg-quiz-box { display: flex; flex-direction: column; gap: 0.7em; padding: 1em; max-width: 40em; margin: 0 auto; font-family: var(--verso-structure-font-family, sans-serif); }
+.pg-quiz-q code { font-family: var(--verso-code-font-family, monospace); color: #1f6b27; background: #f0f7f0; border-radius: 4px; padding: 0.05em 0.35em; }
+.pg-quiz-list { display: flex; flex-direction: column; gap: 0.5em; }
+.pg-quiz-item { display: flex; align-items: center; gap: 0.6em; width: 100%; text-align: left; padding: 0.55em 0.8em; border: 1px solid #c9d3df; border-radius: 8px; background: #fff; cursor: pointer; font: inherit; color: inherit; }
+.pg-quiz-item:hover:not(:disabled) { border-color: #6f9ccc; }
+.pg-quiz-item.pg-quiz-on { border-color: #2f6fb3; background: #eef4fb; }
+.pg-quiz-item:disabled { cursor: default; }
+.pg-quiz-mark { font-size: 1.2em; line-height: 1; }
+.pg-quiz-stmt { font-family: var(--verso-code-font-family, monospace); overflow-wrap: anywhere; }
+.pg-quiz-say { margin: 0.25em 0 0 2.2em; font-size: 0.9em; color: #9b2c2c; }
+.pg-quiz-say.pg-quiz-ok { color: #1f6b27; }
+.pg-quiz-err { margin: 0.25em 0 0; font-size: 0.85em; white-space: pre-wrap; overflow-wrap: anywhere; color: #555; }
+.pg-quiz-check { align-self: flex-start; padding: 0.45em 1.2em; border-radius: 8px; border: 1px solid #2f6fb3; background: #2f6fb3; color: #fff; font: inherit; cursor: pointer; }
+.pg-quiz-check:disabled { opacity: 0.5; cursor: default; }

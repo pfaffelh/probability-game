@@ -57,7 +57,7 @@ wandert zu den natürlichen Zahlen. So wird aus einer Münze eine Zufallszahl.
 :::proofen
 `Bool.toNat` counts `true` as $`1` and `false` as $`0`. Both sides move the same coin, with two
 maps that agree. As in *Maps*: `congr` reduces the goal to the two maps being equal, `ext b`
-to their being equal at every `b`; then, as in *Circuits*, `cases b <;> rfl` does both cases in one
+to their being equal at every `b`; then, as in *Bool*, `cases b <;> rfl` does both cases in one
 line.
 
 *Tip.* `congr`, `ext b`, `cases b <;> rfl`.
@@ -67,7 +67,7 @@ line.
 `Bool.toNat` zählt `true` als $`1` und `false` als $`0`. Beide Seiten bewegen dieselbe Münze, mit
 zwei Abbildungen, die übereinstimmen. Wie in *Abbildungen*: `congr` führt das Ziel darauf zurück,
 dass die beiden Abbildungen gleich sind, `ext b` darauf, dass sie an jeder Stelle `b` gleich sind;
-dann erledigt, wie in *Schaltungen*, `cases b <;> rfl` beide Fälle in einer Zeile.
+dann erledigt, wie in *Bool*, `cases b <;> rfl` beide Fälle in einer Zeile.
 
 *Tipp.* `congr`, `ext b`, `cases b <;> rfl`.
 :::

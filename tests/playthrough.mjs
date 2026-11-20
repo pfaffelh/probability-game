@@ -102,6 +102,23 @@ for (const path of paths) {
       board = /goals accomplished/.test(await status()) ? 'ok' : `NOT (${await status()})`
       green = await page.locator(`${L}.pg-level-done, .pg-level-done:not([hidden])`).count() > 0
       if (board !== 'ok' || !green) fail(`${path} level ${i + 1}: board ${board}, green ${green}`)
+    } else if (lv.kind === 'quiz') {
+      // (a choice: first one wrong pick, then the answer; Lean must say so)
+      const items = page.locator(`${L}.pg-quiz-item`)
+      const wrong = lv.statements.findIndex((_, k) => !lv.answer.includes(k + 1))
+      if (wrong >= 0) {
+        await items.nth(wrong).click(); await page.locator(`${L}.pg-quiz-check`).click()
+        await page.waitForFunction(() => !document.querySelector('.pg-level:not([hidden]) .pg-quiz-check')?.disabled, null, { timeout: 120000 })
+        if (await page.locator(`${L}.pg-level-done, .pg-level-done:not([hidden])`).count()) fail(`${path} level ${i + 1}: a wrong choice is taken`)
+        await items.nth(wrong).click()
+      }
+      for (const n of lv.answer) await items.nth(n - 1).click()
+      await page.locator(`${L}.pg-quiz-check`).click()
+      await page.waitForFunction(() => document.querySelector('.pg-level:not([hidden]) .pg-quiz-say'), null, { timeout: 120000 }).catch(() => {})
+      green = await page.locator(`${L}.pg-level-done, .pg-level-done:not([hidden])`).count() > 0
+      const says = await page.locator(`${L}.pg-quiz-say`).count()
+      board = green && says === lv.statements.length ? 'ok' : `NOT (${await status()})`
+      if (board !== 'ok') fail(`${path} level ${i + 1}: choice ${board}`)
     } else if (lv.kind !== 'leanonly') {
       fail(`${path} level ${i + 1}: kind ${lv.kind} not played by this script`)
     }

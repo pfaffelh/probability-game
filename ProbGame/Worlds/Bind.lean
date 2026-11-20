@@ -12,7 +12,7 @@ htmlSplit := .never
 
 :::en
 Every board is given, and your task is always the same: choose what goes into the fields of the `bind`
-gate, and drag it in. First, without coins, as in *Circuits*: the `bind` gate looks at `x` (on top)
+gate, and drag it in. First, without coins, as in *Bool*: the `bind` gate looks at `x` (on top)
 and chooses a field, `T` or `F`, and the map in that field is applied to `y` (on the right side).
 
 Then a coin waits: it is thrown *after* the coin `x`, and **which** coin it is depends on what `x`
@@ -27,7 +27,7 @@ each other.
 
 :::de
 Jedes Spielfeld ist gegeben, und deine Aufgabe ist immer dieselbe: Wähle, was in die Felder des
-Bausteins `bind` kommt, und zieh es hinein. Zuerst ohne Münzen, wie in *Schaltungen*: `bind` schaut auf
+Bausteins `bind` kommt, und zieh es hinein. Zuerst ohne Münzen, wie in *Bool*: `bind` schaut auf
 `x` (oben) und wählt ein Feld, `T` oder `F`, und die Abbildung in diesem Feld wird auf `y` (rechts)
 angewandt.
 
@@ -57,7 +57,7 @@ Die Aussagen handeln von der Masse bei `true`: Das Spielfeld zeigt die ganze Ver
 
 ::::circuit (height := "540") (inputs := "x y") (gates := "") (table := "0001") (goal := "x && y") (proof := "(x y : Bool) : (if x then y else false) = (bif x then (bif y then true else false) else (bif y then false else false))") (start := "a=bind@240,250; x>a.0; y>a.1; a>out") (play := "a.T=id; a.F=false") (uses := "-")
 :::en
-*A gate of your own.* First without coins, as in *Circuits*. There are four maps `Bool → Bool`:
+*A gate of your own.* First without coins, as in *Bool*. There are four maps `Bool → Bool`:
 `id`, `not`, always `T`, always `F` (see *Maps*). New gate: `bind`. It is on the board already, wired;
 it has two fields, `T` and `F`, and your task is to put a map into each (drag it in, or tap the field
 until it is the one you want). Read it from top to bottom: the input on top chooses
@@ -68,7 +68,7 @@ into both fields (the two circles, joined below them); the field chosen applies 
 :::
 
 :::de
-*Ein eigener Baustein.* Zuerst ohne Münzen, wie in *Schaltungen*. Es gibt vier Abbildungen
+*Ein eigener Baustein.* Zuerst ohne Münzen, wie in *Bool*. Es gibt vier Abbildungen
 `Bool → Bool`: `id`, `not`, immer `T`, immer `F` (siehe *Abbildungen*). Neuer Baustein: `bind`. Er liegt
 schon verdrahtet auf dem Spielfeld; er hat zwei Felder, `T` und `F`, und deine Aufgabe ist, in jedes
 eine Abbildung zu legen (hineinziehen, oder das Feld antippen, bis es die richtige ist). Lies ihn von oben nach unten: Der
@@ -80,14 +80,14 @@ Abbildung darauf an. In Lean:
 :::
 
 :::proofen
-Four rows, as in the boss of *Circuits*: by hand `cases x <;> cases y <;> rfl`, or
+Four rows, as in the boss of *Bool*: by hand `cases x <;> cases y <;> rfl`, or
 `revert x y` and `decide` (from *Maps*), which check them all.
 
 *Tip.* `revert x y`, then `decide`.
 :::
 
 :::proofde
-Vier Zeilen, wie beim Endgegner von *Schaltungen*: von Hand `cases x <;> cases y <;> rfl`, oder
+Vier Zeilen, wie beim Endgegner von *Bool*: von Hand `cases x <;> cases y <;> rfl`, oder
 `revert x y` und `decide` (aus *Abbildungen*), die alle prüfen.
 
 *Tipp.* `revert x y`, dann `decide`.
@@ -326,13 +326,13 @@ norm_num [bind_true]
 :::
 
 :::proofen
-Each step is sure: `pure_bind : (do let x ← pure a; f x) = f a`. Then your lemma from *Circuits*, `Bool.not_not : (!(!b)) = b`, and `bind_pure : (do let x ← μ; pure x) = μ`. All under the `do`: `simp only`.
+Each step is sure: `pure_bind : (do let x ← pure a; f x) = f a`. Then your lemma from *Bool*, `Bool.not_not : (!(!b)) = b`, and `bind_pure : (do let x ← μ; pure x) = μ`. All under the `do`: `simp only`.
 
 *Tip.* `simp only [pure_bind, Bool.not_not, bind_pure]`.
 :::
 
 :::proofde
-Jeder Schritt ist sicher: `pure_bind : (do let x ← pure a; f x) = f a`. Dann dein Lemma aus *Schaltungen*, `Bool.not_not : (!(!b)) = b`, und `bind_pure : (do let x ← μ; pure x) = μ`. Alles unter dem `do`: `simp only`.
+Jeder Schritt ist sicher: `pure_bind : (do let x ← pure a; f x) = f a`. Dann dein Lemma aus *Bool*, `Bool.not_not : (!(!b)) = b`, und `bind_pure : (do let x ← μ; pure x) = μ`. Alles unter dem `do`: `simp only`.
 
 *Tipp.* `simp only [pure_bind, Bool.not_not, bind_pure]`.
 :::

@@ -396,6 +396,45 @@ def leanonly : DirectiveExpanderOf LeanOnlyConfig
     ``(Verso.Doc.Block.other (Block.leanOnly $(quote cfg.new) $(quote cfg.proof) $(quote cfg.lemma) $(quote context)
         $(quote world) $(quote cfg.group) $(quote cfg.uses)) #[$blocks,*])
 
+-- A choice: which of the statements does the tactic prove? The player taps those, and the game asks
+-- Lean (the bridge) about each statement, in the rules `context`. `answer`: the numbers (from 1) of the
+-- statements the tactic proves, for a game without Lean and for the tests (`check-proofs.sh` checks it).
+block_extension Block.quiz (tactic statements answer new context world : String) where
+  data := Json.mkObj [("tactic", tactic), ("statements", statements), ("answer", answer), ("new", new), ("lemma", ""),
+    ("context", context), ("world", world), ("group", "bool")]
+  traverse id data _ := do registerLevel id data; pure none
+  extraJs := {JS.mk gameJs}
+  extraCss := {CSS.mk gameCss}
+  toHtml := some fun _ goB _ data content => do
+    let get (k : String) := (data.getObjValAs? String k).toOption.getD ""
+    let stmts := (get "statements").splitOn ";;" |>.map (·.trimAscii.toString) |>.filter (!·.isEmpty)
+    pure <| .tag "div" #[("class", "pg-level pg-quiz"), ("data-world", get "world"), ("data-group", "bool"),
+        ("data-tactic", get "tactic"), ("data-statements", (toJson stmts).compress), ("data-answer", get "answer"),
+        ("data-context", get "context")] <|
+      .seq #[.tag "div" #[("class", "pg-text")] (← content.mapM goB), .tag "div" #[("class", "pg-board")] .empty]
+  toTeX := none
+
+structure QuizConfig where
+  tactic : String
+  statements : String
+  answer : String
+  new : String
+  context : String
+
+instance : FromArgs QuizConfig DocElabM where
+  fromArgs := QuizConfig.mk <$> .named `tactic .string false <*> .named `statements .string false <*>
+    .named `answer .string false <*> .namedD `new .string "" <*> .namedD `context .string "Lean/WorldBool.lean"
+
+/-- A choice: `::::quiz (tactic := "cases x <;> rfl") (statements := "(x : Bool) : (x && x) = x ;; …") (answer := "1")`. -/
+@[directive]
+def quiz : DirectiveExpanderOf QuizConfig
+  | cfg, contents => do
+    let blocks ← contents.mapM elabBlock
+    let context ← readContext cfg.context
+    let world ← worldOf
+    ``(Verso.Doc.Block.other (Block.quiz $(quote cfg.tactic) $(quote cfg.statements) $(quote cfg.answer) $(quote cfg.new)
+        $(quote context) $(quote world)) #[$blocks,*])
+
 -- The lexicon: every move, building block, tactic and rule of the game, which `game.js` writes
 -- into this block (`::::lexicon` with no content), from the same tables as the tips.
 block_extension Block.lexicon where
