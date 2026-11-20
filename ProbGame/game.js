@@ -2840,9 +2840,12 @@
       de0: 'Teilt eine Annahme h in ihre Fälle. Für h : false = true gibt es keinen Fall: Das Ziel ist erledigt.',
       en: 'Splits into the cases of x: for x : Bool, the goals for false and for true, one after the other.',
       de: 'Teilt in die Fälle von x: für x : Bool die Ziele für false und für true, eines nach dem anderen.' },
-    { name: 'decide', kind: 'tactic', insert: 'decide', sig: 'decide   decide +revert',
-      en: 'Decides a statement about Bool by computing it: (!true) = false, not ∘ not = id. With +revert it first takes the variables (b, f, h) into the statement, for every value, and checks every case.',
-      de: 'Entscheidet eine Aussage über Bool, indem es sie ausrechnet: (!true) = false, not ∘ not = id. Mit +revert nimmt es zuerst die Variablen (b, f, h) in die Aussage, für jeden Wert, und prüft jeden Fall.' },
+    { name: 'decide', kind: 'tactic', insert: 'decide', sig: 'decide',
+      en: 'Decides a statement about Bool by computing it: (!true) = false, ∀ b, (!(!b)) = b. The statement must not have free variables: revert them first.',
+      de: 'Entscheidet eine Aussage über Bool, indem es sie ausrechnet: (!true) = false, ∀ b, (!(!b)) = b. Die Aussage darf keine freien Variablen haben: zuerst revert.' },
+    { name: 'revert', kind: 'tactic', insert: 'revert ', sig: 'revert x y',
+      en: 'Takes variables back into the statement: from x : Bool and ⊢ P x it makes ⊢ ∀ x, P x.',
+      de: 'Nimmt Variablen zurück in die Aussage: Aus x : Bool und ⊢ P x macht es ⊢ ∀ x, P x.' },
     { name: 'norm_num', kind: 'tactic', insert: 'norm_num', sig: 'norm_num   norm_num [h₁, h₂, …]',
       en: 'Computes: numbers and masses (p * 1, a + 0, bif true then a else b, coin p true = p, pure masses, taking away a finite mass). With [h] it also uses your rules h.',
       de: 'Rechnet: Zahlen und Massen (p * 1, a + 0, bif true then a else b, coin p true = p, Punktmassen, Wegnehmen einer endlichen Masse). Mit [h] benutzt es auch deine Regeln h.' },
@@ -3060,7 +3063,7 @@
     [/motive is not type correct/, 'rw cannot rewrite here; try simp only.', 'rw kann hier nicht umschreiben; versuche simp only.'],
     [/simp made no progress/, 'simp only found nothing to rewrite with these rules.', 'simp only hat mit diesen Regeln nichts gefunden, was es umschreiben kann.'],
     [/could not unify the conclusion of `@funext`/, 'funext needs a goal g = h between functions (first congr 1?).', 'funext braucht ein Ziel g = h zwischen Funktionen (vorher congr 1?).'],
-    [/must not contain free variables/, 'decide does not know the variables of the goal; decide +revert takes them into the statement.', 'decide kennt die Variablen des Ziels nicht; decide +revert nimmt sie in die Aussage.'],
+    [/must not contain free variables/, 'decide does not know the variables of the goal; revert first takes them into the statement.', 'decide kennt die Variablen des Ziels nicht; revert nimmt sie zuerst in die Aussage.'],
     [/Tactic `decide` proved that the proposition/, 'The statement is false, at least in one case.', 'Die Aussage ist falsch, mindestens in einem Fall.'],
     [/abortTactic/, 'A tactic after <;> failed on one of the goals: for example rfl on a goal that is not true by computing alone (is a cases missing?).', 'Eine Taktik nach <;> ist an einem der Ziele gescheitert: zum Beispiel rfl an einem Ziel, das nicht schon durch Ausrechnen stimmt (fehlt ein cases?).'],
     [/Tactic `rfl` failed/, 'The two sides are not the same, not even after computing.', 'Die beiden Seiten sind nicht gleich, auch nicht nach Ausrechnen.'],
@@ -3248,7 +3251,7 @@
       if (parts.length > 1 && !this.available(INVENTORY.find(i => i.name === '<;>'))) return tr('This tactic is not in your inventory: {x}', { x: '<;>' })
       for (let t of parts) {
         t = t.trim()
-        const tac = /^(rw|simp_rw|simp only|norm_num|ring|linear_combination|rfl|decide|congr|funext|ext|cases|induction'|exists|intro|have|apply|exact|constructor)(?=\s|\[|$)/.exec(t)?.[1]
+        const tac = /^(rw|simp_rw|simp only|norm_num|ring|linear_combination|rfl|decide|revert|congr|funext|ext|cases|induction'|exists|intro|have|apply|exact|constructor)(?=\s|\[|$)/.exec(t)?.[1]
         const item = INVENTORY.find(i => i.name === tac)
         if (!item || !this.available(item)) return tr('This tactic is not in your inventory: {x}', { x: t.split(/\s/)[0] || t })
         // the rules: in brackets, or the term of `have h := rule args`
@@ -3378,7 +3381,7 @@
       this.input.value = this.typed = /<;>\s*$/.test(v) ? v.replace(/\s*$/, ' ') + text : text
       this.render(); this.input?.focus({ preventScroll: true })
       // (a tactic that closes the goal and needs nothing more, rfl, decide, ring: it runs right away)
-      if (/^(rfl|decide|decide \+revert|ring)$/.test(text)) this.run()
+      if (/^(rfl|decide|ring)$/.test(text)) this.run()
     }
     // (a tactic with nothing to work on here: said so, nothing in the input)
     nothing(text) { this.choice = null; this.error = text; this.render() }
@@ -3399,7 +3402,12 @@
           const ns = this.vars().filter(x => /^(ℕ|Nat)$/.test(x.type)).map(x => `induction' ${x.name} with ${x.name} ih`)
           return ns.length ? ask(ns, o => o.split(' ')[1]) : this.nothing(tr('No natural number in this goal for induction.'))
         }
-        case 'decide': return ask(this.vars().length ? ['decide +revert', 'decide'] : ['decide'], o => o === 'decide' ? tr('plain') : '+revert')
+        case 'decide': return this.put('decide')
+        case 'revert': {
+          // (all the names of the goal, in their order: the player may take some away)
+          const ns = this.vars().map(x => x.name).filter(n => !/^inst/.test(n) && !/†/.test(n))
+          return ns.length ? this.put(`revert ${ns.join(' ')}`) : this.nothing(tr('No variable in this goal to revert.'))
+        }
         case 'funext': return this.put(`funext ${this.fresh('x', 'y', 'z', 'b')}`)
         case 'ext': return this.put(`ext ${this.fresh('x', 'b', 'y')}`)
         case 'exact': return this.put('exact ')
@@ -3782,7 +3790,7 @@
     'Lean did not take the line: see why above the input.': 'Lean hat die Zeile nicht genommen: warum, steht über der Eingabe.',
     'Type a tactic, or tap one in the inventory.': 'Tippe eine Taktik ein, oder tippe eine im Inventar an.', 'One goal left.': 'Noch ein Ziel.', '{n} goals left.': 'Noch {n} Ziele.',
     'Tips': 'Tipps', 'Tip': 'Tipp', 'Got it': 'Verstanden', 'Close': 'Schließen', 'Restart': 'Neu', 'Next': 'Weiter', 'Next ›': 'Weiter ›',
-    'Next world ›': 'Nächste Welt ›', 'Which?': 'Welche?', 'Show statements': 'Aussagen zeigen', 'Hide statements': 'Aussagen verbergen', 'Tap {x}, then the Output.': 'Tippe {x} an, dann den Ausgang.', 'No variable in this goal to split with cases.': 'In diesem Ziel gibt es keine Variable, die cases aufteilen könnte.', 'No natural number in this goal for induction.': 'In diesem Ziel gibt es keine natürliche Zahl für eine Induktion.', plain: 'ohne', 'This wire belongs to the level; it stays.': 'Diese Leitung gehört zum Level; sie bleibt.', '{x} is wired by the level; it stays so.': '{x} ist vom Level verdrahtet; das bleibt so.', 'World': 'Welt', 'Board': 'Spielfeld', 'Proof ': 'Beweis', 'This world': 'Diese Welt',
+    'Next world ›': 'Nächste Welt ›', 'Which?': 'Welche?', 'Show statements': 'Aussagen zeigen', 'Hide statements': 'Aussagen verbergen', 'Tap {x}, then the Output.': 'Tippe {x} an, dann den Ausgang.', 'No variable in this goal to split with cases.': 'In diesem Ziel gibt es keine Variable, die cases aufteilen könnte.', 'No natural number in this goal for induction.': 'In diesem Ziel gibt es keine natürliche Zahl für eine Induktion.',  'No variable in this goal to revert.': 'In diesem Ziel gibt es keine Variable für revert.', plain: 'ohne', 'This wire belongs to the level; it stays.': 'Diese Leitung gehört zum Level; sie bleibt.', '{x} is wired by the level; it stays so.': '{x} ist vom Level verdrahtet; das bleibt so.', 'World': 'Welt', 'Board': 'Spielfeld', 'Proof ': 'Beweis', 'This world': 'Diese Welt',
     'no goals': 'keine Ziele', '+ {n} more': '+ {n} weitere', 'the statement': 'die Aussage', 'goal 1 of {n}': 'Ziel 1 von {n}',
     '→ {n} goals': '→ {n} Ziele', '✓ goal closed, {n} left': '✓ Ziel geschlossen, noch {n}', 'Remove the proof from this line on': 'Den Beweis ab dieser Zeile entfernen',
     'goal 1 of {n}: the next line works on this one': 'Ziel 1 von {n}: die nächste Zeile arbeitet an diesem',

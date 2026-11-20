@@ -81,20 +81,21 @@ Abbildung darauf an. In Lean:
 
 :::proofen
 Four rows, as in the boss of *Circuits*: by hand `cases x <;> cases y <;> rfl`, or
-`decide +revert` (from *Maps*), which checks them all.
+`revert x y` and `decide` (from *Maps*), which check them all.
 
-*Tip.* `decide +revert`.
+*Tip.* `revert x y`, then `decide`.
 :::
 
 :::proofde
 Vier Zeilen, wie beim Endgegner von *Schaltungen*: von Hand `cases x <;> cases y <;> rfl`, oder
-`decide +revert` (aus *Abbildungen*), das alle prüft.
+`revert x y` und `decide` (aus *Abbildungen*), die alle prüfen.
 
-*Tipp.* `decide +revert`.
+*Tipp.* `revert x y`, dann `decide`.
 :::
 :::solution
 ```
-decide +revert
+revert x y
+decide
 ```
 :::
 ::::
@@ -112,15 +113,16 @@ zwei Eingängen, alle.
 :::
 
 :::proofen
-*Tip.* `decide +revert`.
+*Tip.* `revert x y`, then `decide`.
 :::
 
 :::proofde
-*Tipp.* `decide +revert`.
+*Tipp.* `revert x y`, dann `decide`.
 :::
 :::solution
 ```
-decide +revert
+revert x y
+decide
 ```
 :::
 ::::
@@ -137,15 +139,16 @@ decide +revert
 :::
 
 :::proofen
-*Tip.* `decide +revert`.
+*Tip.* `revert x y`, then `decide`.
 :::
 
 :::proofde
-*Tipp.* `decide +revert`.
+*Tipp.* `revert x y`, dann `decide`.
 :::
 :::solution
 ```
-decide +revert
+revert x y
+decide
 ```
 :::
 ::::

@@ -22,44 +22,47 @@ Abbildungen auf `Bool`, und Züge mit ihnen. Es gibt genau vier Abbildungen `Boo
 unbekannte Abbildung `f : Bool → Bool` gilt für jede Abbildung, wenn sie für jede der vier gilt.
 :::
 
-::::leanonly (proof := "(f : Bool → Bool) (b : Bool) : f (f (f b)) = f b") (lemma := "Bool.apply_apply_apply") (new := "decide") (group := "bool") (uses := "-")
+::::leanonly (proof := "(f : Bool → Bool) (b : Bool) : f (f (f b)) = f b") (lemma := "Bool.apply_apply_apply") (new := "revert, decide") (group := "bool") (uses := "-")
 :::en
 *Three times is once.* Whatever map `f : Bool → Bool` is, applied three times it does the same as
-once: `f (f (f b)) = f b`. Check it for `not`: three times `not` is `not`; and for always `true`. In Lean the new tactic `decide` checks it, in every case at once.
+once: `f (f (f b)) = f b`. Check it for `not`: three times `not` is `not`; and for always `true`. In Lean the new tactics `revert` and `decide` check it, in every case at once.
 :::
 
 :::de
 *Dreimal ist einmal.* Welche Abbildung `f : Bool → Bool` auch immer: dreimal angewandt tut sie
 dasselbe wie einmal, `f (f (f b)) = f b`. Prüf es für `not`: dreimal `not` ist `not`; und für immer
-`true`. In Lean prüft es die neue Taktik `decide`, in allen Fällen auf einmal.
+`true`. In Lean prüfen es die neuen Taktiken `revert` und `decide`, in allen Fällen auf einmal.
 :::
 
 :::proofen
 No rule says what `f` does, so there is nothing to rewrite, and no `rw` here. But there are only four maps `Bool → Bool`, `id`, `not` and the two constant ones, and with
-the two values of `b` these are eight cases. The new tactic `decide` reduces a statement about finitely
-many cases until it is `true` or `false`; `decide +revert` first takes the variables into the
-statement, here `∀ f b, …`, and so checks every case. With
+the two values of `b` these are eight cases. Two new tactics: `revert f b` takes the variables back
+into the statement, here `∀ f b, f (f (f b)) = f b`; then `decide` reduces this statement about
+finitely many cases until it is `true` or `false`, and so checks every case. `decide` alone does not
+work: for one unknown `f` there is nothing to compute. With
 coins this no longer works: a coin `coin p` is a different distribution for every number `p` between
 0 and 1, infinitely many cases. There, the rules do the work, and this lemma: it is unlocked as
 `Bool.apply_apply_apply`.
 
-*Tip.* `decide +revert`.
+*Tip.* `revert f b`, then `decide`.
 :::
 
 :::proofde
 Keine Regel sagt, was `f` tut; es gibt also nichts umzuschreiben, und hier kein `rw`. Aber es gibt nur vier Abbildungen `Bool → Bool`, `id`, `not` und die
-zwei konstanten, und mit den zwei Werten von `b` sind das acht Fälle. Die neue Taktik `decide`
-reduziert eine Aussage über endlich viele Fälle, bis sie `true` oder `false` ist; `decide +revert`
-nimmt zuerst die Variablen in die Aussage, hier `∀ f b, …`, und prüft so jeden Fall. Mit
+zwei konstanten, und mit den zwei Werten von `b` sind das acht Fälle. Zwei neue Taktiken: `revert f b`
+nimmt die Variablen zurück in die Aussage, hier `∀ f b, f (f (f b)) = f b`; dann reduziert `decide`
+diese Aussage über endlich viele Fälle, bis sie `true` oder `false` ist, und prüft so jeden Fall.
+`decide` allein geht nicht: Für ein unbekanntes `f` gibt es nichts auszurechnen. Mit
 Münzen geht das nicht mehr: Eine Münze `coin p` ist für jede Zahl `p`
 zwischen 0 und 1 eine andere Verteilung, unendlich viele Fälle. Dort machen die Regeln die Arbeit, und
 dieses Lemma: Es wird als `Bool.apply_apply_apply` freigeschaltet.
 
-*Tipp.* `decide +revert`.
+*Tipp.* `revert f b`, dann `decide`.
 :::
 :::solution
 ```
-decide +revert
+revert f b
+decide
 ```
 :::
 ::::
