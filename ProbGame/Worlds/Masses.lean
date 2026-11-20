@@ -164,16 +164,16 @@ umschreibt.
 :::
 
 :::proofen
-A rule `h : a = b` is used with `rw [h]`: it rewrites `a` into `b` in the goal (`rw [← h]` the other
-way round), several at once with `rw [h, k]`. When the goal then reads `x = x`, it is closed.
+A rule `h : a = b` is used with `rw [h]`: it rewrites `a` into `b` in the goal (from right to left with `←`,
+later), several at once with `rw [h, k]`. When the goal then reads `x = x`, it is closed.
 `rw [zero_add]` takes the `0 + ` away; then your rule `coin_true`.
 
 *Tip.* `rw [zero_add]`, then `rw [coin_true]` (or both at once: `rw [zero_add, coin_true]`).
 :::
 
 :::proofde
-Eine Regel `h : a = b` benutzt man mit `rw [h]`: Sie schreibt `a` im Ziel zu `b` um (`rw [← h]`
-andersherum), mehrere auf einmal mit `rw [h, k]`. Lautet das Ziel danach `x = x`, ist es geschlossen.
+Eine Regel `h : a = b` benutzt man mit `rw [h]`: Sie schreibt `a` im Ziel zu `b` um (von rechts nach links
+mit `←`, später), mehrere auf einmal mit `rw [h, k]`. Lautet das Ziel danach `x = x`, ist es geschlossen.
 `rw [zero_add]` nimmt das `0 + ` weg; dann deine Regel `coin_true`.
 
 *Tipp.* `rw [zero_add]`, dann `rw [coin_true]` (oder beides auf einmal: `rw [zero_add, coin_true]`).

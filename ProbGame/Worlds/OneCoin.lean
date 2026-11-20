@@ -94,7 +94,7 @@ Welche der drei gilt für alle `a b : ℝ≥0∞`? Probier `b < a`, und probier 
 
 :::proofen
 `b - a + a = b` fails for `b < a`: then `b - a = 0`, and `0 + a = a`. `a + b - a = b` fails for
-`a = ∞`: `∞ + b - ∞ = ∞ - ∞ = 0`. It holds for every finite `a`, as the next levels show. But
+`a = ∞`: `∞ + b - ∞ = ∞ - ∞ = 0`. It holds for every finite `a`: that is the rule `ENNReal.add_sub_cancel_left`, in *The rest of the mass*. But
 `a - a = 0` always, also for `a = ∞`: the rule `tsub_self : a - a = 0`. Then `zero_add`.
 
 *Tip.* `a - a + b`; then `rw [tsub_self, zero_add]`.
@@ -102,8 +102,8 @@ Welche der drei gilt für alle `a b : ℝ≥0∞`? Probier `b < a`, und probier 
 
 :::proofde
 `b - a + a = b` stimmt nicht für `b < a`: Dann ist `b - a = 0`, und `0 + a = a`. `a + b - a = b`
-stimmt nicht für `a = ∞`: `∞ + b - ∞ = ∞ - ∞ = 0`. Für jedes endliche `a` gilt es, wie die nächsten
-Levels zeigen. Aber `a - a = 0` immer, auch für `a = ∞`: die Regel `tsub_self : a - a = 0`. Dann
+stimmt nicht für `a = ∞`: `∞ + b - ∞ = ∞ - ∞ = 0`. Für jedes endliche `a` gilt es: Das ist die Regel
+`ENNReal.add_sub_cancel_left`, in *Der Rest der Masse*. Aber `a - a = 0` immer, auch für `a = ∞`: die Regel `tsub_self : a - a = 0`. Dann
 `zero_add`.
 
 *Tipp.* `a - a + b`; dann `rw [tsub_self, zero_add]`.
@@ -219,7 +219,7 @@ musste das Spielfeld nur auf eine Säule schauen.
 
 :::proofen
 Now there is a hypothesis: `h : μ true = ν true`. A new tactic: `ext x`: two distributions are
-equal when they have the same mass at every point `x`. Then `cases x` and `exact h` (from *Finite*).
+equal when they have the same mass at every point `x`. Then `cases x` and `exact h` (from *Masses*).
 At `false`, your lemma `mass_not` helps, once for `μ` and once for `ν`: `mass_not μ false`.
 
 *Tip.* `ext x`, `cases x`, then `rw [mass_not μ false, mass_not ν false, Bool.not_false, h]`, and
@@ -228,7 +228,7 @@ At `false`, your lemma `mass_not` helps, once for `μ` and once for `ν`: `mass_
 
 :::proofde
 Jetzt gibt es eine Annahme: `h : μ true = ν true`. Eine neue Taktik: `ext x`: Zwei Verteilungen sind
-gleich, wenn sie an jedem Punkt `x` dieselbe Masse haben. Dann `cases x` und `exact h` (aus *Endlich*).
+gleich, wenn sie an jedem Punkt `x` dieselbe Masse haben. Dann `cases x` und `exact h` (aus *Massen*).
 Bei `false` hilft dein Lemma `mass_not`, einmal für `μ` und einmal für `ν`: `mass_not μ false`.
 
 *Tipp.* `ext x`, `cases x`, dann `rw [mass_not μ false, mass_not ν false, Bool.not_false, h]`, und
@@ -359,8 +359,8 @@ On the two points `false` and `true`, the bar at `true` decides everything: that
 `bool_ext`, and `apply bool_ext` turns the goal into `μ true = ν true`.
 
 Compare the bars at `true`: `apply bool_ext`, then `map_true`, and
-the new rule `pure_true : (pure b) true = bif b then 1 else 0`. Then `b` has to be known: `cases b`. For
-`true`, the new rule `coin_total : (coin p) true + (coin p) false = 1` says that the coin has total
+your lemma `pure_true : (pure b) true = bif b then 1 else 0`. Then `b` has to be known: `cases b`. For
+`true`, the rule `coin_total : (coin p) true + (coin p) false = 1` says that the coin has total
 mass one. `rw [Bool.cond_true]` rewrites one `bif` at a time.
 
 *Tip.* `apply bool_ext`, `rw [map_true, pure_true]`, `cases b`, then
@@ -376,9 +376,9 @@ dein Lemma `coin_const`.
 Auf den zwei Punkten `false` und `true` entscheidet die Säule bei `true` alles: Das ist dein Lemma
 `bool_ext`, und `apply bool_ext` macht aus dem Ziel `μ true = ν true`.
 
-Vergleiche die Säulen bei `true`: `apply bool_ext`, dann `map_true` und die neue Regel
+Vergleiche die Säulen bei `true`: `apply bool_ext`, dann `map_true` und dein Lemma
 `pure_true : (pure b) true = bif b then 1 else 0`. Dann muss `b` bekannt sein: `cases b`. Für `true` sagt
-die neue Regel `coin_total : (coin p) true + (coin p) false = 1`, dass die Münze die Gesamtmasse
+die Regel `coin_total : (coin p) true + (coin p) false = 1`, dass die Münze die Gesamtmasse
 eins hat. `rw [Bool.cond_true]` schreibt immer nur ein `bif` um.
 
 *Tipp.* `apply bool_ext`, `rw [map_true, pure_true]`, `cases b`, dann
@@ -521,7 +521,7 @@ at `true` are (`bool_ext`, your lemma), and the mass at `true` of the flipped co
 *Where does the mass go?*. Your result becomes the lemma `coin_not`, which the next worlds use all
 the time.
 
-*Tip.* `apply bool_ext`, then the computation of the first level, and at the end `coin_true`.
+*Tip.* `apply bool_ext`, then the computation of *Where does the mass go?* (*Masses*), and at the end `coin_true`.
 :::
 
 :::proofde
@@ -531,7 +531,7 @@ Massen bei `true` gleich sind (`bool_ext`, dein Lemma), und die Masse bei `true`
 hast du in *Wohin geht die Masse?* ausgerechnet. Dein Ergebnis wird das Lemma `coin_not`, das die
 nächsten Welten ständig benutzen.
 
-*Tipp.* `apply bool_ext`, dann die Rechnung des ersten Levels, und am Ende `coin_true`.
+*Tipp.* `apply bool_ext`, dann die Rechnung aus *Wohin geht die Masse?* (*Massen*), und am Ende `coin_true`.
 :::
 :::solution
 ```
