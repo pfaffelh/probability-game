@@ -370,32 +370,61 @@ norm_num [mass_mul]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (f : Bool → DiscreteMeasure Bool) : (do let x ← (coin p).map not; f x) = (do let x ← coin p; f (!x))") (new := "bind_map_left") (uses := "bind_map_left, map_bind")
+:::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → Bool) (g : Bool → DiscreteMeasure Bool) : (do let x ← μ.map f; g x) = (do let x ← μ; ⟦g (f x) ‖ g (f x), g x, (g x).map f⟧)") (lemma := "bind_map_left") (new := "add_mul") (uses := "bind_apply, Fintype.sum_bool, map_apply, add_mul, add_comm, add_assoc")
+::::hint (anchor := "gap")
 :::en
-*A move before a draw.* Drawing from a moved coin is drawing from the coin and moving the result.
+First move with `f`, then go on with `g`: in one draw, with what does `g` go on?
 :::
 
 :::de
-*Ein Zug vor dem Ziehen.* Aus einer bewegten Münze ziehen heißt, aus der Münze ziehen und das Ergebnis bewegen.
+Erst mit `f` bewegen, dann mit `g` weitermachen: In einem Zug, womit macht `g` weiter?
+:::
+::::
+
+:::en
+*A move before a draw.* Drawing from a moved distribution is drawing from the distribution and moving
+the result.
+:::
+
+:::de
+*Ein Zug vor dem Ziehen.* Aus einer bewegten Verteilung ziehen heißt, aus der Verteilung ziehen und das
+Ergebnis bewegen.
 :::
 
 :::proofen
-`bind_map_left : (do let x ← μ.map f; g x) = (do let x ← μ; g (f x))`.
+Two distributions are equal when their masses at every `b` are: `ext b`. Then `bind_apply` on both
+sides, and with `simp_rw [Fintype.sum_bool, map_apply, Fintype.sum_bool]` all sums written out, also
+those inside `map_apply`. What `f` does is unknown: `cases f true` and `cases f false` give the four
+possible `f`, and in each the simplifier computes the rest, with the new rule
+`add_mul : (a + b) * c = a * c + b * c` and with `add_comm` for the order. With `<;>` from *Bool*
+it is one line. You prove it on `Bool`; it holds for every type, and it is unlocked as `bind_map_left`
+in this general form.
 
-*Tip.* `rw [bind_map_left]`.
+*Tip.* `ext b`, `rw [bind_apply, bind_apply]`, `simp_rw [Fintype.sum_bool, map_apply, Fintype.sum_bool]`,
+`cases f true <;> cases f false <;> norm_num [add_mul, add_comm]`.
 :::
 
 :::proofde
-`bind_map_left : (do let x ← μ.map f; g x) = (do let x ← μ; g (f x))`.
+Zwei Verteilungen sind gleich, wenn ihre Massen bei jedem `b` gleich sind: `ext b`. Dann `bind_apply`
+auf beiden Seiten, und mit `simp_rw [Fintype.sum_bool, map_apply, Fintype.sum_bool]` sind alle Summen
+ausgeschrieben, auch die in `map_apply`. Was `f` tut, ist unbekannt: `cases f true` und `cases f false`
+geben die vier möglichen `f`, und in jedem rechnet der Simplifier den Rest aus, mit der neuen Regel
+`add_mul : (a + b) * c = a * c + b * c` und mit `add_comm` für die Reihenfolge. Mit `<;>` aus *Bool*
+ist das eine Zeile. Du beweist es auf `Bool`; es gilt für jeden Typ und wird in dieser allgemeinen Form
+als `bind_map_left` freigeschaltet.
 
-*Tipp.* `rw [bind_map_left]`.
+*Tipp.* `ext b`, `rw [bind_apply, bind_apply]`, `simp_rw [Fintype.sum_bool, map_apply, Fintype.sum_bool]`,
+`cases f true <;> cases f false <;> norm_num [add_mul, add_comm]`.
 :::
 :::solution
 ```
-rw [bind_map_left]
+ext b
+rw [bind_apply, bind_apply]
+simp_rw [Fintype.sum_bool, map_apply, Fintype.sum_bool]
+cases f true <;> cases f false <;> norm_num [add_mul, add_comm]
 ```
 :::
-::::
+:::::
 
 ::::circuit (height := "540") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:p(1-p) false:1-p(1-p)") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && !y)) = coin (p * σ p)") (new := "simp only") (play := "a=not; b=and; y>a.0; x>b.0; a>b.1; b>out") (uses := "coin_and, coin_not, bind_map_left, map_bind")
 :::en

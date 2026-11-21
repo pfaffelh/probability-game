@@ -2830,6 +2830,7 @@
     "cond_add_cond": "theorem cond_add_cond (c : Bool) (x y : ℝ≥0∞) : ((bif c then x else 0) + bif c then y else 0) = bif c then x + y else 0",
     "coin_and": "theorem coin_and (p q : I) : (do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)",
     "bind_map_left": "theorem bind_map_left {α β γ : Type} (μ : DiscreteMeasure α) (f : α → β) (g : β → DiscreteMeasure γ) : (do let x ← μ.map f; g x) = do let x ← μ; g (f x)",
+    "add_mul": "theorem add_mul {R : Type v} [Mul R] [Add R] [RightDistribClass R] (a b c : R) : (a + b) * c = a * c + b * c",
     "map_bind": "theorem map_bind {α β γ : Type} (μ : DiscreteMeasure α) (g : α → DiscreteMeasure β) (f : β → γ) : (do let x ← μ; g x).map f = do let x ← μ; (g x).map f",
     "coin_unused": "theorem coin_unused {β : Type} (p : I) (ν : DiscreteMeasure β) : (do let _ ← coin p; ν) = ν",
     "binom_zero": "theorem binom_zero (p : I) : binom p 0 = pure 0",
@@ -3015,7 +3016,8 @@
     { name: 'map_map', kind: 'lemma', sig: '(μ.map f).map g = μ.map (fun x => g (f x))', sig0: 'g <$> (f <$> s) = (fun x => g (f x)) <$> s', en: 'Proved by you in Maps, for Bool; it holds for every type: two moves are one move.', de: 'Von dir bewiesen in „Abbildungen“, für Bool; es gilt für jeden Typ: Zwei Züge sind ein Zug.' },
     { name: 'cond_add_cond', kind: 'lemma', sig: '(bif c then x else 0) + (bif c then y else 0) = bif c then x + y else 0', en: 'Proved by you in Maps: two masses behind one test.', de: 'Von dir bewiesen in „Abbildungen“: zwei Massen hinter einem Test.' },
     { name: 'coin_and', kind: 'lemma', sig: '(do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)', en: 'Proved by you in Building with Coins: independence, both true with probability p · q.', de: 'Von dir bewiesen in „Bauen mit Münzen“: Unabhängigkeit, beide true mit Wahrscheinlichkeit p · q.' },
-    { name: 'bind_map_left', kind: 'rule', sig: '(do let x ← μ.map f; g x) = (do let x ← μ; g (f x))', en: 'A move on a throw goes into the result.', de: 'Ein Zug auf einem Wurf wandert ins Ergebnis.' },
+    { name: 'bind_map_left', kind: 'lemma', sig: '(do let x ← μ.map f; g x) = (do let x ← μ; g (f x))', en: 'Proved by you in Building with Coins, for Bool; it holds for every type: a move on a throw goes into the result.', de: 'Von dir bewiesen in „Bauen mit Münzen“, für Bool; es gilt für jeden Typ: Ein Zug auf einem Wurf wandert ins Ergebnis.' },
+    { name: 'add_mul', kind: 'rule', sig: '(a + b) * c = a * c + b * c', en: 'Multiplying out a sum.', de: 'Eine Summe ausmultiplizieren.' },
     { name: 'map_bind', kind: 'rule', sig0: 'f <$> (s >>= g) = s >>= fun a => f <$> g a', en0: 'A move after a walk goes into it.', de0: 'Ein Zug nach einem Weg wandert in ihn hinein.', sig: '(do let x ← μ; g x).map f = (do let x ← μ; (g x).map f)', en: 'A move after a do block goes into it.', de: 'Ein Zug nach einem do-Block wandert in ihn hinein.' },
     { name: 'coin_unused', kind: 'rule', sig: '(do let _ ← coin p; ν) = ν', en: 'A coin whose result is not used changes nothing.', de: 'Eine Münze, deren Ergebnis nicht benutzt wird, ändert nichts.' },
     { name: 'binom_zero', kind: 'lemma', sig: 'binom p 0 = pure 0', en: 'Proved by you in Counting: no throw, surely 0.', de: 'Von dir bewiesen in „Zählen“: kein Wurf, sicher 0.' },
@@ -4227,8 +4229,10 @@
     const levelHints = k => boardHints(k).map(h => ({
       nodes: hintText(h), anchor: h.dataset.at.startsWith('move:') ? atMove(k, h.dataset.at) : () => visible(roots[k].querySelector(HINT_AT[h.dataset.at] ?? h.dataset.at)) }))
     // the moves new in a level: not offered by a level before it on this page
+    // (the gates and, or, not come in the world Bool: in the worlds after it they are known, not new)
+    const fromBool = k => levels[k] instanceof Circuit && levels[k].root.dataset.group !== 'bool' ? ['circuit:and', 'circuit:or', 'circuit:not'] : []
     const newMoves = k => {
-      const before = new Set(levels.slice(0, k).flatMap(l => movesOf(l).map(m => m[0])))
+      const before = new Set([...levels.slice(0, k).flatMap(l => movesOf(l).map(m => m[0])), ...fromBool(k)])
       const seen = new Set()
       return movesOf(levels[k]).filter(m => !before.has(m[0]) && !seen.has(m[0]) && seen.add(m[0]))
     }
