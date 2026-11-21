@@ -49,8 +49,7 @@ Die Schaltung, von oben nach unten gelesen, ist ein `do`-Block in Lean: jede Mü
 Ergebnis, mit dem, was die Bausteine rechnen. Die Beweise lernen die Regeln der `do`-Blöcke eine nach
 der anderen, wenn ein Level sie braucht; zuerst, was ein `do`-Block ist.
 :::
-
-:::::leanonly (proof := "(p : I) : (bif false then coin p false else 0) + (bif !false then coin p true else 0) = ⟦↑p ‖ ↑p, ↑(σ p), 0, 1⟧") (new := "norm_num") (uses := "-")
+:::::leanonly (proof := "(p : I) : (bif false then coin p false else 0) + (bif !false then coin p true else 0) = ⟦↑p ‖ ↑p, ↑(σ p), 0, 1⟧") (new := "simp") (uses := "-")
 ::::hint (anchor := "gap")
 :::en
 Which of the two branches is taken, and what is the mass of the coin there?
@@ -61,13 +60,13 @@ Welcher der beiden Zweige wird genommen, und was ist dort die Masse der Münze?
 :::
 ::::
 
-::::hint (anchor := "item:norm_num")
+::::hint (anchor := "item:simp")
 :::en
-`norm_num`: the simplifier, with all rules marked simp.
+`simp`: the simplifier, with all rules marked simp.
 :::
 
 :::de
-`norm_num`: der Simplifier, mit allen Regeln, die simp tragen.
+`simp`: der Simplifier, mit allen Regeln, die simp tragen.
 :::
 ::::
 
@@ -81,7 +80,7 @@ Welcher der beiden Zweige wird genommen, und was ist dort die Masse der Münze?
 
 :::proofen
 By hand this is `rw [Bool.cond_false, zero_add, Bool.not_false, Bool.cond_true, coin_true]`: five
-rules, each of them simple, and you know them all. From now on they go into the simplifier, `norm_num`. It
+rules, each of them simple, and you know them all. From now on they go into the simplifier, `simp`. It
 rewrites with a whole list of rules, again and again, until none applies any more, and it computes
 with numbers.
 
@@ -91,15 +90,15 @@ Which rules are in the list? In the inventory they now carry the mark *simp*: am
 many from Mathlib you have not met yet, such as `add_zero` and `mul_one`. It also computes `bif true then a else b`,
 `bif c then a else a` and `c == c` (that is why `Bool.cond_true` and the like carry no mark: Lean does
 them without a rule). Not in the list are rules like `bool_ext`, `map_true`, `mass_not` or `add_comm`:
-they change what you prove, or could go on forever, and you apply them yourself. `norm_num [h]`
+they change what you prove, or could go on forever, and you apply them yourself. `simp [h]`
 puts a rule `h` into the list for this one call.
 
-*Tip.* `norm_num`.
+*Tip.* `simp`.
 :::
 
 :::proofde
 Von Hand ist das `rw [Bool.cond_false, zero_add, Bool.not_false, Bool.cond_true, coin_true]`: fünf
-Regeln, jede einfach, und du kennst sie alle. Ab jetzt stecken wir sie in den Simplifier, `norm_num`. Er
+Regeln, jede einfach, und du kennst sie alle. Ab jetzt stecken wir sie in den Simplifier, `simp`. Er
 schreibt mit einer ganzen Liste von Regeln um, immer wieder, bis keine mehr passt, und er rechnet mit
 Zahlen.
 
@@ -110,13 +109,13 @@ viele aus Mathlib, die du noch nicht kennst, etwa `add_zero` und `mul_one`. Auß
 `bif c then a else a` und `c == c` aus (darum tragen `Bool.cond_true` und Ähnliches keine Marke: Lean
 erledigt sie ohne Regel). Nicht in der Liste sind Regeln wie `bool_ext`, `map_true`, `mass_not` oder
 `add_comm`: Sie ändern, was du beweist, oder könnten endlos laufen, und du wendest sie selbst an.
-`norm_num [h]` nimmt eine Regel `h` für diesen einen Aufruf in die Liste auf.
+`simp [h]` nimmt eine Regel `h` für diesen einen Aufruf in die Liste auf.
 
-*Tipp.* `norm_num`.
+*Tipp.* `simp`.
 :::
 :::solution
 ```
-norm_num
+simp
 ```
 :::
 :::::
@@ -208,45 +207,6 @@ simp_rw [Bool.and_self, bind_pure]
 :::
 :::::
 
-:::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → Bool) : (do let x ← μ; pure (f x)) = μ.map f") (new := "map_eq_pure_bind") (uses := "map_eq_pure_bind")
-::::hint (anchor := "statement")
-:::en
-A move `μ.map f` is a `do` block: draw `x` from `μ`, then `f x` for sure.
-:::
-
-:::de
-Ein Zug `μ.map f` ist ein `do`-Block: `x` aus `μ` ziehen, dann sicher `f x`.
-:::
-::::
-
-:::en
-*A move is a `do` block.* A move `μ.map f` draws `x` from `μ` and computes `f x`, for sure:
-`pure (f x)`.
-:::
-
-:::de
-*Ein Zug ist ein `do`-Block.* Ein Zug `μ.map f` zieht `x` aus `μ` und rechnet `f x` aus, sicher:
-`pure (f x)`.
-:::
-
-:::proofen
-`map_eq_pure_bind : μ.map f = do let x ← μ; pure (f x)`.
-
-*Tip.* `rw [map_eq_pure_bind]`.
-:::
-
-:::proofde
-`map_eq_pure_bind : μ.map f = do let x ← μ; pure (f x)`.
-
-*Tipp.* `rw [map_eq_pure_bind]`.
-:::
-:::solution
-```
-rw [map_eq_pure_bind]
-```
-:::
-:::::
-
 ::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (do let x ← μ; f x) true = μ true * f true true + μ false * f false true") (new := "bind_apply") (lemma := "bind_true") (uses := "bind_apply, Fintype.sum_bool")
 :::en
 *Two ways to true.* The mass of `do let x ← μ; f x` at `true` comes two ways: the first draw is
@@ -293,36 +253,57 @@ rw [bind_apply, Fintype.sum_bool]
 :::
 ::::
 
-::::leanonly (proof := "(p q : I) : coin (p * q) true = (↑p * ↑q : ℝ≥0∞)") (new := "mass_mul") (uses := "coin_true, mass_mul, coin_false, coin_total")
+:::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → Bool) : μ.map f = (do let x ← μ; ⟦pure (f x) ‖ pure (f x), pure x, μ.map f⟧)") (lemma := "map_eq_pure_bind") (uses := "map_apply, bind_apply, Fintype.sum_bool, pure_apply")
+::::hint (anchor := "statement")
 :::en
-*A product of chances.* `p * q` is again a number in $`[0, 1]`, and as a mass it is the product of
-the masses.
+A move `μ.map f` is a `do` block: draw `x` from `μ`, then `f x` for sure.
 :::
 
 :::de
-*Ein Produkt von Chancen.* `p * q` ist wieder eine Zahl in $`[0, 1]`, und als Masse ist es das
-Produkt der Massen.
-:::
-
-:::proofen
-`mass_mul : ↑(p * q) = ↑p * ↑q`.
-
-*Tip.* `rw [coin_true, mass_mul]`.
-:::
-
-:::proofde
-`mass_mul : ↑(p * q) = ↑p * ↑q`.
-
-*Tipp.* `rw [coin_true, mass_mul]`.
-:::
-:::solution
-```
-rw [coin_true, mass_mul]
-```
+Ein Zug `μ.map f` ist ein `do`-Block: `x` aus `μ` ziehen, dann sicher `f x`.
 :::
 ::::
 
-::::circuit (height := "440") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:p^2 false:1-p^2") (context := "Lean/Rules.lean") (proof := "(p q : I) : (do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)") (lemma := "coin_and") (play := "a=and; x>a.0; y>a.1; a>out") (uses := "bool_ext, bind_true, mass_mul, bind_false")
+:::en
+*A move is a `do` block.* A move `μ.map f` draws `x` from `μ` and computes `f x`, for sure.
+:::
+
+:::de
+*Ein Zug ist ein `do`-Block.* Ein Zug `μ.map f` zieht `x` aus `μ` und rechnet `f x` aus, sicher.
+:::
+
+:::proofen
+Compare the masses at every `b`: `ext b`, then `map_apply` on the left and `bind_apply` on the right,
+and with `simp_rw [Fintype.sum_bool, pure_apply]` the sums written out and the masses of `pure`. What
+`f` does is unknown, and so is `b`: `cases f true <;> cases f false <;> cases b`, eight cases, and in
+each `simp` computes. You prove it on `Bool`; it holds for every type, and it is unlocked as
+`map_eq_pure_bind` in this general form.
+
+*Tip.* `ext b`, `rw [map_apply, bind_apply]`, `simp_rw [Fintype.sum_bool, pure_apply]`,
+`cases f true <;> cases f false <;> cases b <;> simp`.
+:::
+
+:::proofde
+Vergleiche die Massen bei jedem `b`: `ext b`, dann `map_apply` links und `bind_apply` rechts, und mit
+`simp_rw [Fintype.sum_bool, pure_apply]` die Summen ausgeschrieben und die Massen von `pure`. Was `f`
+tut, ist unbekannt, und `b` auch: `cases f true <;> cases f false <;> cases b`, acht Fälle, und in
+jedem rechnet `simp`. Du beweist es auf `Bool`; es gilt für jeden Typ und wird in dieser allgemeinen
+Form als `map_eq_pure_bind` freigeschaltet.
+
+*Tipp.* `ext b`, `rw [map_apply, bind_apply]`, `simp_rw [Fintype.sum_bool, pure_apply]`,
+`cases f true <;> cases f false <;> cases b <;> simp`.
+:::
+:::solution
+```
+ext b
+rw [map_apply, bind_apply]
+simp_rw [Fintype.sum_bool, pure_apply]
+cases f true <;> cases f false <;> cases b <;> simp
+```
+:::
+:::::
+
+::::circuit (height := "440") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:p^2 false:1-p^2") (context := "Lean/Rules.lean") (proof := "(p q : I) : (do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)") (lemma := "coin_and") (new := "mass_mul") (play := "a=and; x>a.0; y>a.1; a>out") (uses := "bool_ext, bind_true, mass_mul, bind_false")
 :::en
 *Both `true`.* Two coins, and `true` only when both show `true`.
 :::
@@ -340,10 +321,10 @@ independent of the others. Prove it for two coins `p` and `q` (on the board both
 Two distributions on `Bool` are equal when their masses at `true` are: `apply bool_ext`. Then
 `bind_true`, three times: for the first draw, and for the second draw after `true` and after `false`.
 
-Then the simplifier from the first level of this world: `mass_mul` carries no mark simp, so give it
-along, `norm_num [mass_mul]`.
+Then the simplifier from the first level of this world. One new rule: `mass_mul : ↑(p * q) = ↑p * ↑q`,
+the product `p * q` in $`[0, 1]` as a mass. It carries no mark simp, so give it along, `simp [mass_mul]`.
 
-*Tip.* `apply bool_ext`, `rw [bind_true, bind_true, bind_true]`, `norm_num [mass_mul]`.
+*Tip.* `apply bool_ext`, `rw [bind_true, bind_true, bind_true]`, `simp [mass_mul]`.
 :::
 
 :::proofde
@@ -356,16 +337,16 @@ Unabhängigkeit selbst.
 Zwei Verteilungen auf `Bool` sind gleich, wenn ihre Massen bei `true` gleich sind: `apply bool_ext`.
 Dann `bind_true`, dreimal: für den ersten Zug, und für den zweiten nach `true` und nach `false`.
 
-Dann der Simplifier aus dem ersten Level dieser Welt: `mass_mul` trägt keine Marke simp, also gib es
-mit, `norm_num [mass_mul]`.
+Dann der Simplifier aus dem ersten Level dieser Welt. Eine neue Regel: `mass_mul : ↑(p * q) = ↑p * ↑q`,
+das Produkt `p * q` in $`[0, 1]` als Masse. Sie trägt keine Marke simp, also gib sie mit, `simp [mass_mul]`.
 
-*Tipp.* `apply bool_ext`, `rw [bind_true, bind_true, bind_true]`, `norm_num [mass_mul]`.
+*Tipp.* `apply bool_ext`, `rw [bind_true, bind_true, bind_true]`, `simp [mass_mul]`.
 :::
 :::solution
 ```
 apply bool_ext
 rw [bind_true, bind_true, bind_true]
-norm_num [mass_mul]
+simp [mass_mul]
 ```
 :::
 ::::
@@ -401,7 +382,7 @@ it is one line. You prove it on `Bool`; it holds for every type, and it is unloc
 in this general form.
 
 *Tip.* `ext b`, `rw [bind_apply, bind_apply]`, `simp_rw [Fintype.sum_bool, map_apply, Fintype.sum_bool]`,
-`cases f true <;> cases f false <;> norm_num [add_mul, add_comm]`.
+`cases f true <;> cases f false <;> simp [add_mul, add_comm]`.
 :::
 
 :::proofde
@@ -414,14 +395,14 @@ ist das eine Zeile. Du beweist es auf `Bool`; es gilt für jeden Typ und wird in
 als `bind_map_left` freigeschaltet.
 
 *Tipp.* `ext b`, `rw [bind_apply, bind_apply]`, `simp_rw [Fintype.sum_bool, map_apply, Fintype.sum_bool]`,
-`cases f true <;> cases f false <;> norm_num [add_mul, add_comm]`.
+`cases f true <;> cases f false <;> simp [add_mul, add_comm]`.
 :::
 :::solution
 ```
 ext b
 rw [bind_apply, bind_apply]
 simp_rw [Fintype.sum_bool, map_apply, Fintype.sum_bool]
-cases f true <;> cases f false <;> norm_num [add_mul, add_comm]
+cases f true <;> cases f false <;> simp [add_mul, add_comm]
 ```
 :::
 :::::
@@ -438,11 +419,11 @@ cases f true <;> cases f false <;> norm_num [add_mul, add_comm]
 :::proofen
 Work backwards, on the right side: `rw [← coin_and]` uses the rule from right to left, and
 `rw [← coin_not]` turns `coin (σ p)` into `(coin p).map not`. Then a gate sits inside the `do` block,
-in `let y ← (coin p).map not`. The new rule
+in `let y ← (coin p).map not`. Your lemma from the level before,
 `bind_map_left : (do let x ← μ.map f; g x) = (do let x ← μ; g (f x))` takes the gate out of the draw
 and into what is computed. But it is needed after `let x ← coin p`, where the name `x` of the `do`
 block occurs, bound. There `simp_rw [bind_map_left]` works; here the new tactic `simp only [rules]`
-does too: it rewrites with all the rules at once, in any order, as often as it can, and closes the goal
+does too: the simplifier, but with only the rules you give, as often as it can; it closes the goal
 when the two sides become the same.
 
 *Tip.* `rw [← coin_and]`, `rw [← coin_not]`, `simp only [bind_map_left]`.
@@ -451,12 +432,12 @@ when the two sides become the same.
 :::proofde
 Arbeite rückwärts, auf der rechten Seite: `rw [← coin_and]` benutzt die Regel von rechts nach
 links, und `rw [← coin_not]` macht aus `coin (σ p)` ein `(coin p).map not`. Dann steht ein Baustein im
-`do`-Block, in `let y ← (coin p).map not`. Die neue Regel
+`do`-Block, in `let y ← (coin p).map not`. Dein Lemma aus dem Level davor,
 `bind_map_left : (do let x ← μ.map f; g x) = (do let x ← μ; g (f x))` holt den Baustein aus dem Ziehen
 heraus und in das Rechnen hinein. Gebraucht wird sie aber nach `let x ← coin p`, wo der Name `x` des
 `do`-Blocks vorkommt, gebunden. Dort geht `simp_rw [bind_map_left]`; hier tut es auch die neue Taktik
-`simp only [Regeln]`: Sie schreibt mit allen Regeln zugleich um, in beliebiger Reihenfolge, so oft es
-geht, und schließt das Ziel, wenn beide Seiten gleich werden.
+`simp only [Regeln]`: der Simplifier, aber nur mit den Regeln, die du angibst, so oft es geht; er
+schließt das Ziel, wenn beide Seiten gleich werden.
 
 *Tipp.* `rw [← coin_and]`, `rw [← coin_not]`, `simp only [bind_map_left]`.
 :::
@@ -469,7 +450,17 @@ simp only [bind_map_left]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (f : Bool → DiscreteMeasure Bool) : (do let x ← coin p; f x).map not = (do let x ← coin p; (f x).map not)") (new := "map_bind") (uses := "map_bind, bind_map_left")
+:::::leanonly (proof := "(μ : DiscreteMeasure Bool) (g : Bool → DiscreteMeasure Bool) (f : Bool → Bool) : (do let x ← μ; g x).map f = (do let x ← μ; ⟦(g x).map f ‖ (g x).map f, g (f x), g x⟧)") (lemma := "map_bind") (new := "mul_add, add_add_add_comm") (uses := "map_apply, bind_apply, Fintype.sum_bool, mul_add, add_add_add_comm")
+::::hint (anchor := "gap")
+:::en
+A move after the whole draw: where can it go inside?
+:::
+
+:::de
+Ein Zug nach dem ganzen Ziehen: Wohin kann er hinein?
+:::
+::::
+
 :::en
 *A move after a draw.* A move at the end can go into the `do` block.
 :::
@@ -479,49 +470,38 @@ simp only [bind_map_left]
 :::
 
 :::proofen
-`map_bind : (do let x ← μ; g x).map f = (do let x ← μ; (g x).map f)`.
+As for `bind_map_left`: `ext b`, `map_apply` and `bind_apply`, and all sums written out, also those
+inside. Then the four possible `f` and the two `b`, and `simp` with the new rule
+`mul_add : a * (b + c) = a * b + a * c`. Where `f` is constant, two sums of four masses are left, in
+another order: `add_add_add_comm : a + b + (c + d) = a + c + (b + d)`, once in each. You prove it on
+`Bool`; it holds for every type, and it is unlocked as `map_bind` in this general form.
 
-*Tip.* `rw [map_bind]`.
+*Tip.* `ext b`, `rw [map_apply, bind_apply]`, `simp_rw [Fintype.sum_bool, bind_apply, map_apply, Fintype.sum_bool]`,
+`cases f true <;> cases f false <;> cases b <;> simp [mul_add]`, then `rw [add_add_add_comm]` twice.
 :::
 
 :::proofde
-`map_bind : (do let x ← μ; g x).map f = (do let x ← μ; (g x).map f)`.
+Wie bei `bind_map_left`: `ext b`, `map_apply` und `bind_apply`, und alle Summen ausgeschrieben, auch
+die inneren. Dann die vier möglichen `f` und die zwei `b`, und `simp` mit der neuen Regel
+`mul_add : a * (b + c) = a * b + a * c`. Wo `f` konstant ist, bleiben zwei Summen aus vier Massen, in
+anderer Reihenfolge: `add_add_add_comm : a + b + (c + d) = a + c + (b + d)`, einmal in jeder. Du
+beweist es auf `Bool`; es gilt für jeden Typ und wird in dieser allgemeinen Form als `map_bind`
+freigeschaltet.
 
-*Tipp.* `rw [map_bind]`.
+*Tipp.* `ext b`, `rw [map_apply, bind_apply]`, `simp_rw [Fintype.sum_bool, bind_apply, map_apply, Fintype.sum_bool]`,
+`cases f true <;> cases f false <;> cases b <;> simp [mul_add]`, dann zweimal `rw [add_add_add_comm]`.
 :::
 :::solution
 ```
-rw [map_bind]
+ext b
+rw [map_apply, bind_apply]
+simp_rw [Fintype.sum_bool, bind_apply, map_apply, Fintype.sum_bool]
+cases f true <;> cases f false <;> cases b <;> simp [mul_add]
+rw [add_add_add_comm]
+rw [add_add_add_comm]
 ```
 :::
-::::
-
-::::leanonly (proof := "(x y : Bool) : (x || y) = !(!x && !y)") (lemma := "or_eq") (uses := "-")
-:::en
-*De Morgan.* `or` is `and` with three `not`s; the next level builds it so.
-:::
-
-:::de
-*De Morgan.* `or` ist `and` mit drei `not`; das nächste Level baut es so.
-:::
-
-:::proofen
-Four cases, each computed.
-
-*Tip.* `cases x <;> cases y <;> rfl`.
-:::
-
-:::proofde
-Vier Fälle, jeder ausgerechnet.
-
-*Tipp.* `cases x <;> cases y <;> rfl`.
-:::
-:::solution
-```
-cases x <;> cases y <;> rfl
-```
-:::
-::::
+:::::
 
 ::::circuit (height := "440") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:2p-p^2 false:(1-p)^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x || y)) = coin (σ (σ p * σ p))") (play := "a=or; x>a.0; y>a.1; a>out") (uses := "coin_not, coin_and, bind_map_left, map_bind, map_pure, or_eq")
 :::en
@@ -533,19 +513,18 @@ cases x <;> cases y <;> rfl
 :::
 
 :::proofen
-At least one `true` is: not both `false`, with probability $`1 - (1 - p)^2`. Two new rules: De
-Morgan, `or_eq : (x || y) = !(!x && !y)`, and `map_bind : (do let x ← μ; g x).map f = (do let x ← μ; (g x).map f)`:
-a move after a `do` block goes into it.
+At least one `true` is: not both `false`, with probability $`1 - (1 - p)^2`. Your lemmas De
+Morgan, `or_eq : (x || y) = !(!x && !y)` from *Bool*, and `map_bind` from the level before: a move
+after a `do` block goes into it.
 
 *Tip.* On the right side, backwards: `rw [← coin_not]`, `rw [← coin_and]`, `rw [← coin_not]`; then
 `simp only [bind_map_left, map_bind, map_pure, or_eq]`.
 :::
 
 :::proofde
-Mindestens einmal `true` heißt: nicht beide `false`, mit Wahrscheinlichkeit $`1 - (1 - p)^2`. Zwei
-neue Regeln: De Morgan, `or_eq : (x || y) = !(!x && !y)`, und
-`map_bind : (do let x ← μ; g x).map f = (do let x ← μ; (g x).map f)`: Ein Zug nach einem `do`-Block
-wandert in ihn hinein.
+Mindestens einmal `true` heißt: nicht beide `false`, mit Wahrscheinlichkeit $`1 - (1 - p)^2`. Deine
+Lemmas De Morgan, `or_eq : (x || y) = !(!x && !y)` aus *Bool*, und `map_bind` aus dem Level davor:
+Ein Zug nach einem `do`-Block wandert in ihn hinein.
 
 *Tipp.* Auf der rechten Seite, rückwärts: `rw [← coin_not]`, `rw [← coin_and]`, `rw [← coin_not]`;
 dann `simp only [bind_map_left, map_bind, map_pure, or_eq]`.
@@ -560,34 +539,17 @@ simp only [bind_map_left, map_bind, map_pure, or_eq]
 :::
 ::::
 
-::::leanonly (proof := "(x : Bool) : (x && !x) = false") (lemma := "Bool.and_not_self") (uses := "-")
+:::::leanonly (proof := "(p : I) (ν : DiscreteMeasure Bool) : (do let _ ← coin p; ν) = ⟦ν ‖ ν, coin p, pure true⟧") (lemma := "coin_unused") (uses := "bind_apply, Fintype.sum_bool, add_mul")
+::::hint (anchor := "gap")
 :::en
-*Never both.* `x` and not `x` is never `true`.
+The outcome of the coin is not used (`_`): what is left?
 :::
 
 :::de
-*Nie beides.* `x` und nicht `x` ist nie `true`.
-:::
-
-:::proofen
-Two cases, each computed.
-
-*Tip.* `cases x <;> rfl`.
-:::
-
-:::proofde
-Zwei Fälle, jeder ausgerechnet.
-
-*Tipp.* `cases x <;> rfl`.
-:::
-:::solution
-```
-cases x <;> rfl
-```
+Das Ergebnis der Münze wird nicht benutzt (`_`): Was bleibt?
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : (do let _ ← coin p; pure true) = (pure true : DiscreteMeasure Bool)") (new := "coin_unused") (uses := "coin_unused, prob_unused")
 :::en
 *An unused coin.* A coin whose outcome is not used changes nothing.
 :::
@@ -597,24 +559,30 @@ cases x <;> rfl
 :::
 
 :::proofen
-`coin_unused : (do let _ ← coin p; ν) = ν` (`_`: the outcome gets no name, it is not used).
+At every `b`: `ext b`, `bind_apply` and `Fintype.sum_bool`. Both ways go on with the same `ν b`, so
+take it out, with `add_mul` backwards: `← add_mul`. What is left are the two masses of the coin, and
+they add up to one: `simp`. It is unlocked as `coin_unused`.
 
-*Tip.* `rw [coin_unused]`.
+*Tip.* `ext b`, `rw [bind_apply, Fintype.sum_bool, ← add_mul]`, `simp`.
 :::
 
 :::proofde
-`coin_unused : (do let _ ← coin p; ν) = ν` (`_`: Das Ergebnis bekommt keinen Namen, es wird nicht benutzt).
+Bei jedem `b`: `ext b`, `bind_apply` und `Fintype.sum_bool`. Beide Wege machen mit demselben `ν b`
+weiter, also zieh es heraus, mit `add_mul` rückwärts: `← add_mul`. Übrig sind die zwei Massen der
+Münze, und sie ergeben zusammen eins: `simp`. Es wird als `coin_unused` freigeschaltet.
 
-*Tipp.* `rw [coin_unused]`.
+*Tipp.* `ext b`, `rw [bind_apply, Fintype.sum_bool, ← add_mul]`, `simp`.
 :::
 :::solution
 ```
-rw [coin_unused]
+ext b
+rw [bind_apply, Fintype.sum_bool, ← add_mul]
+simp
 ```
 :::
-::::
+:::::
 
-::::circuit (height := "540") (inputs := "x") (gates := "and, or, not") (coins := "p") (target := "pure false") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; pure (x && !x)) = pure false") (play := "a=not; b=and; x>a.0; x>b.0; a>b.1; b>out") (uses := "Bool.and_not_self, coin_unused, Bool.or_not_self, prob_unused")
+::::circuit (height := "540") (inputs := "x") (gates := "and, or, not") (coins := "p") (target := "pure false") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; pure (x && !x)) = pure false") (play := "a=not; b=and; x>a.0; x>b.0; a>b.1; b>out") (uses := "coin_unused, prob_unused")
 :::en
 *Surely `false`, with a single coin.* A coin that goes into two functions is the same coin in both:
 the results depend on each other.
@@ -626,123 +594,68 @@ dieselbe: Die Ergebnisse hängen voneinander ab.
 :::
 
 :::proofen
-Two new rules: `Bool.and_not_self : (x && !x) = false`, and
-`coin_unused : (do let _ ← coin p; ν) = ν`: a coin whose result is not used changes nothing.
+`x && !x` is never `true`: your lemma `Bool.and_not_self` from *Bool*, marked simp, so `simp` uses it.
+Then the coin is no longer used: `coin_unused` from the level before.
 
-*Tip.* `simp only [Bool.and_not_self]`, then `rw [coin_unused]`.
+*Tip.* `simp`, then `rw [coin_unused]`.
 :::
 
 :::proofde
-Zwei neue Regeln: `Bool.and_not_self : (x && !x) = false`, und
-`coin_unused : (do let _ ← coin p; ν) = ν`: Eine Münze, deren Ergebnis nicht benutzt wird, ändert
-nichts.
+`x && !x` ist nie `true`: dein Lemma `Bool.and_not_self` aus *Bool*, mit der Marke simp, also benutzt
+es `simp`. Dann wird die Münze nicht mehr benutzt: `coin_unused` aus dem Level davor.
 
-*Tipp.* `simp only [Bool.and_not_self]`, dann `rw [coin_unused]`.
+*Tipp.* `simp`, dann `rw [coin_unused]`.
 :::
 :::solution
 ```
-simp only [Bool.and_not_self]
+simp
 rw [coin_unused]
 ```
 :::
 ::::
 
-::::leanonly (proof := "(x : Bool) : (x || !x) = true") (lemma := "Bool.or_not_self") (uses := "-")
+:::::leanonly (proof := "(p : I) : (do let x ← coin p; pure (x && x)) = (do let x ← coin p; pure ⟦x || x ‖ x || x, !x, x && !x⟧)") (new := "congr") (uses := "-")
+::::hint (anchor := "gap")
 :::en
-*Always one of them.* `x` or not `x` is always `true`.
+Which result is the same as `x && x`, for every `x`?
 :::
 
 :::de
-*Immer eins von beiden.* `x` oder nicht `x` ist immer `true`.
+Welches Ergebnis ist dasselbe wie `x && x`, für jedes `x`?
+:::
+::::
+
+:::en
+*The same coin, two results.* Both sides throw the same coin and differ only in what they do with it.
+:::
+
+:::de
+*Dieselbe Münze, zwei Ergebnisse.* Beide Seiten werfen dieselbe Münze und unterscheiden sich nur darin,
+was sie damit tun.
 :::
 
 :::proofen
-Two cases, each computed.
+A new tactic: `congr` reduces the goal to the parts in which the two sides differ, here what comes after
+the throw, as a function of `x`. Then `ext x` (from *One Coin*): equal for every `x`. Then two cases.
 
-*Tip.* `cases x <;> rfl`.
+*Tip.* `congr`, `ext x`, `cases x <;> rfl`.
 :::
 
 :::proofde
-Zwei Fälle, jeder ausgerechnet.
+Eine neue Taktik: `congr` führt das Ziel auf die Teile zurück, in denen sich die beiden Seiten
+unterscheiden, hier das, was nach dem Wurf kommt, als Funktion von `x`. Dann `ext x` (aus *Eine Münze*):
+gleich für jedes `x`. Dann zwei Fälle.
 
-*Tipp.* `cases x <;> rfl`.
+*Tipp.* `congr`, `ext x`, `cases x <;> rfl`.
 :::
 :::solution
 ```
+congr
+ext x
 cases x <;> rfl
 ```
 :::
-::::
-
-::::circuit (height := "540") (inputs := "x") (gates := "and, or, not") (coins := "p") (target := "pure true") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; pure (x || !x)) = pure true") (play := "a=not; b=or; x>a.0; x>b.0; a>b.1; b>out") (uses := "Bool.or_not_self, coin_unused, Bool.and_not_self, prob_unused")
-:::en
-*Surely `true`, with a single coin.* As before, now with `or`: the coin or its flip shows `true`.
-:::
-
-:::de
-*Sicher `true`, mit einer einzigen Münze.* Wie eben, jetzt mit `or`: Die Münze oder ihre Umkehrung
-zeigt `true`.
-:::
-
-:::proofen
-The new rule `Bool.or_not_self : (x || !x) = true`; the rest as in the level before.
-
-*Tip.* `simp only [Bool.or_not_self]`, then `rw [coin_unused]`.
-:::
-
-:::proofde
-Die neue Regel `Bool.or_not_self : (x || !x) = true`; der Rest wie im Level davor.
-
-*Tipp.* `simp only [Bool.or_not_self]`, dann `rw [coin_unused]`.
-:::
-:::solution
-```
-simp only [Bool.or_not_self]
-rw [coin_unused]
-```
-:::
-::::
-
-::::leanonly (proof := "(f : Bool → Bool) (p : I) : (((coin p).map f).map f).map f = (coin p).map f") (new := "congr") (uses := "map_map, Bool.apply_apply_apply")
-:::en
-*Three times is once, with a coin.* The first level of *Maps*, now on a coin: three moves with `f` move the coin as
-one move with `f` does.
-:::
-
-:::de
-*Dreimal ist einmal, mit einer Münze.* Das erste Level von *Abbildungen*, jetzt auf einer Münze: Drei Züge mit `f` bewegen
-die Münze wie ein Zug mit `f`.
-:::
-
-:::proofen
-Three moves one after the other are one move: your lemma
-`map_map : (μ.map f).map g = μ.map (fun x => g (f x))` (the boss of *Maps*), twice. Then both sides move the same coin,
-with two maps. A new tactic: `congr` reduces the goal to the two maps being equal; then `ext b`
-(from *One Coin*) to their being equal at every point `b`. That is your lemma from the first level of *Maps*:
-`exact Bool.apply_apply_apply f b`.
-
-*Tip.* `rw [map_map, map_map]`, `congr`, `ext b`, `exact Bool.apply_apply_apply f b`.
-:::
-
-:::proofde
-Drei Züge hintereinander sind ein Zug: dein Lemma
-`map_map : (μ.map f).map g = μ.map (fun x => g (f x))` (der Boss von *Abbildungen*), zweimal. Dann bewegen beide Seiten dieselbe
-Münze, mit zwei Abbildungen. Eine neue Taktik: `congr` führt das Ziel darauf zurück, dass die
-beiden Abbildungen gleich sind; dann `ext b` (aus *Eine Münze*) darauf, dass sie an jeder Stelle `b`
-gleich sind. Das
-ist dein Lemma aus dem ersten Level von *Abbildungen*: `exact Bool.apply_apply_apply f b`.
-
-*Tipp.* `rw [map_map, map_map]`, `congr`, `ext b`, `exact Bool.apply_apply_apply f b`.
-:::
-:::solution
-```
-rw [map_map, map_map]
-congr
-ext b
-exact Bool.apply_apply_apply f b
-```
-:::
-::::
+:::::
 
 ::::circuit (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:2p(1-p) false:p^2+(1-p)^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure ((x || y) && !(x && y))) = (do let x ← coin p; let y ← coin p; pure (xor x y))") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out") (uses := "-")
 :::en

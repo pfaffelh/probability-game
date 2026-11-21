@@ -64,13 +64,13 @@ Verteilung.
 
 :::en
 *Lean keywords.* Goal, tactic, `rfl`, `rw`, `exact`, `apply`, `cases`, `decide`, induction,
-`norm_num`, `ring`, `linear_combination`, `congr`, `funext`, `Bool`, `ℕ`, `ℝ`, `ℝ≥0∞`, `do`
+`simp`, `ring`, `linear_combination`, `congr`, `funext`, `Bool`, `ℕ`, `ℝ`, `ℝ≥0∞`, `do`
 notation, monad, Mathlib.
 :::
 
 :::de
 *Stichworte Lean.* Ziel, Taktik, `rfl`, `rw`, `exact`, `apply`, `cases`, `decide`, Induktion,
-`norm_num`, `ring`, `linear_combination`, `congr`, `funext`, `Bool`, `ℕ`, `ℝ`, `ℝ≥0∞`,
+`simp`, `ring`, `linear_combination`, `congr`, `funext`, `Bool`, `ℕ`, `ℝ`, `ℝ≥0∞`,
 `do`-Notation, Monade, Mathlib.
 :::
 

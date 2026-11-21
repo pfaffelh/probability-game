@@ -169,22 +169,22 @@ ohne ein `and`.
 :::proofen
 `let y ← m; pure y` is just `m` (Lean drops it already when it reads the statement). `rw [bind_true]`
 splits the mass at `true` into the two ways. What is left is computing: which coin each way takes, its
-mass at `true`, products and sums. `norm_num` (from *Building with Coins*) does all that.
+mass at `true`, products and sums. `simp` (from *Building with Coins*) does all that.
 
-*Tip.* `rw [bind_true]`, then `norm_num`.
+*Tip.* `rw [bind_true]`, then `simp`.
 :::
 
 :::proofde
 `let y ← m; pure y` ist einfach `m` (Lean lässt es schon beim Lesen der Aussage weg). `rw [bind_true]`
 teilt die Masse bei `true` in die zwei Wege. Was bleibt, ist Rechnen: welche Münze jeder Weg nimmt, ihre
-Masse bei `true`, Produkte und Summen. `norm_num` (aus *Bauen mit Münzen*) erledigt das.
+Masse bei `true`, Produkte und Summen. `simp` (aus *Bauen mit Münzen*) erledigt das.
 
-*Tipp.* `rw [bind_true]`, dann `norm_num`.
+*Tipp.* `rw [bind_true]`, dann `simp`.
 :::
 :::solution
 ```
 rw [bind_true]
-norm_num
+simp
 ```
 :::
 ::::
@@ -203,18 +203,18 @@ Der Ausgang `y` hat die Verteilung der Münze `x`.
 :::proofen
 As before; now both ways end in a point mass, `pure true` and `pure false`.
 
-*Tip.* `rw [bind_true]`, `norm_num`.
+*Tip.* `rw [bind_true]`, `simp`.
 :::
 
 :::proofde
 Wie eben; jetzt enden beide Wege in einer Punktmasse, `pure true` und `pure false`.
 
-*Tipp.* `rw [bind_true]`, `norm_num`.
+*Tipp.* `rw [bind_true]`, `simp`.
 :::
 :::solution
 ```
 rw [bind_true]
-norm_num
+simp
 ```
 :::
 ::::
@@ -235,18 +235,18 @@ zweite Münze wird nur geworfen, wenn sie gebraucht wird.
 :::proofen
 The way through `true` has mass $`p \cdot 1`, the way through `false` mass $`(1 - p) \cdot p`.
 
-*Tip.* `rw [bind_true]`, `norm_num`.
+*Tip.* `rw [bind_true]`, `simp`.
 :::
 
 :::proofde
 Der Weg über `true` hat die Masse $`p \cdot 1`, der Weg über `false` die Masse $`(1 - p) \cdot p`.
 
-*Tipp.* `rw [bind_true]`, `norm_num`.
+*Tipp.* `rw [bind_true]`, `simp`.
 :::
 :::solution
 ```
 rw [bind_true]
-norm_num
+simp
 ```
 :::
 ::::
@@ -263,22 +263,22 @@ $`1 - p`: Der zweite Wurf wiederholt eher den ersten.
 :::
 
 :::proofen
-Two different coins in the two ways now, `coin p` and `coin (σ p)`; `norm_num` knows the masses of
+Two different coins in the two ways now, `coin p` and `coin (σ p)`; `simp` knows the masses of
 both.
 
-*Tip.* `rw [bind_true]`, `norm_num`.
+*Tip.* `rw [bind_true]`, `simp`.
 :::
 
 :::proofde
-Jetzt zwei verschiedene Münzen in den zwei Wegen, `coin p` und `coin (σ p)`; `norm_num` kennt die
+Jetzt zwei verschiedene Münzen in den zwei Wegen, `coin p` und `coin (σ p)`; `simp` kennt die
 Massen beider.
 
-*Tipp.* `rw [bind_true]`, `norm_num`.
+*Tipp.* `rw [bind_true]`, `simp`.
 :::
 :::solution
 ```
 rw [bind_true]
-norm_num
+simp
 ```
 :::
 ::::
@@ -298,20 +298,20 @@ der Münze, mit der sie begann.
 :::
 
 :::proofen
-As in *Boss: three tries*: `bind_true`, and then `norm_num [bind_true]`.
+As in *Boss: three tries*: `bind_true`, and then `simp [bind_true]`.
 
-*Tip.* `rw [bind_true]`, then `norm_num [bind_true]`.
+*Tip.* `rw [bind_true]`, then `simp [bind_true]`.
 :::
 
 :::proofde
-Wie in *Endgegner: drei Versuche*: `bind_true`, dann `norm_num [bind_true]`.
+Wie in *Endgegner: drei Versuche*: `bind_true`, dann `simp [bind_true]`.
 
-*Tipp.* `rw [bind_true]`, dann `norm_num [bind_true]`.
+*Tipp.* `rw [bind_true]`, dann `simp [bind_true]`.
 :::
 :::solution
 ```
 rw [bind_true]
-norm_num [bind_true]
+simp [bind_true]
 ```
 :::
 ::::
@@ -353,20 +353,20 @@ simp only [pure_bind, Bool.not_not, bind_pure]
 :::
 
 :::proofen
-`bind_true` splits by the first coin; `norm_num` computes the two branches and the masses of the coins.
+`bind_true` splits by the first coin; `simp` computes the two branches and the masses of the coins.
 
-*Tip.* `rw [bind_true]`, `norm_num`.
+*Tip.* `rw [bind_true]`, `simp`.
 :::
 
 :::proofde
-`bind_true` teilt nach der ersten Münze; `norm_num` rechnet die zwei Zweige und die Massen der Münzen aus.
+`bind_true` teilt nach der ersten Münze; `simp` rechnet die zwei Zweige und die Massen der Münzen aus.
 
-*Tipp.* `rw [bind_true]`, `norm_num`.
+*Tipp.* `rw [bind_true]`, `simp`.
 :::
 :::solution
 ```
 rw [bind_true]
-norm_num
+simp
 ```
 :::
 ::::
@@ -383,22 +383,22 @@ norm_num
 :::proofen
 `bind_false : (do let x ← μ; f x) false = μ true * f true false + μ false * f false false`.
 
-Then `norm_num`, as before.
+Then `simp`, as before.
 
-*Tip.* `rw [bind_false]`, `norm_num`.
+*Tip.* `rw [bind_false]`, `simp`.
 :::
 
 :::proofde
 `bind_false : (do let x ← μ; f x) false = μ true * f true false + μ false * f false false`.
 
-Dann `norm_num`, wie vorher.
+Dann `simp`, wie vorher.
 
-*Tipp.* `rw [bind_false]`, `norm_num`.
+*Tipp.* `rw [bind_false]`, `simp`.
 :::
 :::solution
 ```
 rw [bind_false]
-norm_num
+simp
 ```
 :::
 ::::
@@ -415,19 +415,19 @@ norm_num
 :::proofen
 Two distributions on `Bool` with the same mass at `true` are the same: `apply bool_ext`. Then the computation of *One step forward*, and the hypothesis `h`.
 
-*Tip.* `apply bool_ext`, `rw [bind_true]`, `norm_num`, `exact h`.
+*Tip.* `apply bool_ext`, `rw [bind_true]`, `simp`, `exact h`.
 :::
 
 :::proofde
 Zwei Verteilungen auf `Bool` mit derselben Masse bei `true` sind gleich: `apply bool_ext`. Dann die Rechnung aus *Ein Schritt nach vorn*, und die Annahme `h`.
 
-*Tipp.* `apply bool_ext`, `rw [bind_true]`, `norm_num`, `exact h`.
+*Tipp.* `apply bool_ext`, `rw [bind_true]`, `simp`, `exact h`.
 :::
 :::solution
 ```
 apply bool_ext
 rw [bind_true]
-norm_num
+simp
 exact h
 ```
 :::
@@ -508,25 +508,25 @@ for `y`. `false` only when all three tries fail: $`(1 - p)^3`.
 
 :::proofen
 `bind_true` twice. After the first, the way through `false` is a bind again, inside the computation,
-where `rw` would have to pick the right place: give the rule to `norm_num` instead,
-`norm_num [bind_true]`, and it uses it wherever it fits. (The way through `true` starts with
-`pure true`; `pure_bind` throws it away, and `norm_num` knows that rule by itself.)
+where `rw` would have to pick the right place: give the rule to `simp` instead,
+`simp [bind_true]`, and it uses it wherever it fits. (The way through `true` starts with
+`pure true`; `pure_bind` throws it away, and `simp` knows that rule by itself.)
 
-*Tip.* `rw [bind_true]`, then `norm_num [bind_true]`.
+*Tip.* `rw [bind_true]`, then `simp [bind_true]`.
 :::
 
 :::proofde
 Zweimal `bind_true`. Nach dem ersten ist der Weg über `false` wieder ein bind, mitten in der Rechnung,
-wo `rw` die richtige Stelle treffen müsste: Gib die Regel stattdessen `norm_num`,
-`norm_num [bind_true]`, und es benutzt sie, wo sie passt. (Der Weg über `true` beginnt mit
-`pure true`; `pure_bind` wirft es weg, und diese Regel kennt `norm_num` von selbst.)
+wo `rw` die richtige Stelle treffen müsste: Gib die Regel stattdessen `simp`,
+`simp [bind_true]`, und es benutzt sie, wo sie passt. (Der Weg über `true` beginnt mit
+`pure true`; `pure_bind` wirft es weg, und diese Regel kennt `simp` von selbst.)
 
-*Tipp.* `rw [bind_true]`, dann `norm_num [bind_true]`.
+*Tipp.* `rw [bind_true]`, dann `simp [bind_true]`.
 :::
 :::solution
 ```
 rw [bind_true]
-norm_num [bind_true]
+simp [bind_true]
 ```
 :::
 ::::

@@ -2764,10 +2764,17 @@
 
   // The box of a chip under the mouse: one for the page, over everything, below the chip (above it
   // when there is no room below); gone when the mouse leaves the chip or the inventory is drawn anew.
-  // The rules the simplifier (norm_num) uses by itself: the simp lemmas of Lean and Mathlib, and the
-  // masses made simp in Lean/Rules.lean (checked in Lean, 2026-11-21). Marked in the inventory once
-  // norm_num is in it.
-  const SIMP = new Set(["tsum_fintype", "ENNReal.one_ne_top", "tsub_self", "mul_one", "mul_zero", "coin_true", "coin_false", "Bool.true_beq", "beq_true", "Bool.not_true", "Bool.not_false", "zero_add", "add_symm_eq_one", "pure_true", "pure_false", "Bool.false_beq", "bind_assoc", "pure_bind", "add_zero", "bind_pure", "Bool.and_self", "Bool.not_not", "Function.comp_apply", "id_eq", "Nat.bodd_succ", "Bool.toNat_true", "Bool.toNat_false", "pow_zero", "one_mul", "Nat.choose_self", "Nat.choose_zero_right", "Nat.cast_add", "Nat.cast_one", "Nat.add_sub_cancel", "Bool.and_not_self", "Bool.or_not_self", "ENNReal.tsum_geometric"])
+  // The game's simp: `simp [h]` goes to Lean as `simp only [the game's simp rules, h]`, so that it uses
+  // exactly the rules marked simp in the inventory (Lean's own simp set would prove the monad laws and
+  // more by itself). Its rules: those of the inventory (SIMP_ITEMS, once in it), and simple computing
+  // that is always there (SIMP_ALWAYS); never a rule new in the level, which is to be used by hand first.
+  const SIMP_ITEMS = ['coin_true', 'coin_false', 'pure_true', 'pure_false', 'add_symm_eq_one', 'tsub_self', 'Bool.not_true', 'Bool.not_false', 'Bool.not_not', 'Bool.and_self',
+    'Bool.true_beq', 'Bool.false_beq', 'beq_true', 'beq_self_eq_true', 'Bool.cond_true', 'Bool.cond_false', 'Bool.cond_self', 'bind_pure', 'pure_bind', 'Bool.and_not_self',
+    'Bool.or_not_self', 'tsum_fintype', 'ENNReal.one_ne_top', 'Bool.toNat_true', 'Bool.toNat_false', 'pow_zero', 'Nat.choose_self', 'Nat.choose_zero_right', 'Nat.cast_add',
+    'Nat.cast_one', 'Nat.add_sub_cancel', 'ENNReal.tsum_geometric']
+  const SIMP_ALWAYS = ['zero_add', 'add_zero', 'mul_one', 'one_mul', 'mul_zero', 'zero_mul', 'Bool.true_and', 'Bool.false_and', 'Bool.and_true', 'Bool.and_false',
+    'Bool.true_or', 'Bool.false_or', 'Bool.or_true', 'Bool.or_false', 'Function.comp_apply', 'id_eq', 'Nat.bodd_succ']
+  const SIMP = new Set([...SIMP_ITEMS, ...SIMP_ALWAYS])
   let HOVER = null
   function hoverShow(chip, sig, text) {
     hoverHide()
@@ -2830,6 +2837,8 @@
     "cond_add_cond": "theorem cond_add_cond (c : Bool) (x y : ℝ≥0∞) : ((bif c then x else 0) + bif c then y else 0) = bif c then x + y else 0",
     "coin_and": "theorem coin_and (p q : I) : (do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)",
     "bind_map_left": "theorem bind_map_left {α β γ : Type} (μ : DiscreteMeasure α) (f : α → β) (g : β → DiscreteMeasure γ) : (do let x ← μ.map f; g x) = do let x ← μ; g (f x)",
+    "mul_add": "theorem mul_add {R : Type v} [Mul R] [Add R] [LeftDistribClass R] (a b c : R) : a * (b + c) = a * b + a * c",
+    "add_add_add_comm": "theorem add_add_add_comm {G : Type u_3} [AddCommSemigroup G] (a b c d : G) : a + b + (c + d) = a + c + (b + d)",
     "add_mul": "theorem add_mul {R : Type v} [Mul R] [Add R] [RightDistribClass R] (a b c : R) : (a + b) * c = a * c + b * c",
     "map_bind": "theorem map_bind {α β γ : Type} (μ : DiscreteMeasure α) (g : α → DiscreteMeasure β) (f : β → γ) : (do let x ← μ; g x).map f = do let x ← μ; (g x).map f",
     "coin_unused": "theorem coin_unused {β : Type} (p : I) (ν : DiscreteMeasure β) : (do let _ ← coin p; ν) = ν",
@@ -2951,6 +2960,9 @@
     { name: 'norm_num', kind: 'tactic', insert: 'norm_num', sig: 'norm_num   norm_num [h₁, h₂, …]',
       en: 'The simplifier, plus computing with numbers: rewrites with the rules marked simp until none applies, and computes bif true then a else b and the like. norm_num [h] adds your rule h.',
       de: 'Der Simplifier, plus Rechnen mit Zahlen: schreibt mit den Regeln mit der Marke simp um, bis keine mehr passt, und rechnet bif true then a else b und Ähnliches aus. norm_num [h] nimmt deine Regel h dazu.' },
+    { name: 'simp', kind: 'tactic', insert: 'simp', sig: 'simp   simp [h₁, h₂, …]',
+      en: 'The simplifier: rewrites with the rules marked simp, again and again, until none applies, and computes bif true then a else b and the like. simp [h] adds your rule h.',
+      de: 'Der Simplifier: schreibt mit den Regeln mit der Marke simp um, immer wieder, bis keine mehr passt, und rechnet bif true then a else b und Ähnliches aus. simp [h] nimmt deine Regel h dazu.' },
     { name: 'simp_rw', kind: 'tactic', insert: 'simp_rw []', sig: 'simp_rw [h₁, h₂, …]',
       en: 'Like rw, but also under bound names (the x in fun x => …, ∑ x, …, let x ← μ): rewrites with each rule in turn, as often as it can.',
       de: 'Wie rw, aber auch unter gebundenen Namen (das x in fun x => …, ∑ x, …, let x ← μ): schreibt mit jeder Regel der Reihe nach um, so oft es geht.' },
@@ -3017,9 +3029,11 @@
     { name: 'cond_add_cond', kind: 'lemma', sig: '(bif c then x else 0) + (bif c then y else 0) = bif c then x + y else 0', en: 'Proved by you in Maps: two masses behind one test.', de: 'Von dir bewiesen in „Abbildungen“: zwei Massen hinter einem Test.' },
     { name: 'coin_and', kind: 'lemma', sig: '(do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)', en: 'Proved by you in Building with Coins: independence, both true with probability p · q.', de: 'Von dir bewiesen in „Bauen mit Münzen“: Unabhängigkeit, beide true mit Wahrscheinlichkeit p · q.' },
     { name: 'bind_map_left', kind: 'lemma', sig: '(do let x ← μ.map f; g x) = (do let x ← μ; g (f x))', en: 'Proved by you in Building with Coins, for Bool; it holds for every type: a move on a throw goes into the result.', de: 'Von dir bewiesen in „Bauen mit Münzen“, für Bool; es gilt für jeden Typ: Ein Zug auf einem Wurf wandert ins Ergebnis.' },
+    { name: 'mul_add', kind: 'rule', sig: 'a * (b + c) = a * b + a * c', en: 'Multiplying out, from the left.', de: 'Ausmultiplizieren, von links.' },
+    { name: 'add_add_add_comm', kind: 'rule', sig: 'a + b + (c + d) = a + c + (b + d)', en: 'Two sums of two, regrouped.', de: 'Zwei Summen aus zwei, umgruppiert.' },
     { name: 'add_mul', kind: 'rule', sig: '(a + b) * c = a * c + b * c', en: 'Multiplying out a sum.', de: 'Eine Summe ausmultiplizieren.' },
-    { name: 'map_bind', kind: 'rule', sig0: 'f <$> (s >>= g) = s >>= fun a => f <$> g a', en0: 'A move after a walk goes into it.', de0: 'Ein Zug nach einem Weg wandert in ihn hinein.', sig: '(do let x ← μ; g x).map f = (do let x ← μ; (g x).map f)', en: 'A move after a do block goes into it.', de: 'Ein Zug nach einem do-Block wandert in ihn hinein.' },
-    { name: 'coin_unused', kind: 'rule', sig: '(do let _ ← coin p; ν) = ν', en: 'A coin whose result is not used changes nothing.', de: 'Eine Münze, deren Ergebnis nicht benutzt wird, ändert nichts.' },
+    { name: 'map_bind', kind: 'lemma', sig0: 'f <$> (s >>= g) = s >>= fun a => f <$> g a', en0: 'A move after a walk goes into it.', de0: 'Ein Zug nach einem Weg wandert in ihn hinein.', sig: '(do let x ← μ; g x).map f = (do let x ← μ; (g x).map f)', en: 'Proved by you in Building with Coins, for Bool; it holds for every type: A move after a do block goes into it.', de: 'Von dir bewiesen in „Bauen mit Münzen“, für Bool; es gilt für jeden Typ: Ein Zug nach einem do-Block wandert in ihn hinein.' },
+    { name: 'coin_unused', kind: 'lemma', sig: '(do let _ ← coin p; ν) = ν', en: 'Proved by you in Building with Coins: A coin whose result is not used changes nothing.', de: 'Von dir bewiesen in „Bauen mit Münzen“: Eine Münze, deren Ergebnis nicht benutzt wird, ändert nichts.' },
     { name: 'binom_zero', kind: 'lemma', sig: 'binom p 0 = pure 0', en: 'Proved by you in Counting: no throw, surely 0.', de: 'Von dir bewiesen in „Zählen“: kein Wurf, sicher 0.' },
     { name: 'binom_succ', kind: 'lemma', sig: 'binom p (n + 1) = do let X ← coin p; let Y ← binom p n; pure (X.toNat + Y)', en: 'Proved by you in Counting: one throw more.', de: 'Von dir bewiesen in „Zählen“: ein Wurf mehr.' },
     { name: 'bind_assoc', kind: 'rule', sig: '(do let y ← (do let x ← μ; f x); g y) = (do let x ← μ; let y ← f x; g y)', en: 'A do block in a do block is one do block.', de: 'Ein do-Block in einem do-Block ist ein do-Block.' },
@@ -3027,8 +3041,8 @@
       en0: 'Starting at a, then f: that is f at a.', de0: 'In a anfangen, dann f: Das ist f bei a.', en: 'Throwing a point mass is no throw.', de: 'Eine Punktmasse zu werfen ist kein Wurf.' },
     { name: 'add_zero', kind: 'rule', sig: 'n + 0 = n', en: 'Adding zero.', de: 'Null addieren.' },
     { name: 'add_assoc', kind: 'rule', sig: 'a + b + c = a + (b + c)', en: 'Brackets in sums.', de: 'Klammern in Summen.' },
-    { name: 'map_eq_pure_bind', kind: 'rule', sig: 'μ.map f = do let x ← μ; pure (f x)', sig0: 'f <$> s = s >>= fun x => pure (f x)',
-      en0: 'Applying f to every point, as a walk.', de0: 'f auf jeden Punkt anwenden, als Weg.', en: 'A move as a do block.', de: 'Ein Zug als do-Block.' },
+    { name: 'map_eq_pure_bind', kind: 'lemma', sig: 'μ.map f = do let x ← μ; pure (f x)', sig0: 'f <$> s = s >>= fun x => pure (f x)',
+      en0: 'Applying f to every point, as a walk.', de0: 'f auf jeden Punkt anwenden, als Weg.', en: 'Proved by you in Building with Coins, for Bool; it holds for every type: a move as a do block.', de: 'Von dir bewiesen in „Bauen mit Münzen“, für Bool; es gilt für jeden Typ: ein Zug als do-Block.' },
     { name: 'bind_pure', kind: 'rule', sig: '(do let x ← μ; pure x) = μ', en: 'Draw and give back: that is μ itself.', de: 'Ziehen und zurückgeben: Das ist μ selbst.' },
     { name: "binom_succ'", kind: 'lemma', sig: "(do let X ← binom p n; let Y ← coin p; pure (X + Y.toNat)) = binom p (n + 1)", en: 'Proved by you in Building with Coins.', de: 'Von dir bewiesen in „Bauen mit Münzen“.' },
     // the first world only
@@ -3100,9 +3114,9 @@
     { name: 'hyper_black', kind: 'lemma', sig: 'hyper 0 b n = pure 0', en: 'Proved by you in Hypergeometric: only black.', de: 'Von dir bewiesen in „Hypergeometrisch“: nur schwarze.' },
     { name: 'hyper_white', kind: 'lemma', sig: 'hyper w 0 w = pure w', en: 'Proved by you in Hypergeometric: only white.', de: 'Von dir bewiesen in „Hypergeometrisch“: nur weiße.' },
     { name: 'hyper_all', kind: 'lemma', sig: 'hyper w b (w + b) = pure w', en: 'Proved by you in Hypergeometric: drawing all the balls.', de: 'Von dir bewiesen in „Hypergeometrisch“: alle Kugeln ziehen.' },
-    { name: 'or_eq', kind: 'lemma', sig: '(x || y) = !(!x && !y)', en: 'Proved by you in Building with Coins: De Morgan: or is and with three nots.', de: 'Von dir bewiesen in „Bauen mit Münzen“: De Morgan: or ist and mit drei not.' },
-    { name: 'Bool.and_not_self', kind: 'lemma', sig: '(x && !x) = false', en: 'Proved by you in Building with Coins: x and not x is never true.', de: 'Von dir bewiesen in „Bauen mit Münzen“: x und nicht x ist nie true.' },
-    { name: 'Bool.or_not_self', kind: 'lemma', sig: '(x || !x) = true', en: 'Proved by you in Building with Coins: x or not x is always true.', de: 'Von dir bewiesen in „Bauen mit Münzen“: x oder nicht x ist immer true.' },
+    { name: 'or_eq', kind: 'lemma', sig: '(x || y) = !(!x && !y)', en: 'Proved by you in Bool: De Morgan: or is and with three nots.', de: 'Von dir bewiesen in „Bool“: De Morgan: or ist and mit drei not.' },
+    { name: 'Bool.and_not_self', kind: 'lemma', sig: '(x && !x) = false', en: 'Proved by you in Bool: x and not x is never true.', de: 'Von dir bewiesen in „Bool“: x und nicht x ist nie true.' },
+    { name: 'Bool.or_not_self', kind: 'lemma', sig: '(x || !x) = true', en: 'Proved by you in Bool: x or not x is always true.', de: 'Von dir bewiesen in „Bool“: x oder nicht x ist immer true.' },
     { name: 'binom_add', kind: 'lemma', sig: '(do let X ← binom p n; let Y ← binom p m; pure (X + Y)) = binom p (n + m)', en: 'Proved by you in Building with Coins.', de: 'Von dir bewiesen in „Bauen mit Münzen“.' },
     { name: 'coin_bind_binom', kind: 'lemma', sig: '(do let C ← coin p; binom q C.toNat) = (do let B ← coin (p * q); pure B.toNat)', en: 'Proved by you in Thinning: a coin p, then as many coins q as it shows.', de: 'Von dir bewiesen in „Ausdünnen“: eine Münze p, dann so viele Münzen q, wie sie zeigt.' },
     { name: "coin_bind_binom'", kind: 'lemma', sig: '(do let C ← coin p; let U ← binom q C.toNat; f U) = (do let B ← coin (p * q); f B.toNat)', en: 'Proved by you in Thinning: the same, with something after it.', de: 'Von dir bewiesen in „Ausdünnen“: dasselbe, mit etwas danach.' },
@@ -3168,7 +3182,7 @@
     [/Did not find an occurrence of the pattern/, 'The left side of the rule does not occur in the goal as it stands.',
       'Die linke Seite der Regel kommt im Ziel so nicht vor.'],
     [/motive is not type correct/, 'rw cannot rewrite here; try simp only.', 'rw kann hier nicht umschreiben; versuche simp only.'],
-    [/simp made no progress/, 'simp only found nothing to rewrite with these rules.', 'simp only hat mit diesen Regeln nichts gefunden, was es umschreiben kann.'],
+    [/simp made no progress/, 'simp found nothing to rewrite.', 'simp hat nichts gefunden, was es umschreiben kann.'],
     [/could not unify the conclusion of `@funext`/, 'funext needs a goal g = h between functions (first congr?).', 'funext braucht ein Ziel g = h zwischen Funktionen (vorher congr?).'],
     [/must not contain free variables/, 'decide does not know the variables of the goal; revert first takes them into the statement.', 'decide kennt die Variablen des Ziels nicht; revert nimmt sie zuerst in die Aussage.'],
     [/Tactic `decide` proved that the proposition/, 'The statement is false, at least in one case.', 'Die Aussage ist falsch, mindestens in einem Fall.'],
@@ -3314,15 +3328,24 @@
       } catch (e) { this.error = tr('Lean cannot be reached: {e}', { e: String(e) }) }
       this.busy = false; this.render()
     }
+    // the rules of the game's simp in this level (see SIMP_ITEMS)
+    simpRules() {
+      return [...SIMP_ALWAYS, ...SIMP_ITEMS.filter(n => this.inventory.has(n))].filter(n => !this.newHere.has(n))
+    }
+    // a line as Lean gets it: the game's simp as simp only with its rules
+    toLean(line) {
+      return line.split('<;>').map(p => p.replace(/^(\s*)simp(?:\s*\[(.*)\])?\s*$/, (_, sp, args) => `${sp}simp only [${[...this.simpRules(), ...(args ? [args] : [])].join(', ')}] `)).join('<;>')
+    }
     // Lean on the proof `lines`: on success they become the proof, else the error is shown
     async check(lines, quiet = false) {
-      let r = await this.post('/check', { session: this.session, proof: lines.join('\n') })
+      const sent = lines.map(l => this.toLean(l)).join('\n')
+      let r = await this.post('/check', { session: this.session, proof: sent })
       // (Lean on the server has forgotten the proof, after a restart: start it anew and ask once more)
       if (r.error?.kind === 'session') {
         const s = await this.post('/start', { context: this.context, statement: `example ${this.statement}` })
         if (s.error) { this.error = s.error.message; return false }
         this.session = s.session
-        r = await this.post('/check', { session: this.session, proof: lines.join('\n') })
+        r = await this.post('/check', { session: this.session, proof: sent })
       }
       if (r.error) { this.error = r.error.message; return false }
       const bad = r.steps.flatMap(s => s.diags.filter(d => d.severity === 1).map(d => d.message.text))
@@ -3358,7 +3381,7 @@
       if (parts.length > 1 && !this.available(INVENTORY.find(i => i.name === '<;>'))) return tr('This tactic is not in your inventory: {x}', { x: '<;>' })
       for (let t of parts) {
         t = t.trim()
-        const tac = /^(rw|simp_rw|simp only|norm_num|ring|linear_combination|rfl|decide|revert|congr|funext|ext|cases|induction'|exists|intro|have|apply|exact|constructor)(?=\s|\[|$)/.exec(t)?.[1]
+        const tac = /^(rw|simp_rw|simp only|simp|norm_num|ring|linear_combination|rfl|decide|revert|congr|funext|ext|cases|induction'|exists|intro|have|apply|exact|constructor)(?=\s|\[|$)/.exec(t)?.[1]
         const item = INVENTORY.find(i => i.name === tac)
         if (!item || !this.available(item)) return tr('This tactic is not in your inventory: {x}', { x: t.split(/\s/)[0] || t })
         // the rules: in brackets, or the term of `have h := rule args`
@@ -3524,6 +3547,7 @@
         case 'simp only': return this.put('simp only [')
         case 'simp_rw': return this.put('simp_rw [')
         case 'norm_num': return this.put('norm_num')
+        case 'simp': return this.put('simp')
         case 'apply': case 'exists': return this.put(it.name + ' ')
         default: return this.put(it.insert.trim())
       }
@@ -3544,7 +3568,7 @@
         return set(t + ', ' + n)
       }
       if (/^(apply|exact)$/.test(t)) return this.put(`${t} ${n}`)
-      if (/^norm_num$/.test(t)) return this.put(`norm_num [${n}]`)
+      if (/^(norm_num|simp)$/.test(t)) return this.put(`${t} [${n}]`)
       if (/\[[^\]]*\S[^\]]*\]$/.test(t)) return set(t.replace(/\s*\]$/, `, ${n}]`))
       if (/:=$/.test(t) || /^exists$/.test(t) || /^(apply|exact|have|exists)\b/.test(t)) return set(t + ' ' + n)
       const ways = [['rw', `rw [${n}]`], ['simp_rw', `simp_rw [${n}]`], ['apply', `apply ${n}`], ['exact', `exact ${n}`]]
@@ -3787,9 +3811,9 @@
       // (a theorem: its whole statement in Lean, as Lean prints it; a tactic: how it is written)
       // (but where Lean states a monad law for every monad m, as the core of Lean does, the game's own form)
       const fullOf = item => (!this.world0 && LEAN_SIGS[item.name] && !/>>=|<\$>|Monad m/.test(LEAN_SIGS[item.name]) && LEAN_SIGS[item.name]) || sigOf(item)
-      const simpOn = this.inventory.has('norm_num'), isSimp = item => simpOn && SIMP.has(item.name)
+      const simpOn = this.inventory.has('simp'), isSimp = item => simpOn && SIMP.has(item.name)
       const textOf0 = item => this.world0 && item.en0 ? (LANG === 'de' ? item.de0 : item.en0) : this.worldB && item.enb ? (LANG === 'de' ? item.deb : item.enb) : (LANG === 'de' ? item.de : item.en)
-      const textOf = item => (textOf0(item) ?? '') + (isSimp(item) ? ' ' + tr('simp: norm_num uses it by itself.') : '')
+      const textOf = item => (textOf0(item) ?? '') + (isSimp(item) ? ' ' + tr('simp: the simplifier uses it by itself.') : '')
       for (const [kind, title] of [['tactic', tr('Tactics')], ['rule', tr('Theorems')]]) {
         const group = el('div', 'pg-inv-group')
         group.append(el('span', 'pg-inv-title', title + ':'))
@@ -3899,7 +3923,7 @@
     'Lean did not take the line: see why above the input.': 'Lean hat die Zeile nicht genommen: warum, steht über der Eingabe.',
     'Type a tactic, or tap one in the inventory.': 'Tippe eine Taktik ein, oder tippe eine im Inventar an.', 'One goal left.': 'Noch ein Ziel.', '{n} goals left.': 'Noch {n} Ziele.',
     'Tips': 'Tipps', 'Tip': 'Tipp', 'Got it': 'Verstanden', 'Close': 'Schließen', 'Restart': 'Neu', 'Next': 'Weiter', 'Next ›': 'Weiter ›',
-    'Next world ›': 'Nächste Welt ›', 'Which?': 'Welche?', 'Show statements': 'Aussagen zeigen', 'simp: norm_num uses it by itself.': 'simp: norm_num benutzt es von selbst.', 'Hide statements': 'Aussagen verbergen', 'Tap {x}, then the Output.': 'Tippe {x} an, dann den Ausgang.', 'No variable in this goal to split with cases.': 'In diesem Ziel gibt es keine Variable, die cases aufteilen könnte.', 'No natural number in this goal for induction.': 'In diesem Ziel gibt es keine natürliche Zahl für eine Induktion.',  'No variable in this goal to revert.': 'In diesem Ziel gibt es keine Variable für revert.', plain: 'ohne', 'This wire belongs to the level; it stays.': 'Diese Leitung gehört zum Level; sie bleibt.', '{x} is wired by the level; it stays so.': '{x} ist vom Level verdrahtet; das bleibt so.', 'World': 'Welt', 'Board': 'Spielfeld', 'Proof ': 'Beweis', 'This world': 'Diese Welt',
+    'Next world ›': 'Nächste Welt ›', 'Which?': 'Welche?', 'Show statements': 'Aussagen zeigen', 'simp: the simplifier uses it by itself.': 'simp: der Simplifier benutzt es von selbst.', 'Hide statements': 'Aussagen verbergen', 'Tap {x}, then the Output.': 'Tippe {x} an, dann den Ausgang.', 'No variable in this goal to split with cases.': 'In diesem Ziel gibt es keine Variable, die cases aufteilen könnte.', 'No natural number in this goal for induction.': 'In diesem Ziel gibt es keine natürliche Zahl für eine Induktion.',  'No variable in this goal to revert.': 'In diesem Ziel gibt es keine Variable für revert.', plain: 'ohne', 'This wire belongs to the level; it stays.': 'Diese Leitung gehört zum Level; sie bleibt.', '{x} is wired by the level; it stays so.': '{x} ist vom Level verdrahtet; das bleibt so.', 'World': 'Welt', 'Board': 'Spielfeld', 'Proof ': 'Beweis', 'This world': 'Diese Welt',
     'no goals': 'keine Ziele', '+ {n} more': '+ {n} weitere', 'the statement': 'die Aussage', 'goal 1 of {n}': 'Ziel 1 von {n}',
     '→ {n} goals': '→ {n} Ziele', '✓ goal closed, {n} left': '✓ Ziel geschlossen, noch {n}', 'Remove the proof from this line on': 'Den Beweis ab dieser Zeile entfernen',
     'goal 1 of {n}: the next line works on this one': 'Ziel 1 von {n}: die nächste Zeile arbeitet an diesem',

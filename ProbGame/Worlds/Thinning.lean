@@ -28,21 +28,21 @@ Eine Münze wird *ausgedünnt*, wenn jedes `true` nur mit Wahrscheinlichkeit $`q
 :::
 
 :::proofen
-Two distributions on `Bool` are the same when their masses at `true` are: `apply bool_ext`. Then `bind_true` from *Building with Coins* splits by the first coin; `norm_num` computes the rest (the masses of the coins, the `bif`), down to a product of masses: that is `mass_mul`.
+Two distributions on `Bool` are the same when their masses at `true` are: `apply bool_ext`. Then `bind_true` from *Building with Coins* splits by the first coin; `simp` computes the rest (the masses of the coins, the `bif`), down to a product of masses: that is `mass_mul`.
 
-*Tip.* `apply bool_ext`, `rw [bind_true]`, `norm_num`, `rw [mass_mul]`.
+*Tip.* `apply bool_ext`, `rw [bind_true]`, `simp`, `rw [mass_mul]`.
 :::
 
 :::proofde
-Zwei Verteilungen auf `Bool` sind gleich, wenn ihre Massen bei `true` gleich sind: `apply bool_ext`. Dann teilt `bind_true` aus *Bauen mit Münzen* nach der ersten Münze; `norm_num` rechnet den Rest aus (die Massen der Münzen, die `bif`), bis ein Produkt von Massen dasteht: Das ist `mass_mul`.
+Zwei Verteilungen auf `Bool` sind gleich, wenn ihre Massen bei `true` gleich sind: `apply bool_ext`. Dann teilt `bind_true` aus *Bauen mit Münzen* nach der ersten Münze; `simp` rechnet den Rest aus (die Massen der Münzen, die `bif`), bis ein Produkt von Massen dasteht: Das ist `mass_mul`.
 
-*Tipp.* `apply bool_ext`, `rw [bind_true]`, `norm_num`, `rw [mass_mul]`.
+*Tipp.* `apply bool_ext`, `rw [bind_true]`, `simp`, `rw [mass_mul]`.
 :::
 :::solution
 ```
 apply bool_ext
 rw [bind_true]
-norm_num
+simp
 rw [mass_mul]
 ```
 :::
@@ -150,13 +150,13 @@ Auf dem Spielfeld mit `q = p`: die Münze `p`, ausgedünnt durch eine Münze, di
 :::proofen
 `rw [← coin_thin]` writes the coin on the right as a thinned coin. Then both sides start with `coin p`: `congr`, `ext x`, `cases x`.
 
-*Tip.* `rw [← coin_thin]`, `simp only [bind_assoc]`, `congr`, `ext x`, `cases x`; at `false`: `norm_num [binom_zero]`; at `true`: `norm_num [binom_succ, binom_zero]`.
+*Tip.* `rw [← coin_thin]`, `simp only [bind_assoc]`, `congr`, `ext x`, `cases x`; at `false`: `simp [binom_zero]`; at `true`: `simp [binom_succ, binom_zero]`.
 :::
 
 :::proofde
 `rw [← coin_thin]` schreibt die Münze rechts als ausgedünnte Münze. Dann beginnen beide Seiten mit `coin p`: `congr`, `ext x`, `cases x`.
 
-*Tipp.* `rw [← coin_thin]`, `simp only [bind_assoc]`, `congr`, `ext x`, `cases x`; bei `false`: `norm_num [binom_zero]`; bei `true`: `norm_num [binom_succ, binom_zero]`.
+*Tipp.* `rw [← coin_thin]`, `simp only [bind_assoc]`, `congr`, `ext x`, `cases x`; bei `false`: `simp [binom_zero]`; bei `true`: `simp [binom_succ, binom_zero]`.
 :::
 :::solution
 ```
@@ -165,8 +165,8 @@ simp only [bind_assoc]
 congr
 ext x
 cases x
-norm_num [binom_zero]
-norm_num [binom_succ, binom_zero]
+simp [binom_zero]
+simp [binom_succ, binom_zero]
 ```
 :::
 ::::

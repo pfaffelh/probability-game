@@ -315,7 +315,7 @@ rfl
 :::
 :::::
 
-:::::circuit (height := "500") (inputs := "x") (gates := "not, or, and") (table := "11") (goal := "true") (proof := "(x : Bool) : (x || ⟦!x ‖ x, !x, true, false⟧) = true") (play := "a=not; b=or; x>a.0; x>b.0; a>b.1; b>out") (uses := "-")
+:::::circuit (height := "500") (inputs := "x") (gates := "not, or, and") (table := "11") (goal := "true") (proof := "(x : Bool) : (x || ⟦!x ‖ x, !x, true, false⟧) = true") (lemma := "Bool.or_not_self") (play := "a=not; b=or; x>a.0; x>b.0; a>b.1; b>out") (uses := "-")
 :::hint (anchor := "none")
 :::
 
@@ -350,7 +350,7 @@ Das sind die Kandidaten für die Lücke. Tippe einen an; ein Tipp auf die gefül
 :::proofen
 First the statement: your circuit is `x || ▢`, and it is to be `true` for every `x`. What goes into
 the gap? Then the proof: `||` is defined by cases of its left side, `false || b` reduces to `b`, and
-`true || b` to `true`. So `cases x`, then `rfl` in each case.
+`true || b` to `true`. So `cases x`, then `rfl` in each case. Your result becomes the lemma `Bool.or_not_self`.
 
 *Tip.* `!x` (or `true`); then `cases x`, `rfl`, `rfl`.
 :::
@@ -358,7 +358,8 @@ the gap? Then the proof: `||` is defined by cases of its left side, `false || b`
 :::proofde
 Zuerst die Aussage: Deine Schaltung ist `x || ▢`, und sie soll für jedes `x` `true` sein. Was gehört
 in die Lücke? Dann der Beweis: `||` ist durch Fälle seiner linken Seite definiert, `false || b`
-reduziert zu `b`, und `true || b` zu `true`. Also `cases x`, dann `rfl` in jedem Fall.
+reduziert zu `b`, und `true || b` zu `true`. Also `cases x`, dann `rfl` in jedem Fall. Dein Ergebnis
+wird das Lemma `Bool.or_not_self`.
 
 *Tipp.* `!x` (oder `true`); dann `cases x`, `rfl`, `rfl`.
 :::
@@ -411,6 +412,40 @@ each case. Your result becomes the lemma `Bool.and_self`.
 :::proofde
 Was ist `x && x`? `&&` ist durch Fälle seiner linken Seite definiert, wie `||`: also `cases x`,
 dann in jedem Fall `rfl`. Dein Ergebnis wird das Lemma `Bool.and_self`.
+
+*Tipp.* `cases x`, `rfl`, `rfl`.
+:::
+:::solution
+```
+cases x
+rfl
+rfl
+```
+:::
+::::
+
+::::circuit (height := "500") (inputs := "x") (gates := "not, or, and") (table := "00") (goal := "false") (proof := "(x : Bool) : (x && !x) = ⟦false ‖ false, true, x, !x⟧") (lemma := "Bool.and_not_self") (play := "a=not; b=and; x>a.0; x>b.0; a>b.1; b>out") (uses := "-")
+:::hint (anchor := "none")
+:::
+
+:::en
+*Never both.* Always `false`, without always `false`: `x` and its opposite.
+:::
+
+:::de
+*Nie beides.* Immer `false`, ohne immer `false`: `x` und sein Gegenteil.
+:::
+
+:::proofen
+The counterpart of *Always true, without always true*, with `&&` instead of `||`. Your result becomes
+the lemma `Bool.and_not_self`.
+
+*Tip.* `cases x`, `rfl`, `rfl`.
+:::
+
+:::proofde
+Das Gegenstück zu *Immer true, ohne immer true*, mit `&&` statt `||`. Dein Ergebnis wird das Lemma
+`Bool.and_not_self`.
 
 *Tipp.* `cases x`, `rfl`, `rfl`.
 :::
@@ -490,6 +525,38 @@ Aussagen beweist es?
 :::
 ::::
 
+::::circuit (inputs := "x y") (gates := "not, and") (table := "0111") (goal := "x || y") (proof := "(x y : Bool) : (x || y) = ⟦!(!x && !y) ‖ !(!x && !y), !(x && y), !x && !y⟧") (lemma := "or_eq") (play := "a=not; b=not; c=and; d=not; x>a.0; y>b.0; a>c.0; b>c.1; c>d.0; d>out") (uses := "-")
+:::hint (anchor := "none")
+:::
+
+:::en
+*De Morgan.* An `or`, built without `or`: from `not` and `and` alone. Two inputs now.
+:::
+
+:::de
+*De Morgan.* Ein `oder`, gebaut ohne `oder`: nur aus `nicht` und `und`. Jetzt mit zwei Eingängen.
+:::
+
+:::proofen
+At least one is `true` exactly when not both are `false`. Two variables, so four cases: with `<;>`
+from the level before, in one line. Your result becomes the lemma `or_eq`.
+
+*Tip.* `cases x <;> cases y <;> rfl`.
+:::
+
+:::proofde
+Mindestens eins ist `true` genau dann, wenn nicht beide `false` sind. Zwei Variablen, also vier Fälle:
+mit `<;>` aus dem Level davor in einer Zeile. Dein Ergebnis wird das Lemma `or_eq`.
+
+*Tipp.* `cases x <;> cases y <;> rfl`.
+:::
+:::solution
+```
+cases x <;> cases y <;> rfl
+```
+:::
+::::
+
 ::::circuit (inputs := "x y") (gates := "and, or, not") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : ((x || y) && !(x && y)) = (bif x then (bif y then ⟦false ‖ true, false⟧ else ⟦true ‖ true, false⟧) else (bif y then ⟦true ‖ true, false⟧ else ⟦false ‖ true, false⟧))") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out") (uses := "-")
 :::hint (anchor := "none")
 :::
@@ -508,7 +575,7 @@ genau ein Eingang `true` ist: mindestens einer, aber nicht beide. In Lean ist da
 :::proofen
 The table has four rows now, one for each pair of values: first `x` decides, then `y`, a `bif` in
 each branch of a `bif`. `cases x` makes two goals; in each, `cases y` makes two more: four goals, the
-four rows. With `<;>` from the level before, all in one line.
+four rows. With `<;>`, as in the levels before, all in one line.
 
 *Tip.* `cases x <;> cases y <;> rfl`.
 :::
@@ -516,7 +583,7 @@ four rows. With `<;>` from the level before, all in one line.
 :::proofde
 Die Tafel hat jetzt vier Zeilen, eine für jedes Paar von Werten: erst entscheidet `x`, dann `y`, ein
 `bif` in jedem Zweig eines `bif`. `cases x` macht zwei Ziele; in jedem macht `cases y` zwei weitere:
-vier Ziele, die vier Zeilen. Mit `<;>` aus dem Level davor alles in einer Zeile.
+vier Ziele, die vier Zeilen. Mit `<;>`, wie in den Leveln davor, alles in einer Zeile.
 
 *Tipp.* `cases x <;> cases y <;> rfl`.
 :::

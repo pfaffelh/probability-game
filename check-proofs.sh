@@ -24,10 +24,17 @@ done
 # its levels, as a player types them
 python3 -I "$here/tests/levels.py" > "$tmp/levels.json"
 python3 -I - "$tmp" "$here" <<'PY'
-import json, sys
+import json, re, sys
 from pathlib import Path
 tmp, here = Path(sys.argv[1]), Path(sys.argv[2])
 files = {}
+# the game's simp (see SIMP_ITEMS in ProbGame/game.js): simp only with its rules, all of them but those
+# new in the level (the game also leaves out those not yet in the inventory: the playthrough checks that)
+js = (here / 'ProbGame' / 'game.js').read_text()
+simp_all = [n for k in ('SIMP_ITEMS', 'SIMP_ALWAYS') for n in re.findall(r"'([^']+)'", re.search(k + r' = \[(.*?)\]', js, re.S).group(1))]
+def to_lean(line, new):
+    rules = [n for n in simp_all if n not in new]
+    return '<;>'.join(re.sub(r'^(\s*)simp(?:\s*\[(.*)\])?\s*$', lambda m: m.group(1) + 'simp only [' + ', '.join(rules + ([m.group(2)] if m.group(2) else [])) + '] ', p) for p in line.split('<;>'))
 for world, levels in json.loads((tmp / 'levels.json').read_text()).items():
     for l in levels:
         if l['kind'] == 'quiz':
@@ -38,7 +45,7 @@ for world, levels in json.loads((tmp / 'levels.json').read_text()).items():
                 else: files.setdefault(key, []).append(f"example {s} := by\n  fail_if_success ({l['tactic']})\n  exact quizNotProved\n")
         if l['proof']:
             key = (world.split('.')[-1], l['context'])
-            body = '\n'.join('  ' + x for x in l['solution']) or '  sorry'
+            body = '\n'.join('  ' + to_lean(x, l['new']) for x in l['solution']) or '  sorry'
             files.setdefault(key, []).append(f"example {l['proof']} := by\n{body}\n")
 for (world, context), exs in files.items():
     name = f"Solutions{world}-{Path(context).stem}.lean"

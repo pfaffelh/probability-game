@@ -193,19 +193,19 @@ linear_combination h
 :::proofen
 As in *A distribution that stays* down to the masses; then everything into `ℝ`: the products, the sum (with its conditions), $`1 - p`, and `↑p` itself (`mass_eq_ofReal`). Now both sides are `ENNReal.ofReal` of something: `congr` leaves the real equation, and `linear_combination h`.
 
-*Tip.* `apply bool_ext`, `rw [bind_true]`, `norm_num`, `rw [mass_mul_real, mass_mul_real, ← ENNReal.ofReal_add (real_mul_nonneg p q) (real_mul_nonneg (σ p) r), symm_real, mass_eq_ofReal]`, `congr`, `linear_combination h`.
+*Tip.* `apply bool_ext`, `rw [bind_true]`, `simp`, `rw [mass_mul_real, mass_mul_real, ← ENNReal.ofReal_add (real_mul_nonneg p q) (real_mul_nonneg (σ p) r), symm_real, mass_eq_ofReal]`, `congr`, `linear_combination h`.
 :::
 
 :::proofde
 Wie in *Eine Verteilung, die bleibt* bis zu den Massen; dann alles nach `ℝ`: die Produkte, die Summe (mit ihren Bedingungen), $`1 - p`, und `↑p` selbst (`mass_eq_ofReal`). Jetzt sind beide Seiten `ENNReal.ofReal` von etwas: `congr` lässt die reelle Gleichung, und `linear_combination h`.
 
-*Tipp.* `apply bool_ext`, `rw [bind_true]`, `norm_num`, `rw [mass_mul_real, mass_mul_real, ← ENNReal.ofReal_add (real_mul_nonneg p q) (real_mul_nonneg (σ p) r), symm_real, mass_eq_ofReal]`, `congr`, `linear_combination h`.
+*Tipp.* `apply bool_ext`, `rw [bind_true]`, `simp`, `rw [mass_mul_real, mass_mul_real, ← ENNReal.ofReal_add (real_mul_nonneg p q) (real_mul_nonneg (σ p) r), symm_real, mass_eq_ofReal]`, `congr`, `linear_combination h`.
 :::
 :::solution
 ```
 apply bool_ext
 rw [bind_true]
-norm_num
+simp
 rw [mass_mul_real, mass_mul_real, ← ENNReal.ofReal_add (real_mul_nonneg p q) (real_mul_nonneg (σ p) r), symm_real, mass_eq_ofReal]
 congr
 linear_combination h

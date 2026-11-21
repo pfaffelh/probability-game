@@ -584,3 +584,6 @@ theorem coin_stays (p q r : I) (h : (1 - (p : ℝ)) * r = p * (1 - q)) :
 end ProbGame
 
 open ProbGame
+
+-- (the game's simp is simp only with a fixed list of rules: some of them are unused in a goal)
+set_option linter.unusedSimpArgs false

@@ -104,7 +104,35 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : binom p 0 = pure 0") (lemma := "binom_zero") (group := "chance.count") (uses := "-")
+:::::leanonly (proof := "(p : I) : binom p 0 = pure 0") (lemma := "binom_zero") (group := "chance.count") (uses := "-")
+::::hint (anchor := "statement")
+:::en
+`binom p n`: the number of `true` in $`n` throws of `coin p`. Lean defines it by recursion on $`n`:
+
+```
+def binom (p : I) : ℕ → DiscreteMeasure ℕ
+  | 0 => pure 0
+  | n + 1 => do
+    let X ← coin p
+    let Y ← binom p n
+    pure (X.toNat + Y)
+```
+:::
+
+:::de
+`binom p n`: die Anzahl der `true` in $`n` Würfen von `coin p`. Lean definiert sie durch Rekursion über $`n`:
+
+```
+def binom (p : I) : ℕ → DiscreteMeasure ℕ
+  | 0 => pure 0
+  | n + 1 => do
+    let X ← coin p
+    let Y ← binom p n
+    pure (X.toNat + Y)
+```
+:::
+::::
+
 :::en
 *No throw.* `binom p n` is the number of `true` in $`n` throws of `coin p`. With no throw it is surely $`0`.
 :::
@@ -114,31 +142,15 @@ rfl
 :::
 
 :::proofen
-`binom` is defined by recursion on $`n`, as the natural numbers are; this is its first case:
-
-```
-def binom (p : I) : ℕ → DiscreteMeasure ℕ
-  | 0 => pure 0
-  | n + 1 => do
-    let X ← coin p
-    let Y ← binom p n
-    pure (X.toNat + Y)
-```
+`binom` is defined by recursion on $`n`, as the natural numbers are (the definition is in the tip at
+the statement); this is its first case, true by definition.
 
 *Tip.* `rfl`.
 :::
 
 :::proofde
-`binom` ist durch Rekursion über $`n` definiert, wie die natürlichen Zahlen; das ist ihr erster Fall:
-
-```
-def binom (p : I) : ℕ → DiscreteMeasure ℕ
-  | 0 => pure 0
-  | n + 1 => do
-    let X ← coin p
-    let Y ← binom p n
-    pure (X.toNat + Y)
-```
+`binom` ist durch Rekursion über $`n` definiert, wie die natürlichen Zahlen (die Definition steht im
+Tipp an der Aussage); das ist ihr erster Fall, wahr nach Definition.
 
 *Tipp.* `rfl`.
 :::
@@ -147,9 +159,19 @@ def binom (p : I) : ℕ → DiscreteMeasure ℕ
 rfl
 ```
 :::
+:::::
+
+:::::leanonly (proof := "(p : I) (n : ℕ) : binom p (n + 1) = (do let X ← coin p; let Y ← binom p n; pure ⟦X.toNat + Y ‖ X.toNat + Y, Y, X.toNat⟧)") (lemma := "binom_succ") (group := "chance.count") (uses := "-")
+::::hint (anchor := "gap")
+:::en
+One coin `X`, the count `Y` of the other $`n`: what is the count of all $`n + 1`?
+:::
+
+:::de
+Eine Münze `X`, die Anzahl `Y` der anderen $`n`: Was ist die Anzahl aller $`n + 1`?
+:::
 ::::
 
-::::leanonly (proof := "(p : I) (n : ℕ) : binom p (n + 1) = (do let X ← coin p; let Y ← binom p n; pure (X.toNat + Y))") (lemma := "binom_succ") (group := "chance.count") (uses := "-")
 :::en
 *One throw more.* $`n + 1` throws: one coin, then $`n` throws, and the numbers added.
 :::
@@ -174,7 +196,7 @@ Der zweite Fall der Definition.
 rfl
 ```
 :::
-::::
+:::::
 
 ::::leanonly (proof := "(p : I) : (do let x ← (pure true : DiscreteMeasure Bool); bif x then coin p else pure false) = coin p") (new := "pure_bind") (group := "chance.count") (uses := "pure_bind, Bool.cond_true, bind_pure, Bool.cond_false")
 :::en
