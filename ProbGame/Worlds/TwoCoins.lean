@@ -50,6 +50,77 @@ Ergebnis, mit dem, was die Bausteine rechnen. Die Beweise lernen die Regeln der 
 der anderen, wenn ein Level sie braucht; zuerst, was ein `do`-Block ist.
 :::
 
+:::::leanonly (proof := "(p : I) : (bif false then coin p false else 0) + (bif !false then coin p true else 0) = ⟦↑p ‖ ↑p, ↑(σ p), 0, 1⟧") (new := "norm_num") (uses := "-")
+::::hint (anchor := "gap")
+:::en
+Which of the two branches is taken, and what is the mass of the coin there?
+:::
+
+:::de
+Welcher der beiden Zweige wird genommen, und was ist dort die Masse der Münze?
+:::
+::::
+
+::::hint (anchor := "item:norm_num")
+:::en
+`norm_num`: the simplifier, with all rules marked simp.
+:::
+
+:::de
+`norm_num`: der Simplifier, mit allen Regeln, die simp tragen.
+:::
+::::
+
+:::en
+*The simplifier.* What you did by hand so far, now in one move.
+:::
+
+:::de
+*Der Simplifier.* Was du bisher von Hand gemacht hast, jetzt in einem Zug.
+:::
+
+:::proofen
+By hand this is `rw [Bool.cond_false, zero_add, Bool.not_false, Bool.cond_true, coin_true]`: five
+rules, each of them simple, and you know them all. From now on they go into the simplifier, `norm_num`. It
+rewrites with a whole list of rules, again and again, until none applies any more, and it computes
+with numbers.
+
+Which rules are in the list? In the inventory they now carry the mark *simp*: among yours `coin_true`,
+`coin_false`, `pure_true`, `pure_false`, `add_symm_eq_one`, `zero_add`, `tsub_self`, `Bool.not_true`,
+`Bool.not_false`, `Bool.not_not`, `Bool.and_self`, `Bool.true_beq`, `Bool.false_beq`, `beq_true`; and
+many from Mathlib you have not met yet, such as `add_zero` and `mul_one`. It also computes `bif true then a else b`,
+`bif c then a else a` and `c == c` (that is why `Bool.cond_true` and the like carry no mark: Lean does
+them without a rule). Not in the list are rules like `bool_ext`, `map_true`, `mass_not` or `add_comm`:
+they change what you prove, or could go on forever, and you apply them yourself. `norm_num [h]`
+puts a rule `h` into the list for this one call.
+
+*Tip.* `norm_num`.
+:::
+
+:::proofde
+Von Hand ist das `rw [Bool.cond_false, zero_add, Bool.not_false, Bool.cond_true, coin_true]`: fünf
+Regeln, jede einfach, und du kennst sie alle. Ab jetzt stecken wir sie in den Simplifier, `norm_num`. Er
+schreibt mit einer ganzen Liste von Regeln um, immer wieder, bis keine mehr passt, und er rechnet mit
+Zahlen.
+
+Welche Regeln stehen in der Liste? Im Inventar tragen sie jetzt die Marke *simp*: von deinen `coin_true`,
+`coin_false`, `pure_true`, `pure_false`, `add_symm_eq_one`, `zero_add`, `tsub_self`, `Bool.not_true`,
+`Bool.not_false`, `Bool.not_not`, `Bool.and_self`, `Bool.true_beq`, `Bool.false_beq`, `beq_true`; dazu
+viele aus Mathlib, die du noch nicht kennst, etwa `add_zero` und `mul_one`. Außerdem rechnet er `bif true then a else b`,
+`bif c then a else a` und `c == c` aus (darum tragen `Bool.cond_true` und Ähnliches keine Marke: Lean
+erledigt sie ohne Regel). Nicht in der Liste sind Regeln wie `bool_ext`, `map_true`, `mass_not` oder
+`add_comm`: Sie ändern, was du beweist, oder könnten endlos laufen, und du wendest sie selbst an.
+`norm_num [h]` nimmt eine Regel `h` für diesen einen Aufruf in die Liste auf.
+
+*Tipp.* `norm_num`.
+:::
+:::solution
+```
+norm_num
+```
+:::
+:::::
+
 ::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (do let x ← μ; f x) = μ.bind f") (uses := "-")
 :::en
 *`do` is `bind`.* `do let x ← μ; f x` draws `x` from `μ` and goes on with `f x`: `f` says, for each
@@ -251,7 +322,7 @@ rw [coin_true, mass_mul]
 :::
 ::::
 
-::::circuit (height := "440") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:p^2 false:1-p^2") (context := "Lean/Rules.lean") (proof := "(p q : I) : (do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)") (lemma := "coin_and") (new := "norm_num") (play := "a=and; x>a.0; y>a.1; a>out") (uses := "bool_ext, bind_true, mass_mul, bind_false")
+::::circuit (height := "440") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:p^2 false:1-p^2") (context := "Lean/Rules.lean") (proof := "(p q : I) : (do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)") (lemma := "coin_and") (play := "a=and; x>a.0; y>a.1; a>out") (uses := "bool_ext, bind_true, mass_mul, bind_false")
 :::en
 *Both `true`.* Two coins, and `true` only when both show `true`.
 :::
@@ -269,13 +340,8 @@ independent of the others. Prove it for two coins `p` and `q` (on the board both
 Two distributions on `Bool` are equal when their masses at `true` are: `apply bool_ext`. Then
 `bind_true`, three times: for the first draw, and for the second draw after `true` and after `false`.
 
-New from now on: the simplifier. So far you rewrote by hand, rule by rule: `Bool.cond_true`, `zero_add`,
-`mul_one`, `coin_true`, `pure_true` and the like. Now these rules go into the simplifier: a tactic that
-rewrites with a whole list of rules, again and again, until none applies any more. Your hand work is in
-that list, together with many rules from Mathlib, and it gets you on fast. In the game you call it as
-`norm_num`, the simplifier plus computing with numbers; `norm_num [h]` puts a rule `h` of yours into the
-list for this one call. What is left to you are the steps that matter: here `apply bool_ext` and
-splitting with `bind_true`, then `norm_num`.
+Then the simplifier from the first level of this world: `mass_mul` carries no mark simp, so give it
+along, `norm_num [mass_mul]`.
 
 *Tip.* `apply bool_ext`, `rw [bind_true, bind_true, bind_true]`, `norm_num [mass_mul]`.
 :::
@@ -290,13 +356,8 @@ Unabhängigkeit selbst.
 Zwei Verteilungen auf `Bool` sind gleich, wenn ihre Massen bei `true` gleich sind: `apply bool_ext`.
 Dann `bind_true`, dreimal: für den ersten Zug, und für den zweiten nach `true` und nach `false`.
 
-Neu ab jetzt: der Simplifier. Bisher hast du von Hand umgeschrieben, Regel für Regel: `Bool.cond_true`,
-`zero_add`, `mul_one`, `coin_true`, `pure_true` und Ähnliches. Jetzt stecken wir diese Regeln in den
-Simplifier: eine Taktik, die mit einer ganzen Liste von Regeln umschreibt, immer wieder, bis keine mehr
-passt. Deine Handarbeit steht in dieser Liste, zusammen mit vielen Regeln aus Mathlib, und das bringt
-dich schnell weiter. Im Spiel rufst du ihn als `norm_num` auf, den Simplifier plus Rechnen mit Zahlen;
-`norm_num [h]` nimmt eine Regel `h` von dir für diesen einen Aufruf in die Liste auf. Dir bleiben die
-Schritte, auf die es ankommt: hier `apply bool_ext` und das Aufteilen mit `bind_true`, dann `norm_num`.
+Dann der Simplifier aus dem ersten Level dieser Welt: `mass_mul` trägt keine Marke simp, also gib es
+mit, `norm_num [mass_mul]`.
 
 *Tipp.* `apply bool_ext`, `rw [bind_true, bind_true, bind_true]`, `norm_num [mass_mul]`.
 :::

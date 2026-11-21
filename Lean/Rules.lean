@@ -144,7 +144,7 @@ theorem bool_ext (μ ν : DiscreteMeasure Bool) [Prob μ] [Prob ν] (h : μ true
 
 -- The masses of coins and point masses are computing, not rules of the game: `norm_num` (in the
 -- inventory from *Building with Coins* on) knows them.
-attribute [simp] coin_true coin_false pure_true
+attribute [simp] coin_true coin_false pure_true pure_false
 
 /-- $`p + (1 - p) = 1`, as masses: computing for `norm_num`. -/
 @[simp] theorem add_symm_eq_one (p : I) : (↑p : ENNReal) + ↑(σ p) = 1 := by

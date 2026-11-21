@@ -2764,6 +2764,10 @@
 
   // The box of a chip under the mouse: one for the page, over everything, below the chip (above it
   // when there is no room below); gone when the mouse leaves the chip or the inventory is drawn anew.
+  // The rules the simplifier (norm_num) uses by itself: the simp lemmas of Lean and Mathlib, and the
+  // masses made simp in Lean/Rules.lean (checked in Lean, 2026-11-21). Marked in the inventory once
+  // norm_num is in it.
+  const SIMP = new Set(["tsum_fintype", "ENNReal.one_ne_top", "tsub_self", "mul_one", "mul_zero", "coin_true", "coin_false", "Bool.true_beq", "beq_true", "Bool.not_true", "Bool.not_false", "zero_add", "add_symm_eq_one", "pure_true", "pure_false", "Bool.false_beq", "bind_assoc", "pure_bind", "add_zero", "bind_pure", "Bool.and_self", "Bool.not_not", "Function.comp_apply", "id_eq", "Nat.bodd_succ", "Bool.toNat_true", "Bool.toNat_false", "pow_zero", "one_mul", "Nat.choose_self", "Nat.choose_zero_right", "Nat.cast_add", "Nat.cast_one", "Nat.add_sub_cancel", "Bool.and_not_self", "Bool.or_not_self", "ENNReal.tsum_geometric"])
   let HOVER = null
   function hoverShow(chip, sig, text) {
     hoverHide()
@@ -2944,8 +2948,8 @@
       en: 'Takes variables back into the statement: from x : Bool and ⊢ P x it makes ⊢ ∀ x, P x.',
       de: 'Nimmt Variablen zurück in die Aussage: Aus x : Bool und ⊢ P x macht es ⊢ ∀ x, P x.' },
     { name: 'norm_num', kind: 'tactic', insert: 'norm_num', sig: 'norm_num   norm_num [h₁, h₂, …]',
-      en: 'The simplifier, plus computing with numbers: rewrites with a list of rules until none applies. In the list is what you did by hand so far (bif true then a else b, a + 0, p * 1, coin p true = p, pure masses, …). norm_num [h] adds your rule h.',
-      de: 'Der Simplifier, plus Rechnen mit Zahlen: schreibt mit einer Liste von Regeln um, bis keine mehr passt. In der Liste steht, was du bisher von Hand gemacht hast (bif true then a else b, a + 0, p * 1, coin p true = p, Punktmassen, …). norm_num [h] nimmt deine Regel h dazu.' },
+      en: 'The simplifier, plus computing with numbers: rewrites with the rules marked simp until none applies, and computes bif true then a else b and the like. norm_num [h] adds your rule h.',
+      de: 'Der Simplifier, plus Rechnen mit Zahlen: schreibt mit den Regeln mit der Marke simp um, bis keine mehr passt, und rechnet bif true then a else b und Ähnliches aus. norm_num [h] nimmt deine Regel h dazu.' },
     { name: 'simp_rw', kind: 'tactic', insert: 'simp_rw []', sig: 'simp_rw [h₁, h₂, …]',
       en: 'Like rw, but also under bound names (the x in fun x => …, ∑ x, …, let x ← μ): rewrites with each rule in turn, as often as it can.',
       de: 'Wie rw, aber auch unter gebundenen Namen (das x in fun x => …, ∑ x, …, let x ← μ): schreibt mit jeder Regel der Reihe nach um, so oft es geht.' },
@@ -3781,12 +3785,14 @@
       // (a theorem: its whole statement in Lean, as Lean prints it; a tactic: how it is written)
       // (but where Lean states a monad law for every monad m, as the core of Lean does, the game's own form)
       const fullOf = item => (!this.world0 && LEAN_SIGS[item.name] && !/>>=|<\$>|Monad m/.test(LEAN_SIGS[item.name]) && LEAN_SIGS[item.name]) || sigOf(item)
-      const textOf = item => this.world0 && item.en0 ? (LANG === 'de' ? item.de0 : item.en0) : this.worldB && item.enb ? (LANG === 'de' ? item.deb : item.enb) : (LANG === 'de' ? item.de : item.en)
+      const simpOn = this.inventory.has('norm_num'), isSimp = item => simpOn && SIMP.has(item.name)
+      const textOf0 = item => this.world0 && item.en0 ? (LANG === 'de' ? item.de0 : item.en0) : this.worldB && item.enb ? (LANG === 'de' ? item.deb : item.enb) : (LANG === 'de' ? item.de : item.en)
+      const textOf = item => (textOf0(item) ?? '') + (isSimp(item) ? ' ' + tr('simp: norm_num uses it by itself.') : '')
       for (const [kind, title] of [['tactic', tr('Tactics')], ['rule', tr('Theorems')]]) {
         const group = el('div', 'pg-inv-group')
         group.append(el('span', 'pg-inv-title', title + ':'))
         for (const item of INVENTORY.filter(i => (kind === 'tactic' ? i.kind === 'tactic' : i.kind !== 'tactic') && this.available(i))) {
-          const b = el('button', 'pg-chip' + (item.kind === 'lemma' ? ' pg-chip-lemma' : '') + (this.isNew(item) ? ' pg-chip-new' : '') + (this.busy || this.done ? ' pg-chip-off' : '') + (this.peek === item.name ? ' pg-chip-on' : ''), item.name)
+          const b = el('button', 'pg-chip' + (item.kind === 'lemma' ? ' pg-chip-lemma' : '') + (isSimp(item) ? ' pg-chip-simp' : '') + (this.isNew(item) ? ' pg-chip-new' : '') + (this.busy || this.done ? ' pg-chip-off' : '') + (this.peek === item.name ? ' pg-chip-on' : ''), item.name)
           b.type = 'button'; b.dataset.item = item.name
           // (a mouse: on hover what it says, as the long press on a phone shows it, in a box over the page)
           b.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') hoverShow(b, fullOf(item), textOf(item)) })
@@ -3891,7 +3897,7 @@
     'Lean did not take the line: see why above the input.': 'Lean hat die Zeile nicht genommen: warum, steht über der Eingabe.',
     'Type a tactic, or tap one in the inventory.': 'Tippe eine Taktik ein, oder tippe eine im Inventar an.', 'One goal left.': 'Noch ein Ziel.', '{n} goals left.': 'Noch {n} Ziele.',
     'Tips': 'Tipps', 'Tip': 'Tipp', 'Got it': 'Verstanden', 'Close': 'Schließen', 'Restart': 'Neu', 'Next': 'Weiter', 'Next ›': 'Weiter ›',
-    'Next world ›': 'Nächste Welt ›', 'Which?': 'Welche?', 'Show statements': 'Aussagen zeigen', 'Hide statements': 'Aussagen verbergen', 'Tap {x}, then the Output.': 'Tippe {x} an, dann den Ausgang.', 'No variable in this goal to split with cases.': 'In diesem Ziel gibt es keine Variable, die cases aufteilen könnte.', 'No natural number in this goal for induction.': 'In diesem Ziel gibt es keine natürliche Zahl für eine Induktion.',  'No variable in this goal to revert.': 'In diesem Ziel gibt es keine Variable für revert.', plain: 'ohne', 'This wire belongs to the level; it stays.': 'Diese Leitung gehört zum Level; sie bleibt.', '{x} is wired by the level; it stays so.': '{x} ist vom Level verdrahtet; das bleibt so.', 'World': 'Welt', 'Board': 'Spielfeld', 'Proof ': 'Beweis', 'This world': 'Diese Welt',
+    'Next world ›': 'Nächste Welt ›', 'Which?': 'Welche?', 'Show statements': 'Aussagen zeigen', 'simp: norm_num uses it by itself.': 'simp: norm_num benutzt es von selbst.', 'Hide statements': 'Aussagen verbergen', 'Tap {x}, then the Output.': 'Tippe {x} an, dann den Ausgang.', 'No variable in this goal to split with cases.': 'In diesem Ziel gibt es keine Variable, die cases aufteilen könnte.', 'No natural number in this goal for induction.': 'In diesem Ziel gibt es keine natürliche Zahl für eine Induktion.',  'No variable in this goal to revert.': 'In diesem Ziel gibt es keine Variable für revert.', plain: 'ohne', 'This wire belongs to the level; it stays.': 'Diese Leitung gehört zum Level; sie bleibt.', '{x} is wired by the level; it stays so.': '{x} ist vom Level verdrahtet; das bleibt so.', 'World': 'Welt', 'Board': 'Spielfeld', 'Proof ': 'Beweis', 'This world': 'Diese Welt',
     'no goals': 'keine Ziele', '+ {n} more': '+ {n} weitere', 'the statement': 'die Aussage', 'goal 1 of {n}': 'Ziel 1 von {n}',
     '→ {n} goals': '→ {n} Ziele', '✓ goal closed, {n} left': '✓ Ziel geschlossen, noch {n}', 'Remove the proof from this line on': 'Den Beweis ab dieser Zeile entfernen',
     'goal 1 of {n}: the next line works on this one': 'Ziel 1 von {n}: die nächste Zeile arbeitet an diesem',
