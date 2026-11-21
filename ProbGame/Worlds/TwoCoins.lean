@@ -269,10 +269,13 @@ independent of the others. Prove it for two coins `p` and `q` (on the board both
 Two distributions on `Bool` are equal when their masses at `true` are: `apply bool_ext`. Then
 `bind_true`, three times: for the first draw, and for the second draw after `true` and after `false`.
 
-New from now on: `norm_num` does the computing for you. It computes with numbers and masses (`p * 1`,
-`a + 0`, `bif true then a else b`, `true && b`, the masses `coin p true = p` and `(pure b) true`, and
-taking away a finite mass), and with `norm_num [h]` also with a rule `h` of yours. What is left to you
-are the rules of the game. From here on, `coin_true`, `Bool.cond_true` and the like are no longer rewritten one by one: after the step that splits (`bind_true`, `bind_false`), `norm_num`.
+New from now on: the simplifier. So far you rewrote by hand, rule by rule: `Bool.cond_true`, `zero_add`,
+`mul_one`, `coin_true`, `pure_true` and the like. Now these rules go into the simplifier: a tactic that
+rewrites with a whole list of rules, again and again, until none applies any more. Your hand work is in
+that list, together with many rules from Mathlib, and it gets you on fast. In the game you call it as
+`norm_num`, the simplifier plus computing with numbers; `norm_num [h]` puts a rule `h` of yours into the
+list for this one call. What is left to you are the steps that matter: here `apply bool_ext` and
+splitting with `bind_true`, then `norm_num`.
 
 *Tip.* `apply bool_ext`, `rw [bind_true, bind_true, bind_true]`, `norm_num [mass_mul]`.
 :::
@@ -287,10 +290,13 @@ Unabhängigkeit selbst.
 Zwei Verteilungen auf `Bool` sind gleich, wenn ihre Massen bei `true` gleich sind: `apply bool_ext`.
 Dann `bind_true`, dreimal: für den ersten Zug, und für den zweiten nach `true` und nach `false`.
 
-Neu ab jetzt: `norm_num` rechnet für dich. Es rechnet mit Zahlen und Massen (`p * 1`, `a + 0`,
-`bif true then a else b`, `true && b`, die Massen `coin p true = p` und `(pure b) true`, und das
-Wegnehmen einer endlichen Masse), und mit `norm_num [h]` auch mit einer Regel `h` von dir. Was dir
-bleibt, sind die Regeln des Spiels. Ab hier schreibst du `coin_true`, `Bool.cond_true` und Ähnliches nicht mehr einzeln um: nach dem Schritt, der aufteilt (`bind_true`, `bind_false`), `norm_num`.
+Neu ab jetzt: der Simplifier. Bisher hast du von Hand umgeschrieben, Regel für Regel: `Bool.cond_true`,
+`zero_add`, `mul_one`, `coin_true`, `pure_true` und Ähnliches. Jetzt stecken wir diese Regeln in den
+Simplifier: eine Taktik, die mit einer ganzen Liste von Regeln umschreibt, immer wieder, bis keine mehr
+passt. Deine Handarbeit steht in dieser Liste, zusammen mit vielen Regeln aus Mathlib, und das bringt
+dich schnell weiter. Im Spiel rufst du ihn als `norm_num` auf, den Simplifier plus Rechnen mit Zahlen;
+`norm_num [h]` nimmt eine Regel `h` von dir für diesen einen Aufruf in die Liste auf. Dir bleiben die
+Schritte, auf die es ankommt: hier `apply bool_ext` und das Aufteilen mit `bind_true`, dann `norm_num`.
 
 *Tipp.* `apply bool_ext`, `rw [bind_true, bind_true, bind_true]`, `norm_num [mass_mul]`.
 :::
