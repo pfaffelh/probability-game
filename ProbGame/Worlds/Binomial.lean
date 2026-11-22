@@ -347,25 +347,21 @@ rw [Nat.choose_succ_succ', Nat.cast_add]
 :::
 :::::
 
-::::leanonly (proof := "(a b x y : ℝ≥0∞) (k m : ℕ) : a * (a ^ k * b ^ (m + 1) * x) + b * (a ^ (k + 1) * b ^ m * y) = a ^ (k + 1) * b ^ (m + 1) * (x + y)") (new := "ring") (group := "chance.count") (uses := "-")
+::::leanonly (proof := "(a b x y : ℝ≥0∞) (k m : ℕ) : a * (a ^ k * b ^ (m + 1) * x) + b * (a ^ (k + 1) * b ^ m * y) = a ^ (k + 1) * b ^ (m + 1) * (x + y)") (group := "chance.count") (uses := "-")
 :::en
-*Computing.* Both summands have the same powers of `a` and `b`. Seen at once, tedious rule by rule.
+*Computing with powers.* Both summands have the same powers of `a` and `b`. Seen at once, tedious rule by rule.
 :::
 
 :::de
-*Rechnen.* Beide Summanden haben dieselben Potenzen von `a` und `b`. Auf einen Blick zu sehen, Regel für Regel mühsam.
+*Rechnen mit Potenzen.* Beide Summanden haben dieselben Potenzen von `a` und `b`. Auf einen Blick zu sehen, Regel für Regel mühsam.
 :::
 
 :::proofen
-A new tactic: `ring` proves an equation that holds by computing with `+`, `*` and powers alone, whatever the letters are. It does not use hypotheses and no rules of the game: only the laws of computing.
-
-*Tip.* `ring`.
+An equation that holds by computing with `+`, `*` and powers alone: the tactic for that is from *Two Coins*.
 :::
 
 :::proofde
-Eine neue Taktik: `ring` beweist eine Gleichung, die allein durch Rechnen mit `+`, `*` und Potenzen gilt, was auch immer die Buchstaben sind. Sie benutzt keine Voraussetzungen und keine Regeln des Spiels: nur die Rechengesetze.
-
-*Tipp.* `ring`.
+Eine Gleichung, die allein durch Rechnen mit `+`, `*` und Potenzen gilt: Die Taktik dafür ist aus *Zwei Münzen*.
 :::
 :::solution
 ```

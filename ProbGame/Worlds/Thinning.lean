@@ -28,11 +28,11 @@ Eine Münze wird *ausgedünnt*, wenn jedes `true` nur mit Wahrscheinlichkeit $`q
 :::
 
 :::proofen
-Two distributions on `Bool` are the same when their masses at `true` are: `apply bool_ext`. Then `bind_true` from *Building with Coins* splits by the first coin; `simp` computes the rest (the masses of the coins, the `bif`), down to a product of masses: that is `mass_mul`.
+Two distributions on `Bool` are the same when their masses at `true` are: `apply bool_ext`. Then `bind_true` from *Two Coins* splits by the first coin; `simp` computes the rest (the masses of the coins, the `bif`), down to a product of masses: that is `mass_mul`.
 :::
 
 :::proofde
-Zwei Verteilungen auf `Bool` sind gleich, wenn ihre Massen bei `true` gleich sind: `apply bool_ext`. Dann teilt `bind_true` aus *Bauen mit Münzen* nach der ersten Münze; `simp` rechnet den Rest aus (die Massen der Münzen, die `bif`), bis ein Produkt von Massen dasteht: Das ist `mass_mul`.
+Zwei Verteilungen auf `Bool` sind gleich, wenn ihre Massen bei `true` gleich sind: `apply bool_ext`. Dann teilt `bind_true` aus *Zwei Münzen* nach der ersten Münze; `simp` rechnet den Rest aus (die Massen der Münzen, die `bif`), bis ein Produkt von Massen dasteht: Das ist `mass_mul`.
 :::
 :::solution
 ```

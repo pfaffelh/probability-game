@@ -21,7 +21,7 @@ showed. The waiting coin `y` is a `bind` box with a coin in each field: `coin p`
 `bif x then coin q else coin r`: first throw `x`, then, depending on what came, the one or the other
 coin. In Lean: `do let x ← coin p; let y ← (bif x then coin q else coin r); …`.
 
-This world is one of two ways after *Building with Coins*; the other is *Counting*. They do not need
+This world is one of two ways after *Laws of `do`*; the other is *Counting*. They do not need
 each other.
 :::
 
@@ -37,7 +37,7 @@ ab, was `x` zeigte. Die wartende Münze `y` ist ein `bind`-Kasten mit einer Mün
 `bif x then coin q else coin r`: erst `x` werfen, dann, je nachdem was kam, die eine oder die andere
 Münze. In Lean: `do let x ← coin p; let y ← (bif x then coin q else coin r); …`.
 
-Diese Welt ist einer von zwei Wegen nach *Bauen mit Münzen*; der andere ist *Zählen*. Sie brauchen
+Diese Welt ist einer von zwei Wegen nach *Gesetze von `do`*; der andere ist *Zählen*. Sie brauchen
 einander nicht.
 :::
 
@@ -133,29 +133,39 @@ decide
 :::
 ::::
 
-::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:p^2 false:1-p^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then coin p else pure false); pure y) true = (↑p * ↑p : ℝ≥0∞)") (play := "y.T=p; y.F=0") (uses := "bind_true, bind_false")
+:::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:p^2 false:1-p^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then coin p else pure false); pure y) true = (⟦↑p * ↑p ‖ ↑p * ↑p, ↑p, ↑p + ↑p, ↑p * ↑(σ p)⟧ : ℝ≥0∞)") (play := "y.T=p; y.F=0") (uses := "bind_true, bind_false")
+::::hint (anchor := "gap")
+:::en
+Which throws must show `true` for `y` to be `true`?
+:::
+
+:::de
+Welche Würfe müssen `true` zeigen, damit `y` `true` ist?
+:::
+::::
+
 :::en
 *Only after true.* `y` is a coin when `x` showed `true`, and surely `false` otherwise: choose its two
-coins. Compare with *Both `true`* of *Building with Coins*: the same distribution,
+coins. Compare with *Both `true`* of *Two Coins*: the same distribution,
 without an `and`.
 :::
 
 :::de
 *Nur nach true.* `y` ist eine Münze, wenn `x` `true` zeigte, und sonst sicher `false`: Wähle seine zwei
-Münzen. Vergleiche mit *Beide `true`* aus *Bauen mit Münzen*: dieselbe Verteilung,
+Münzen. Vergleiche mit *Beide `true`* aus *Zwei Münzen*: dieselbe Verteilung,
 ohne ein `and`.
 :::
 
 :::proofen
 `let y ← m; pure y` is just `m` (Lean drops it already when it reads the statement). `rw [bind_true]`
 splits the mass at `true` into the two ways. What is left is computing: which coin each way takes, its
-mass at `true`, products and sums. `simp` (from *Building with Coins*) does all that.
+mass at `true`, products and sums. `simp` (from *Two Coins*) does all that.
 :::
 
 :::proofde
 `let y ← m; pure y` ist einfach `m` (Lean lässt es schon beim Lesen der Aussage weg). `rw [bind_true]`
 teilt die Masse bei `true` in die zwei Wege. Was bleibt, ist Rechnen: welche Münze jeder Weg nimmt, ihre
-Masse bei `true`, Produkte und Summen. `simp` (aus *Bauen mit Münzen*) erledigt das.
+Masse bei `true`, Produkte und Summen. `simp` (aus *Zwei Münzen*) erledigt das.
 :::
 :::solution
 ```
@@ -163,17 +173,25 @@ rw [bind_true]
 simp
 ```
 :::
+:::::
+
+:::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bernoulli p") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else pure false); pure y) true = (⟦↑p ‖ ↑p, ↑(σ p), 1, ↑p * ↑p⟧ : ℝ≥0∞)") (play := "y.T=1; y.F=0") (uses := "bind_true, bind_false")
+::::hint (anchor := "gap")
+:::en
+`y` copies `x`: when is it `true`?
+:::
+
+:::de
+`y` kopiert `x`: Wann ist es `true`?
+:::
 ::::
 
-::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bernoulli p") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else pure false); pure y) true = (↑p : ℝ≥0∞)") (play := "y.T=1; y.F=0") (uses := "bind_true, bind_false")
 :::en
-*Copying.* `y` is surely `true` after `true`, and surely `false` after `false`: it copies `x`. The
-output `y` has the distribution of the coin `x`.
+*Copying.* `y` is surely `true` after `true`, and surely `false` after `false`: it copies `x`.
 :::
 
 :::de
 *Abschreiben.* `y` ist sicher `true` nach `true` und sicher `false` nach `false`: Es schreibt `x` ab.
-Der Ausgang `y` hat die Verteilung der Münze `x`.
 :::
 
 :::proofen
@@ -189,27 +207,37 @@ rw [bind_true]
 simp
 ```
 :::
+:::::
+
+:::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:2p-p^2 false:(1-p)^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else coin p); pure y) true = (⟦↑p + ↑(σ p) * ↑p ‖ ↑p + ↑(σ p) * ↑p, ↑p + ↑p, ↑p * ↑p, ↑(σ p) * ↑p⟧ : ℝ≥0∞)") (play := "y.T=1; y.F=p") (uses := "bind_true, bind_false")
+::::hint (anchor := "gap")
+:::en
+Two ways to `true`: at the first throw, or at the second. What must the first throw show for a second one?
+:::
+
+:::de
+Zwei Wege zu `true`: beim ersten Wurf oder beim zweiten. Was muss der erste Wurf zeigen, damit es einen zweiten gibt?
+:::
 ::::
 
-::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:2p-p^2 false:(1-p)^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else coin p); pure y) true = (↑p + ↑(σ p) * ↑p : ℝ≥0∞)") (play := "y.T=1; y.F=p") (uses := "bind_true, bind_false")
 :::en
 *One more try.* When `x` showed `true`, that is enough: `y` is surely `true`. When it showed `false`,
-throw again. Compare with *At least one `true`* of *Building with Coins*: the same as `x || y`, but the
+throw again. Compare with *At least one `true`* of *Laws of `do`*: the same as `x || y`, but the
 second coin is only thrown when it is needed.
 :::
 
 :::de
 *Noch ein Versuch.* Zeigte `x` `true`, reicht das: `y` ist sicher `true`. Zeigte es `false`, wirf noch
-einmal. Vergleiche mit *Mindestens einmal `true`* aus *Bauen mit Münzen*: dasselbe wie `x || y`, aber die
+einmal. Vergleiche mit *Mindestens einmal `true`* aus *Gesetze von `do`*: dasselbe wie `x || y`, aber die
 zweite Münze wird nur geworfen, wenn sie gebraucht wird.
 :::
 
 :::proofen
-The way through `true` has mass $`p \cdot 1`, the way through `false` mass $`(1 - p) \cdot p`.
+Two ways to `true` again, through `x = true` and through `x = false`: each has the mass of its first throw, times the mass of what follows at `true`.
 :::
 
 :::proofde
-Der Weg über `true` hat die Masse $`p \cdot 1`, der Weg über `false` die Masse $`(1 - p) \cdot p`.
+Wieder zwei Wege zu `true`, über `x = true` und über `x = false`: Jeder hat die Masse seines ersten Wurfs, mal die Masse dessen, was folgt, bei `true`.
 :::
 :::solution
 ```
@@ -217,9 +245,19 @@ rw [bind_true]
 simp
 ```
 :::
+:::::
+
+:::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:1-2p+2p^2 false:2p-2p^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then coin p else coin (σ p)); pure y) true = (↑p * ↑p + ⟦↑(σ p) * ↑(σ p) ‖ ↑(σ p) * ↑(σ p), ↑(σ p) * ↑p, ↑p * ↑(σ p)⟧ : ℝ≥0∞)") (play := "y.T=p; y.F=1-p") (uses := "bind_true, bind_false")
+::::hint (anchor := "gap")
+:::en
+The second way to `true` goes through `x = false`: which coin is thrown then?
+:::
+
+:::de
+Der zweite Weg zu `true` geht über `x = false`: Welche Münze wird dann geworfen?
+:::
 ::::
 
-::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:1-2p+2p^2 false:2p-2p^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then coin p else coin (σ p)); pure y) true = (↑p * ↑p + ↑(σ p) * ↑(σ p) : ℝ≥0∞)") (play := "y.T=p; y.F=1-p") (uses := "bind_true, bind_false")
 :::en
 *A coin that remembers.* After `true` the coin `p` again, after `false` the flipped coin $`1 - p`:
 the second throw tends to repeat the first.
@@ -245,20 +283,30 @@ rw [bind_true]
 simp
 ```
 :::
+:::::
+
+:::::circuit (inputs := "x y z") (gates := "") (coins := "p ?|? ?|?") (target := "bernoulli p") (start := "x>y.0; y>z.0; z>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure false else pure true); let z ← (bif y then pure false else pure true); pure z) true = (⟦↑p ‖ ↑p, ↑(σ p), ↑p * ↑p, ↑p * ↑(σ p)⟧ : ℝ≥0∞)") (play := "y.T=0; y.F=1; z.T=0; z.F=1") (uses := "bind_true, bind_false")
+::::hint (anchor := "gap")
+:::en
+Flipped twice: where must the chain start to end at `true`?
+:::
+
+:::de
+Zweimal umgedreht: Wo muss die Kette beginnen, um bei `true` zu enden?
+:::
 ::::
 
-::::circuit (inputs := "x y z") (gates := "") (coins := "p ?|? ?|?") (target := "bernoulli p") (start := "x>y.0; y>z.0; z>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure false else pure true); let z ← (bif y then pure false else pure true); pure z) true = (↑p : ℝ≥0∞)") (play := "y.T=0; y.F=1; z.T=0; z.F=1") (uses := "bind_true, bind_false")
 :::en
 *A chain: flip, and flip back.* A *Markov chain* goes step by step, and each step depends only on
 where the chain is now: `y` waits for `x`, `z` waits for `y`. Make each step flip: from `true` to
-`false`, from `false` to `true`. After two steps, the chain is back at the coin it started with.
+`false`, from `false` to `true`. Where is the chain after two steps?
 :::
 
 :::de
 *Eine Kette: umdrehen, und zurück.* Eine *Markov-Kette* geht Schritt für Schritt, und jeder Schritt
 hängt nur davon ab, wo die Kette gerade ist: `y` wartet auf `x`, `z` wartet auf `y`. Lass jeden Schritt
-umdrehen: von `true` nach `false`, von `false` nach `true`. Nach zwei Schritten ist die Kette wieder bei
-der Münze, mit der sie begann.
+umdrehen: von `true` nach `false`, von `false` nach `true`. Wo ist die Kette nach zwei
+Schritten?
 :::
 
 :::proofen
@@ -282,7 +330,7 @@ rw [bind_true]
 simp [bind_true]
 ```
 :::
-::::
+:::::
 
 ::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (do let x ← μ; let y ← pure (!x); pure (!y)) = μ") (new := "pure_bind") (uses := "pure_bind, Bool.not_not, bind_pure")
 :::en
@@ -439,7 +487,7 @@ rw [prob_unused]
 :::
 ::::
 
-::::circuit (inputs := "x y z") (gates := "") (coins := "p ?|? ?|?") (target := "bool true:3p-3p^2+p^3 false:(1-p)^3") (start := "x>y.0; y>z.0; z>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else coin p); let z ← (bif y then pure true else coin p); pure z) true = (↑p + ↑(σ p) * (↑p + ↑(σ p) * ↑p) : ℝ≥0∞)") (play := "y.T=1; y.F=p; z.T=1; z.F=p") (uses := "bind_true, bind_false")
+::::circuit (inputs := "x y z") (gates := "") (coins := "p ?|? ?|?") (target := "bool true:3p-3p^2+p^3 false:(1-p)^3") (start := "x>y.0; y>z.0; z>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else coin p); let z ← (bif y then pure true else coin p); pure z) true = (⟦↑p + ↑(σ p) * (↑p + ↑(σ p) * ↑p) ‖ ↑p + ↑(σ p) * (↑p + ↑(σ p) * ↑p), ↑p + ↑(σ p) * ↑p, ↑p * ↑p * ↑p, ↑p + ↑p + ↑p⟧ : ℝ≥0∞)") (play := "y.T=1; y.F=p; z.T=1; z.F=p") (uses := "bind_true, bind_false")
 :::en
 *Boss: three tries.* Throw until `true` comes, at most three times. `y` waits for `x`, and `z` waits
 for `y`. `false` only when all three tries fail: $`(1 - p)^3`.

@@ -42,7 +42,7 @@ The proof is about the circuit built: `(x y : Bool) : (circuit) = (goal)`, by `d
 Levels: not; both; always true without it; or without or (De Morgan); exactly one (xor); the same, with
 your xor as a gate; boss: the majority of three, against `decide (2 ≤ x.toNat + y.toNat + z.toNat)`.
 
-**Circuits with Coins** (after *Building with Coins*): the same circuits with `coin p` at each input
+**Circuits with Coins** (after *Two Coins*): the same circuits with `coin p` at each input
 (`coins := "p p"`). Each row of the truth table has its mass, the output a distribution, the target is
 one (`target := "bool true:p^2 …"`, or on ℕ with `toNat` and `plus`, whose wires are blue); a hundred
 throws count the rows. Levels: two coins, one coin (`coin_and`); first true, then false; at least one;

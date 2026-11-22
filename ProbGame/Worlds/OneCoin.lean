@@ -232,6 +232,44 @@ exact h
 :::
 ::::
 
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (p : I) (h : μ true = p) : μ = coin ⟦p ‖ p, σ p⟧") (lemma := "eq_coin") (uses := "bool_ext, coin_true, coin_false, coin_total")
+:::hint (anchor := "none")
+:::
+
+:::en
+*Every distribution is a coin.* A distribution on `Bool` with mass `p` at `true` is the coin `p`.
+So the coins are all there is on `Bool`.
+:::
+
+:::de
+*Jede Verteilung ist eine Münze.* Eine Verteilung auf `Bool` mit Masse `p` bei `true` ist die Münze
+`p`. Mehr als Münzen gibt es auf `Bool` also nicht.
+:::
+
+:::proofen
+Your lemma `bool_ext` says: `μ = ν`, if `μ true = ν true`. The goal here is `μ = coin p`, an equation
+of two distributions on `Bool`. `apply bool_ext` uses the lemma from its end: it turns the goal into
+what the lemma asks for, `μ true = (coin p) true`. Then `coin_true` and the hypothesis `h`.
+
+*Tip.* `apply bool_ext`, `rw [coin_true, h]`.
+:::
+
+:::proofde
+Dein Lemma `bool_ext` sagt: `μ = ν`, wenn `μ true = ν true`. Das Ziel hier ist `μ = coin p`, eine
+Gleichung zweier Verteilungen auf `Bool`. `apply bool_ext` benutzt das Lemma von seinem Ende her: Es
+macht aus dem Ziel das, was das Lemma verlangt, `μ true = (coin p) true`. Dann `coin_true` und die
+Annahme `h`.
+
+*Tipp.* `apply bool_ext`, `rw [coin_true, h]`.
+:::
+:::solution
+```
+apply bool_ext
+rw [coin_true, h]
+```
+:::
+::::
+
 ::::leanonly (proof := "(p : I) : ↑p + ↑(σ p) = (1 : ℝ≥0∞)") (lemma := "add_symm_eq_one") (new := "coin_total") (uses := "coin_true, coin_false, coin_total, mass_total")
 :::en
 *The coin is whole.* $`p + (1 - p) = 1`: the two masses of the coin add up to one.
@@ -335,10 +373,7 @@ kommt zusammen. Das Ergebnis ist sicher, eine Punktmasse (Dirac-Maß).
 the board showed, for both values `b`: all the mass goes to one point. It becomes your lemma
 `coin_const`.
 
-On the two points `false` and `true`, the bar at `true` decides everything: that is your lemma
-`bool_ext`, and `apply bool_ext` turns the goal into `μ true = ν true`.
-
-Compare the bars at `true`: `apply bool_ext`, then `map_true`, and
+Compare the bars at `true`: `apply bool_ext`, as for `eq_coin`, then `map_true`, and
 your lemma `pure_true : (pure b) true = bif b then 1 else 0`. Then `b` has to be known: `cases b`. For
 `true`, the rule `coin_total : (coin p) true + (coin p) false = 1` says that the coin has total
 mass one. `rw [Bool.cond_true]` rewrites one `bif` at a time.
@@ -349,10 +384,7 @@ mass one. `rw [Bool.cond_true]` rewrites one `bif` at a time.
 was das Spielfeld gezeigt hat, für beide Werte `b`: Die ganze Masse geht zu einem Punkt. Sie wird
 dein Lemma `coin_const`.
 
-Auf den zwei Punkten `false` und `true` entscheidet die Säule bei `true` alles: Das ist dein Lemma
-`bool_ext`, und `apply bool_ext` macht aus dem Ziel `μ true = ν true`.
-
-Vergleiche die Säulen bei `true`: `apply bool_ext`, dann `map_true` und dein Lemma
+Vergleiche die Säulen bei `true`: `apply bool_ext`, wie bei `eq_coin`, dann `map_true` und dein Lemma
 `pure_true : (pure b) true = bif b then 1 else 0`. Dann muss `b` bekannt sein: `cases b`. Für `true` sagt
 die Regel `coin_total : (coin p) true + (coin p) false = 1`, dass die Münze die Gesamtmasse
 eins hat. `rw [Bool.cond_true]` schreibt immer nur ein `bif` um.
@@ -491,11 +523,11 @@ Dreh die Münze `p` um: Was ist jetzt ihre Masse bei `true`?
 ::::
 
 :::en
-*The boss: flip the coin.* Not just the mass at `true`: the whole coin.
+*Boss: flip the coin.* Not just the mass at `true`: the whole coin.
 :::
 
 :::de
-*Der Endgegner: Dreh die Münze um.* Nicht nur die Masse bei `true`: die ganze Münze.
+*Endgegner: Dreh die Münze um.* Nicht nur die Masse bei `true`: die ganze Münze.
 :::
 
 :::proofen
@@ -517,32 +549,3 @@ rw [coin_false, coin_true]
 ```
 :::
 :::::
-
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (p : I) (h : μ true = p) : μ = coin ⟦p ‖ p, σ p⟧") (lemma := "eq_coin") (uses := "bool_ext, coin_true, coin_false, coin_total")
-:::hint (anchor := "none")
-:::
-
-:::en
-*Every distribution is a coin.* A distribution on `Bool` with mass `p` at `true` is the coin `p`.
-So the coins are all there is on `Bool`.
-:::
-
-:::de
-*Jede Verteilung ist eine Münze.* Eine Verteilung auf `Bool` mit Masse `p` bei `true` ist die Münze
-`p`. Mehr als Münzen gibt es auf `Bool` also nicht.
-:::
-
-:::proofen
-Again `apply bool_ext`: the masses at `true` decide. Then `coin_true` and the hypothesis `h`.
-:::
-
-:::proofde
-Wieder `apply bool_ext`: Die Massen bei `true` entscheiden. Dann `coin_true` und die Annahme `h`.
-:::
-:::solution
-```
-apply bool_ext
-rw [coin_true, h]
-```
-:::
-::::

@@ -14,7 +14,7 @@ htmlSplit := .never
 From coins to numbers: the gate *toNat* makes `false` into $`0` and `true` into $`1`, and *plus*
 adds numbers (on blue wires). Count how many of $`n` coins show `true`: that number has the *binomial
 distribution* $`B(n, p)`, in Lean `binom p n`. Its bars stand over $`0, 1, …, n`.
-This world is one of two ways after *Building with Coins*; the other is *Coins that Wait*. They do
+This world is one of two ways after *Laws of `do`*; the other is *Coins that Wait*. They do
 not need each other.
 :::
 
@@ -31,7 +31,7 @@ Von Münzen zu Zahlen: Der Baustein *toNat* macht aus `false` die $`0` und aus `
 *plus* addiert Zahlen (auf blauen Leitungen). Zähle, wie viele von $`n` Münzen `true` zeigen: Diese
 Zahl hat die *Binomialverteilung* $`B(n, p)`, in Lean `binom p n`. Ihre Säulen stehen über
 $`0, 1, …, n`.
-Diese Welt ist einer von zwei Wegen nach *Bauen mit Münzen*; der andere ist *Münzen, die warten*. Sie
+Diese Welt ist einer von zwei Wegen nach *Gesetze von `do`*; der andere ist *Münzen, die warten*. Sie
 brauchen einander nicht.
 :::
 
@@ -332,13 +332,13 @@ rw [add_assoc]
 :::en
 *Three coins.* Count the `true`s among three coins. Throw $`n` coins and count how often `true`
 comes up: that is the *binomial distribution* $`B(n, p)`, with
-$`P(k) = \binom{n}{k} p^k (1 - p)^{n - k}`. In the next levels, $`B(2, p)` comes already built.
+$`P(k) = \binom{n}{k} p^k (1 - p)^{n - k}`. Later in this world, $`B(2, p)` comes already built.
 :::
 
 :::de
 *Drei Münzen.* Zähle die `true` unter drei Münzen. Wirf $`n` Münzen und zähle, wie oft `true`
 kommt: Das ist die *Binomialverteilung* $`B(n, p)`, mit $`P(k) = \binom{n}{k} p^k (1 - p)^{n - k}`.
-In den nächsten Leveln kommt $`B(2, p)` schon gebaut.
+Später in dieser Welt kommt $`B(2, p)` schon gebaut.
 :::
 
 :::proofen
@@ -352,6 +352,44 @@ Drei Würfe sind `binom p 3`. Neu: `add_assoc : a + b + c = a + (b + c)`.
 ```
 rw [binom_succ, binom_succ, binom_succ, binom_zero]
 simp only [bind_assoc, pure_bind, add_zero, add_assoc]
+```
+:::
+::::
+
+::::circuit (height := "660") (route := "count") (size := "big") (inputs := "x y z") (gates := "and, or") (coins := "p p p") (target := "bool true:3p^2-2p^3 false:1-3p^2+2p^3") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; let z ← coin p; pure ((x && y) || (x && z) || (y && z))) = (binom p 3).map (fun n => decide (2 ≤ n))") (play := "a=and; b=and; c=and; d=or; e=or; x>a.0; y>a.1; x>b.0; z>b.1; y>c.0; z>c.1; a>d.0; b>d.1; d>e.0; c>e.1; e>out") (uses := "binom_succ, binom_zero, map_bind, bind_assoc, pure_bind, map_pure, add_zero, bind_map_left, bind_pure, zero_add")
+:::en
+*The majority of three.* `true` when at least two of three coins show `true`. Each coin has to
+go into two functions.
+:::
+
+:::de
+*Die Mehrheit von dreien.* `true`, wenn mindestens zwei von drei Münzen `true` zeigen. Jede Münze
+muss in zwei Funktionen gehen.
+:::
+:::proofen
+The majority is a move on the number of `true`: at least two of three. Three throws are `binom p 3`,
+as in the level before; the move at the end goes into the `do` block, with `map_bind` and `map_pure`
+from *Laws of `do`*. Then both sides throw the same three coins and differ only in what they compute:
+`congr` and `ext`, once for each coin, and eight cases.
+:::
+
+:::proofde
+Die Mehrheit ist ein Zug auf der Anzahl der `true`: mindestens zwei von dreien. Drei Würfe sind
+`binom p 3`, wie im Level davor; der Zug am Ende wandert in den `do`-Block, mit `map_bind` und
+`map_pure` aus *Gesetze von `do`*. Dann werfen beide Seiten dieselben drei Münzen und unterscheiden
+sich nur darin, was sie rechnen: `congr` und `ext`, einmal für jede Münze, und acht Fälle.
+:::
+:::solution
+```
+rw [binom_succ, binom_succ, binom_succ, binom_zero]
+simp only [map_bind, bind_assoc, pure_bind, map_pure, add_zero]
+congr
+ext x
+congr
+ext y
+congr
+ext z
+cases x <;> cases y <;> cases z <;> rfl
 ```
 :::
 ::::
@@ -402,23 +440,23 @@ simp only [bind_assoc, pure_bind, add_assoc]
 
 ::::circuit (height := "540") (route := "count") (inputs := "x y z w") (gates := "plus") (coins := "p p p p") (target := "nat 0:(1-p)^4 1:4p(1-p)^3 2:6p^2(1-p)^2 3:4p^3(1-p) 4:p^4") (start := "a=toNat@62,150; b=toNat@176,150; c=plus@119,255; d=toNat@304,150; e=toNat@418,150; f=plus@361,255; x>a.0; y>b.0; a>c.0; b>c.1; z>d.0; w>e.0; d>f.0; e>f.1") (context := "Lean/Rules.lean") (proof := "(p : I) (n m : ℕ) : (do let X ← binom p n; let Y ← binom p m; pure (X + Y)) = binom p (n + m)") (lemma := "binom_add") (play := "g=plus; c>g.0; f>g.1; g>out") (uses := "binom_zero, pure_bind, add_zero, bind_pure, binom_succ', add_assoc, bind_assoc, binom_succ, zero_add, add_comm, add_right_comm")
 :::en
-*$`B(2, p) * B(2, p) = B(4, p)`.* Two independent binomials, both already built: add them. The sum
+*Boss: $`B(2, p) * B(2, p) = B(4, p)`.* Two independent binomials, both already built: add them. The sum
 of independent random numbers has the *convolution* $`*` of their distributions as its distribution.
 :::
 
 :::de
-*$`B(2, p) * B(2, p) = B(4, p)`.* Zwei unabhängige Binomialverteilungen, beide schon gebaut: Addiere
+*Endgegner: $`B(2, p) * B(2, p) = B(4, p)`.* Zwei unabhängige Binomialverteilungen, beide schon gebaut: Addiere
 sie. Die Summe unabhängiger Zufallszahlen hat die *Faltung* $`*` ihrer Verteilungen als Verteilung.
 :::
 
 :::proofen
 *For all $`n` and $`m`.* On the board it was $`B(2, p) * B(2, p) = B(4, p)`; here it is for all $`n` and $`m`: the
-sum of independent binomials is binomial.
+sum of independent binomials is binomial. Your result becomes the lemma `binom_add`.
 :::
 
 :::proofde
 *Für alle $`n` und $`m`.* Auf dem Spielfeld war es $`B(2, p) * B(2, p) = B(4, p)`; hier gilt es für alle $`n`
-und $`m`: Die Summe unabhängiger Binomialverteilungen ist binomial.
+und $`m`: Die Summe unabhängiger Binomialverteilungen ist binomial. Dein Ergebnis wird das Lemma `binom_add`.
 :::
 :::solution
 ```
@@ -427,31 +465,6 @@ rw [binom_zero]
 simp only [pure_bind, add_zero, bind_pure]
 rw [← binom_succ' p m, ← add_assoc, ← binom_succ' p (n + m), ← ih]
 simp only [bind_assoc, pure_bind, add_assoc]
-```
-:::
-::::
-
-::::circuit (height := "660") (route := "count") (size := "big") (inputs := "x y z") (gates := "and, or") (coins := "p p p") (target := "bool true:3p^2-2p^3 false:1-3p^2+2p^3") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; let z ← coin p; pure ((x && y) || (x && z) || (y && z))) = (binom p 3).map (fun n => decide (2 ≤ n))") (play := "a=and; b=and; c=and; d=or; e=or; x>a.0; y>a.1; x>b.0; z>b.1; y>c.0; z>c.1; a>d.0; b>d.1; d>e.0; c>e.1; e>out") (uses := "binom_succ, binom_zero, map_bind, bind_assoc, pure_bind, map_pure, add_zero, bind_map_left, bind_pure, zero_add")
-:::en
-*Boss: the majority of three.* `true` when at least two of three coins show `true`. Each coin has to
-go into two functions.
-:::
-
-:::de
-*Boss: die Mehrheit von dreien.* `true`, wenn mindestens zwei von drei Münzen `true` zeigen. Jede Münze
-muss in zwei Funktionen gehen.
-:::
-:::solution
-```
-rw [binom_succ, binom_succ, binom_succ, binom_zero]
-simp only [map_bind, bind_assoc, pure_bind, map_pure, add_zero]
-congr
-ext x
-congr
-ext y
-congr
-ext z
-cases x <;> cases y <;> cases z <;> rfl
 ```
 :::
 ::::

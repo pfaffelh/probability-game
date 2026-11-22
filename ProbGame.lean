@@ -4,6 +4,7 @@ import ProbGame.Worlds.Masses
 import ProbGame.Worlds.OneCoin
 import ProbGame.Worlds.Maps
 import ProbGame.Worlds.TwoCoins
+import ProbGame.Worlds.DoLaws
 import ProbGame.Worlds.Counting
 import ProbGame.Worlds.Circuits
 import ProbGame.Worlds.Bind
@@ -83,6 +84,8 @@ notation, monad, Mathlib.
 {include 1 ProbGame.Worlds.Maps}
 
 {include 1 ProbGame.Worlds.TwoCoins}
+
+{include 1 ProbGame.Worlds.DoLaws}
 
 {include 1 ProbGame.Worlds.Counting}
 

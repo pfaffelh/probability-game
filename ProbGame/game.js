@@ -49,7 +49,7 @@
   // Headings of the site, which come from Verso.
   const DE_TITLES = {
     'The Probability Game': 'Das Wahrscheinlichkeits\u00ADspiel',  // (a soft hyphen, for phones)
-    'Thinning': 'Ausdünnen', 'Real Numbers': 'Reelle Zahlen', 'Hypergeometric': 'Hypergeometrisch', 'Sequences': 'Folgen', 'Binomial': 'Binomial', 'Geometric': 'Geometrisch', 'Masses': 'Massen', 'Rows and masses': 'Zeilen und Massen', 'One Coin': 'Eine Münze', 'Maps': 'Abbildungen', 'Draw, then Compute': 'Erst ziehen, dann rechnen', 'Building with Coins': 'Bauen mit Münzen',
+    'Thinning': 'Ausdünnen', 'Real Numbers': 'Reelle Zahlen', 'Hypergeometric': 'Hypergeometrisch', 'Sequences': 'Folgen', 'Binomial': 'Binomial', 'Geometric': 'Geometrisch', 'Masses': 'Massen', 'Rows and masses': 'Zeilen und Massen', 'One Coin': 'Eine Münze', 'Maps': 'Abbildungen', 'Draw, then Compute': 'Erst ziehen, dann rechnen', 'Two Coins': 'Zwei Münzen', 'Laws of ': 'Gesetze von ',
     'Counting': 'Zählen', 'Walking on the Grid': 'Gehen auf dem Gitter', 'True and False': 'Wahr und falsch', 'Circuits with Coins': 'Schaltungen mit Münzen', 'Coins that Wait': 'Münzen, die warten', 'Circuits': 'Schaltungen', 'Lexicon': 'Lexikon', 'Table of Contents': 'Inhalt', 'Contents': 'Inhalt',
   }
   function translatePage() {
@@ -3001,7 +3001,7 @@
     { name: 'tsub_add_eq_max', kind: 'rule', sig: 'tsub_add_eq_max : b - a + a = max b a', en: 'Taking a away and putting it back gives the larger of the two (a - b is 0 when b > a).', de: 'a wegnehmen und wieder dazu gibt das größere der beiden (a - b ist 0, wenn b > a).' },
     { name: 'ENNReal.add_sub_cancel_left', kind: 'rule', sig: 'ENNReal.add_sub_cancel_left (h : a ≠ ⊤) : a + b - a = b', en: 'Adding a and taking it away again: for a finite a.', de: 'a dazu und wieder weg: für ein endliches a.' },
     { name: 'bind_apply', kind: 'rule', sig: '(do let a ← μ; f a) b = ∑ a, μ a * f a b', en: 'The definition of a bind: the mass at b is the sum over the first steps a of the mass of a times the mass of f a at b.', de: 'Die Definition eines bind: Die Masse bei b ist die Summe über die ersten Schritte a von der Masse von a mal der Masse von f a bei b.' },
-    { name: 'bind_true', kind: 'lemma', sig: '(do let x ← μ; f x) true = μ true * f true true + μ false * f false true', en: 'Proved by you in Building with Coins: the mass of a bind at true, the way through true (mass μ true, then f true) and the way through false.', de: 'Von dir bewiesen in „Bauen mit Münzen“: die Masse eines bind bei true, der Weg über true (Masse μ true, dann f true) und der Weg über false.' },
+    { name: 'bind_true', kind: 'lemma', sig: '(do let x ← μ; f x) true = μ true * f true true + μ false * f false true', en: 'Proved by you in Two Coins: the mass of a bind at true, the way through true (mass μ true, then f true) and the way through false.', de: 'Von dir bewiesen in „Zwei Münzen“: die Masse eines bind bei true, der Weg über true (Masse μ true, dann f true) und der Weg über false.' },
     { name: 'mul_one', kind: 'rule', sig: 'a * 1 = a', en: 'Times one.', de: 'Mal eins.' },
     { name: 'mul_zero', kind: 'rule', sig: 'a * 0 = 0', en: 'Times zero.', de: 'Mal null.' },
     { name: 'add_comm', kind: 'rule', sig: 'a + b = b + a', en: 'The order of a sum does not matter.', de: 'Die Reihenfolge einer Summe ist egal.' },
@@ -3034,13 +3034,13 @@
     { name: 'Bool.false_beq', kind: 'rule', sig: '(false == b) = !b', en: 'Testing false against b gives !b.', de: 'Der Test von false gegen b gibt !b.' },
     { name: 'map_map', kind: 'lemma', sig: '(μ.map f).map g = μ.map (fun x => g (f x))', sig0: 'g <$> (f <$> s) = (fun x => g (f x)) <$> s', en: 'Proved by you in Maps, for Bool; it holds for every type: two moves are one move.', de: 'Von dir bewiesen in „Abbildungen“, für Bool; es gilt für jeden Typ: Zwei Züge sind ein Zug.' },
     { name: 'cond_add_cond', kind: 'lemma', sig: '(bif c then x else 0) + (bif c then y else 0) = bif c then x + y else 0', en: 'Proved by you in Maps: two masses behind one test.', de: 'Von dir bewiesen in „Abbildungen“: zwei Massen hinter einem Test.' },
-    { name: 'coin_and', kind: 'lemma', sig: '(do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)', en: 'Proved by you in Building with Coins: independence, both true with probability p · q.', de: 'Von dir bewiesen in „Bauen mit Münzen“: Unabhängigkeit, beide true mit Wahrscheinlichkeit p · q.' },
-    { name: 'bind_map_left', kind: 'lemma', sig: '(do let x ← μ.map f; g x) = (do let x ← μ; g (f x))', en: 'Proved by you in Building with Coins, for Bool; it holds for every type: a move on a throw goes into the result.', de: 'Von dir bewiesen in „Bauen mit Münzen“, für Bool; es gilt für jeden Typ: Ein Zug auf einem Wurf wandert ins Ergebnis.' },
+    { name: 'coin_and', kind: 'lemma', sig: '(do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)', en: 'Proved by you in Two Coins: independence, both true with probability p · q.', de: 'Von dir bewiesen in „Zwei Münzen“: Unabhängigkeit, beide true mit Wahrscheinlichkeit p · q.' },
+    { name: 'bind_map_left', kind: 'lemma', sig: '(do let x ← μ.map f; g x) = (do let x ← μ; g (f x))', en: 'Proved by you in Laws of do, for Bool; it holds for every type: a move on a throw goes into the result.', de: 'Von dir bewiesen in „Gesetze von do“, für Bool; es gilt für jeden Typ: Ein Zug auf einem Wurf wandert ins Ergebnis.' },
     { name: 'mul_add', kind: 'rule', sig: 'a * (b + c) = a * b + a * c', en: 'Multiplying out, from the left.', de: 'Ausmultiplizieren, von links.' },
     { name: 'add_add_add_comm', kind: 'rule', sig: 'a + b + (c + d) = a + c + (b + d)', en: 'Two sums of two, regrouped.', de: 'Zwei Summen aus zwei, umgruppiert.' },
     { name: 'add_mul', kind: 'rule', sig: '(a + b) * c = a * c + b * c', en: 'Multiplying out a sum.', de: 'Eine Summe ausmultiplizieren.' },
-    { name: 'map_bind', kind: 'lemma', sig0: 'f <$> (s >>= g) = s >>= fun a => f <$> g a', en0: 'A move after a walk goes into it.', de0: 'Ein Zug nach einem Weg wandert in ihn hinein.', sig: '(do let x ← μ; g x).map f = (do let x ← μ; (g x).map f)', en: 'Proved by you in Building with Coins, for Bool; it holds for every type: A move after a do block goes into it.', de: 'Von dir bewiesen in „Bauen mit Münzen“, für Bool; es gilt für jeden Typ: Ein Zug nach einem do-Block wandert in ihn hinein.' },
-    { name: 'coin_unused', kind: 'lemma', sig: '(do let _ ← coin p; ν) = ν', en: 'Proved by you in Building with Coins: A coin whose result is not used changes nothing.', de: 'Von dir bewiesen in „Bauen mit Münzen“: Eine Münze, deren Ergebnis nicht benutzt wird, ändert nichts.' },
+    { name: 'map_bind', kind: 'lemma', sig0: 'f <$> (s >>= g) = s >>= fun a => f <$> g a', en0: 'A move after a walk goes into it.', de0: 'Ein Zug nach einem Weg wandert in ihn hinein.', sig: '(do let x ← μ; g x).map f = (do let x ← μ; (g x).map f)', en: 'Proved by you in Laws of do, for Bool; it holds for every type: A move after a do block goes into it.', de: 'Von dir bewiesen in „Gesetze von do“, für Bool; es gilt für jeden Typ: Ein Zug nach einem do-Block wandert in ihn hinein.' },
+    { name: 'coin_unused', kind: 'lemma', sig: '(do let _ ← coin p; ν) = ν', en: 'Proved by you in Laws of do: A coin whose result is not used changes nothing.', de: 'Von dir bewiesen in „Gesetze von do“: Eine Münze, deren Ergebnis nicht benutzt wird, ändert nichts.' },
     { name: 'binom_zero', kind: 'lemma', sig: 'binom p 0 = pure 0', en: 'Proved by you in Counting: no throw, surely 0.', de: 'Von dir bewiesen in „Zählen“: kein Wurf, sicher 0.' },
     { name: 'binom_succ', kind: 'lemma', sig: 'binom p (n + 1) = do let X ← coin p; let Y ← binom p n; pure (X.toNat + Y)', en: 'Proved by you in Counting: one throw more.', de: 'Von dir bewiesen in „Zählen“: ein Wurf mehr.' },
     { name: 'bind_assoc', kind: 'rule', sig: '(do let y ← (do let x ← μ; f x); g y) = (do let x ← μ; let y ← f x; g y)', en: 'A do block in a do block is one do block.', de: 'Ein do-Block in einem do-Block ist ein do-Block.' },
@@ -3049,9 +3049,9 @@
     { name: 'add_zero', kind: 'rule', sig: 'n + 0 = n', en: 'Adding zero.', de: 'Null addieren.' },
     { name: 'add_assoc', kind: 'rule', sig: 'a + b + c = a + (b + c)', en: 'Brackets in sums.', de: 'Klammern in Summen.' },
     { name: 'map_eq_pure_bind', kind: 'lemma', sig: 'μ.map f = do let x ← μ; pure (f x)', sig0: 'f <$> s = s >>= fun x => pure (f x)',
-      en0: 'Applying f to every point, as a walk.', de0: 'f auf jeden Punkt anwenden, als Weg.', en: 'Proved by you in Building with Coins, for Bool; it holds for every type: a move as a do block.', de: 'Von dir bewiesen in „Bauen mit Münzen“, für Bool; es gilt für jeden Typ: ein Zug als do-Block.' },
+      en0: 'Applying f to every point, as a walk.', de0: 'f auf jeden Punkt anwenden, als Weg.', en: 'Proved by you in Laws of do, for Bool; it holds for every type: a move as a do block.', de: 'Von dir bewiesen in „Gesetze von do“, für Bool; es gilt für jeden Typ: ein Zug als do-Block.' },
     { name: 'bind_pure', kind: 'rule', sig: '(do let x ← μ; pure x) = μ', en: 'Draw and give back: that is μ itself.', de: 'Ziehen und zurückgeben: Das ist μ selbst.' },
-    { name: "binom_succ'", kind: 'lemma', sig: "(do let X ← binom p n; let Y ← coin p; pure (X + Y.toNat)) = binom p (n + 1)", en: 'Proved by you in Building with Coins.', de: 'Von dir bewiesen in „Bauen mit Münzen“.' },
+    { name: "binom_succ'", kind: 'lemma', sig: "(do let X ← binom p n; let Y ← coin p; pure (X + Y.toNat)) = binom p (n + 1)", en: 'Proved by you in Counting.', de: 'Von dir bewiesen in „Zählen“.' },
     // the first world only
     { name: 'Bool.and_self', kind: 'lemma', sig: '(x && x) = x', en: 'Proved by you in Bool: x and x is x.', de: 'Von dir bewiesen in „Bool“: x und x ist x.' },
     { name: 'Bool.not_not', kind: 'lemma', sig: '(!(!b)) = b', en: 'Proved by you in Bool: flipped twice is not flipped.', de: 'Von dir bewiesen in „Bool“: Zweimal umgedreht ist nicht umgedreht.' },
@@ -3124,7 +3124,7 @@
     { name: 'or_eq', kind: 'lemma', sig: '(x || y) = !(!x && !y)', en: 'Proved by you in Bool: De Morgan: or is and with three nots.', de: 'Von dir bewiesen in „Bool“: De Morgan: or ist and mit drei not.' },
     { name: 'Bool.and_not_self', kind: 'lemma', sig: '(x && !x) = false', en: 'Proved by you in Bool: x and not x is never true.', de: 'Von dir bewiesen in „Bool“: x und nicht x ist nie true.' },
     { name: 'Bool.or_not_self', kind: 'lemma', sig: '(x || !x) = true', en: 'Proved by you in Bool: x or not x is always true.', de: 'Von dir bewiesen in „Bool“: x oder nicht x ist immer true.' },
-    { name: 'binom_add', kind: 'lemma', sig: '(do let X ← binom p n; let Y ← binom p m; pure (X + Y)) = binom p (n + m)', en: 'Proved by you in Building with Coins.', de: 'Von dir bewiesen in „Bauen mit Münzen“.' },
+    { name: 'binom_add', kind: 'lemma', sig: '(do let X ← binom p n; let Y ← binom p m; pure (X + Y)) = binom p (n + m)', en: 'Proved by you in Counting.', de: 'Von dir bewiesen in „Zählen“.' },
     { name: 'coin_bind_binom', kind: 'lemma', sig: '(do let C ← coin p; binom q C.toNat) = (do let B ← coin (p * q); pure B.toNat)', en: 'Proved by you in Thinning: a coin p, then as many coins q as it shows.', de: 'Von dir bewiesen in „Ausdünnen“: eine Münze p, dann so viele Münzen q, wie sie zeigt.' },
     { name: "coin_bind_binom'", kind: 'lemma', sig: '(do let C ← coin p; let U ← binom q C.toNat; f U) = (do let B ← coin (p * q); f B.toNat)', en: 'Proved by you in Thinning: the same, with something after it.', de: 'Von dir bewiesen in „Ausdünnen“: dasselbe, mit etwas danach.' },
     { name: 'binom_thin', kind: 'lemma', sig: '(do let X ← binom p n; binom q X) = binom (p * q) n', en: 'Proved by you in Thinning: thinning a binomial.', de: 'Von dir bewiesen in „Ausdünnen“: eine Binomialverteilung ausdünnen.' },
@@ -4472,11 +4472,11 @@
     return { a, num: tr.querySelector('.num')?.textContent.trim().replace(/\.$/, '') ?? '', path: new URL(a.href).pathname }
   }).filter(w => w && !/\/Lexicon\/$/.test(w.path))
   // (the version: when levels move between worlds, the cached shapes are read anew)
-  const levelsKey = path => `pg:levels3:${path}`
+  const levelsKey = path => `pg:levels4:${path}`
   // the worlds on a side way: which world they come after (not the one above them on the map)
   // The map as a graph, as in verso-nng: each world with the worlds it needs (else the one before it),
   // a branch in a column of its own, the names to the right of the tree.
-  const PREDS = { 'Coins-that-Wait': ['Building-with-Coins'], 'Real-Numbers': ['Coins-that-Wait'], 'Sequences': ['Counting'], 'Binomial': ['Sequences'], 'Geometric': ['Binomial'], 'Thinning': ['Geometric'], 'Hypergeometric': ['Binomial'] }
+  const PREDS = { 'Coins-that-Wait': ['Laws-of--do'], 'Real-Numbers': ['Coins-that-Wait'], 'Sequences': ['Counting'], 'Binomial': ['Sequences'], 'Geometric': ['Binomial'], 'Thinning': ['Geometric'], 'Hypergeometric': ['Binomial'] }
   const COLUMN = { 'Coins-that-Wait': 1, 'Real-Numbers': 2, 'Hypergeometric': 1 }
   const fetched = new Set()
   function worldMap() {
