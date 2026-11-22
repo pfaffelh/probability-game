@@ -139,6 +139,45 @@ rfl
 :::
 :::::
 
+:::::leanonly (proof := "(p : I) : coin p true = p ∧ coin p false = σ p") (new := "constructor") (uses := "-")
+::::hint (anchor := "item:constructor")
+:::en
+`constructor`: a goal `A ∧ B` becomes two goals, `A` and `B`.
+:::
+
+:::de
+`constructor`: Aus einem Ziel `A ∧ B` werden zwei Ziele, `A` und `B`.
+:::
+::::
+
+:::en
+*Both masses.* Two statements in one, joined by `∧` (and): the mass at `true`, and the mass at `false`.
+:::
+
+:::de
+*Beide Massen.* Zwei Aussagen in einer, verbunden mit `∧` (und): die Masse bei `true` und die Masse bei `false`.
+:::
+
+:::proofen
+The new tactic `constructor` makes two goals of `A ∧ B`: first `A`, then `B`. Each of them holds by definition, as before.
+
+*Tip.* `constructor`, `rfl`, `rfl`.
+:::
+
+:::proofde
+Die neue Taktik `constructor` macht aus `A ∧ B` zwei Ziele: erst `A`, dann `B`. Jedes gilt nach Definition, wie zuvor.
+
+*Tipp.* `constructor`, `rfl`, `rfl`.
+:::
+:::solution
+```
+constructor
+rfl
+rfl
+```
+:::
+:::::
+
 ::::leanonly (proof := "(p : I) : 0 + coin p true = p") (new := "zero_add") (uses := "zero_add, coin_true, add_zero, mul_zero, coin_false, coin_total")
 :::en
 *Zero plus.* Not every rule is a definition: `zero_add : 0 + a = a` is a rule of arithmetic, given
@@ -408,7 +447,48 @@ rw [← Prob.total μ, tsum_fintype, Fintype.sum_bool]
 :::
 :::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b ≤ 1") (lemma := "mass_le_one") (new := "exact, le_self_add, add_comm") (uses := "mass_total, add_comm, le_self_add, coin_total, add_assoc")
+:::::leanonly (proof := "(p : I) : coin p true + coin p false = ⟦1 ‖ 0, 1, p⟧") (lemma := "coin_total") (new := "exact") (uses := "mass_total, coin_total")
+::::hint (anchor := "item:exact")
+:::en
+`exact h`: closes a goal that is exactly `h`.
+:::
+
+:::de
+`exact h`: schließt ein Ziel, das genau `h` ist.
+:::
+::::
+
+:::en
+*The whole mass of the coin.* What you proved for every distribution holds for the coin.
+:::
+
+:::de
+*Die ganze Masse der Münze.* Was du für jede Verteilung bewiesen hast, gilt für die Münze.
+:::
+
+:::proofen
+Your theorem `mass_total μ : μ true + μ false = 1` holds for every distribution `μ`: a rule with a
+blank. Put the coin in, and `mass_total (coin p)` is exactly the goal. The new tactic `exact h` closes
+a goal that is exactly `h`.
+
+*Tip.* `exact mass_total (coin p)`.
+:::
+
+:::proofde
+Dein Satz `mass_total μ : μ true + μ false = 1` gilt für jede Verteilung `μ`: eine Regel mit einer
+Leerstelle. Setz die Münze ein, und `mass_total (coin p)` ist genau das Ziel. Die neue Taktik
+`exact h` schließt ein Ziel, das genau `h` ist.
+
+*Tipp.* `exact mass_total (coin p)`.
+:::
+:::solution
+```
+exact mass_total (coin p)
+```
+:::
+:::::
+
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b ≤ 1") (lemma := "mass_le_one") (new := "le_self_add, add_comm") (uses := "mass_total, add_comm, le_self_add, coin_total, add_assoc")
 :::en
 *At most one.* Each mass is a part of the whole mass, so at most one.
 :::
@@ -419,18 +499,14 @@ rw [← Prob.total μ, tsum_fintype, Fintype.sum_bool]
 
 :::proofen
 `rw [← mass_total μ]` makes the `1` the whole mass; `cases b` gives the two points. At `true` the
-goal is exactly the rule `le_self_add : a ≤ a + c`; `exact h` closes a goal that is exactly `h`. At
+goal is exactly the rule `le_self_add : a ≤ a + c`: `exact`. At
 `false` the summands are the wrong way round: `add_comm : a + b = b + a` turns the sum round.
-
-*Tip.* `rw [← mass_total μ]`, `cases b`, `rw [add_comm]`, `exact le_self_add`, `exact le_self_add`.
 :::
 
 :::proofde
 `rw [← mass_total μ]` macht die `1` zur ganzen Masse; `cases b` gibt die zwei Punkte. Bei `true` ist
-das Ziel genau die Regel `le_self_add : a ≤ a + c`; `exact h` schließt ein Ziel, das genau `h` ist.
+das Ziel genau die Regel `le_self_add : a ≤ a + c`: `exact`.
 Bei `false` stehen die Summanden falsch herum: `add_comm : a + b = b + a` dreht die Summe um.
-
-*Tipp.* `rw [← mass_total μ]`, `cases b`, `rw [add_comm]`, `exact le_self_add`, `exact le_self_add`.
 :::
 :::solution
 ```

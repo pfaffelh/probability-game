@@ -270,7 +270,7 @@ rw [coin_true, h]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : ↑p + ↑(σ p) = (1 : ℝ≥0∞)") (lemma := "add_symm_eq_one") (new := "coin_total") (uses := "coin_true, coin_false, coin_total, mass_total")
+::::leanonly (proof := "(p : I) : ↑p + ↑(σ p) = (1 : ℝ≥0∞)") (lemma := "add_symm_eq_one") (uses := "coin_true, coin_false, coin_total, mass_total")
 :::en
 *The coin is whole.* $`p + (1 - p) = 1`: the two masses of the coin add up to one.
 :::
@@ -280,11 +280,11 @@ rw [coin_true, h]
 :::
 
 :::proofen
-`coin_total : coin p true + coin p false = 1`. To use it, first write the masses as masses of the coin: your rules `coin_true` and `coin_false`, from right to left. What you prove is unlocked as `add_symm_eq_one`.
+Your lemma `coin_total : coin p true + coin p false = 1`, from *Masses*. To use it, first write the masses as masses of the coin: your rules `coin_true` and `coin_false`, from right to left. What you prove is unlocked as `add_symm_eq_one`.
 :::
 
 :::proofde
-`coin_total : coin p true + coin p false = 1`. Um sie zu benutzen, schreib die Massen zuerst als Massen der Münze: deine Regeln `coin_true` und `coin_false`, von rechts nach links. Was du beweist, wird als `add_symm_eq_one` freigeschaltet.
+Dein Lemma `coin_total : coin p true + coin p false = 1`, aus *Massen*. Um es zu benutzen, schreib die Massen zuerst als Massen der Münze: deine Regeln `coin_true` und `coin_false`, von rechts nach links. Was du beweist, wird als `add_symm_eq_one` freigeschaltet.
 :::
 :::solution
 ```
@@ -435,6 +435,31 @@ cases b <;> rfl
 ```
 :::
 :::::
+
+::::leanonly (proof := ": (pure true : DiscreteMeasure Bool) true = ⟦1 ‖ 0, 1⟧ ∧ (pure true : DiscreteMeasure Bool) false = ⟦0 ‖ 0, 1⟧") (uses := "pure_true, Bool.cond_true, pure_false, Bool.cond_false")
+:::en
+*Surely `true`.* Both masses of `pure true`, in one statement.
+:::
+
+:::de
+*Sicher `true`.* Beide Massen von `pure true`, in einer Aussage.
+:::
+
+:::proofen
+Two statements with `∧`: `constructor`, as in *Masses*. Then your lemmas `pure_true` and `pure_false`, each with `b = true`.
+:::
+
+:::proofde
+Zwei Aussagen mit `∧`: `constructor`, wie in *Massen*. Dann deine Lemmas `pure_true` und `pure_false`, jeweils mit `b = true`.
+:::
+:::solution
+```
+constructor
+rw [pure_true, Bool.cond_true]
+rw [pure_false, Bool.cond_true]
+```
+:::
+::::
 
 :::::leanonly (proof := "(f : Bool → Bool) (b : Bool) : (pure b : DiscreteMeasure Bool).map f = ⟦pure (f b) ‖ pure b, pure (f b), pure (f (f b))⟧") (lemma := "map_pure") (uses := "bool_ext, map_true, pure_true, pure_false, Bool.cond_false, Bool.cond_self, zero_add, Bool.cond_true, add_comm, add_zero, mul_zero, add_assoc")
 ::::hint (anchor := "gap")

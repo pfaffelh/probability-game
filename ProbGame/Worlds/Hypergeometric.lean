@@ -316,17 +316,7 @@ rw [coin_unused]
 :::
 ::::
 
-:::::leanonly (proof := "(w b : ℕ) : 1 - ((frac (w + 1) b : I) : ℝ) = (b : ℝ) / ((w : ℝ) + 1 + b)") (new := "frac_real, field_simp") (group := "chance.count") (uses := "frac_real, Nat.cast_add, Nat.cast_one")
-::::hint (anchor := "item:field_simp")
-:::en
-`field_simp`: an equation between fractions, multiplied by its denominators.
-:::
-
-:::de
-`field_simp`: eine Gleichung zwischen Brüchen, mit ihren Nennern multipliziert.
-:::
-::::
-
+::::leanonly (proof := "(w b : ℕ) : 1 - ((frac (w + 1) b : I) : ℝ) = (b : ℝ) / ((w : ℝ) + 1 + b)") (new := "frac_real") (group := "chance.count") (uses := "frac_real, Nat.cast_add, Nat.cast_one")
 :::en
 *The share of black.* As in *Balance*, chances are compared as real numbers. One minus the share of white is the share of black. ($`w + 1` white balls: an empty urn has no shares.)
 :::
@@ -336,21 +326,74 @@ rw [coin_unused]
 :::
 
 :::proofen
-`frac_real : ↑(frac w b) = ↑w / (↑w + ↑b)`, in `ℝ`; `Nat.cast_add` and `Nat.cast_one` write `↑(w + 1)` as `↑w + 1`. Then an equation between fractions: the new tactic `field_simp` multiplies by the denominators (it sees that they are not $`0`), and what is left is for `ring`.
-
-*Tip.* `rw [frac_real, Nat.cast_add, Nat.cast_one]`, `field_simp`, `ring`.
+`frac_real : ↑(frac w b) = ↑w / (↑w + ↑b)`, in `ℝ`; `Nat.cast_add` and `Nat.cast_one` write `↑(w + 1)` as `↑w + 1`. Then an equation between fractions, as in *Balance*: `field_simp`, and what is left is for `ring`.
 :::
 
 :::proofde
-`frac_real : ↑(frac w b) = ↑w / (↑w + ↑b)`, in `ℝ`; `Nat.cast_add` und `Nat.cast_one` schreiben `↑(w + 1)` als `↑w + 1`. Dann eine Gleichung zwischen Brüchen: Die neue Taktik `field_simp` multipliziert mit den Nennern (sie sieht, dass sie nicht $`0` sind), und was übrig bleibt, ist für `ring`.
-
-*Tipp.* `rw [frac_real, Nat.cast_add, Nat.cast_one]`, `field_simp`, `ring`.
+`frac_real : ↑(frac w b) = ↑w / (↑w + ↑b)`, in `ℝ`; `Nat.cast_add` und `Nat.cast_one` schreiben `↑(w + 1)` als `↑w + 1`. Dann eine Gleichung zwischen Brüchen, wie in *Gleichgewicht*: `field_simp`, und was übrig bleibt, ist für `ring`.
 :::
 :::solution
 ```
 rw [frac_real, Nat.cast_add, Nat.cast_one]
 field_simp
 ring
+```
+:::
+::::
+
+::::leanonly (proof := "(w b : ℕ) : (do let X ← coin (frac w b); bif X then coin (frac w b) else coin (frac w b)) = coin (frac w b)") (group := "chance.count") (uses := "coin_stays")
+:::en
+*Put back.* The first ball is drawn, looked at, and put back. Then the urn is the same after white and after black, and the second ball is white with the same chance as the first.
+:::
+
+:::de
+*Zurückgelegt.* Die erste Kugel wird gezogen, angeschaut und zurückgelegt. Dann ist die Urne nach Weiß dieselbe wie nach Schwarz, und die zweite Kugel ist mit derselben Chance weiß wie die erste.
+:::
+
+:::proofen
+A coin that stays: your lemma `coin_stays` from *Balance*. `apply coin_stays` leaves what the lemma asks for as the goal: the balance, in `ℝ`. Here it holds by computing.
+:::
+
+:::proofde
+Eine Münze, die bleibt: dein Lemma `coin_stays` aus *Gleichgewicht*. `apply coin_stays` lässt als Ziel, was das Lemma verlangt: das Gleichgewicht, in `ℝ`. Hier gilt es durch Rechnen.
+:::
+:::solution
+```
+apply coin_stays
+ring
+```
+:::
+::::
+
+:::::leanonly (proof := "(x y : ℝ) (h : x + y = 1) : x * y + y * x = ⟦2 * x * (1 - x) ‖ x * (1 - x), 2 * x * (1 - x), 1 - x * x⟧") (group := "chance.count") (uses := "-")
+::::hint (anchor := "gap")
+:::en
+White then black, or black then white; and $`y` is $`1 - x`.
+:::
+
+:::de
+Erst Weiß, dann Schwarz, oder erst Schwarz, dann Weiß; und $`y` ist $`1 - x`.
+:::
+::::
+
+:::en
+*Put back: two colours.* Two draws, the first ball put back. $`x` is the share of white, $`y` the share of black (`h`: there are no other balls). The chance of two different colours, in $`x` alone?
+:::
+
+:::de
+*Zurückgelegt: zwei Farben.* Zwei Züge, die erste Kugel zurückgelegt. $`x` ist der Anteil der weißen, $`y` der Anteil der schwarzen (`h`: Andere Kugeln gibt es nicht). Die Chance auf zwei verschiedene Farben, nur in $`x`?
+:::
+
+:::proofen
+A hypothesis and a computation: `linear_combination`, from *Balance*. This time the factor in front of `h` is not a number: the goal, left minus right, is $`2x` times `h`, left minus right.
+:::
+
+:::proofde
+Eine Annahme und eine Rechnung: `linear_combination`, aus *Gleichgewicht*. Diesmal ist der Faktor vor `h` keine Zahl: Das Ziel, links minus rechts, ist $`2x` mal `h`, links minus rechts.
+:::
+:::solution
+```
+linear_combination 2 * x * h
 ```
 :::
 :::::

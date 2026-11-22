@@ -109,6 +109,16 @@ rw [Bool.not_true, Bool.cond_true, Bool.cond_false, add_comm, zero_add]
 :::
 ::::
 
+::::quiz (tactic := "rw [Bool.not_not]") (context := "Lean/Rules.lean") (statements := "(b : Bool) : (!(!b)) = b ;; (μ : DiscreteMeasure Bool) : μ.map (fun b => !(!b)) = μ.map (fun b => b) ;; (f : Bool → Bool) (b : Bool) : f (!(!b)) = f b ;; : (fun b : Bool => !(!b)) = (fun b => b) ;; (a : Bool) : (a && !(!a)) = (a && a)") (answer := "1, 3, 5")
+:::en
+*Where does `rw` fail?* Your lemma from *Bool*, `Bool.not_not : (!(!b)) = b`. Every statement here has a `!(!…)` in it, and yet `rw [Bool.not_not]` proves only some of them. Which? Look at where the `b` comes from.
+:::
+
+:::de
+*Wo scheitert `rw`?* Dein Lemma aus *Bool*, `Bool.not_not : (!(!b)) = b`. Jede Aussage hier enthält ein `!(!…)`, und doch beweist `rw [Bool.not_not]` nur manche. Welche? Schau, woher das `b` kommt.
+:::
+::::
+
 ::::leanonly (proof := "(μ : DiscreteMeasure Bool) : μ.map (fun x => !(!x)) = ⟦μ ‖ μ, μ.map not⟧") (new := "simp_rw") (uses := "Bool.not_not, map_id")
 :::en
 *Turned over twice, in one move.* The move `fun x => !(!x)`: turn over, and turn over again.
@@ -120,7 +130,7 @@ rw [Bool.not_true, Bool.cond_true, Bool.cond_false, add_comm, zero_add]
 
 :::proofen
 Your lemma from *Bool*, `Bool.not_not : (!(!b)) = b`, should make `!(!x)` into `x`. But
-`rw [Bool.not_not]` does not find `!(!x)`, though it stands there: the `x` in `fun x => …` is a
+`rw [Bool.not_not]` does not find `!(!x)`, as in the quiz before: the `x` in `fun x => …` is a
 *bound* name, like the index `x` of a sum `∑ x, …`, and `rw` rewrites only parts without bound names.
 The new tactic `simp_rw [rules]` is `rw`, also under bound names. Then the move does nothing: your
 lemma `map_id : μ.map (fun x => x) = μ`.
@@ -130,7 +140,7 @@ lemma `map_id : μ.map (fun x => x) = μ`.
 
 :::proofde
 Dein Lemma aus *Bool*, `Bool.not_not : (!(!b)) = b`, soll aus `!(!x)` ein `x` machen. Aber
-`rw [Bool.not_not]` findet `!(!x)` nicht, obwohl es dasteht: Das `x` in `fun x => …` ist ein
+`rw [Bool.not_not]` findet `!(!x)` nicht, wie im Quiz davor: Das `x` in `fun x => …` ist ein
 *gebundener* Name, wie der Index `x` einer Summe `∑ x, …`, und `rw` schreibt nur Teile ohne
 gebundene Namen um. Die neue Taktik `simp_rw [Regeln]` ist `rw`, auch unter gebundenen Namen. Dann
 tut der Zug nichts: dein Lemma `map_id : μ.map (fun x => x) = μ`.

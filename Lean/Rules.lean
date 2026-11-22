@@ -570,6 +570,10 @@ theorem real_mul_nonneg (p q : I) : 0 ≤ (p : ℝ) * q := mul_nonneg p.2.1 q.2.
 
 theorem symm_real (p : I) : ((σ p : I) : ℝ) = 1 - p := unitInterval.coe_symm_eq p
 
+/-- Balance, *Computing with a hypothesis*: in balance, the mass at `true` stays (in `ℝ`). -/
+theorem balance {p q r : ℝ} (h : (1 - p) * r = p * (1 - q)) : p * q + (1 - p) * r = p := by
+  linear_combination h
+
 /-- Real numbers, the boss: a coin that stays, from the balance of what flows. -/
 theorem coin_stays (p q r : I) (h : (1 - (p : ℝ)) * r = p * (1 - q)) :
     (do let x ← coin p; bif x then coin q else coin r) = coin p := by

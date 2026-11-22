@@ -74,7 +74,7 @@ rw [pure_apply, beq_self_eq_true, Bool.cond_true]
 :::
 ::::
 
-:::::leanonly (proof := "(p : I) (k : ℕ) : binom p 0 0 = ⟦1 ‖ 1, 0, ↑p⟧ ∧ binom p 0 (k + 1) = ⟦0 ‖ 0, 1, ↑p⟧") (new := "constructor, pure_zero_succ") (group := "chance.count") (uses := "binom_zero, pure_self, pure_zero_succ, binom_succ")
+:::::leanonly (proof := "(p : I) (k : ℕ) : binom p 0 0 = ⟦1 ‖ 1, 0, ↑p⟧ ∧ binom p 0 (k + 1) = ⟦0 ‖ 0, 1, ↑p⟧") (new := "pure_zero_succ") (group := "chance.count") (uses := "binom_zero, pure_self, pure_zero_succ, binom_succ")
 ::::hint (anchor := "gap")
 :::en
 With no throw: how often `true`?
@@ -82,16 +82,6 @@ With no throw: how often `true`?
 
 :::de
 Ohne Wurf: wie oft `true`?
-:::
-::::
-
-::::hint (anchor := "item:constructor")
-:::en
-`constructor`: two statements at once, one after the other.
-:::
-
-:::de
-`constructor`: zwei Aussagen auf einmal, eine nach der anderen.
 :::
 ::::
 
@@ -104,17 +94,13 @@ Ohne Wurf: wie oft `true`?
 :::
 
 :::proofen
-Two statements joined by `∧` (and): `constructor` makes two goals of them. For the second,
+Two statements joined by `∧`: `constructor`, as in *Masses*. For the second,
 `pure_zero_succ : (pure 0) (k + 1) = 0`.
-
-*Tip.* `constructor`, then `rw [binom_zero, pure_self]` and `rw [binom_zero, pure_zero_succ]`.
 :::
 
 :::proofde
-Zwei Aussagen, verbunden mit `∧` (und): `constructor` macht zwei Ziele daraus. Für das zweite
+Zwei Aussagen, verbunden mit `∧`: `constructor`, wie in *Massen*. Für das zweite
 `pure_zero_succ : (pure 0) (k + 1) = 0`.
-
-*Tipp.* `constructor`, dann `rw [binom_zero, pure_self]` und `rw [binom_zero, pure_zero_succ]`.
 :::
 :::solution
 ```
