@@ -39,6 +39,36 @@ ein Zug vor einer Ziehung wandert in das, was folgt; ein Zug nach einem `do`-Blo
 hinein. Du beweist jedes davon auf `Bool`, einmal, indem du Massen ausrechnest. Dann gehört es dir für
 jeden Typ, und ein `do`-Block wird umgeschrieben, nicht ausgerechnet.
 :::
+:::::circuit (height := "440") (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:p false:1-p") (context := "Lean/Rules.lean") (proof := "(p : I) : ((coin p).map not).map not = coin p") (play := "a=not; b=not; x>a.0; a>b.0; b>out") (uses := "map_map, Bool.not_not, map_id")
+:::hint (anchor := "none")
+:::
+
+:::en
+*Flipped twice.* The target is the coin itself. Build it with two `not`. (Without any gate it comes out too: that is what the statement says.)
+:::
+
+:::de
+*Zweimal umgedreht.* Das Ziel ist die Münze selbst. Bau sie mit zwei `nicht`. (Ohne Baustein kommt sie auch heraus: Das ist, was die Aussage sagt.)
+:::
+
+:::proofen
+Two moves, one after the other. No mass is computed: your boss lemma `map_map` from *Maps* makes
+them one move, and that move you know from *Turned over twice, in one move*.
+:::
+
+:::proofde
+Zwei Züge nacheinander. Keine Masse wird ausgerechnet: Dein Endgegner-Lemma `map_map` aus
+*Abbildungen* macht aus ihnen einen Zug, und diesen Zug kennst du aus *Zweimal umgedreht, in einem Zug*.
+:::
+:::solution
+```
+rw [map_map]
+simp_rw [Bool.not_not]
+rw [map_id]
+```
+:::
+:::::
+
 :::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → Bool) : μ.map f = (do let x ← μ; ⟦pure (f x) ‖ pure (f x), pure x, μ.map f⟧)") (lemma := "map_eq_pure_bind") (uses := "map_apply, bind_apply, Fintype.sum_bool, pure_apply")
 ::::hint (anchor := "statement")
 :::en

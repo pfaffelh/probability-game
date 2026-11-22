@@ -11,11 +11,11 @@ htmlSplit := .never
 %%%
 
 :::en
-An urn with white and black balls; balls are drawn one after the other, without putting them back. The hypergeometric distribution, the number of white balls drawn, as a `do` block that draws ball by ball: each draw is a coin that waits (as in *Coins that Wait*), its chance depending on what was drawn before. In Lean only.
+An urn with white and black balls; balls are drawn one after the other, without putting them back. The hypergeometric distribution, the number of white balls drawn, as a `do` block that draws ball by ball: each draw is a coin that waits (as in *Coins that Wait*), its chance depending on what was drawn before. At the end, a balance (as in *Balance*): the second ball. In Lean only.
 :::
 
 :::de
-Eine Urne mit weißen und schwarzen Kugeln; Kugeln werden eine nach der anderen gezogen, ohne sie zurückzulegen. Die hypergeometrische Verteilung, die Anzahl der gezogenen weißen Kugeln, als `do`-Block, der Kugel für Kugel zieht: Jeder Zug ist eine Münze, die wartet (wie in *Münzen, die warten*), ihre Chance hängt davon ab, was vorher gezogen wurde. Nur in Lean.
+Eine Urne mit weißen und schwarzen Kugeln; Kugeln werden eine nach der anderen gezogen, ohne sie zurückzulegen. Die hypergeometrische Verteilung, die Anzahl der gezogenen weißen Kugeln, als `do`-Block, der Kugel für Kugel zieht: Jeder Zug ist eine Münze, die wartet (wie in *Münzen, die warten*), ihre Chance hängt davon ab, was vorher gezogen wurde. Am Ende ein Gleichgewicht (wie in *Gleichgewicht*): die zweite Kugel. Nur in Lean.
 :::
 
 ::::leanonly (proof := "(w b : ℕ) : hyper w b 0 = pure 0") (lemma := "hyper_zero") (group := "chance.count") (uses := "-")
@@ -35,11 +35,11 @@ def hyper : ℕ → ℕ → ℕ → DiscreteMeasure ℕ
   | _, _, 0 => pure 0
   | w, b, n + 1 => do
       let X ← coin (frac w b)
-      bif X then (do let Y ← hyper (w - 1) b n; pure (1 + Y))
+      bif X then (do let Y ← hyper … n; pure (1 + Y))
         else hyper w (b - 1) n
 ```
 
-`frac w b` is $`w / (w + b)`, the chance of a white ball.
+`frac w b` is $`w / (w + b)`, the chance of a white ball. (The urn after a white ball is left open: the next level asks for it.)
 
 The first case of the definition.
 :::
@@ -52,11 +52,11 @@ def hyper : ℕ → ℕ → ℕ → DiscreteMeasure ℕ
   | _, _, 0 => pure 0
   | w, b, n + 1 => do
       let X ← coin (frac w b)
-      bif X then (do let Y ← hyper (w - 1) b n; pure (1 + Y))
+      bif X then (do let Y ← hyper … n; pure (1 + Y))
         else hyper w (b - 1) n
 ```
 
-`frac w b` ist $`w / (w + b)`, die Chance auf eine weiße Kugel.
+`frac w b` ist $`w / (w + b)`, die Chance auf eine weiße Kugel. (Die Urne nach einer weißen Kugel bleibt offen: Das nächste Level fragt danach.)
 
 Der erste Fall der Definition.
 :::
@@ -67,13 +67,13 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(w b n : ℕ) : hyper w b (n + 1) = (do let X ← coin (frac w b); bif X then (do let Y ← hyper (w - 1) b n; pure (1 + Y)) else hyper w (b - 1) n)") (lemma := "hyper_succ") (group := "chance.count") (uses := "-")
+::::leanonly (proof := "(w b n : ℕ) : hyper w b (n + 1) = (do let X ← coin (frac w b); bif X then (do let Y ← hyper ⟦w - 1 ‖ w, w - 1, w + 1⟧ ⟦b ‖ b - 1, b, b + 1⟧ n; pure (1 + Y)) else hyper w (b - 1) n)") (lemma := "hyper_succ") (group := "chance.count") (uses := "-")
 :::en
-*One ball after the other.* The first ball is white with chance $`w / (w + b)`: then one white less in the urn, and one more counted. Else one black less.
+*One ball after the other.* The first ball is white with chance $`w / (w + b)`, and then one more is counted. From which urn are the other $`n` balls drawn then: how many white, how many black? (After a black ball: one black less.)
 :::
 
 :::de
-*Eine Kugel nach der anderen.* Die erste Kugel ist weiß mit Chance $`w / (w + b)`: dann eine weiße weniger in der Urne, und eins mehr gezählt. Sonst eine schwarze weniger.
+*Eine Kugel nach der anderen.* Die erste Kugel ist weiß mit Chance $`w / (w + b)`, und dann wird eins mehr gezählt. Aus welcher Urne werden dann die anderen $`n` Kugeln gezogen: wie viele weiße, wie viele schwarze? (Nach einer schwarzen Kugel: eine schwarze weniger.)
 :::
 
 :::proofen
@@ -90,7 +90,109 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(b : ℕ) : coin (frac 0 b) = pure false") (new := "frac_zero, coin_zero") (group := "chance.count") (uses := "frac_zero, coin_zero, frac_white, coin_one")
+:::::leanonly (proof := "(w b : ℕ) : hyper w b 1 1 = ⟦↑(frac w b) ‖ ↑(σ (frac w b)), ↑(frac w b), ↑(frac b w), 1⟧") (lemma := "hyper_one_one") (group := "chance.count") (uses := "hyper_succ, hyper_zero")
+::::hint (anchor := "gap")
+:::en
+One ball drawn: with which chance is it white?
+:::
+
+:::de
+Eine Kugel gezogen: Mit welcher Chance ist sie weiß?
+:::
+::::
+
+:::en
+*One draw, white.* One ball drawn, and the number of white ones is $`1`.
+:::
+
+:::de
+*Ein Zug, weiß.* Eine Kugel gezogen, und die Anzahl der weißen ist $`1`.
+:::
+
+:::proofen
+`hyper_succ` writes the draw out; the rest is computing, as in *Binomial*: `simp`, with `hyper_zero` for the draws that are left. Your result becomes the lemma `hyper_one_one`.
+:::
+
+:::proofde
+`hyper_succ` schreibt den Zug aus; der Rest ist Rechnen, wie in *Binomial*: `simp`, mit `hyper_zero` für die Züge, die übrig sind. Dein Ergebnis wird das Lemma `hyper_one_one`.
+:::
+:::solution
+```
+rw [hyper_succ]
+simp [hyper_zero]
+```
+:::
+:::::
+
+:::::leanonly (proof := "(w b : ℕ) : hyper w b 1 0 = ⟦↑(σ (frac w b)) ‖ ↑(frac w b), 0, ↑(σ (frac w b)), ↑(frac w (b - 1))⟧") (lemma := "hyper_one_zero") (new := "pure_one_zero") (group := "chance.count") (uses := "hyper_succ, hyper_zero, pure_one_zero")
+::::hint (anchor := "gap")
+:::en
+One ball drawn: with which chance is it not white?
+:::
+
+:::de
+Eine Kugel gezogen: Mit welcher Chance ist sie nicht weiß?
+:::
+::::
+
+:::en
+*One draw, black.* One ball drawn, and the number of white ones is $`0`.
+:::
+
+:::de
+*Ein Zug, schwarz.* Eine Kugel gezogen, und die Anzahl der weißen ist $`0`.
+:::
+
+:::proofen
+As in the level before. After a white ball the count is surely $`1`, and not $`0`: the new rule `pure_one_zero : (pure 1) 0 = 0`, given to `simp` by hand. Your result becomes the lemma `hyper_one_zero`.
+:::
+
+:::proofde
+Wie im Level davor. Nach einer weißen Kugel ist die Anzahl sicher $`1`, und nicht $`0`: die neue Regel `pure_one_zero : (pure 1) 0 = 0`, `simp` von Hand mitgegeben. Dein Ergebnis wird das Lemma `hyper_one_zero`.
+:::
+:::solution
+```
+rw [hyper_succ]
+simp [hyper_zero, pure_one_zero]
+```
+:::
+:::::
+
+:::::leanonly (proof := "(w b : ℕ) : hyper w b 2 1 = (⟦↑(frac w b) * ↑(σ (frac (w - 1) b)) + ↑(σ (frac w b)) * ↑(frac w (b - 1)) ‖ ↑(frac w b) * ↑(σ (frac w b)) + ↑(σ (frac w b)) * ↑(frac w b), ↑(frac w b) * ↑(σ (frac (w - 1) b)) + ↑(σ (frac w b)) * ↑(frac w (b - 1)), ↑(frac w b) * ↑(σ (frac (w - 1) b))⟧ : ℝ≥0∞)") (group := "chance.count") (uses := "hyper_succ, hyper_one_zero, hyper_one_one, hyper_zero")
+::::hint (anchor := "gap")
+:::en
+White and then black, or black and then white. The second ball comes from another urn than the first.
+:::
+
+:::de
+Weiß und dann schwarz, oder schwarz und dann weiß. Die zweite Kugel kommt aus einer anderen Urne als die erste.
+:::
+::::
+
+:::en
+*One of each.* Two draws, exactly one white ball: the first mass of the hypergeometric distribution with both colours in it.
+:::
+
+:::de
+*Eine von jeder.* Zwei Züge, genau eine weiße Kugel: die erste Masse der hypergeometrischen Verteilung, in der beide Farben vorkommen.
+:::
+
+:::proofen
+`hyper_succ` for the first draw. The second draws are your two lemmas, for the smaller urns: give `hyper_one_zero` and `hyper_one_one` to `simp`.
+:::
+
+:::proofde
+`hyper_succ` für den ersten Zug. Die zweiten Züge sind deine zwei Lemmas, für die kleineren Urnen: Gib `simp` `hyper_one_zero` und `hyper_one_one` mit.
+:::
+:::solution
+```
+rw [hyper_succ]
+simp [hyper_one_zero, hyper_one_one]
+```
+:::
+:::::
+
+::::leanonly (proof := "(b : ℕ) : coin (frac 0 b) = pure false") (new := "frac_zero") (group := "chance.count") (uses := "frac_zero, coin_zero, frac_white, coin_one")
 :::en
 *No white ball.* Without white balls, the ball drawn is surely black.
 :::
@@ -100,11 +202,11 @@ rfl
 :::
 
 :::proofen
-`frac_zero : frac 0 b = 0` and `coin_zero : coin 0 = pure false`.
+`frac_zero : frac 0 b = 0`, and `coin_zero : coin 0 = pure false` from *Counting*.
 :::
 
 :::proofde
-`frac_zero : frac 0 b = 0` und `coin_zero : coin 0 = pure false`.
+`frac_zero : frac 0 b = 0`, und `coin_zero : coin 0 = pure false` aus *Zählen*.
 :::
 :::solution
 ```
@@ -188,11 +290,18 @@ rw [hyper_succ, frac_white, coin_one, pure_bind, Bool.cond_true, Nat.add_sub_can
 
 ::::leanonly (proof := "(w b : ℕ) : hyper w b (w + b) = pure w") (lemma := "hyper_all") (group := "chance.count") (uses := "zero_add, hyper_black, add_zero, hyper_white, add_assoc, hyper_succ, Nat.add_sub_cancel, add_right_comm, pure_bind, add_comm, cond_same, coin_unused, mul_zero, hyper_zero, bind_pure, prob_unused")
 :::en
-*Boss: drawing all the balls.* Draw all $`w + b` balls, one after the other: whatever happens on the way, in the end you surely have all $`w` white ones.
+*Drawing all the balls.* Draw all $`w + b` balls, one after the other: whatever happens on the way, in the end you surely have all $`w` white ones.
 :::
 
 :::de
-*Endgegner: alle Kugeln ziehen.* Zieh alle $`w + b` Kugeln, eine nach der anderen: Was auch immer unterwegs passiert, am Ende hast du sicher alle $`w` weißen.
+*Alle Kugeln ziehen.* Zieh alle $`w + b` Kugeln, eine nach der anderen: Was auch immer unterwegs passiert, am Ende hast du sicher alle $`w` weißen.
+:::
+:::proofen
+Induction on $`w`, for every $`b`; in its step, an induction on $`b`. At the end both branches of the first draw are the same (`cond_same`, under the `do`: `simp only`), and the draw is not used (`coin_unused`).
+:::
+
+:::proofde
+Induktion über $`w`, für jedes $`b`; in ihrem Schritt eine Induktion über $`b`. Am Ende sind beide Zweige des ersten Zugs gleich (`cond_same`, unter dem `do`: `simp only`), und der Zug wird nicht benutzt (`coin_unused`).
 :::
 :::solution
 ```
@@ -203,6 +312,64 @@ rw [add_zero, hyper_white]
 rw [← add_assoc, hyper_succ, Nat.add_sub_cancel, Nat.add_sub_cancel, ih2, add_right_comm, add_assoc, ih, pure_bind, add_comm 1 w]
 simp only [cond_same]
 rw [coin_unused]
+```
+:::
+::::
+
+:::::leanonly (proof := "(w b : ℕ) : 1 - ((frac (w + 1) b : I) : ℝ) = (b : ℝ) / ((w : ℝ) + 1 + b)") (new := "frac_real, field_simp") (group := "chance.count") (uses := "frac_real, Nat.cast_add, Nat.cast_one")
+::::hint (anchor := "item:field_simp")
+:::en
+`field_simp`: an equation between fractions, multiplied by its denominators.
+:::
+
+:::de
+`field_simp`: eine Gleichung zwischen Brüchen, mit ihren Nennern multipliziert.
+:::
+::::
+
+:::en
+*The share of black.* As in *Balance*, chances are compared as real numbers. One minus the share of white is the share of black. ($`w + 1` white balls: an empty urn has no shares.)
+:::
+
+:::de
+*Der Anteil der schwarzen.* Wie in *Gleichgewicht* werden Chancen als reelle Zahlen verglichen. Eins minus der Anteil der weißen ist der Anteil der schwarzen. ($`w + 1` weiße Kugeln: Eine leere Urne hat keine Anteile.)
+:::
+
+:::proofen
+`frac_real : ↑(frac w b) = ↑w / (↑w + ↑b)`, in `ℝ`; `Nat.cast_add` and `Nat.cast_one` write `↑(w + 1)` as `↑w + 1`. Then an equation between fractions: the new tactic `field_simp` multiplies by the denominators (it sees that they are not $`0`), and what is left is for `ring`.
+
+*Tip.* `rw [frac_real, Nat.cast_add, Nat.cast_one]`, `field_simp`, `ring`.
+:::
+
+:::proofde
+`frac_real : ↑(frac w b) = ↑w / (↑w + ↑b)`, in `ℝ`; `Nat.cast_add` und `Nat.cast_one` schreiben `↑(w + 1)` als `↑w + 1`. Dann eine Gleichung zwischen Brüchen: Die neue Taktik `field_simp` multipliziert mit den Nennern (sie sieht, dass sie nicht $`0` sind), und was übrig bleibt, ist für `ring`.
+
+*Tipp.* `rw [frac_real, Nat.cast_add, Nat.cast_one]`, `field_simp`, `ring`.
+:::
+:::solution
+```
+rw [frac_real, Nat.cast_add, Nat.cast_one]
+field_simp
+ring
+```
+:::
+:::::
+
+::::leanonly (proof := "(w b : ℕ) : (do let X ← coin (frac (w + 1) (b + 1)); bif X then coin (frac w (b + 1)) else coin (frac (w + 1) b)) = coin (⟦frac (w + 1) (b + 1) ‖ frac w (b + 1), frac (w + 1) b, frac (w + 1) (b + 1), frac w b⟧)") (group := "chance.count") (uses := "coin_stays, frac_real")
+:::en
+*Boss: the second ball.* An urn with $`w + 1` white and $`b + 1` black balls. The first ball is drawn and put aside, unseen. The second ball: white with which chance?
+:::
+
+:::de
+*Endgegner: die zweite Kugel.* Eine Urne mit $`w + 1` weißen und $`b + 1` schwarzen Kugeln. Die erste Kugel wird gezogen und beiseitegelegt, ungesehen. Die zweite Kugel: mit welcher Chance weiß?
+:::
+:::solution
+```
+apply coin_stays
+rw [frac_real, frac_real, frac_real]
+simp
+field_simp
+ring
 ```
 :::
 ::::

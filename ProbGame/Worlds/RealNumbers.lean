@@ -4,18 +4,18 @@ import ProbGame.Level
 open Verso.Genre Manual
 open ProbGame
 
-#doc (Manual) "Real Numbers" =>
+#doc (Manual) "Balance" =>
 
 %%%
 htmlSplit := .never
 %%%
 
 :::en
-Masses are numbers in $`[0, \infty]`; there a minus does not undo a plus, and one cannot solve for $`p`. This world is the change to the real numbers: what it takes, and why it is worth it. In Lean only.
+When does a coin that waits leave `coin p` as it is? When what flows from `false` to `true` is what flows back: a balance, $`(1 - p) r = p (1 - q)`. To use such an equation one computes with a minus, and masses cannot: they are numbers in $`[0, \infty]`, where a minus does not undo a plus. So this world takes the masses to the real numbers, computes there, and comes back with the balance; in *Hypergeometric* it is used again. In Lean only.
 :::
 
 :::de
-Massen sind Zahlen in $`[0, \infty]`; dort macht ein Minus kein Plus rückgängig, und man kann nicht nach $`p` auflösen. Diese Welt ist der Wechsel zu den reellen Zahlen: was er kostet, und warum er sich lohnt. Nur in Lean.
+Wann lässt eine Münze, die wartet, `coin p`, wie es ist? Wenn das, was von `false` nach `true` fließt, gleich dem ist, was zurückfließt: ein Gleichgewicht, $`(1 - p) r = p (1 - q)`. Um so eine Gleichung zu benutzen, rechnet man mit einem Minus, und Massen können das nicht: Sie sind Zahlen in $`[0, \infty]`, wo ein Minus kein Plus rückgängig macht. Also bringt diese Welt die Massen zu den reellen Zahlen, rechnet dort und kommt mit dem Gleichgewicht zurück; in *Hypergeometrisch* wird es wieder gebraucht. Nur in Lean.
 :::
 
 ::::leanonly (proof := "(p : I) : (↑p : ℝ≥0∞) = ENNReal.ofReal (p : ℝ)") (lemma := "mass_eq_ofReal") (uses := "-")

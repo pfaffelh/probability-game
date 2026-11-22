@@ -581,6 +581,60 @@ theorem coin_stays (p q r : I) (h : (1 - (p : ℝ)) * r = p * (1 - q)) :
   congr 1
   linear_combination h
 
+/-! Rules of 2026-11-22: a first induction, the mass of a list, one draw from the urn. -/
+
+/-- Counting: a coin that never shows `true` is never counted. -/
+theorem binom_never (n : ℕ) : binom 0 n = pure 0 := by
+  induction' n with n ih
+  rw [binom_zero]
+  rw [binom_succ, coin_zero, pure_bind, ih, pure_bind]
+  rfl
+
+theorem count_false_cons (y : Bool) (l : List Bool) : (y :: l).count false = (!y).toNat + l.count false := by
+  cases y <;> simp [add_comm]
+
+/-- Sequences: one more entry in front, one more factor. -/
+theorem mass_cons (p : I) (y : Bool) (l : List Bool) :
+    coin p y * ((↑p : ENNReal) ^ l.count true * (↑(σ p) : ENNReal) ^ l.count false) =
+      (↑p : ENNReal) ^ (y :: l).count true * (↑(σ p) : ENNReal) ^ (y :: l).count false := by
+  rw [count_true_cons, count_false_cons]
+  cases y
+  rw [coin_false, Bool.toNat_false, Bool.not_false, Bool.toNat_true]
+  ring
+  rw [coin_true, Bool.toNat_true, Bool.not_true, Bool.toNat_false]
+  ring
+
+/-- Sequences: the mass of a list depends only on its numbers of `true` and `false`. -/
+theorem seq_mass (p : I) (l : List Bool) :
+    iidSequence l.length (coin p) l = (↑p : ENNReal) ^ l.count true * (↑(σ p) : ENNReal) ^ l.count false := by
+  induction' l with y l ih
+  rw [List.length_nil, seq_zero_nil, List.count_nil, List.count_nil]
+  ring
+  rw [List.length_cons, seq_succ_apply, ih, mass_cons]
+
+theorem frac_real (w b : ℕ) : ((frac w b : I) : ℝ) = (w : ℝ) / ((w : ℝ) + b) := rfl
+
+theorem pure_one_zero : (pure 1 : DiscreteMeasure ℕ) 0 = 0 :=
+  MeasureTheory.DiscreteMeasure.pure_apply_nonself Nat.zero_ne_one
+
+theorem hyper_one_one (w b : ℕ) : hyper w b 1 1 = ↑(frac w b) := by
+  rw [hyper_succ, coin_bind_apply, Bool.cond_true, Bool.cond_false, shift_succ, hyper_zero, hyper_zero,
+    pure_self, pure_zero_succ, mul_one, mul_zero, add_zero]
+
+theorem hyper_one_zero (w b : ℕ) : hyper w b 1 0 = ↑(σ (frac w b)) := by
+  rw [hyper_succ, coin_bind_apply, Bool.cond_true, Bool.cond_false, shift_zero, hyper_zero, pure_self,
+    mul_zero, zero_add, mul_one]
+
+/-- Hypergeometric, the boss: the second ball is white as often as the first. -/
+theorem second_ball (w b : ℕ) :
+    (do let X ← coin (frac (w + 1) (b + 1)); bif X then coin (frac w (b + 1)) else coin (frac (w + 1) b)) =
+      coin (frac (w + 1) (b + 1)) := by
+  apply coin_stays
+  rw [frac_real, frac_real, frac_real]
+  simp only [Nat.cast_add, Nat.cast_one]
+  field_simp
+  ring
+
 end ProbGame
 
 open ProbGame

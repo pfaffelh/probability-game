@@ -394,7 +394,47 @@ cases x <;> cases y <;> cases z <;> rfl
 :::
 ::::
 
-::::circuit (route := "count") (inputs := "x y z") (gates := "toNat, plus") (coins := "p p p") (target := "nat 0:(1-p)^3 1:3p(1-p)^2 2:3p^2(1-p) 3:p^3") (start := "a=toNat@120,160; b=toNat@240,160; c=plus@180,270; x>a.0; y>b.0; a>c.0; b>c.1") (context := "Lean/Rules.lean") (proof := "(p : I) (n : ℕ) : (do let X ← binom p n; let Y ← coin p; pure (X + Y.toNat)) = binom p (n + 1)") (lemma := "binom_succ'") (new := "induction'") (play := "d=toNat; e=plus; z>d.0; c>e.0; d>e.1; e>out") (uses := "binom_zero, binom_succ, pure_bind, zero_add, add_zero, bind_assoc, add_assoc, bind_pure, mul_zero, add_comm, add_right_comm")
+::::leanonly (proof := "(n : ℕ) : binom 0 n = pure 0") (lemma := "binom_never") (new := "induction', coin_zero") (group := "chance.count") (uses := "binom_zero, binom_succ, coin_zero, pure_bind, coin_one, bind_pure")
+:::en
+*A coin that never shows `true`.* The coin with $`p = 0` shows `false`, surely. Throw it $`n` times and count the `true`: surely $`0`, for every $`n`.
+:::
+
+:::de
+*Eine Münze, die nie `true` zeigt.* Die Münze mit $`p = 0` zeigt sicher `false`. Wirf sie $`n`-mal und zähl die `true`: sicher $`0`, für jedes $`n`.
+:::
+
+:::proofen
+For every $`n`: that needs *induction*, as in the Natural Number Game. The new tactic
+`induction' n with n ih` leaves two goals, one after the other: the case $`0`, and the case $`n + 1`,
+with the hypothesis `ih` for $`n`. In the case $`n + 1`, `binom_succ` throws one coin, the new rule
+`coin_zero : coin 0 = pure false` says what it shows, and `ih` is the rest. What is left,
+`pure (false.toNat + 0) = pure 0`, holds by computing: `rfl`. Your result becomes the lemma `binom_never`.
+
+*Tip.* `induction' n with n ih`. Case $`0`: `rw [binom_zero]`. Case $`n + 1`:
+`rw [binom_succ, coin_zero, pure_bind, ih, pure_bind]`, `rfl`.
+:::
+
+:::proofde
+Für jedes $`n`: Dafür braucht es *Induktion*, wie im Natural Number Game. Die neue Taktik
+`induction' n with n ih` lässt zwei Ziele, eines nach dem anderen: den Fall $`0`, und den Fall
+$`n + 1`, mit der Annahme `ih` für $`n`. Im Fall $`n + 1` wirft `binom_succ` eine Münze, die neue Regel
+`coin_zero : coin 0 = pure false` sagt, was sie zeigt, und `ih` ist der Rest. Was übrig bleibt,
+`pure (false.toNat + 0) = pure 0`, gilt durch Ausrechnen: `rfl`. Dein Ergebnis wird das Lemma `binom_never`.
+
+*Tipp.* `induction' n with n ih`. Fall $`0`: `rw [binom_zero]`. Fall $`n + 1`:
+`rw [binom_succ, coin_zero, pure_bind, ih, pure_bind]`, `rfl`.
+:::
+:::solution
+```
+induction' n with n ih
+rw [binom_zero]
+rw [binom_succ, coin_zero, pure_bind, ih, pure_bind]
+rfl
+```
+:::
+::::
+
+::::circuit (route := "count") (inputs := "x y z") (gates := "toNat, plus") (coins := "p p p") (target := "nat 0:(1-p)^3 1:3p(1-p)^2 2:3p^2(1-p) 3:p^3") (start := "a=toNat@120,160; b=toNat@240,160; c=plus@180,270; x>a.0; y>b.0; a>c.0; b>c.1") (context := "Lean/Rules.lean") (proof := "(p : I) (n : ℕ) : (do let X ← binom p n; let Y ← coin p; pure (X + Y.toNat)) = binom p (n + 1)") (lemma := "binom_succ'") (play := "d=toNat; e=plus; z>d.0; c>e.0; d>e.1; e>out") (uses := "binom_zero, binom_succ, pure_bind, zero_add, add_zero, bind_assoc, add_assoc, bind_pure, mul_zero, add_comm, add_right_comm")
 :::en
 *A new building block.* $`B(2, p)` is already built: the two coins on the left, counted and added
 (it stays). Add one more coin `z`: one more throw, one more chance to count, and $`B(3, p)` comes out.
@@ -407,11 +447,9 @@ kommt heraus.
 :::
 
 :::proofen
-`binom_succ` throws the new coin first; here it comes last, for every `n`. That needs *induction*,
-as in the Natural Number Game: `induction' n with n ih` leaves two goals, one after the other: the
-case $`0`, and the case $`n + 1`, with the hypothesis `ih` for $`n`. Rules can be given their
-arguments: `binom_succ p n` is the rule for this `n` only. New: `zero_add : 0 + n = n`. The lemma is
-called `binom_succ'`.
+`binom_succ` throws the new coin first; here it comes last, for every `n`. That needs induction,
+as in the level before. Rules can be given their arguments: `binom_succ p n` is the rule for this `n`
+only. The lemma is called `binom_succ'`.
 
 *Tip.* Case $`0`: `rw [binom_zero, binom_succ, binom_zero]`, `simp only [pure_bind, zero_add, add_zero]`.
 Case $`n + 1`: `rw [binom_succ p n, binom_succ p (n + 1), ← ih]`, `simp only [bind_assoc, pure_bind, add_assoc]`.
@@ -419,10 +457,8 @@ Case $`n + 1`: `rw [binom_succ p n, binom_succ p (n + 1), ← ih]`, `simp only [
 
 :::proofde
 `binom_succ` wirft die neue Münze zuerst; hier kommt sie zuletzt, für jedes `n`. Dafür braucht es
-*Induktion*, wie im Natural Number Game: `induction' n with n ih` lässt zwei Ziele, eines nach dem
-anderen: den Fall $`0`, und den Fall $`n + 1`, mit der Annahme `ih` für $`n`. Regeln kann man ihre
-Argumente mitgeben: `binom_succ p n` ist die Regel nur für dieses `n`. Neu: `zero_add : 0 + n = n`.
-Das Lemma heißt `binom_succ'`.
+Induktion, wie im Level davor. Regeln kann man ihre Argumente mitgeben: `binom_succ p n` ist die Regel
+nur für dieses `n`. Das Lemma heißt `binom_succ'`.
 
 *Tipp.* Fall $`0`: `rw [binom_zero, binom_succ, binom_zero]`, `simp only [pure_bind, zero_add, add_zero]`.
 Fall $`n + 1`: `rw [binom_succ p n, binom_succ p (n + 1), ← ih]`, `simp only [bind_assoc, pure_bind, add_assoc]`.

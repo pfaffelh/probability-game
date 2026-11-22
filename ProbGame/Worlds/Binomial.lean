@@ -148,7 +148,7 @@ rw [shift_succ, shift_zero, add_zero]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (n : ℕ) : binom p (n + 1) 0 = ↑(σ p) * binom p n 0") (lemma := "binom_succ_zero") (new := "Bool.toNat_false, mul_zero") (group := "chance.count") (uses := "binom_succ, Bool.toNat_false, mul_zero, binom_zero, zero_add")
+::::leanonly (proof := "(p : I) (n : ℕ) : binom p (n + 1) 0 = ↑(σ p) * binom p n 0") (lemma := "binom_succ_zero") (new := "mul_zero") (group := "chance.count") (uses := "binom_succ, mul_zero, binom_zero, zero_add")
 :::en
 *No true in one throw more.* No `true` in $`n + 1` throws: the first is `false`, and none in the other $`n`.
 :::
@@ -159,23 +159,21 @@ rw [shift_succ, shift_zero, add_zero]
 
 :::proofen
 `binom_succ` writes the first throw out. The rest is computing, and the rules for it carry the mark
-*simp*: `coin_bind_apply` splits the throw into `true` and `false`, `Bool.toNat_true` counts it, the
-`true` branch is `shift_zero`, and `bind_pure` cleans up. Two rules are new: `Bool.toNat_false : false.toNat = 0`
-and `mul_zero : a * 0 = 0`. `simp` does not use a rule by itself in the level that brings it; you
-give it to `simp` with `simp [h₁, h₂]`.
+*simp*: `coin_bind_apply` splits the throw into `true` and `false`, `Bool.toNat_true` and `Bool.toNat_false` count it, the
+`true` branch is `shift_zero`, and `bind_pure` cleans up. One rule is new: `mul_zero : a * 0 = 0`.
+`simp` does not use a rule by itself in the level that brings it; you give it to `simp` with `simp [h]`.
 :::
 
 :::proofde
 `binom_succ` schreibt den ersten Wurf aus. Der Rest ist Rechnen, und die Regeln dafür tragen die
-Marke *simp*: `coin_bind_apply` teilt den Wurf in `true` und `false`, `Bool.toNat_true` zählt ihn, der
-`true`-Zweig ist `shift_zero`, und `bind_pure` räumt auf. Zwei Regeln sind neu:
-`Bool.toNat_false : false.toNat = 0` und `mul_zero : a * 0 = 0`. In dem Level, das eine Regel bringt,
-benutzt `simp` sie nicht von selbst; du gibst sie ihm mit `simp [h₁, h₂]`.
+Marke *simp*: `coin_bind_apply` teilt den Wurf in `true` und `false`, `Bool.toNat_true` und `Bool.toNat_false` zählen ihn, der
+`true`-Zweig ist `shift_zero`, und `bind_pure` räumt auf. Eine Regel ist neu: `mul_zero : a * 0 = 0`.
+In dem Level, das eine Regel bringt, benutzt `simp` sie nicht von selbst; du gibst sie ihm mit `simp [h]`.
 :::
 :::solution
 ```
 rw [binom_succ]
-simp [Bool.toNat_false, mul_zero]
+simp [mul_zero]
 ```
 :::
 ::::

@@ -11,20 +11,68 @@ htmlSplit := .never
 %%%
 
 :::en
-How long until the first `true`? The geometric distribution, defined by its masses step by step; its formula, its lack of memory, and the `do` block that waits. In Lean only.
+How long until the first `true`? A coin that is thrown again while it shows `false`: the waiting coin of *Coins that Wait*, as often as needed. The geometric distribution: its masses step by step, its formula, its lack of memory, and the `do` block that waits. In Lean only.
 :::
 
 :::de
-Wie lange bis zum ersten `true`? Die geometrische Verteilung, Schritt für Schritt durch ihre Massen definiert; ihre Formel, ihre Gedächtnislosigkeit, und der `do`-Block, der wartet. Nur in Lean.
+Wie lange bis zum ersten `true`? Eine Münze, die nochmal geworfen wird, solange sie `false` zeigt: die wartende Münze aus *Münzen, die warten*, so oft wie nötig. Die geometrische Verteilung: ihre Massen Schritt für Schritt, ihre Formel, ihre Gedächtnislosigkeit, und der `do`-Block, der wartet. Nur in Lean.
 :::
 
-::::leanonly (proof := "(p : I) : geom p 0 = ↑p") (lemma := "geom_zero") (group := "chance.count") (uses := "-")
+::::leanonly (proof := "(p : I) : (do let x ← coin p; bif x then pure false else coin p) true = (⟦↑(σ p) * ↑p ‖ ↑p * ↑p, ↑(σ p) * ↑p, ↑(σ p), ↑p⟧ : ℝ≥0∞)") (group := "chance.count") (uses := "bind_true, bind_false")
 :::en
-*True at once.* Throw a coin `p` until it shows `true`; `geom p` is the number of `false` before. Its masses are defined step by step: at once `true`, mass $`p`; one `false` more, $`1 - p` times as much.
+*At the second throw.* Throw a coin `p` until it shows `true`. This block says `true` exactly when that happens at the second throw: a `true` at once does not count, and after a `false` the second throw decides.
 :::
 
 :::de
-*Sofort true.* Wirf eine Münze `p`, bis sie `true` zeigt; `geom p` ist die Anzahl der `false` davor. Ihre Massen sind Schritt für Schritt definiert: sofort `true`, Masse $`p`; ein `false` mehr, $`1 - p`-mal so viel.
+*Beim zweiten Wurf.* Wirf eine Münze `p`, bis sie `true` zeigt. Dieser Block sagt `true` genau dann, wenn das beim zweiten Wurf passiert: Ein `true` sofort zählt nicht, und nach einem `false` entscheidet der zweite Wurf.
+:::
+
+:::proofen
+A coin that waits, as in *Coins that Wait*: `bind_true`, then `simp` computes.
+:::
+
+:::proofde
+Eine Münze, die wartet, wie in *Münzen, die warten*: `bind_true`, dann rechnet `simp`.
+:::
+:::solution
+```
+rw [bind_true]
+simp
+```
+:::
+::::
+
+::::leanonly (proof := "(p : I) : (do let x ← coin p; bif x then pure false else (do let y ← coin p; bif y then pure false else coin p)) true = (⟦↑(σ p) * (↑(σ p) * ↑p) ‖ ↑(σ p) * ↑p, ↑p * (↑p * ↑(σ p)), ↑(σ p) * (↑(σ p) * ↑p), ↑(σ p) * ↑(σ p)⟧ : ℝ≥0∞)") (group := "chance.count") (uses := "bind_true, bind_false")
+:::en
+*At the third throw.* `true` exactly when the first `true` comes at the third throw: a waiting coin inside a waiting coin.
+:::
+
+:::de
+*Beim dritten Wurf.* `true` genau dann, wenn das erste `true` beim dritten Wurf kommt: eine wartende Münze in einer wartenden Münze.
+:::
+
+:::proofen
+`bind_true` for the first throw, and once more inside: `simp [bind_true]`.
+:::
+
+:::proofde
+`bind_true` für den ersten Wurf, und nochmal innen: `simp [bind_true]`.
+:::
+:::solution
+```
+rw [bind_true]
+simp [bind_true]
+```
+:::
+::::
+
+::::leanonly (proof := "(p : I) : geom p 0 = ⟦↑p ‖ ↑(σ p), ↑p, 1, 0⟧") (lemma := "geom_zero") (group := "chance.count") (uses := "-")
+:::en
+*True at once.* Now with a number: `geom p` is the number of `false` before the first `true`. Its masses are defined step by step, as you just computed them. The first step: `true` at once, no `false` before.
+:::
+
+:::de
+*Sofort true.* Jetzt mit einer Zahl: `geom p` ist die Anzahl der `false` vor dem ersten `true`. Ihre Massen sind Schritt für Schritt definiert, so wie du sie gerade ausgerechnet hast. Der erste Schritt: sofort `true`, kein `false` davor.
 :::
 
 :::proofen
@@ -32,13 +80,13 @@ The definition:
 
 ```
 def geomMass (p : I) : ℕ → ℝ≥0∞
-  | 0 => ↑p
-  | k + 1 => ↑(σ p) * geomMass p k
+  | 0 => …
+  | k + 1 => … * geomMass p k
 
 def geom (p : I) : DiscreteMeasure ℕ := ⟨geomMass p⟩
 ```
 
-The first case.
+(The two places left open are yours: in this level and the next.) The first case.
 :::
 
 :::proofde
@@ -46,13 +94,13 @@ Die Definition:
 
 ```
 def geomMass (p : I) : ℕ → ℝ≥0∞
-  | 0 => ↑p
-  | k + 1 => ↑(σ p) * geomMass p k
+  | 0 => …
+  | k + 1 => … * geomMass p k
 
 def geom (p : I) : DiscreteMeasure ℕ := ⟨geomMass p⟩
 ```
 
-Der erste Fall.
+(Die zwei offenen Stellen sind deine: in diesem Level und im nächsten.) Der erste Fall.
 :::
 :::solution
 ```
@@ -61,21 +109,21 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (k : ℕ) : geom p (k + 1) = ↑(σ p) * geom p k") (lemma := "geom_succ") (group := "chance.count") (uses := "-")
+::::leanonly (proof := "(p : I) (k : ℕ) : geom p (k + 1) = ⟦↑(σ p) ‖ ↑p, ↑(σ p), ↑(σ p) ^ k, 1⟧ * geom p k") (lemma := "geom_succ") (group := "chance.count") (uses := "-")
 :::en
-*One false more.* The second case of the definition.
+*One false more.* One `false` more before the first `true`: the mass gets one factor more, as from the second throw to the third.
 :::
 
 :::de
-*Ein false mehr.* Der zweite Fall der Definition.
+*Ein false mehr.* Ein `false` mehr vor dem ersten `true`: Die Masse bekommt einen Faktor mehr, wie vom zweiten Wurf zum dritten.
 :::
 
 :::proofen
-By definition.
+The second case of the definition.
 :::
 
 :::proofde
-Nach Definition.
+Der zweite Fall der Definition.
 :::
 :::solution
 ```
@@ -84,13 +132,39 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (k : ℕ) : geom p k = ↑(σ p) ^ k * ↑p") (lemma := "geom_formula") (new := "pow_succ', mul_assoc") (group := "chance.count") (uses := "geom_zero, pow_zero, one_mul, geom_succ, mul_assoc, pow_succ', pow_succ, mul_one")
+::::leanonly (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else coin p); let z ← (bif y then pure true else coin p); pure z) true = geom p 0 + geom p 1 + geom p 2") (group := "chance.count") (uses := "bind_true, geom_succ, geom_zero, bind_false")
 :::en
-*The masses.* $`k` times `false`, then `true`: mass $`(1 - p)^k p`.
+*Three tries.* The boss of *Coins that Wait*: throw until `true` comes, at most three times. It comes at the first throw, at the second, or at the third: three masses of `geom p`.
 :::
 
 :::de
-*Die Massen.* $`k`-mal `false`, dann `true`: Masse $`(1 - p)^k p`.
+*Drei Versuche.* Der Endgegner aus *Münzen, die warten*: Wirf, bis `true` kommt, höchstens dreimal. Es kommt beim ersten Wurf, beim zweiten oder beim dritten: drei Massen von `geom p`.
+:::
+
+:::proofen
+The left side as there: `bind_true`, then `simp [bind_true]`. On the right, `geom_succ` and `geom_zero` write the masses out, and `ring` compares.
+:::
+
+:::proofde
+Die linke Seite wie dort: `bind_true`, dann `simp [bind_true]`. Rechts schreiben `geom_succ` und `geom_zero` die Massen aus, und `ring` vergleicht.
+:::
+:::solution
+```
+rw [bind_true]
+simp [bind_true]
+rw [geom_succ, geom_succ, geom_succ, geom_zero]
+ring
+```
+:::
+::::
+
+::::leanonly (proof := "(p : I) (k : ℕ) : geom p k = ⟦↑(σ p) ^ k * ↑p ‖ ↑(σ p) * ↑p ^ k, ↑(σ p) ^ k * ↑p, ↑(σ p) ^ (k + 1), ↑p ^ k⟧") (lemma := "geom_formula") (new := "pow_succ', mul_assoc") (group := "chance.count") (uses := "geom_zero, pow_zero, one_mul, geom_succ, mul_assoc, pow_succ', pow_succ, mul_one")
+:::en
+*The masses.* $`k` times `false`, then `true`: the mass, as a formula.
+:::
+
+:::de
+*Die Massen.* $`k`-mal `false`, dann `true`: die Masse, als Formel.
 :::
 
 :::proofen
@@ -109,7 +183,7 @@ rw [geom_succ, ih, ← mul_assoc, ← pow_succ']
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (k m : ℕ) : geom p (k + m) = ↑(σ p) ^ k * geom p m") (lemma := "geom_memoryless") (group := "chance.count") (uses := "zero_add, pow_zero, one_mul, add_right_comm, geom_succ, mul_assoc, pow_succ', add_zero, mul_zero, pow_succ, mul_one, add_assoc, geom_zero")
+::::leanonly (proof := "(p : I) (k m : ℕ) : geom p (k + m) = ⟦↑(σ p) ^ k ‖ ↑(σ p) ^ m, ↑p ^ k, ↑(σ p) ^ k, geom p k⟧ * geom p m") (lemma := "geom_memoryless") (group := "chance.count") (uses := "zero_add, pow_zero, one_mul, add_right_comm, geom_succ, mul_assoc, pow_succ', add_zero, mul_zero, pow_succ, mul_one, add_assoc, geom_zero")
 :::en
 *Without memory.* $`k` times `false` first, and then as if nothing had happened: the coin does not remember.
 :::

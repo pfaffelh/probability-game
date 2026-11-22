@@ -49,7 +49,7 @@
   // Headings of the site, which come from Verso.
   const DE_TITLES = {
     'The Probability Game': 'Das Wahrscheinlichkeits\u00ADspiel',  // (a soft hyphen, for phones)
-    'Thinning': 'Ausdünnen', 'Real Numbers': 'Reelle Zahlen', 'Hypergeometric': 'Hypergeometrisch', 'Sequences': 'Folgen', 'Binomial': 'Binomial', 'Geometric': 'Geometrisch', 'Masses': 'Massen', 'Rows and masses': 'Zeilen und Massen', 'One Coin': 'Eine Münze', 'Maps': 'Abbildungen', 'Draw, then Compute': 'Erst ziehen, dann rechnen', 'Two Coins': 'Zwei Münzen', 'Laws of ': 'Gesetze von ',
+    'Thinning': 'Ausdünnen', 'Balance': 'Gleichgewicht', 'Hypergeometric': 'Hypergeometrisch', 'Sequences': 'Folgen', 'Binomial': 'Binomial', 'Geometric': 'Geometrisch', 'Masses': 'Massen', 'Rows and masses': 'Zeilen und Massen', 'One Coin': 'Eine Münze', 'Maps': 'Abbildungen', 'Draw, then Compute': 'Erst ziehen, dann rechnen', 'Two Coins': 'Zwei Münzen', 'Laws of ': 'Gesetze von ',
     'Counting': 'Zählen', 'Walking on the Grid': 'Gehen auf dem Gitter', 'True and False': 'Wahr und falsch', 'Circuits with Coins': 'Schaltungen mit Münzen', 'Coins that Wait': 'Münzen, die warten', 'Circuits': 'Schaltungen', 'Lexicon': 'Lexikon', 'Table of Contents': 'Inhalt', 'Contents': 'Inhalt',
   }
   function translatePage() {
@@ -1733,6 +1733,8 @@
       // (the tactic as Lean gets it: the game's simp with the rules of this level's inventory)
       const names = a => { try { return new Set(JSON.parse(d[a] ?? '[]')) } catch { return new Set() } }
       this.lean = simpToLean(this.tactic, simpRulesOf(names('inventory'), names('new')))
+      // (t₁; t₂: two lines for Lean, which takes one tactic per line)
+        .replace(/(?<!<)\s*;\s*(?!>)/g, '\n')
       this.answer = new Set((d.answer || '').split(',').map(s => Number(s.trim()) - 1).filter(i => i >= 0))
       this.board = root.querySelector('.pg-board'); this.picture = null
       this.key = `pg:${location.pathname}:${index}`
@@ -2886,18 +2888,29 @@
     "seq_succ_apply": "theorem seq_succ_apply {α : Type} [DecidableEq α] (μ : DiscreteMeasure α) (n : ℕ) (a : α) (l : List α) : (iidSequence (n + 1) μ) (a :: l) = μ a * (iidSequence n μ) l",
     "seq_zero_nil": "theorem seq_zero_nil {α : Type} (μ : DiscreteMeasure α) : (iidSequence 0 μ) [] = 1",
     "count_true_cons": "theorem count_true_cons (y : Bool) (l : List Bool) : List.count true (y :: l) = y.toNat + List.count true l",
+    "count_false_cons": "theorem count_false_cons (y : Bool) (l : List Bool) : List.count false (y :: l) = (!y).toNat + List.count false l",
+    "List.length_nil": "theorem List.length_nil {α : Type u} : [].length = 0",
+    "List.count_nil": "theorem List.count_nil {α : Type u_1} [BEq α] {a : α} : List.count a [] = 0",
+    "List.length_cons": "theorem List.length_cons {α : Type u} {a : α} {as : List α} : (a :: as).length = as.length + 1",
+    "mass_cons": "theorem mass_cons (p : I) (y : Bool) (l : List Bool) : (coin p) y * (↑p ^ List.count true l * ↑(σ p) ^ List.count false l) = ↑p ^ List.count true (y :: l) * ↑(σ p) ^ List.count false (y :: l)",
+    "seq_mass": "theorem seq_mass (p : I) (l : List Bool) : (iidSequence l.length (coin p)) l = ↑p ^ List.count true l * ↑(σ p) ^ List.count false l",
     "binom_eq_count": "theorem binom_eq_count (p : I) (n : ℕ) : binom p n = (iidSequence n (coin p)).map fun l => List.count true l",
     "frac_zero": "theorem frac_zero (b : ℕ) : frac 0 b = 0",
     "frac_white": "theorem frac_white (w : ℕ) : frac (w + 1) 0 = 1",
     "coin_zero": "theorem coin_zero : coin 0 = pure false",
+    "binom_never": "theorem binom_never (n : ℕ) : binom 0 n = pure 0",
     "coin_one": "theorem coin_one : coin 1 = pure true",
     "cond_same": "theorem cond_same {α : Type} (c : Bool) (a : α) : (bif c then a else a) = a",
     "Nat.add_sub_cancel": "theorem Nat.add_sub_cancel (n m : ℕ) : n + m - m = n",
     "hyper_zero": "theorem hyper_zero (w b : ℕ) : hyper w b 0 = pure 0",
     "hyper_succ": "theorem hyper_succ (w b n : ℕ) : hyper w b (n + 1) = do let X ← coin (frac w b); bif X then do let Y ← hyper (w - 1) b n; pure (1 + Y) else hyper w (b - 1) n",
+    "hyper_one_one": "theorem hyper_one_one (w b : ℕ) : (hyper w b 1) 1 = ↑(frac w b)",
+    "pure_one_zero": "theorem pure_one_zero : (pure 1) 0 = 0",
+    "hyper_one_zero": "theorem hyper_one_zero (w b : ℕ) : (hyper w b 1) 0 = ↑(σ (frac w b))",
     "hyper_black": "theorem hyper_black (b n : ℕ) : hyper 0 b n = pure 0",
     "hyper_white": "theorem hyper_white (w : ℕ) : hyper w 0 w = pure w",
     "hyper_all": "theorem hyper_all (w b : ℕ) : hyper w b (w + b) = pure w",
+    "frac_real": "theorem frac_real (w b : ℕ) : ↑(frac w b) = ↑w / (↑w + ↑b)",
     "or_eq": "theorem or_eq (x y : Bool) : (x || y) = !(!x && !y)",
     "Bool.and_not_self": "theorem Bool.and_not_self (x : Bool) : (x && !x) = false",
     "Bool.or_not_self": "theorem Bool.or_not_self (x : Bool) : (x || !x) = true",
@@ -3109,18 +3122,29 @@
     { name: 'seq_succ_apply', kind: 'rule', sig: 'iidSequence (n + 1) μ (a :: l) = μ a * iidSequence n μ l', en: 'The mass of a list: a product.', de: 'Die Masse einer Liste: ein Produkt.' },
     { name: 'seq_zero_nil', kind: 'rule', sig: 'iidSequence 0 μ [] = 1', en: 'The empty list, surely.', de: 'Die leere Liste, sicher.' },
     { name: 'count_true_cons', kind: 'rule', sig: '(y :: l).count true = y.toNat + l.count true', en: 'Counting true in a list.', de: 'true in einer Liste zählen.' },
+    { name: 'count_false_cons', kind: 'rule', sig: '(y :: l).count false = (!y).toNat + l.count false', en: 'Counting false in a list.', de: 'false in einer Liste zählen.' },
+    { name: 'List.length_nil', kind: 'rule', sig: '[].length = 0', en: 'The empty list has length 0.', de: 'Die leere Liste hat Länge 0.' },
+    { name: 'List.count_nil', kind: 'rule', sig: '[].count a = 0', en: 'Nothing to count in the empty list.', de: 'In der leeren Liste gibt es nichts zu zählen.' },
+    { name: 'List.length_cons', kind: 'rule', sig: '(y :: l).length = l.length + 1', en: 'One entry in front: one longer.', de: 'Ein Eintrag vorne: eins länger.' },
+    { name: 'mass_cons', kind: 'lemma', sig: 'coin p y * (↑p ^ l.count true * ↑(σ p) ^ l.count false) = ↑p ^ (y :: l).count true * ↑(σ p) ^ (y :: l).count false', en: 'Proved by you in Sequences: one more in front, one more factor.', de: 'Von dir bewiesen in „Folgen“: einer mehr vorne, ein Faktor mehr.' },
+    { name: 'seq_mass', kind: 'lemma', sig: 'iidSequence l.length (coin p) l = ↑p ^ l.count true * ↑(σ p) ^ l.count false', en: 'Proved by you in Sequences: the mass of a list.', de: 'Von dir bewiesen in „Folgen“: die Masse einer Liste.' },
     { name: 'binom_eq_count', kind: 'lemma', sig: 'binom p n = (iidSequence n (coin p)).map (fun l => l.count true)', en: 'Proved by you in Sequences: binom counts the true in n coins.', de: 'Von dir bewiesen in „Folgen“: binom zählt die true in n Münzen.' },
     { name: 'frac_zero', kind: 'rule', sig: 'frac 0 b = 0', en: 'No white ball: chance 0.', de: 'Keine weiße Kugel: Chance 0.' },
     { name: 'frac_white', kind: 'rule', sig: 'frac (w + 1) 0 = 1', en: 'Only white balls: chance 1.', de: 'Nur weiße Kugeln: Chance 1.' },
     { name: 'coin_zero', kind: 'rule', sig: 'coin 0 = pure false', en: 'A coin with chance 0 is surely false.', de: 'Eine Münze mit Chance 0 ist sicher false.' },
+    { name: 'binom_never', kind: 'lemma', sig: 'binom 0 n = pure 0', en: 'Proved by you in Counting: a coin that never shows true is never counted.', de: 'Von dir bewiesen in „Zählen“: Eine Münze, die nie true zeigt, wird nie gezählt.' },
     { name: 'coin_one', kind: 'rule', sig: 'coin 1 = pure true', en: 'A coin with chance 1 is surely true.', de: 'Eine Münze mit Chance 1 ist sicher true.' },
     { name: 'cond_same', kind: 'rule', sig: '(bif c then a else a) = a', en: 'Both branches the same.', de: 'Beide Zweige gleich.' },
     { name: 'Nat.add_sub_cancel', kind: 'rule', sig: 'n + m - m = n', en: 'Adding and taking away.', de: 'Dazu und wieder weg.' },
     { name: 'hyper_zero', kind: 'lemma', sig: 'hyper w b 0 = pure 0', en: 'Proved by you in Hypergeometric: no draw.', de: 'Von dir bewiesen in „Hypergeometrisch“: kein Zug.' },
     { name: 'hyper_succ', kind: 'lemma', sig: 'hyper w b (n + 1) = do let X ← coin (frac w b); bif X then (1 + hyper (w - 1) b n) else hyper w (b - 1) n', en: 'Proved by you in Hypergeometric: one ball after the other.', de: 'Von dir bewiesen in „Hypergeometrisch“: eine Kugel nach der anderen.' },
+    { name: 'hyper_one_one', kind: 'lemma', sig: 'hyper w b 1 1 = ↑(frac w b)', en: 'Proved by you in Hypergeometric: one draw, white.', de: 'Von dir bewiesen in „Hypergeometrisch“: ein Zug, weiß.' },
+    { name: 'pure_one_zero', kind: 'rule', sig: '(pure 1) 0 = 0', en: 'Surely 1: no mass at 0.', de: 'Sicher 1: keine Masse bei 0.' },
+    { name: 'hyper_one_zero', kind: 'lemma', sig: 'hyper w b 1 0 = ↑(σ (frac w b))', en: 'Proved by you in Hypergeometric: one draw, black.', de: 'Von dir bewiesen in „Hypergeometrisch“: ein Zug, schwarz.' },
     { name: 'hyper_black', kind: 'lemma', sig: 'hyper 0 b n = pure 0', en: 'Proved by you in Hypergeometric: only black.', de: 'Von dir bewiesen in „Hypergeometrisch“: nur schwarze.' },
     { name: 'hyper_white', kind: 'lemma', sig: 'hyper w 0 w = pure w', en: 'Proved by you in Hypergeometric: only white.', de: 'Von dir bewiesen in „Hypergeometrisch“: nur weiße.' },
     { name: 'hyper_all', kind: 'lemma', sig: 'hyper w b (w + b) = pure w', en: 'Proved by you in Hypergeometric: drawing all the balls.', de: 'Von dir bewiesen in „Hypergeometrisch“: alle Kugeln ziehen.' },
+    { name: 'frac_real', kind: 'rule', sig: '↑(frac w b) = ↑w / (↑w + ↑b)', en: 'The share of white, as a real number.', de: 'Der Anteil der weißen, als reelle Zahl.' },
     { name: 'or_eq', kind: 'lemma', sig: '(x || y) = !(!x && !y)', en: 'Proved by you in Bool: De Morgan: or is and with three nots.', de: 'Von dir bewiesen in „Bool“: De Morgan: or ist and mit drei not.' },
     { name: 'Bool.and_not_self', kind: 'lemma', sig: '(x && !x) = false', en: 'Proved by you in Bool: x and not x is never true.', de: 'Von dir bewiesen in „Bool“: x und nicht x ist nie true.' },
     { name: 'Bool.or_not_self', kind: 'lemma', sig: '(x || !x) = true', en: 'Proved by you in Bool: x or not x is always true.', de: 'Von dir bewiesen in „Bool“: x oder nicht x ist immer true.' },
@@ -3145,12 +3169,13 @@
     { name: 'bind_false', kind: 'rule', sig: '(do let x ← μ; f x) false = μ true * f true false + μ false * f false false', en: 'The mass of a bind at false: through true and through false.', de: 'Die Masse eines bind bei false: über true und über false.' },
     { name: 'prob_unused', kind: 'rule', sig: '(do let _ ← μ; ν) = ν', en: 'A draw whose outcome is not used changes nothing.', de: 'Ein Ziehen, dessen Ergebnis nicht benutzt wird, ändert nichts.' },
     { name: 'linear_combination', kind: 'tactic', insert: 'linear_combination h', sig: 'linear_combination h', en: 'Proves the goal from the equation h by computing (with ring): goal and h differ only by computing.', de: 'Beweist das Ziel aus der Gleichung h durch Rechnen (mit ring): Ziel und h unterscheiden sich nur durch Rechnen.' },
-    { name: 'mass_eq_ofReal', kind: 'lemma', sig: '↑p = ENNReal.ofReal p', en: 'Proved by you in Real Numbers: a mass is a real number.', de: 'Von dir bewiesen in „Reelle Zahlen“: Eine Masse ist eine reelle Zahl.' },
+    { name: 'field_simp', kind: 'tactic', insert: 'field_simp', sig: 'field_simp', en: 'Multiplies an equation between fractions by its denominators (it sees by itself that they are not 0). What is left is for ring.', de: 'Multipliziert eine Gleichung zwischen Brüchen mit ihren Nennern (dass sie nicht 0 sind, sieht sie selbst). Was übrig bleibt, ist für ring.' },
+    { name: 'mass_eq_ofReal', kind: 'lemma', sig: '↑p = ENNReal.ofReal p', en: 'Proved by you in Balance: a mass is a real number.', de: 'Von dir bewiesen in „Gleichgewicht“: Eine Masse ist eine reelle Zahl.' },
     { name: 'mass_mul_real', kind: 'rule', sig: '↑p * ↑q = ENNReal.ofReal (p * q)', en: 'A product of masses, as a real number.', de: 'Ein Produkt von Massen, als reelle Zahl.' },
     { name: 'ENNReal.ofReal_add', kind: 'rule', sig: '0 ≤ a → 0 ≤ b → ENNReal.ofReal (a + b) = ENNReal.ofReal a + ENNReal.ofReal b', en: 'A sum through ofReal, when both are ≥ 0.', de: 'Eine Summe durch ofReal, wenn beide ≥ 0 sind.' },
     { name: 'real_mul_nonneg', kind: 'rule', sig: '0 ≤ p * q', en: 'A product of numbers in [0, 1] is ≥ 0.', de: 'Ein Produkt von Zahlen aus [0, 1] ist ≥ 0.' },
     { name: 'symm_real', kind: 'rule', sig: '↑(σ p) = 1 - ↑p', en: '1 - p, as real numbers.', de: '1 - p, als reelle Zahlen.' },
-    { name: 'coin_stays', kind: 'lemma', sig: '(1 - p) * r = p * (1 - q) → (do let x ← coin p; bif x then coin q else coin r) = coin p', en: 'Proved by you in Real Numbers: a coin that stays.', de: 'Von dir bewiesen in „Reelle Zahlen“: eine Münze, die bleibt.' },
+    { name: 'coin_stays', kind: 'lemma', sig: '(1 - p) * r = p * (1 - q) → (do let x ← coin p; bif x then coin q else coin r) = coin p', en: 'Proved by you in Balance: a coin that stays.', de: 'Von dir bewiesen in „Gleichgewicht“: eine Münze, die bleibt.' },
     { name: 'coin_thin', kind: 'lemma', sig: '(do let x ← coin p; bif x then coin q else pure false) = coin (p * q)', en: 'Proved by you in Thinning: a coin p, kept with probability q.', de: 'Von dir bewiesen in „Ausdünnen“: eine Münze p, behalten mit Wahrscheinlichkeit q.' },
     { name: 'binom_succ_zero', kind: 'lemma', sig: 'binom p (n + 1) 0 = ↑(σ p) * binom p n 0', en: 'Proved by you in Binomial: no true in n + 1 throws.', de: 'Von dir bewiesen in „Binomial“: kein true in n + 1 Würfen.' },
     { name: 'binom_succ_succ', kind: 'lemma', sig: 'binom p (n + 1) (k + 1) = ↑p * binom p n k + ↑(σ p) * binom p n (k + 1)', en: 'Proved by you in Binomial: the first throw true or false.', de: 'Von dir bewiesen in „Binomial“: der erste Wurf true oder false.' },
@@ -3384,7 +3409,7 @@
       if (parts.length > 1 && !this.available(INVENTORY.find(i => i.name === '<;>'))) return tr('This tactic is not in your inventory: {x}', { x: '<;>' })
       for (let t of parts) {
         t = t.trim()
-        const tac = /^(rw|simp_rw|simp only|simp|norm_num|ring|linear_combination|rfl|decide|revert|congr|funext|ext|cases|induction'|exists|intro|have|apply|exact|constructor)(?=\s|\[|$)/.exec(t)?.[1]
+        const tac = /^(rw|simp_rw|simp only|simp|norm_num|ring|field_simp|linear_combination|rfl|decide|revert|congr|funext|ext|cases|induction'|exists|intro|have|apply|exact|constructor)(?=\s|\[|$)/.exec(t)?.[1]
         const item = INVENTORY.find(i => i.name === tac)
         if (!item || !this.available(item)) return tr('This tactic is not in your inventory: {x}', { x: t.split(/\s/)[0] || t })
         // the rules: in brackets, or the term of `have h := rule args`
@@ -4476,8 +4501,8 @@
   // the worlds on a side way: which world they come after (not the one above them on the map)
   // The map as a graph, as in verso-nng: each world with the worlds it needs (else the one before it),
   // a branch in a column of its own, the names to the right of the tree.
-  const PREDS = { 'Coins-that-Wait': ['Laws-of--do'], 'Real-Numbers': ['Coins-that-Wait'], 'Sequences': ['Counting'], 'Binomial': ['Sequences'], 'Geometric': ['Binomial'], 'Thinning': ['Geometric'], 'Hypergeometric': ['Binomial'] }
-  const COLUMN = { 'Coins-that-Wait': 1, 'Real-Numbers': 2, 'Hypergeometric': 1 }
+  const PREDS = { 'Coins-that-Wait': ['Laws-of--do'], 'Balance': ['Coins-that-Wait'], 'Sequences': ['Counting'], 'Binomial': ['Sequences'], 'Geometric': ['Binomial', 'Coins-that-Wait'], 'Thinning': ['Geometric'], 'Hypergeometric': ['Binomial', 'Balance'] }
+  const COLUMN = { 'Coins-that-Wait': 1, 'Balance': 2, 'Hypergeometric': 1 }
   const fetched = new Set()
   function worldMap() {
     const toc = document.querySelector('#toc'), worlds = worldLinks()

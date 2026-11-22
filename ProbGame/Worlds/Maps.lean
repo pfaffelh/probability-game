@@ -66,6 +66,16 @@ decide
 :::
 ::::
 
+::::quiz (tactic := "revert f b; decide") (statements := "(f : Bool → Bool) (b : Bool) : f (f b) = b ;; (f : Bool → Bool) (b : Bool) : f (f (f (f b))) = f (f b) ;; (f : Bool → Bool) (b : Bool) : f (f b) = f b ;; (f : Bool → Bool) (b : Bool) : (f b && !f b) = false ;; (f : Bool → Bool) (b : Bool) : (f b || f (!b)) = true") (answer := "2, 4")
+:::en
+*For every map?* Which of these statements hold for every map `f : Bool → Bool` and every `b`? Go through the four maps. Lean checks your choice with `revert f b` and `decide`.
+:::
+
+:::de
+*Für jede Abbildung?* Welche dieser Aussagen gelten für jede Abbildung `f : Bool → Bool` und jedes `b`? Geh die vier Abbildungen durch. Lean prüft deine Wahl mit `revert f b` und `decide`.
+:::
+::::
+
 ::::leanonly (proof := "(μ : DiscreteMeasure Bool) : μ.map (fun x => x) = ⟦μ ‖ μ, μ.map not⟧") (lemma := "map_id") (new := "Bool.false_beq") (uses := "map_apply, Fintype.sum_bool, Bool.true_beq, Bool.false_beq, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, Bool.not_true, add_comm, add_zero, mul_zero, add_assoc")
 :::en
 *Doing nothing.* The move `fun x => x` leaves every point where it is.
@@ -135,6 +145,39 @@ rw [map_id]
 :::
 ::::
 
+::::leanonly (proof := "(f : Bool → Bool) (x : ℝ≥0∞) : (bif f true then x else 0) + (bif f true then 0 else x) = ⟦x ‖ x + x, x, 0⟧") (uses := "Bool.cond_false, zero_add, Bool.cond_true, add_comm, add_zero, mul_zero, add_assoc")
+:::en
+*A test is `true` or `false`.* The mass `x` behind the test `f true`, once in the `then` branch and once in the `else` branch. What `f` does is unknown.
+:::
+
+:::de
+*Ein Test ist `true` oder `false`.* Die Masse `x` hinter dem Test `f true`, einmal im `then`-Zweig und einmal im `else`-Zweig. Was `f` tut, ist unbekannt.
+:::
+
+:::proofen
+`f true` is not a variable, but it is a `Bool`, so it is `true` or `false`: `cases f true` goes
+through both values, as `cases x` does for a variable. It leaves two goals, with `false` and with
+`true` in place of `f true`. Then the rules from *Bool*; `x + 0` is turned round by `add_comm`, for `zero_add`.
+
+*Tip.* `cases f true`, `rw [Bool.cond_false, Bool.cond_false, zero_add]`, `rw [Bool.cond_true, Bool.cond_true, add_comm, zero_add]`.
+:::
+
+:::proofde
+`f true` ist keine Variable, aber ein `Bool`, also `true` oder `false`: `cases f true` geht beide
+Werte durch, wie `cases x` für eine Variable. Es lässt zwei Ziele, mit `false` und mit `true` an der
+Stelle von `f true`. Dann die Regeln aus *Bool*; `x + 0` dreht `add_comm` um, für `zero_add`.
+
+*Tipp.* `cases f true`, `rw [Bool.cond_false, Bool.cond_false, zero_add]`, `rw [Bool.cond_true, Bool.cond_true, add_comm, zero_add]`.
+:::
+:::solution
+```
+cases f true
+rw [Bool.cond_false, Bool.cond_false, zero_add]
+rw [Bool.cond_true, Bool.cond_true, add_comm, zero_add]
+```
+:::
+::::
+
 ::::leanonly (proof := "(f : Bool → Bool) (x y : ℝ≥0∞) : (bif f true then x else 0) + (bif f true then y else 0) = bif f true then ⟦x + y ‖ x + y, x, y, x * y⟧ else 0") (lemma := "cond_add_cond") (uses := "Bool.cond_false, zero_add, Bool.cond_true, add_zero, mul_zero")
 :::en
 *Two masses behind one test.* Twice the same test `f true`: once with the mass `x`, once with the
@@ -147,23 +190,17 @@ mit der Masse `y`.
 :::
 
 :::proofen
-`f true` is not a variable, but it is a `Bool`, so it is `true` or `false`: `cases f true` goes
-through both values, as `cases x` does for a variable. Then the rules from *Bool*; with
+`cases f true`, as in the level before. Then the rules from *Bool*; with
 `simp_rw` every `bif false then … else …` goes at once. You prove it for the test `f true`; it holds
 for every test `c : Bool`, and it is unlocked as
 `cond_add_cond : (bif c then x else 0) + (bif c then y else 0) = bif c then x + y else 0`.
-
-*Tip.* `cases f true`, `simp_rw [Bool.cond_false]`, `rw [zero_add]`, `simp_rw [Bool.cond_true]`.
 :::
 
 :::proofde
-`f true` ist keine Variable, aber ein `Bool`, also `true` oder `false`: `cases f true` geht beide
-Werte durch, wie `cases x` für eine Variable. Dann die Regeln aus *Bool*; mit `simp_rw` geht
+`cases f true`, wie im Level davor. Dann die Regeln aus *Bool*; mit `simp_rw` geht
 jedes `bif false then … else …` auf einmal. Du beweist es für den Test `f true`; es gilt für jeden
 Test `c : Bool` und wird freigeschaltet als
 `cond_add_cond : (bif c then x else 0) + (bif c then y else 0) = bif c then x + y else 0`.
-
-*Tipp.* `cases f true`, `simp_rw [Bool.cond_false]`, `rw [zero_add]`, `simp_rw [Bool.cond_true]`.
 :::
 :::solution
 ```
