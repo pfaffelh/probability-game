@@ -319,6 +319,20 @@ simp only [bind_assoc, pure_bind, add_zero]
 :::
 ::::
 
+::::quiz (tactic := "simp [binom_succ, binom_zero, bind_assoc]") (statements := "(p : I) : binom p 2 = (do let x ← coin p; let y ← coin p; pure (x.toNat + y.toNat)) ;; (p : I) : binom p 2 = (do let x ← coin p; pure (x.toNat + x.toNat)) ;; (p : I) : binom p 1 = (do let x ← coin p; pure x.toNat) ;; (p : I) : binom p 2 = (do let x ← coin p; let y ← coin p; pure (x && y).toNat) ;; (p : I) : binom p 2 = (do let x ← coin p; let y ← coin (σ p); pure (x.toNat + y.toNat)) ;; (p : I) : binom p 3 = (do let x ← coin p; let y ← coin p; let z ← coin p; pure (x.toNat + (y.toNat + z.toNat)))") (answer := "1, 3, 6") (context := "Lean/Rules.lean") (group := "chance.count")
+:::en
+*Which circuits?* Which of these `do` blocks is a binomial distribution `binom p n`? The tactic
+unfolds `binom` and cleans up the `do` blocks, as in the level before: `simp` with `binom_succ`,
+`binom_zero` and `bind_assoc` added.
+:::
+
+:::de
+*Welche Schaltungen?* Welcher dieser `do`-Blöcke ist eine Binomialverteilung `binom p n`? Die Taktik
+wickelt `binom` aus und räumt die `do`-Blöcke auf, wie im Level davor: `simp`, dazu `binom_succ`,
+`binom_zero` und `bind_assoc`.
+:::
+::::
+
 ::::leanonly (proof := "(x y z : Bool) : x.toNat + y.toNat + z.toNat = x.toNat + (y.toNat + z.toNat)") (new := "add_assoc") (group := "chance.count") (uses := "add_assoc, add_comm, add_right_comm")
 :::en
 *Brackets.* In a sum, the brackets can move.

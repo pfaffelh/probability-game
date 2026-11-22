@@ -399,18 +399,20 @@ def leanonly : DirectiveExpanderOf LeanOnlyConfig
 -- A choice: which of the statements does the tactic prove? The player taps those, and the game asks
 -- Lean (the bridge) about each statement, in the rules `context`. `answer`: the numbers (from 1) of the
 -- statements the tactic proves, for a game without Lean and for the tests (`check-proofs.sh` checks it).
-block_extension Block.quiz (tactic statements answer new context world : String) where
+-- Its inventory (as for a proof) decides the rules of the game's `simp` in the tactic.
+block_extension Block.quiz (tactic statements answer new context world group : String) where
   data := Json.mkObj [("tactic", tactic), ("statements", statements), ("answer", answer), ("new", new), ("lemma", ""),
-    ("context", context), ("world", world), ("group", "bool")]
+    ("context", context), ("world", world), ("group", group)]
   traverse id data _ := do registerLevel id data; pure none
   extraJs := {JS.mk gameJs}
   extraCss := {CSS.mk gameCss}
-  toHtml := some fun _ goB _ data content => do
+  toHtml := some fun _ goB id data content => do
     let get (k : String) := (data.getObjValAs? String k).toOption.getD ""
     let stmts := (get "statements").splitOn ";;" |>.map (·.trimAscii.toString) |>.filter (!·.isEmpty)
-    pure <| .tag "div" #[("class", "pg-level pg-quiz"), ("data-world", get "world"), ("data-group", "bool"),
+    let (inv, new) := inventoryOf id (← Doc.Html.HtmlT.state)
+    pure <| .tag "div" #[("class", "pg-level pg-quiz"), ("data-world", get "world"), ("data-group", get "group"),
         ("data-tactic", get "tactic"), ("data-statements", (toJson stmts).compress), ("data-answer", get "answer"),
-        ("data-context", get "context")] <|
+        ("data-context", get "context"), ("data-inventory", inv), ("data-new", new)] <|
       .seq #[.tag "div" #[("class", "pg-text")] (← content.mapM goB), .tag "div" #[("class", "pg-board")] .empty]
   toTeX := none
 
@@ -420,10 +422,12 @@ structure QuizConfig where
   answer : String
   new : String
   context : String
+  group : String
 
 instance : FromArgs QuizConfig DocElabM where
   fromArgs := QuizConfig.mk <$> .named `tactic .string false <*> .named `statements .string false <*>
-    .named `answer .string false <*> .namedD `new .string "" <*> .namedD `context .string "Lean/WorldBool.lean"
+    .named `answer .string false <*> .namedD `new .string "" <*> .namedD `context .string "Lean/WorldBool.lean" <*>
+    .namedD `group .string "bool"
 
 /-- A choice: `::::quiz (tactic := "cases x <;> rfl") (statements := "(x : Bool) : (x && x) = x ;; …") (answer := "1")`. -/
 @[directive]
@@ -433,7 +437,7 @@ def quiz : DirectiveExpanderOf QuizConfig
     let context ← readContext cfg.context
     let world ← worldOf
     ``(Verso.Doc.Block.other (Block.quiz $(quote cfg.tactic) $(quote cfg.statements) $(quote cfg.answer) $(quote cfg.new)
-        $(quote context) $(quote world)) #[$blocks,*])
+        $(quote context) $(quote world) $(quote cfg.group)) #[$blocks,*])
 
 -- The lexicon: every move, building block, tactic and rule of the game, which `game.js` writes
 -- into this block (`::::lexicon` with no content), from the same tables as the tips.

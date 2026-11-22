@@ -32,7 +32,8 @@ Punkt.
 
 :::proofen
 As for `bind_true`: `bind_apply : (do let a ← μ; f a) b = ∑ a, μ a * f a b` and the two summands of a sum over
-`Bool`, then the masses of the coin. What you prove is unlocked as `coin_bind_apply`.
+`Bool`, then the masses of the coin. What you prove is unlocked as `coin_bind_apply`, with the mark
+*simp*: from now on `simp` uses it by itself.
 
 *Tip.* `rw [bind_apply, Fintype.sum_bool, coin_true, coin_false]`.
 :::
@@ -40,40 +41,13 @@ As for `bind_true`: `bind_apply : (do let a ← μ; f a) b = ∑ a, μ a * f a b
 :::proofde
 Wie bei `bind_true`: `bind_apply : (do let a ← μ; f a) b = ∑ a, μ a * f a b` und die zwei Summanden einer
 Summe über `Bool`, dann die Massen der Münze. Was du beweist, wird als `coin_bind_apply`
-freigeschaltet.
+freigeschaltet, mit der Marke *simp*: Ab jetzt benutzt `simp` es von selbst.
 
 *Tipp.* `rw [bind_apply, Fintype.sum_bool, coin_true, coin_false]`.
 :::
 :::solution
 ```
 rw [bind_apply, Fintype.sum_bool, coin_true, coin_false]
-```
-:::
-::::
-
-::::leanonly (proof := "(p : I) (μ ν : DiscreteMeasure ℕ) (k : ℕ) : (do let x ← coin p; bif x then μ else ν) k = ↑p * μ k + ↑(σ p) * ν k") (group := "chance.count") (uses := "coin_bind_apply, Bool.cond_true, Bool.cond_false")
-:::en
-*Two branches.* After the coin, one of two distributions: `μ` after `true`, `ν` after `false`.
-:::
-
-:::de
-*Zwei Zweige.* Nach der Münze eine von zwei Verteilungen: `μ` nach `true`, `ν` nach `false`.
-:::
-
-:::proofen
-`coin_bind_apply : (do let b ← coin p; f b) x = ↑p * f true x + ↑(σ p) * f false x`, from the last level.
-
-*Tip.* `rw [coin_bind_apply, Bool.cond_true, Bool.cond_false]`.
-:::
-
-:::proofde
-`coin_bind_apply : (do let b ← coin p; f b) x = ↑p * f true x + ↑(σ p) * f false x`, aus dem letzten Level.
-
-*Tipp.* `rw [coin_bind_apply, Bool.cond_true, Bool.cond_false]`.
-:::
-:::solution
-```
-rw [coin_bind_apply, Bool.cond_true, Bool.cond_false]
 ```
 :::
 ::::
@@ -89,14 +63,15 @@ rw [coin_bind_apply, Bool.cond_true, Bool.cond_false]
 
 :::proofen
 `pure_apply : (pure a) b = bif a == b then 1 else 0`, from *One Coin*; and
-`beq_self_eq_true : (a == a) = true`. What you prove is unlocked as `pure_self`.
+`beq_self_eq_true : (a == a) = true`. What you prove is unlocked as `pure_self`, with the mark *simp*.
 
 *Tip.* `rw [pure_apply, beq_self_eq_true, Bool.cond_true]`.
 :::
 
 :::proofde
 `pure_apply : (pure a) b = bif a == b then 1 else 0`, aus *Eine Münze*; und
-`beq_self_eq_true : (a == a) = true`. Was du beweist, wird als `pure_self` freigeschaltet.
+`beq_self_eq_true : (a == a) = true`. Was du beweist, wird als `pure_self` freigeschaltet, mit der
+Marke *simp*.
 
 *Tipp.* `rw [pure_apply, beq_self_eq_true, Bool.cond_true]`.
 :::
@@ -107,59 +82,56 @@ rw [pure_apply, beq_self_eq_true, Bool.cond_true]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : binom p 0 0 = 1") (group := "chance.count") (uses := "binom_zero, pure_self, binom_succ, pure_zero_succ")
+:::::leanonly (proof := "(p : I) (k : ℕ) : binom p 0 0 = ⟦1 ‖ 1, 0, ↑p⟧ ∧ binom p 0 (k + 1) = ⟦0 ‖ 0, 1, ↑p⟧") (new := "constructor, pure_zero_succ") (group := "chance.count") (uses := "binom_zero, pure_self, pure_zero_succ, binom_succ")
+::::hint (anchor := "gap")
 :::en
-*No throw.* With no throw, surely no `true`.
+With no throw: how often `true`?
 :::
 
 :::de
-*Kein Wurf.* Ohne Wurf sicher kein `true`.
-:::
-
-:::proofen
-`pure_self : (pure a) a = 1`, from the last level.
-
-*Tip.* `rw [binom_zero, pure_self]`.
-:::
-
-:::proofde
-`pure_self : (pure a) a = 1`, aus dem letzten Level.
-
-*Tipp.* `rw [binom_zero, pure_self]`.
-:::
-:::solution
-```
-rw [binom_zero, pure_self]
-```
+Ohne Wurf: wie oft `true`?
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (k : ℕ) : binom p 0 (k + 1) = 0") (new := "pure_zero_succ") (group := "chance.count") (uses := "binom_zero, pure_zero_succ, binom_succ, pure_self")
+::::hint (anchor := "item:constructor")
 :::en
-*No throw, no true.* With no throw, a `true` is impossible.
+`constructor`: two statements at once, one after the other.
 :::
 
 :::de
-*Kein Wurf, kein true.* Ohne Wurf ist ein `true` unmöglich.
+`constructor`: zwei Aussagen auf einmal, eine nach der anderen.
+:::
+::::
+
+:::en
+*No throw.* `binom p 0 = pure 0` (in *Counting*): what does it say about the masses?
+:::
+
+:::de
+*Kein Wurf.* `binom p 0 = pure 0` (in *Zählen*): Was sagt das über die Massen?
 :::
 
 :::proofen
+Two statements joined by `∧` (and): `constructor` makes two goals of them. For the second,
 `pure_zero_succ : (pure 0) (k + 1) = 0`.
 
-*Tip.* `rw [binom_zero, pure_zero_succ]`.
+*Tip.* `constructor`, then `rw [binom_zero, pure_self]` and `rw [binom_zero, pure_zero_succ]`.
 :::
 
 :::proofde
+Zwei Aussagen, verbunden mit `∧` (und): `constructor` macht zwei Ziele daraus. Für das zweite
 `pure_zero_succ : (pure 0) (k + 1) = 0`.
 
-*Tipp.* `rw [binom_zero, pure_zero_succ]`.
+*Tipp.* `constructor`, dann `rw [binom_zero, pure_self]` und `rw [binom_zero, pure_zero_succ]`.
 :::
 :::solution
 ```
+constructor
+rw [binom_zero, pure_self]
 rw [binom_zero, pure_zero_succ]
 ```
 :::
-::::
+:::::
 
 ::::leanonly (proof := "(μ : DiscreteMeasure ℕ) (k : ℕ) : (do let Y ← μ; pure (1 + Y)) (k + 1) + (do let Y ← μ; pure (1 + Y)) 0 = μ k") (new := "shift_succ, shift_zero") (group := "chance.count") (uses := "shift_succ, shift_zero, add_zero, zero_add")
 :::en
@@ -171,13 +143,13 @@ rw [binom_zero, pure_zero_succ]
 :::
 
 :::proofen
-`shift_succ : (do let Y ← μ; pure (1 + Y)) (k + 1) = μ k` and `shift_zero : (do let Y ← μ; pure (1 + Y)) 0 = 0`.
+`shift_succ : (do let Y ← μ; pure (1 + Y)) (k + 1) = μ k` and `shift_zero : (do let Y ← μ; pure (1 + Y)) 0 = 0`. After this level both carry the mark *simp*.
 
 *Tip.* `rw [shift_succ, shift_zero, add_zero]`.
 :::
 
 :::proofde
-`shift_succ : (do let Y ← μ; pure (1 + Y)) (k + 1) = μ k` und `shift_zero : (do let Y ← μ; pure (1 + Y)) 0 = 0`.
+`shift_succ : (do let Y ← μ; pure (1 + Y)) (k + 1) = μ k` und `shift_zero : (do let Y ← μ; pure (1 + Y)) 0 = 0`. Nach diesem Level tragen beide die Marke *simp*.
 
 *Tipp.* `rw [shift_succ, shift_zero, add_zero]`.
 :::
@@ -188,7 +160,7 @@ rw [shift_succ, shift_zero, add_zero]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (n : ℕ) : binom p (n + 1) 0 = ↑(σ p) * binom p n 0") (lemma := "binom_succ_zero") (new := "Bool.toNat_false, mul_zero") (group := "chance.count") (uses := "binom_succ, coin_bind_apply, Bool.toNat_true, Bool.toNat_false, zero_add, bind_pure, shift_zero, mul_zero, binom_zero, add_zero, pure_bind, shift_succ")
+::::leanonly (proof := "(p : I) (n : ℕ) : binom p (n + 1) 0 = ↑(σ p) * binom p n 0") (lemma := "binom_succ_zero") (new := "Bool.toNat_false, mul_zero") (group := "chance.count") (uses := "binom_succ, Bool.toNat_false, mul_zero, binom_zero, zero_add")
 :::en
 *No true in one throw more.* No `true` in $`n + 1` throws: the first is `false`, and none in the other $`n`.
 :::
@@ -198,26 +170,33 @@ rw [shift_succ, shift_zero, add_zero]
 :::
 
 :::proofen
-`binom_succ` writes the first throw out, `coin_bind_apply` splits it into `true` and `false`. Under the `do` the counts `true.toNat = 1` and `false.toNat = 0` (`Bool.toNat_true`, `Bool.toNat_false`), and `0 + Y` is `Y`: that needs `simp only` (it rewrites under `fun`). Then `bind_pure`, and the `true` branch is `shift_zero`.
+`binom_succ` writes the first throw out. The rest is computing, and the rules for it carry the mark
+*simp*: `coin_bind_apply` splits the throw into `true` and `false`, `Bool.toNat_true` counts it, the
+`true` branch is `shift_zero`, and `bind_pure` cleans up. Two rules are new: `Bool.toNat_false : false.toNat = 0`
+and `mul_zero : a * 0 = 0`. `simp` does not use a rule by itself in the level that brings it; you
+give it to `simp` with `simp [h₁, h₂]`.
 
-*Tip.* `rw [binom_succ, coin_bind_apply]`, `simp only [Bool.toNat_true, Bool.toNat_false, zero_add, bind_pure]`, `rw [shift_zero, mul_zero, zero_add]`.
+*Tip.* `rw [binom_succ]`, then `simp [Bool.toNat_false, mul_zero]`.
 :::
 
 :::proofde
-`binom_succ` schreibt den ersten Wurf aus, `coin_bind_apply` teilt ihn in `true` und `false`. Unter dem `do` die Zahlen `true.toNat = 1` und `false.toNat = 0` (`Bool.toNat_true`, `Bool.toNat_false`), und `0 + Y` ist `Y`: Das braucht `simp only` (es schreibt unter `fun` um). Dann `bind_pure`, und der `true`-Zweig ist `shift_zero`.
+`binom_succ` schreibt den ersten Wurf aus. Der Rest ist Rechnen, und die Regeln dafür tragen die
+Marke *simp*: `coin_bind_apply` teilt den Wurf in `true` und `false`, `Bool.toNat_true` zählt ihn, der
+`true`-Zweig ist `shift_zero`, und `bind_pure` räumt auf. Zwei Regeln sind neu:
+`Bool.toNat_false : false.toNat = 0` und `mul_zero : a * 0 = 0`. In dem Level, das eine Regel bringt,
+benutzt `simp` sie nicht von selbst; du gibst sie ihm mit `simp [h₁, h₂]`.
 
-*Tipp.* `rw [binom_succ, coin_bind_apply]`, `simp only [Bool.toNat_true, Bool.toNat_false, zero_add, bind_pure]`, `rw [shift_zero, mul_zero, zero_add]`.
+*Tipp.* `rw [binom_succ]`, dann `simp [Bool.toNat_false, mul_zero]`.
 :::
 :::solution
 ```
-rw [binom_succ, coin_bind_apply]
-simp only [Bool.toNat_true, Bool.toNat_false, zero_add, bind_pure]
-rw [shift_zero, mul_zero, zero_add]
+rw [binom_succ]
+simp [Bool.toNat_false, mul_zero]
 ```
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (n k : ℕ) : binom p (n + 1) (k + 1) = ↑p * binom p n k + ↑(σ p) * binom p n (k + 1)") (lemma := "binom_succ_succ") (group := "chance.count") (uses := "binom_succ, coin_bind_apply, Bool.toNat_true, Bool.toNat_false, zero_add, bind_pure, shift_succ, binom_zero, add_zero, mul_zero, pure_bind, shift_zero")
+::::leanonly (proof := "(p : I) (n k : ℕ) : binom p (n + 1) (k + 1) = ↑p * binom p n k + ↑(σ p) * binom p n (k + 1)") (lemma := "binom_succ_succ") (group := "chance.count") (uses := "binom_succ, binom_zero")
 :::en
 *Pascal for masses.* $`k + 1` times `true` in $`n + 1` throws: the first is `true` and $`k` of the others are, or the first is `false` and $`k + 1` of the others are. Pascal's triangle, with masses.
 :::
@@ -227,21 +206,22 @@ rw [shift_zero, mul_zero, zero_add]
 :::
 
 :::proofen
-As in the level before; at the end `shift_succ`.
+As in the level before, now with `shift_succ`, which `simp` also knows. What you prove is unlocked as
+`binom_succ_succ`.
 
-*Tip.* `rw [binom_succ, coin_bind_apply]`, `simp only [Bool.toNat_true, Bool.toNat_false, zero_add, bind_pure]`, `rw [shift_succ]`.
+*Tip.* `rw [binom_succ]`, `simp`.
 :::
 
 :::proofde
-Wie im Level davor; am Ende `shift_succ`.
+Wie im Level davor, jetzt mit `shift_succ`, das `simp` auch kennt. Was du beweist, wird als
+`binom_succ_succ` freigeschaltet.
 
-*Tipp.* `rw [binom_succ, coin_bind_apply]`, `simp only [Bool.toNat_true, Bool.toNat_false, zero_add, bind_pure]`, `rw [shift_succ]`.
+*Tipp.* `rw [binom_succ]`, `simp`.
 :::
 :::solution
 ```
-rw [binom_succ, coin_bind_apply]
-simp only [Bool.toNat_true, Bool.toNat_false, zero_add, bind_pure]
-rw [shift_succ]
+rw [binom_succ]
+simp
 ```
 :::
 ::::

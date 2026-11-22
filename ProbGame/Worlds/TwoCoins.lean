@@ -85,11 +85,10 @@ rewrites with a whole list of rules, again and again, until none applies any mor
 with numbers.
 
 Which rules are in the list? In the inventory they now carry the mark *simp*: among yours `coin_true`,
-`coin_false`, `pure_true`, `pure_false`, `add_symm_eq_one`, `zero_add`, `tsub_self`, `Bool.not_true`,
-`Bool.not_false`, `Bool.not_not`, `Bool.and_self`, `Bool.true_beq`, `Bool.false_beq`, `beq_true`; and
-many from Mathlib you have not met yet, such as `add_zero` and `mul_one`. It also computes `bif true then a else b`,
-`bif c then a else a` and `c == c` (that is why `Bool.cond_true` and the like carry no mark: Lean does
-them without a rule). Not in the list are rules like `bool_ext`, `map_true`, `mass_not` or `add_comm`:
+`coin_false`, `pure_true`, `pure_false`, `add_symm_eq_one`, `tsub_self`, `Bool.not_true`,
+`Bool.not_false`, `Bool.not_not`, `Bool.and_self`, `Bool.cond_true`, `Bool.cond_false`, `Bool.cond_self`,
+`Bool.true_beq`, `Bool.false_beq`, `beq_true`; and a few simple ones that are always there, such as
+`zero_add`, `add_zero`, `mul_one` and `true && b = b`. Not in the list are rules like `bool_ext`, `map_true`, `mass_not` or `add_comm`:
 they change what you prove, or could go on forever, and you apply them yourself. `simp [h]`
 puts a rule `h` into the list for this one call.
 
@@ -103,11 +102,10 @@ schreibt mit einer ganzen Liste von Regeln um, immer wieder, bis keine mehr pass
 Zahlen.
 
 Welche Regeln stehen in der Liste? Im Inventar tragen sie jetzt die Marke *simp*: von deinen `coin_true`,
-`coin_false`, `pure_true`, `pure_false`, `add_symm_eq_one`, `zero_add`, `tsub_self`, `Bool.not_true`,
-`Bool.not_false`, `Bool.not_not`, `Bool.and_self`, `Bool.true_beq`, `Bool.false_beq`, `beq_true`; dazu
-viele aus Mathlib, die du noch nicht kennst, etwa `add_zero` und `mul_one`. Außerdem rechnet er `bif true then a else b`,
-`bif c then a else a` und `c == c` aus (darum tragen `Bool.cond_true` und Ähnliches keine Marke: Lean
-erledigt sie ohne Regel). Nicht in der Liste sind Regeln wie `bool_ext`, `map_true`, `mass_not` oder
+`coin_false`, `pure_true`, `pure_false`, `add_symm_eq_one`, `tsub_self`, `Bool.not_true`,
+`Bool.not_false`, `Bool.not_not`, `Bool.and_self`, `Bool.cond_true`, `Bool.cond_false`, `Bool.cond_self`,
+`Bool.true_beq`, `Bool.false_beq`, `beq_true`; dazu ein paar einfache, die immer dabei sind, etwa
+`zero_add`, `add_zero`, `mul_one` und `true && b = b`. Nicht in der Liste sind Regeln wie `bool_ext`, `map_true`, `mass_not` oder
 `add_comm`: Sie ändern, was du beweist, oder könnten endlos laufen, und du wendest sie selbst an.
 `simp [h]` nimmt eine Regel `h` für diesen einen Aufruf in die Liste auf.
 
@@ -119,6 +117,18 @@ simp
 ```
 :::
 :::::
+
+::::quiz (tactic := "simp") (statements := "(p : I) : coin p true = ↑p ;; (p : I) : (coin p).map not = coin (σ p) ;; (b : Bool) : (pure b : DiscreteMeasure Bool) true + (pure b : DiscreteMeasure Bool) false = 1 ;; (p : I) : coin p true + coin p false = 1 ;; (x : Bool) : (x && !x) = false ;; (x y : Bool) : (x && y) = (y && x)") (answer := "1, 4, 5") (context := "Lean/Rules.lean") (group := "chance")
+:::en
+*Which ones?* `simp` rewrites with the rules marked simp, until none applies. Which of these
+statements does it prove?
+:::
+
+:::de
+*Welche?* `simp` schreibt mit den Regeln um, die die Marke simp tragen, bis keine mehr passt. Welche
+dieser Aussagen beweist es?
+:::
+::::
 
 ::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (do let x ← μ; f x) = μ.bind f") (uses := "-")
 :::en

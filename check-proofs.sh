@@ -41,8 +41,10 @@ for world, levels in json.loads((tmp / 'levels.json').read_text()).items():
             # (a choice: the tactic proves the statements of the answer, and no other)
             key = (world.split('.')[-1], l['context'])
             for i, s in enumerate(l['statements']):
-                if i + 1 in l['answer']: files.setdefault(key, []).append(f"example {s} := by\n  {l['tactic']}\n")
-                else: files.setdefault(key, []).append(f"example {s} := by\n  fail_if_success ({l['tactic']})\n  exact quizNotProved\n")
+                # (the game's simp here with all its rules: the playthrough checks the level's inventory)
+                t = to_lean(l['tactic'], l['new'])
+                if i + 1 in l['answer']: files.setdefault(key, []).append(f"example {s} := by\n  {t}\n")
+                else: files.setdefault(key, []).append(f"example {s} := by\n  fail_if_success ({t}; done)\n  exact quizNotProved\n")
         if l['proof']:
             key = (world.split('.')[-1], l['context'])
             body = '\n'.join('  ' + to_lean(x, l['new']) for x in l['solution']) or '  sorry'

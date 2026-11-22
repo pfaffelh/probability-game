@@ -1730,6 +1730,9 @@
       this.root = root; this.index = index; this.onSolved = onSolved
       const d = root.dataset
       this.tactic = d.tactic; this.statements = JSON.parse(d.statements || '[]'); this.context = d.context ?? ''
+      // (the tactic as Lean gets it: the game's simp with the rules of this level's inventory)
+      const names = a => { try { return new Set(JSON.parse(d[a] ?? '[]')) } catch { return new Set() } }
+      this.lean = simpToLean(this.tactic, simpRulesOf(names('inventory'), names('new')))
       this.answer = new Set((d.answer || '').split(',').map(s => Number(s.trim()) - 1).filter(i => i >= 0))
       this.board = root.querySelector('.pg-board'); this.picture = null
       this.key = `pg:${location.pathname}:${index}`
@@ -1758,17 +1761,17 @@
       this.verdicts = await Promise.all(this.statements.map(async s => {
         const st = await this.post('/start', { context: this.context, statement: `example ${s}` })
         if (st.error) return { ok: false, text: st.error.message }
-        const r = await this.post('/check', { session: st.session, proof: this.tactic })
+        const r = await this.post('/check', { session: st.session, proof: this.lean })
         if (r.error) return { ok: false, text: r.error.message }
         const bad = r.steps.flatMap(x => x.diags.filter(g => g.severity === 1).map(g => g.message.text))
         if (!bad.length && r.completed) return { ok: true, text: '' }
         // (t₁ <;> t₂ that fails: the goals t₂ does not close, with t₁ <;> try (t₂))
-        const k = this.tactic.lastIndexOf('<;>')
+        const k = this.lean.lastIndexOf('<;>'), kt = this.tactic.lastIndexOf('<;>')
         if (k >= 0) {
           const st2 = await this.post('/start', { context: this.context, statement: `example ${s}` })
-          const r2 = st2.error ? st2 : await this.post('/check', { session: st2.session, proof: `${this.tactic.slice(0, k)}<;> try (${this.tactic.slice(k + 3).trim()})` })
+          const r2 = st2.error ? st2 : await this.post('/check', { session: st2.session, proof: `${this.lean.slice(0, k)}<;> try (${this.lean.slice(k + 3).trim()})` })
           const gs = r2.error ? [] : r2.steps[r2.steps.length - 1].goals.map(g => g.goal.text.split('\n').filter(l => !/^case /.test(l)).join('\n'))
-          if (gs.length) return { ok: false, text: tr('{t} does not close:', { t: this.tactic.slice(k + 3).trim() }) + '\n' + gs.join('\n\n') }
+          if (gs.length) return { ok: false, text: tr('{t} does not close:', { t: this.tactic.slice(kt + 3).trim() }) + '\n' + gs.join('\n\n') }
         }
         return { ok: false, text: bad[0] ?? tr('Goals remain.') }
       }))
@@ -2771,10 +2774,14 @@
   const SIMP_ITEMS = ['coin_true', 'coin_false', 'pure_true', 'pure_false', 'add_symm_eq_one', 'tsub_self', 'Bool.not_true', 'Bool.not_false', 'Bool.not_not', 'Bool.and_self',
     'Bool.true_beq', 'Bool.false_beq', 'beq_true', 'beq_self_eq_true', 'Bool.cond_true', 'Bool.cond_false', 'Bool.cond_self', 'bind_pure', 'pure_bind', 'Bool.and_not_self',
     'Bool.or_not_self', 'tsum_fintype', 'ENNReal.one_ne_top', 'Bool.toNat_true', 'Bool.toNat_false', 'pow_zero', 'Nat.choose_self', 'Nat.choose_zero_right', 'Nat.cast_add',
-    'Nat.cast_one', 'Nat.add_sub_cancel', 'ENNReal.tsum_geometric']
+    'Nat.cast_one', 'Nat.add_sub_cancel', 'ENNReal.tsum_geometric', 'coin_bind_apply', 'pure_self', 'pure_zero_succ', 'shift_succ', 'shift_zero']
   const SIMP_ALWAYS = ['zero_add', 'add_zero', 'mul_one', 'one_mul', 'mul_zero', 'zero_mul', 'Bool.true_and', 'Bool.false_and', 'Bool.and_true', 'Bool.and_false',
     'Bool.true_or', 'Bool.false_or', 'Bool.or_true', 'Bool.or_false', 'Function.comp_apply', 'id_eq', 'Nat.bodd_succ']
   const SIMP = new Set([...SIMP_ITEMS, ...SIMP_ALWAYS])
+  // the rules of the game's simp with the inventory `inv`, without those new in the level (`newHere`)
+  const simpRulesOf = (inv, newHere) => [...SIMP_ALWAYS, ...SIMP_ITEMS.filter(n => inv.has(n))].filter(n => !newHere.has(n))
+  // a line as Lean gets it: the game's simp as simp only with its rules
+  const simpToLean = (line, rules) => line.split('<;>').map(p => p.replace(/^(\s*)simp(?:\s*\[(.*)\])?\s*$/, (_, sp, args) => `${sp}simp only [${[...rules, ...(args ? [args] : [])].join(', ')}] `)).join('<;>')
   let HOVER = null
   function hoverShow(chip, sig, text) {
     hoverHide()
@@ -3329,13 +3336,9 @@
       this.busy = false; this.render()
     }
     // the rules of the game's simp in this level (see SIMP_ITEMS)
-    simpRules() {
-      return [...SIMP_ALWAYS, ...SIMP_ITEMS.filter(n => this.inventory.has(n))].filter(n => !this.newHere.has(n))
-    }
+    simpRules() { return simpRulesOf(this.inventory, this.newHere) }
     // a line as Lean gets it: the game's simp as simp only with its rules
-    toLean(line) {
-      return line.split('<;>').map(p => p.replace(/^(\s*)simp(?:\s*\[(.*)\])?\s*$/, (_, sp, args) => `${sp}simp only [${[...this.simpRules(), ...(args ? [args] : [])].join(', ')}] `)).join('<;>')
-    }
+    toLean(line) { return simpToLean(line, this.simpRules()) }
     // Lean on the proof `lines`: on success they become the proof, else the error is shown
     async check(lines, quiet = false) {
       const sent = lines.map(l => this.toLean(l)).join('\n')
