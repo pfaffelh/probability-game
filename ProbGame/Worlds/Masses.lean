@@ -69,8 +69,6 @@ def coin (p : I) : DiscreteMeasure Bool where
 `I` is the unit interval $`[0, 1]`, where the probability `p` lies; `σ p` is $`1 - p`, again in
 `I`. The arrow `↑` makes a number of `I` a mass in `ℝ≥0∞`. (`μ x` is `μ.weight x`.) So Lean computes the left side to `↑p`: `rfl`, as in *Bool*. The
 statement is the rule `coin_true`; once proved, it is in your inventory.
-
-*Tip.* `rfl`.
 :::
 
 :::proofde
@@ -94,8 +92,6 @@ def coin (p : I) : DiscreteMeasure Bool where
 wieder in `I`. Der Pfeil `↑` macht aus einer Zahl aus `I` eine Masse in `ℝ≥0∞`. (`μ x` ist
 `μ.weight x`.) Also rechnet Lean die linke Seite zu `↑p` aus: `rfl`, wie in *Bool*.
 Die Aussage ist die Regel `coin_true`; bewiesen, ist sie in deinem Inventar.
-
-*Tipp.* `rfl`.
 :::
 :::solution
 ```
@@ -131,14 +127,10 @@ Aussage macht `σ p` zur Masse: `↑(σ p)`.
 
 :::proofen
 `σ p` is $`1 - p`, again in $`I`, and `↑(σ p)` is it as a mass. Again by the definition of `coin` (the line `| false => ↑(σ p)`).
-
-*Tip.* `rfl`.
 :::
 
 :::proofde
 `σ p` ist $`1 - p`, wieder in $`I`, und `↑(σ p)` ist das als Masse. Wieder nach der Definition von `coin` (die Zeile `| false => ↑(σ p)`).
-
-*Tipp.* `rfl`.
 :::
 :::solution
 ```
@@ -163,16 +155,12 @@ umschreibt.
 A rule `h : a = b` is used with `rw [h]`: it rewrites `a` into `b` in the goal (from right to left with `←`,
 later), several at once with `rw [h, k]`. When the goal then reads `x = x`, it is closed.
 `rw [zero_add]` takes the `0 + ` away; then your rule `coin_true`.
-
-*Tip.* `rw [zero_add]`, then `rw [coin_true]` (or both at once: `rw [zero_add, coin_true]`).
 :::
 
 :::proofde
 Eine Regel `h : a = b` benutzt man mit `rw [h]`: Sie schreibt `a` im Ziel zu `b` um (von rechts nach links
 mit `←`, später), mehrere auf einmal mit `rw [h, k]`. Lautet das Ziel danach `x = x`, ist es geschlossen.
 `rw [zero_add]` nimmt das `0 + ` weg; dann deine Regel `coin_true`.
-
-*Tipp.* `rw [zero_add]`, dann `rw [coin_true]` (oder beides auf einmal: `rw [zero_add, coin_true]`).
 :::
 :::solution
 ```
@@ -201,15 +189,11 @@ endlichen Typs; über `Bool` sind es zwei, und die Regel (aus Mathlib) ist
 
 :::proofen
 Here `g a` is `bif a then x else y`. After `rw [Fintype.sum_bool]` you have `bif true …` and `bif false …`.
-
-*Tip.* `rw [Fintype.sum_bool, Bool.cond_true, Bool.cond_false]`.
 :::
 
 :::proofde
 Hier ist `g a` gleich `bif a then x else y`. Nach `rw [Fintype.sum_bool]` stehen da `bif true …` und
 `bif false …`.
-
-*Tipp.* `rw [Fintype.sum_bool, Bool.cond_true, Bool.cond_false]`.
 :::
 :::solution
 ```
@@ -234,15 +218,11 @@ rw [Fintype.sum_bool, Bool.cond_true, Bool.cond_false]
 
 :::proofen
 Two cases, as in *Bool*: `c` is `true` or `false`, and in each Lean computes both sides.
-
-*Tip.* `cases c <;> rfl`.
 :::
 
 :::proofde
 Zwei Fälle, wie in *Bool*: `c` ist `true` oder `false`, und in jedem rechnet Lean beide Seiten
 aus.
-
-*Tipp.* `cases c <;> rfl`.
 :::
 :::solution
 ```
@@ -270,14 +250,6 @@ den Fall `true`.
 
 :::de
 *true getestet.* Jetzt steht `true` vorne: `true == b` ist `b`.
-:::
-
-:::proofen
-*Tip.* `cases b`, then `rfl` and `rw [beq_self_eq_true]`.
-:::
-
-:::proofde
-*Tipp.* `cases b`, dann `rfl` und `rw [beq_self_eq_true]`.
 :::
 :::solution
 ```
@@ -332,15 +304,11 @@ Daraus beweist du die Regel der Bausteine, `map_true`: Nach `true` kommt die Mas
 :::proofen
 `rw [map_apply]` writes the mass as a sum, `rw [Fintype.sum_bool]` as its two summands. Then the tests
 `f true == true` and `f false == true`: your rule `beq_true`, twice.
-
-*Tip.* `rw [map_apply, Fintype.sum_bool]`, then `rw [beq_true, beq_true]`.
 :::
 
 :::proofde
 `rw [map_apply]` schreibt die Masse als Summe, `rw [Fintype.sum_bool]` als ihre zwei Summanden. Dann die
 Tests `f true == true` und `f false == true`: deine Regel `beq_true`, zweimal.
-
-*Tipp.* `rw [map_apply, Fintype.sum_bool]`, dann `rw [beq_true, beq_true]`.
 :::
 :::solution
 ```
@@ -371,14 +339,10 @@ Welche Massen von `μ` kommen bei `true` an?
 
 :::proofen
 After `rw [map_true]` both conditions read `true`: your rule `Bool.cond_true`, twice.
-
-*Tip.* `rw [map_true]`, then `rw [Bool.cond_true, Bool.cond_true]`.
 :::
 
 :::proofde
 Nach `rw [map_true]` lauten beide Bedingungen `true`: deine Regel `Bool.cond_true`, zweimal.
-
-*Tipp.* `rw [map_true]`, dann `rw [Bool.cond_true, Bool.cond_true]`.
 :::
 :::solution
 ```
@@ -521,35 +485,23 @@ exact mass_le_one μ b
 :::
 
 :::en
-*Where does the mass go?* The coin `x` is thrown at the top; below, the output with the target:
+*Boss: where does the mass go?* The coin `x` is thrown at the top; below, the output with the target:
 `false` with mass $`p`, `true` with $`1 - p`. Put a `not` between them. Then look at `true`: its mass
 came from `false`.
 :::
 
 :::de
-*Wohin geht die Masse?* Oben wird die Münze `x` geworfen; unten der Ausgang mit dem Ziel: `false`
+*Endgegner: Wohin geht die Masse?* Oben wird die Münze `x` geworfen; unten der Ausgang mit dem Ziel: `false`
 mit Masse $`p`, `true` mit $`1 - p`. Setz ein `nicht` dazwischen. Dann sieh dir `true` an: Seine
 Masse kam von `false`.
 :::
 
 :::proofen
-*Now the proof.* Everything it needs you know from *Bool* and this world: `coin p` and its masses, `μ.map f`, and
-the rules. First the rule of the gates, `map_true`; then computing, one rule after another:
-`Bool.not_true`, `Bool.not_false`, `Bool.cond_false`, `Bool.cond_true`, `zero_add` and `coin_false`.
-
-*Tip.* `rw [map_true]`, `rw [Bool.not_true, Bool.not_false]`,
-`rw [Bool.cond_false, Bool.cond_true, zero_add]`, `rw [coin_false]` (type it, or tap the inventory,
-and press *Run*).
+*Now the proof.* Everything it needs you know from *Bool* and this world.
 :::
 
 :::proofde
-*Jetzt der Beweis.* Alles, was er braucht, kennst du aus *Bool* und dieser Welt: `coin p` und seine Massen,
-`μ.map f` und die Regeln. Zuerst die Regel der Bausteine, `map_true`; dann Rechnen, eine Regel nach der
-anderen: `Bool.not_true`, `Bool.not_false`, `Bool.cond_false`, `Bool.cond_true`, `zero_add` und
-`coin_false`.
-
-*Tipp.* `rw [map_true]`, `rw [Bool.not_true, Bool.not_false]`,
-`rw [Bool.cond_false, Bool.cond_true, zero_add]`, `rw [coin_false]`.
+*Jetzt der Beweis.* Alles, was er braucht, kennst du aus *Bool* und dieser Welt.
 :::
 :::solution
 ```

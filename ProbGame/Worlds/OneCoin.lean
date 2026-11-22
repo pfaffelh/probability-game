@@ -53,14 +53,10 @@ Beispiel-$`p`; der Schieberegler in der Leiste unten ändert es.
 
 :::proofen
 `μ : DiscreteMeasure Bool` is any distribution on `Bool`, and `[Prob μ]` says that its total mass is one: your theorem `mass_total μ : μ true + μ false = 1`. `h : μ true = 0` is a hypothesis, a rule of this level only. `rw [← mass_total μ]` rewrites from right to left: the `1` becomes `μ true + μ false`. Then `h`, then `zero_add`.
-
-*Tip.* `rw [← mass_total μ, h, zero_add]` (type `\l` for `←`, or tap ←).
 :::
 
 :::proofde
 `μ : DiscreteMeasure Bool` ist irgendeine Verteilung auf `Bool`, und `[Prob μ]` sagt, dass ihre Gesamtmasse eins ist: dein Satz `mass_total μ : μ true + μ false = 1`. `h : μ true = 0` ist eine Annahme, eine Regel nur dieses Levels. `rw [← mass_total μ]` schreibt von rechts nach links um: Die `1` wird zu `μ true + μ false`. Dann `h`, dann `zero_add`.
-
-*Tipp.* `rw [← mass_total μ, h, zero_add]` (`\l` tippen für `←`, oder ← antippen).
 :::
 :::solution
 ```
@@ -96,8 +92,6 @@ Welche der drei gilt für alle `a b : ℝ≥0∞`? Probier `b < a`, und probier 
 `b - a + a = b` fails for `b < a`: then `b - a = 0`, and `0 + a = a`. `a + b - a = b` fails for
 `a = ∞`: `∞ + b - ∞ = ∞ - ∞ = 0`. It holds for every finite `a`: that is the rule `ENNReal.add_sub_cancel_left`, in *The rest of the mass*. But
 `a - a = 0` always, also for `a = ∞`: the rule `tsub_self : a - a = 0`. Then `zero_add`.
-
-*Tip.* `a - a + b`; then `rw [tsub_self, zero_add]`.
 :::
 
 :::proofde
@@ -105,8 +99,6 @@ Welche der drei gilt für alle `a b : ℝ≥0∞`? Probier `b < a`, und probier 
 stimmt nicht für `a = ∞`: `∞ + b - ∞ = ∞ - ∞ = 0`. Für jedes endliche `a` gilt es: Das ist die Regel
 `ENNReal.add_sub_cancel_left`, in *Der Rest der Masse*. Aber `a - a = 0` immer, auch für `a = ∞`: die Regel `tsub_self : a - a = 0`. Dann
 `zero_add`.
-
-*Tipp.* `a - a + b`; dann `rw [tsub_self, zero_add]`.
 :::
 :::solution
 ```
@@ -126,14 +118,10 @@ rw [tsub_self, zero_add]
 
 :::proofen
 `add_comm : a + b = b + a` (from *Masses*) turns a sum round; then it is `mass_total μ`.
-
-*Tip.* `rw [add_comm, mass_total μ]`.
 :::
 
 :::proofde
 `add_comm : a + b = b + a` (aus *Massen*) dreht eine Summe um; dann ist es `mass_total μ`.
-
-*Tipp.* `rw [add_comm, mass_total μ]`.
 :::
 :::solution
 ```
@@ -255,14 +243,10 @@ exact h
 
 :::proofen
 `coin_total : coin p true + coin p false = 1`. To use it, first write the masses as masses of the coin: your rules `coin_true` and `coin_false`, from right to left. What you prove is unlocked as `add_symm_eq_one`.
-
-*Tip.* `rw [← coin_true, ← coin_false, coin_total]`.
 :::
 
 :::proofde
 `coin_total : coin p true + coin p false = 1`. Um sie zu benutzen, schreib die Massen zuerst als Massen der Münze: deine Regeln `coin_true` und `coin_false`, von rechts nach links. Was du beweist, wird als `add_symm_eq_one` freigeschaltet.
-
-*Tipp.* `rw [← coin_true, ← coin_false, coin_total]`.
 :::
 :::solution
 ```
@@ -312,8 +296,6 @@ def pure (a : α) : DiscreteMeasure α := ⟨({a} : Set α).indicator 1⟩
 the mass is `1` on the set `{a}` and `0` outside it. The game writes this as the new rule
 `pure_apply : (pure a) b = bif a == b then 1 else 0`. Then `b == true` is `b` (`beq_true`, from
 *Masses*). What you prove is unlocked as `pure_true`.
-
-*Tip.* `rw [pure_apply, beq_true]`.
 :::
 
 :::proofde
@@ -326,8 +308,6 @@ def pure (a : α) : DiscreteMeasure α := ⟨({a} : Set α).indicator 1⟩
 ist die Masse `1` auf der Menge `{a}` und `0` außerhalb. Das Spiel schreibt das als die neue Regel
 `pure_apply : (pure a) b = bif a == b then 1 else 0`. Dann ist `b == true` gleich `b` (`beq_true`,
 aus *Massen*). Was du beweist, wird als `pure_true` freigeschaltet.
-
-*Tipp.* `rw [pure_apply, beq_true]`.
 :::
 :::solution
 ```
@@ -362,10 +342,6 @@ Compare the bars at `true`: `apply bool_ext`, then `map_true`, and
 your lemma `pure_true : (pure b) true = bif b then 1 else 0`. Then `b` has to be known: `cases b`. For
 `true`, the rule `coin_total : (coin p) true + (coin p) false = 1` says that the coin has total
 mass one. `rw [Bool.cond_true]` rewrites one `bif` at a time.
-
-*Tip.* `apply bool_ext`, `rw [map_true, pure_true]`, `cases b`, then
-`rw [Bool.cond_false, Bool.cond_false, Bool.cond_false, zero_add]` and
-`rw [Bool.cond_true, Bool.cond_true, Bool.cond_true, coin_total]`.
 :::
 
 :::proofde
@@ -380,10 +356,6 @@ Vergleiche die Säulen bei `true`: `apply bool_ext`, dann `map_true` und dein Le
 `pure_true : (pure b) true = bif b then 1 else 0`. Dann muss `b` bekannt sein: `cases b`. Für `true` sagt
 die Regel `coin_total : (coin p) true + (coin p) false = 1`, dass die Münze die Gesamtmasse
 eins hat. `rw [Bool.cond_true]` schreibt immer nur ein `bif` um.
-
-*Tipp.* `apply bool_ext`, `rw [map_true, pure_true]`, `cases b`, dann
-`rw [Bool.cond_false, Bool.cond_false, Bool.cond_false, zero_add]` und
-`rw [Bool.cond_true, Bool.cond_true, Bool.cond_true, coin_total]`.
 :::
 :::solution
 ```
@@ -418,15 +390,11 @@ Die ganze Masse von `pure b` liegt bei `b`: Wie viel davon liegt bei `false`?
 :::proofen
 `pure_apply` gives `bif b == false then 1 else 0`. For `b = false` and `b = true` both sides compute to
 the same number. What you prove is unlocked as `pure_false`.
-
-*Tip.* `rw [pure_apply]`, then `cases b <;> rfl`.
 :::
 
 :::proofde
 `pure_apply` gibt `bif b == false then 1 else 0`. Für `b = false` und `b = true` rechnen beide Seiten
 zur selben Zahl. Was du beweist, wird als `pure_false` freigeschaltet.
-
-*Tipp.* `rw [pure_apply]`, dann `cases b <;> rfl`.
 :::
 :::solution
 ```
@@ -460,10 +428,6 @@ Compare the bars at `true`: `apply bool_ext`, then `map_true`, and `pure_true` a
 masses of the sure values. Then `cases b`. What `f` does stays unknown, but where both branches of a
 `bif` are equal, `Bool.cond_self` (from *Bool*) helps. You prove it on `Bool`; it holds for every type,
 and it is unlocked as `map_pure` in this general form.
-
-*Tip.* `apply bool_ext`, `rw [map_true, pure_true, pure_true, pure_false]`, `cases b`, then
-`rw [Bool.cond_false, Bool.cond_false, Bool.cond_self, zero_add]` and
-`rw [Bool.cond_true, Bool.cond_true, Bool.cond_self, add_comm, zero_add]`.
 :::
 
 :::proofde
@@ -471,10 +435,6 @@ Vergleiche die Säulen bei `true`: `apply bool_ext`, dann `map_true`, und `pure_
 die Massen der sicheren Werte. Dann `cases b`. Was `f` tut, bleibt unbekannt, aber wo beide Zweige eines
 `bif` gleich sind, hilft `Bool.cond_self` (aus *Bool*). Du beweist es auf `Bool`; es gilt für jeden Typ
 und wird in dieser allgemeinen Form als `map_pure` freigeschaltet.
-
-*Tipp.* `apply bool_ext`, `rw [map_true, pure_true, pure_true, pure_false]`, `cases b`, dann
-`rw [Bool.cond_false, Bool.cond_false, Bool.cond_self, zero_add]` und
-`rw [Bool.cond_true, Bool.cond_true, Bool.cond_self, add_comm, zero_add]`.
 :::
 :::solution
 ```
@@ -504,17 +464,11 @@ das Bildmaß der Verkettung, $`(P \circ f^{-1}) \circ g^{-1} = P \circ (g \circ 
 :::proofen
 Your lemma `map_pure : (pure a).map f = pure (f a)`: a gate on a point mass moves the point. Then
 `rfl` from *Bool*: the two sides are the same after computing, `!true` is `false`.
-
-*Tip.* `rw [coin_const]`, then `rw [map_pure]` (or both at once: `rw [coin_const, map_pure]`), then
-`rfl`.
 :::
 
 :::proofde
 Dein Lemma `map_pure : (pure a).map f = pure (f a)`: Ein Baustein auf einer Punktmasse verschiebt
 den Punkt. Dann `rfl` aus *Bool*: Beide Seiten sind nach Ausrechnen gleich, `!true` ist `false`.
-
-*Tipp.* `rw [coin_const]`, dann `rw [map_pure]` (oder beides auf einmal: `rw [coin_const, map_pure]`),
-dann `rfl`.
 :::
 :::solution
 ```
@@ -546,22 +500,12 @@ Dreh die Münze `p` um: Was ist jetzt ihre Masse bei `true`?
 
 :::proofen
 Flipping turns the coin `p` into the coin $`1 - p`: the whole coin, not only its mass at `true`.
-Everything of this world comes together: two distributions on `Bool` are the same when their masses
-at `true` are (`bool_ext`, your lemma), and the mass at `true` of the flipped coin you computed in
-*Where does the mass go?*. Your result becomes the lemma `coin_not`, which the next worlds use all
-the time.
-
-*Tip.* `apply bool_ext`, then the computation of *Where does the mass go?* (*Masses*), and at the end `coin_true`.
+Your result becomes the lemma `coin_not`, which the next worlds use all the time.
 :::
 
 :::proofde
 Umdrehen macht aus der Münze $`p` die Münze $`1 - p`: die ganze Münze, nicht nur ihre Masse bei
-`true`. Alles aus dieser Welt kommt zusammen: Zwei Verteilungen auf `Bool` sind gleich, wenn ihre
-Massen bei `true` gleich sind (`bool_ext`, dein Lemma), und die Masse bei `true` der umgedrehten Münze
-hast du in *Wohin geht die Masse?* ausgerechnet. Dein Ergebnis wird das Lemma `coin_not`, das die
-nächsten Welten ständig benutzen.
-
-*Tipp.* `apply bool_ext`, dann die Rechnung aus *Wohin geht die Masse?* (*Massen*), und am Ende `coin_true`.
+`true`. Dein Ergebnis wird das Lemma `coin_not`, das die nächsten Welten ständig benutzen.
 :::
 :::solution
 ```
@@ -590,14 +534,10 @@ So the coins are all there is on `Bool`.
 
 :::proofen
 Again `apply bool_ext`: the masses at `true` decide. Then `coin_true` and the hypothesis `h`.
-
-*Tip.* `apply bool_ext`, then `rw [coin_true, h]`.
 :::
 
 :::proofde
 Wieder `apply bool_ext`: Die Massen bei `true` entscheiden. Dann `coin_true` und die Annahme `h`.
-
-*Tipp.* `apply bool_ext`, dann `rw [coin_true, h]`.
 :::
 :::solution
 ```

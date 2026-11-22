@@ -80,10 +80,6 @@ Compare the masses at every point: `ext b`. `map_apply` and `Fintype.sum_bool` w
 summands; the tests `true == b` and `false == b` are `b` and `!b` (`Bool.true_beq` from *Masses*,
 and the new rule `Bool.false_beq`). Then `cases b`. You prove it on `Bool`; it holds for every type,
 and it is unlocked as `map_id` in this general form.
-
-*Tip.* `ext b`, `rw [map_apply, Fintype.sum_bool, Bool.true_beq, Bool.false_beq]`, `cases b`, then
-`rw [Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add]` and
-`rw [Bool.not_true, Bool.cond_true, Bool.cond_false, add_comm, zero_add]`.
 :::
 
 :::proofde
@@ -91,10 +87,6 @@ Vergleiche die Massen an jedem Punkt: `ext b`. `map_apply` und `Fintype.sum_bool
 als zwei Summanden; die Tests `true == b` und `false == b` sind `b` und `!b` (`Bool.true_beq` aus
 *Massen*, und die neue Regel `Bool.false_beq`). Dann `cases b`. Du beweist es auf `Bool`; es gilt für
 jeden Typ und wird in dieser allgemeinen Form als `map_id` freigeschaltet.
-
-*Tipp.* `ext b`, `rw [map_apply, Fintype.sum_bool, Bool.true_beq, Bool.false_beq]`, `cases b`, dann
-`rw [Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add]` und
-`rw [Bool.not_true, Bool.cond_true, Bool.cond_false, add_comm, zero_add]`.
 :::
 :::solution
 ```
@@ -193,25 +185,12 @@ simp_rw [Bool.cond_true]
 :::
 
 :::proofen
-Compare the masses at every point `b`, and write each mass as its two summands, also the inner ones
-under the sum: `simp_rw`. Then `f` is one of the four maps: `cases f true`, `cases f false`. In each
-case the tests with `true` and `false` are your rules from *Masses* and *Bool*, and your lemma
-`cond_add_cond` puts two masses behind one test. You prove it on `Bool`; it holds for every type,
-and it is unlocked as `map_map` in this general form.
-
-*Tip.* `ext b`, `simp_rw [map_apply, Fintype.sum_bool]`, `cases f true`, `cases f false`, and then
-case by case.
+You prove it on `Bool`; it holds for every type, and it is unlocked as `map_map` in this general form.
 :::
 
 :::proofde
-Vergleiche die Massen an jedem Punkt `b`, und schreib jede Masse als ihre zwei Summanden, auch die
-inneren unter der Summe: `simp_rw`. Dann ist `f` eine der vier Abbildungen: `cases f true`,
-`cases f false`. In jedem Fall sind die Tests mit `true` und `false` deine Regeln aus *Massen* und
-*Bool*, und dein Lemma `cond_add_cond` bringt zwei Massen hinter einen Test. Du beweist es
-auf `Bool`; es gilt für jeden Typ und wird in dieser allgemeinen Form als `map_map` freigeschaltet.
-
-*Tipp.* `ext b`, `simp_rw [map_apply, Fintype.sum_bool]`, `cases f true`, `cases f false`, und dann
-Fall für Fall.
+Du beweist es auf `Bool`; es gilt für jeden Typ und wird in dieser allgemeinen Form als `map_map`
+freigeschaltet.
 :::
 :::solution
 ```

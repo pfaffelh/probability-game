@@ -29,14 +29,10 @@ Massen sind Zahlen in $`[0, \infty]`; dort macht ein Minus kein Plus rückgängi
 
 :::proofen
 By definition: `rfl`. (Two arrows, two meanings: in `(p : ℝ)` the number $`p` of $`[0, 1]` as a real number, in `(↑p : ℝ≥0∞)` as a mass.)
-
-*Tip.* `rfl`.
 :::
 
 :::proofde
 Nach Definition: `rfl`. (Zwei Pfeile, zwei Bedeutungen: in `(p : ℝ)` die Zahl $`p` aus $`[0, 1]` als reelle Zahl, in `(↑p : ℝ≥0∞)` als Masse.)
-
-*Tipp.* `rfl`.
 :::
 :::solution
 ```
@@ -56,14 +52,10 @@ rfl
 
 :::proofen
 `mass_mul_real : ↑p * ↑q = ENNReal.ofReal (p * q)`.
-
-*Tip.* `rw [mass_mul_real]`.
 :::
 
 :::proofde
 `mass_mul_real : ↑p * ↑q = ENNReal.ofReal (p * q)`.
-
-*Tipp.* `rw [mass_mul_real]`.
 :::
 :::solution
 ```
@@ -83,14 +75,10 @@ rw [mass_mul_real]
 
 :::proofen
 `ENNReal.ofReal_add (ha : 0 ≤ a) (hb : 0 ≤ b) : ENNReal.ofReal (a + b) = ENNReal.ofReal a + ENNReal.ofReal b`, here backwards (`←`). The two conditions go into the brackets: `real_mul_nonneg p q : 0 ≤ p * q` (a product of numbers in $`[0, 1]`).
-
-*Tip.* `rw [← ENNReal.ofReal_add (real_mul_nonneg p q) (real_mul_nonneg r s)]`.
 :::
 
 :::proofde
 `ENNReal.ofReal_add (ha : 0 ≤ a) (hb : 0 ≤ b) : ENNReal.ofReal (a + b) = ENNReal.ofReal a + ENNReal.ofReal b`, hier rückwärts (`←`). Die zwei Bedingungen kommen in die Klammern: `real_mul_nonneg p q : 0 ≤ p * q` (ein Produkt von Zahlen aus $`[0, 1]`).
-
-*Tipp.* `rw [← ENNReal.ofReal_add (real_mul_nonneg p q) (real_mul_nonneg r s)]`.
 :::
 :::solution
 ```
@@ -165,14 +153,10 @@ linear_combination 2 * h
 
 :::proofen
 Now with `h` once: `linear_combination h`.
-
-*Tip.* `linear_combination h`.
 :::
 
 :::proofde
 Jetzt mit `h` einmal: `linear_combination h`.
-
-*Tipp.* `linear_combination h`.
 :::
 :::solution
 ```
@@ -188,18 +172,6 @@ linear_combination h
 
 :::de
 *Endgegner: ein Gleichgewicht, das bleibt.* Die Kette aus *Münzen, die warten*: von `true` zu `coin q`, von `false` zu `coin r`. `coin p` bleibt, wenn das, was von `false` nach `true` fließt, $`(1 - p) r`, gleich dem ist, was zurückfließt, $`p (1 - q)`: ein Gleichgewicht.
-:::
-
-:::proofen
-As in *A distribution that stays* down to the masses; then everything into `ℝ`: the products, the sum (with its conditions), $`1 - p`, and `↑p` itself (`mass_eq_ofReal`). Now both sides are `ENNReal.ofReal` of something: `congr` leaves the real equation, and `linear_combination h`.
-
-*Tip.* `apply bool_ext`, `rw [bind_true]`, `simp`, `rw [mass_mul_real, mass_mul_real, ← ENNReal.ofReal_add (real_mul_nonneg p q) (real_mul_nonneg (σ p) r), symm_real, mass_eq_ofReal]`, `congr`, `linear_combination h`.
-:::
-
-:::proofde
-Wie in *Eine Verteilung, die bleibt* bis zu den Massen; dann alles nach `ℝ`: die Produkte, die Summe (mit ihren Bedingungen), $`1 - p`, und `↑p` selbst (`mass_eq_ofReal`). Jetzt sind beide Seiten `ENNReal.ofReal` von etwas: `congr` lässt die reelle Gleichung, und `linear_combination h`.
-
-*Tipp.* `apply bool_ext`, `rw [bind_true]`, `simp`, `rw [mass_mul_real, mass_mul_real, ← ENNReal.ofReal_add (real_mul_nonneg p q) (real_mul_nonneg (σ p) r), symm_real, mass_eq_ofReal]`, `congr`, `linear_combination h`.
 :::
 :::solution
 ```

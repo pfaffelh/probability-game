@@ -42,8 +42,6 @@ def hyper : ℕ → ℕ → ℕ → DiscreteMeasure ℕ
 `frac w b` is $`w / (w + b)`, the chance of a white ball.
 
 The first case of the definition.
-
-*Tip.* `rfl`.
 :::
 
 :::proofde
@@ -61,8 +59,6 @@ def hyper : ℕ → ℕ → ℕ → DiscreteMeasure ℕ
 `frac w b` ist $`w / (w + b)`, die Chance auf eine weiße Kugel.
 
 Der erste Fall der Definition.
-
-*Tipp.* `rfl`.
 :::
 :::solution
 ```
@@ -82,14 +78,10 @@ rfl
 
 :::proofen
 The second case of the definition.
-
-*Tip.* `rfl`.
 :::
 
 :::proofde
 Der zweite Fall der Definition.
-
-*Tipp.* `rfl`.
 :::
 :::solution
 ```
@@ -109,14 +101,10 @@ rfl
 
 :::proofen
 `frac_zero : frac 0 b = 0` and `coin_zero : coin 0 = pure false`.
-
-*Tip.* `rw [frac_zero, coin_zero]`.
 :::
 
 :::proofde
 `frac_zero : frac 0 b = 0` und `coin_zero : coin 0 = pure false`.
-
-*Tipp.* `rw [frac_zero, coin_zero]`.
 :::
 :::solution
 ```
@@ -136,14 +124,10 @@ rw [frac_zero, coin_zero]
 
 :::proofen
 Induction on $`n`, for every $`b` (the urn gets smaller: `generalizing b`).
-
-*Tip.* `induction' n with n ih generalizing b`; `rw [hyper_zero]`; `rw [hyper_succ, frac_zero, coin_zero, pure_bind, Bool.cond_false, ih]`.
 :::
 
 :::proofde
 Induktion über $`n`, für jedes $`b` (die Urne wird kleiner: `generalizing b`).
-
-*Tipp.* `induction' n with n ih generalizing b`; `rw [hyper_zero]`; `rw [hyper_succ, frac_zero, coin_zero, pure_bind, Bool.cond_false, ih]`.
 :::
 :::solution
 ```
@@ -165,14 +149,10 @@ rw [hyper_succ, frac_zero, coin_zero, pure_bind, Bool.cond_false, ih]
 
 :::proofen
 `frac_white : frac (w + 1) 0 = 1` and `coin_one : coin 1 = pure true`.
-
-*Tip.* `rw [frac_white, coin_one]`.
 :::
 
 :::proofde
 `frac_white : frac (w + 1) 0 = 1` und `coin_one : coin 1 = pure true`.
-
-*Tipp.* `rw [frac_white, coin_one]`.
 :::
 :::solution
 ```
@@ -192,14 +172,10 @@ rw [frac_white, coin_one]
 
 :::proofen
 Induction on $`w`. `Nat.add_sub_cancel : n + m - m = n` (one white ball taken out).
-
-*Tip.* `induction' w with w ih`; `rw [hyper_zero]`; `rw [hyper_succ, frac_white, coin_one, pure_bind, Bool.cond_true, Nat.add_sub_cancel, ih, pure_bind, add_comm]`.
 :::
 
 :::proofde
 Induktion über $`w`. `Nat.add_sub_cancel : n + m - m = n` (eine weiße Kugel herausgenommen).
-
-*Tipp.* `induction' w with w ih`; `rw [hyper_zero]`; `rw [hyper_succ, frac_white, coin_one, pure_bind, Bool.cond_true, Nat.add_sub_cancel, ih, pure_bind, add_comm]`.
 :::
 :::solution
 ```
@@ -217,18 +193,6 @@ rw [hyper_succ, frac_white, coin_one, pure_bind, Bool.cond_true, Nat.add_sub_can
 
 :::de
 *Endgegner: alle Kugeln ziehen.* Zieh alle $`w + b` Kugeln, eine nach der anderen: Was auch immer unterwegs passiert, am Ende hast du sicher alle $`w` weißen.
-:::
-
-:::proofen
-A double induction, as for the binomial formula: on $`w` for every $`b`, and inside on $`b`. With $`w = 0` it is `hyper_black`, with $`b = 0` `hyper_white`. In the step, the first ball: white leaves an urn with $`w` white and $`b + 1` black (outer `ih`), black one with $`w + 1` and $`b` (inner `ih2`). Both branches give `pure (w + 1)`: then the coin does not matter (`cond_same` under the `do`, with `simp only`, and `coin_unused`).
-
-*Tip.* `induction' w with w ih generalizing b`; `rw [zero_add, hyper_black]`; `induction' b with b ih2`; `rw [add_zero, hyper_white]`; `rw [← add_assoc, hyper_succ, Nat.add_sub_cancel, Nat.add_sub_cancel, ih2, add_right_comm, add_assoc, ih, pure_bind, add_comm 1 w]`, `simp only [cond_same]`, `rw [coin_unused]`.
-:::
-
-:::proofde
-Eine doppelte Induktion, wie bei der Binomialformel: über $`w` für jedes $`b`, und darin über $`b`. Mit $`w = 0` ist es `hyper_black`, mit $`b = 0` `hyper_white`. Im Schritt die erste Kugel: Weiß lässt eine Urne mit $`w` weißen und $`b + 1` schwarzen (äußeres `ih`), schwarz eine mit $`w + 1` und $`b` (inneres `ih2`). Beide Zweige geben `pure (w + 1)`: Dann spielt die Münze keine Rolle (`cond_same` unter dem `do`, mit `simp only`, und `coin_unused`).
-
-*Tipp.* `induction' w with w ih generalizing b`; `rw [zero_add, hyper_black]`; `induction' b with b ih2`; `rw [add_zero, hyper_white]`; `rw [← add_assoc, hyper_succ, Nat.add_sub_cancel, Nat.add_sub_cancel, ih2, add_right_comm, add_assoc, ih, pure_bind, add_comm 1 w]`, `simp only [cond_same]`, `rw [coin_unused]`.
 :::
 :::solution
 ```

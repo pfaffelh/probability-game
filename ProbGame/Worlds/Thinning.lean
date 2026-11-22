@@ -29,14 +29,10 @@ Eine Münze wird *ausgedünnt*, wenn jedes `true` nur mit Wahrscheinlichkeit $`q
 
 :::proofen
 Two distributions on `Bool` are the same when their masses at `true` are: `apply bool_ext`. Then `bind_true` from *Building with Coins* splits by the first coin; `simp` computes the rest (the masses of the coins, the `bif`), down to a product of masses: that is `mass_mul`.
-
-*Tip.* `apply bool_ext`, `rw [bind_true]`, `simp`, `rw [mass_mul]`.
 :::
 
 :::proofde
 Zwei Verteilungen auf `Bool` sind gleich, wenn ihre Massen bei `true` gleich sind: `apply bool_ext`. Dann teilt `bind_true` aus *Bauen mit Münzen* nach der ersten Münze; `simp` rechnet den Rest aus (die Massen der Münzen, die `bif`), bis ein Produkt von Massen dasteht: Das ist `mass_mul`.
-
-*Tipp.* `apply bool_ext`, `rw [bind_true]`, `simp`, `rw [mass_mul]`.
 :::
 :::solution
 ```
@@ -59,14 +55,10 @@ rw [mass_mul]
 
 :::proofen
 Your lemma on both sides, then `mul_comm : a * b = b * a`.
-
-*Tip.* `rw [coin_thin, coin_thin, mul_comm]`.
 :::
 
 :::proofde
 Dein Lemma auf beiden Seiten, dann `mul_comm : a * b = b * a`.
-
-*Tipp.* `rw [coin_thin, coin_thin, mul_comm]`.
 :::
 :::solution
 ```
@@ -90,14 +82,10 @@ Auf dem Spielfeld sind alle drei Münzen `p`: eine Münze `p`, mit `p` ausgedün
 
 :::proofen
 The first two steps are one coin, once they are a `do` block of their own: `rw [← bind_assoc]` (`bind_assoc : (do let y ← (do let x ← μ; f x); g y) = (do let x ← μ; let y ← f x; g y)`). Then your lemma, twice.
-
-*Tip.* `rw [← bind_assoc, coin_thin, coin_thin]`.
 :::
 
 :::proofde
 Die ersten zwei Schritte sind eine Münze, sobald sie ein eigener `do`-Block sind: `rw [← bind_assoc]` (`bind_assoc : (do let y ← (do let x ← μ; f x); g y) = (do let x ← μ; let y ← f x; g y)`). Dann dein Lemma, zweimal.
-
-*Tipp.* `rw [← bind_assoc, coin_thin, coin_thin]`.
 :::
 :::solution
 ```
@@ -117,14 +105,10 @@ rw [← bind_assoc, coin_thin, coin_thin]
 
 :::proofen
 The first two steps on the right are a thinned coin, once they are a `do` block of their own: `rw [← bind_assoc, coin_thin]`. What stands then is the boss of *Geometric*: `exact geom_first _` (Lean finds the parameter).
-
-*Tip.* `rw [← bind_assoc, coin_thin]`, `exact geom_first _`.
 :::
 
 :::proofde
 Die ersten zwei Schritte rechts sind eine ausgedünnte Münze, sobald sie ein eigener `do`-Block sind: `rw [← bind_assoc, coin_thin]`. Was dann dasteht, ist der Endgegner aus *Geometrisch*: `exact geom_first _` (Lean findet den Parameter).
-
-*Tipp.* `rw [← bind_assoc, coin_thin]`, `exact geom_first _`.
 :::
 :::solution
 ```
@@ -149,14 +133,10 @@ Auf dem Spielfeld mit `q = p`: die Münze `p`, ausgedünnt durch eine Münze, di
 
 :::proofen
 `rw [← coin_thin]` writes the coin on the right as a thinned coin. Then both sides start with `coin p`: `congr`, `ext x`, `cases x`.
-
-*Tip.* `rw [← coin_thin]`, `simp only [bind_assoc]`, `congr`, `ext x`, `cases x`; at `false`: `simp [binom_zero]`; at `true`: `simp [binom_succ, binom_zero]`.
 :::
 
 :::proofde
 `rw [← coin_thin]` schreibt die Münze rechts als ausgedünnte Münze. Dann beginnen beide Seiten mit `coin p`: `congr`, `ext x`, `cases x`.
-
-*Tipp.* `rw [← coin_thin]`, `simp only [bind_assoc]`, `congr`, `ext x`, `cases x`; bei `false`: `simp [binom_zero]`; bei `true`: `simp [binom_succ, binom_zero]`.
 :::
 :::solution
 ```
@@ -182,14 +162,10 @@ simp [binom_succ, binom_zero]
 
 :::proofen
 Make the first two steps a block of their own, use your lemma, and split again.
-
-*Tip.* `rw [← bind_assoc, coin_bind_binom, bind_assoc]`, `simp only [pure_bind]`.
 :::
 
 :::proofde
 Mach die ersten zwei Schritte zu einem eigenen Block, benutze dein Lemma, und teile wieder.
-
-*Tipp.* `rw [← bind_assoc, coin_bind_binom, bind_assoc]`, `simp only [pure_bind]`.
 :::
 :::solution
 ```
@@ -199,7 +175,61 @@ simp only [pure_bind]
 :::
 ::::
 
-::::circuit (height := "660") (size := "big") (route := "count") (inputs := "x y z w") (gates := "toNat, plus") (coins := "p ?|? p ?|?") (target := "nat 0:(1-p^2)^2 1:2p^2(1-p^2) 2:p^4") (start := "x>y.0; z>w.0") (context := "Lean/Rules.lean") (proof := "(p q : I) (n : ℕ) : (do let X ← binom p n; binom q X) = binom ⟦p * q⟧ n") (lemma := "binom_thin") (new := "bind_comm") (play := "y.T=p; y.F=0; w.T=p; w.F=0; a=toNat; b=toNat; c=plus; y>a.0; w>b.0; a>c.0; b>c.1; c>out") (uses := "binom_zero, pure_bind, binom_succ, bind_assoc, binom_add, bind_comm, coin_bind_binom', bind_pure")
+::::leanonly (proof := "(p q : I) : (do let x ← coin p; let y ← coin q; pure (x && !y)) = (do let y ← coin q; let x ← coin p; pure (x && !y))") (new := "bind_comm") (group := "chance.count") (uses := "bind_comm")
+:::en
+*Which coin first?* Two coins, thrown independently: it does not matter which is thrown first.
+:::
+
+:::de
+*Welche Münze zuerst?* Zwei Münzen, unabhängig geworfen: Es ist egal, welche zuerst geworfen wird.
+:::
+
+:::proofen
+`bind_comm μ ν : (do let x ← μ; let y ← ν; f x y) = (do let y ← ν; let x ← μ; f x y)`: two independent draws, in the other order. (Independent: `ν` does not use `x`.)
+
+*Tip.* `rw [bind_comm]`.
+:::
+
+:::proofde
+`bind_comm μ ν : (do let x ← μ; let y ← ν; f x y) = (do let y ← ν; let x ← μ; f x y)`: zwei unabhängige Ziehungen, in der anderen Reihenfolge. (Unabhängig: `ν` benutzt `x` nicht.)
+
+*Tipp.* `rw [bind_comm]`.
+:::
+:::solution
+```
+rw [bind_comm]
+```
+:::
+::::
+
+::::leanonly (proof := "(p q r : I) : (do let z ← coin r; let x ← coin p; let y ← coin q; pure (z && x && !y)) = (do let z ← coin r; let y ← coin q; let x ← coin p; pure (z && x && !y))") (group := "chance.count") (uses := "bind_comm")
+:::en
+*Swapping further down.* The same two coins, but a third one is thrown before them.
+:::
+
+:::de
+*Tauschen weiter unten.* Dieselben zwei Münzen, aber vor ihnen wird eine dritte geworfen.
+:::
+
+:::proofen
+The two draws stand under `let z ← coin r`: there `rw` does not reach, `simp only` does. But `simp only [bind_comm]` would swap for ever, back and forth. So say which two draws: `bind_comm (coin p) (coin q)` swaps only where `coin p` is drawn right before `coin q`. (A part Lean is to find itself is written `_`.)
+
+*Tip.* `simp only [bind_comm (coin p) (coin q)]`.
+:::
+
+:::proofde
+Die zwei Ziehungen stehen unter `let z ← coin r`: Dorthin reicht `rw` nicht, `simp only` schon. Aber `simp only [bind_comm]` würde endlos tauschen, hin und her. Sag also, welche zwei Ziehungen: `bind_comm (coin p) (coin q)` tauscht nur dort, wo `coin p` direkt vor `coin q` gezogen wird. (Ein Teil, den Lean selbst finden soll, schreibt man `_`.)
+
+*Tipp.* `simp only [bind_comm (coin p) (coin q)]`.
+:::
+:::solution
+```
+simp only [bind_comm (coin p) (coin q)]
+```
+:::
+::::
+
+::::circuit (height := "660") (size := "big") (route := "count") (inputs := "x y z w") (gates := "toNat, plus") (coins := "p ?|? p ?|?") (target := "nat 0:(1-p^2)^2 1:2p^2(1-p^2) 2:p^4") (start := "x>y.0; z>w.0") (context := "Lean/Rules.lean") (proof := "(p q : I) (n : ℕ) : (do let X ← binom p n; binom q X) = binom ⟦p * q⟧ n") (lemma := "binom_thin") (play := "y.T=p; y.F=0; w.T=p; w.F=0; a=toNat; b=toNat; c=plus; y>a.0; w>b.0; a>c.0; b>c.1; c>out") (uses := "binom_zero, pure_bind, binom_succ, bind_assoc, binom_add, bind_comm, coin_bind_binom', bind_pure")
 :::en
 *Boss: thinning a binomial.* Of $`n` throws with $`p`, each `true` is kept with probability $`q`. The number kept is binomial again: with which parameter?
 
@@ -210,18 +240,6 @@ On the board with $`n = 2` and `q = p`: two throws, each thinned, and the kept o
 *Endgegner: eine Binomialverteilung ausdünnen.* Von $`n` Würfen mit $`p` wird jedes `true` mit Wahrscheinlichkeit $`q` behalten. Die Anzahl der behaltenen ist wieder binomial: mit welchem Parameter?
 
 Auf dem Spielfeld mit $`n = 2` und `q = p`: zwei Würfe, jeder ausgedünnt, und die behaltenen gezählt. Das Ziel ist binomial mit $`p^2`.
-:::
-
-:::proofen
-Induction on $`n`. In the step, the first coin `C` and the other throws `X`: of `C.toNat + X`, keep is `binom q (C.toNat + X)`, by `binom_add` read backwards the sum of two independent parts. `bind_comm` swaps two independent draws, so that the part of the first coin comes first; then your last lemma.
-
-*Tip.* `induction' n with n ih`; `rw [binom_zero, binom_zero, pure_bind, binom_zero]`; `rw [binom_succ, binom_succ (p * q), ← ih]`, `simp only [bind_assoc, pure_bind]`, `simp only [← binom_add]`, `simp only [bind_comm (binom p n) (binom q _)]`, `rw [coin_bind_binom']`.
-:::
-
-:::proofde
-Induktion über $`n`. Im Schritt die erste Münze `C` und die anderen Würfe `X`: Von `C.toNat + X` behalten ist `binom q (C.toNat + X)`, nach `binom_add` rückwärts die Summe zweier unabhängiger Teile. `bind_comm` tauscht zwei unabhängige Ziehungen, damit der Teil der ersten Münze vorne steht; dann dein letztes Lemma.
-
-*Tipp.* `induction' n with n ih`; `rw [binom_zero, binom_zero, pure_bind, binom_zero]`; `rw [binom_succ, binom_succ (p * q), ← ih]`, `simp only [bind_assoc, pure_bind]`, `simp only [← binom_add]`, `simp only [bind_comm (binom p n) (binom q _)]`, `rw [coin_bind_binom']`.
 :::
 :::solution
 ```

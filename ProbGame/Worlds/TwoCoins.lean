@@ -146,14 +146,10 @@ aufeinander folgen.
 
 :::proofen
 Both sides are the same, only written differently.
-
-*Tip.* `rfl`.
 :::
 
 :::proofde
 Beide Seiten sind dasselbe, nur anders geschrieben.
-
-*Tipp.* `rfl`.
 :::
 :::solution
 ```
@@ -194,8 +190,6 @@ back, is `coin p` itself.
 Your lemma `Bool.and_self : (x && x) = x` from *Bool*, and the rule `bind_pure : (do let x ← μ; pure x) = μ`. The `x` of
 `let x ← coin p` is bound, as the `x` of `fun x => …` in *Maps*: so `simp_rw`, not `rw`. (Lean itself
 reads `do let x ← μ; pure x` as `μ` at once, when you type it.)
-
-*Tip.* `simp_rw [Bool.and_self, bind_pure]`.
 :::
 
 :::proofde
@@ -207,8 +201,6 @@ zurückgeben, ist `coin p` selbst.
 Dein Lemma `Bool.and_self : (x && x) = x` aus *Bool* und die Regel `bind_pure : (do let x ← μ; pure x) = μ`. Das `x` von
 `let x ← coin p` ist gebunden, wie das `x` von `fun x => …` in *Abbildungen*: also `simp_rw`, nicht
 `rw`. (Lean selbst liest `do let x ← μ; pure x` sofort als `μ`, wenn du es eintippst.)
-
-*Tipp.* `simp_rw [Bool.and_self, bind_pure]`.
 :::
 :::solution
 ```
@@ -238,8 +230,6 @@ The definition of a draw sums over the first draw `a`: its mass, times the mass 
 On a finite type, `∑'` is the finite sum `∑`, and that is the new rule
 `bind_apply : (do let a ← μ; f a) b = ∑ a, μ a * f a b`. On `Bool` it has two summands
 (`Fintype.sum_bool`). What you prove is unlocked as `bind_true`.
-
-*Tip.* `rw [bind_apply, Fintype.sum_bool]`.
 :::
 
 :::proofde
@@ -253,8 +243,6 @@ folgt,
 Auf einem endlichen Typ ist `∑'` die endliche Summe `∑`, und das ist die neue Regel
 `bind_apply : (do let a ← μ; f a) b = ∑ a, μ a * f a b`. Auf `Bool` hat sie zwei Summanden
 (`Fintype.sum_bool`). Was du beweist, wird als `bind_true` freigeschaltet.
-
-*Tipp.* `rw [bind_apply, Fintype.sum_bool]`.
 :::
 :::solution
 ```
@@ -288,9 +276,6 @@ and with `simp_rw [Fintype.sum_bool, pure_apply]` the sums written out and the m
 `f` does is unknown, and so is `b`: `cases f true <;> cases f false <;> cases b`, eight cases, and in
 each `simp` computes. You prove it on `Bool`; it holds for every type, and it is unlocked as
 `map_eq_pure_bind` in this general form.
-
-*Tip.* `ext b`, `rw [map_apply, bind_apply]`, `simp_rw [Fintype.sum_bool, pure_apply]`,
-`cases f true <;> cases f false <;> cases b <;> simp`.
 :::
 
 :::proofde
@@ -299,9 +284,6 @@ Vergleiche die Massen bei jedem `b`: `ext b`, dann `map_apply` links und `bind_a
 tut, ist unbekannt, und `b` auch: `cases f true <;> cases f false <;> cases b`, acht Fälle, und in
 jedem rechnet `simp`. Du beweist es auf `Bool`; es gilt für jeden Typ und wird in dieser allgemeinen
 Form als `map_eq_pure_bind` freigeschaltet.
-
-*Tipp.* `ext b`, `rw [map_apply, bind_apply]`, `simp_rw [Fintype.sum_bool, pure_apply]`,
-`cases f true <;> cases f false <;> cases b <;> simp`.
 :::
 :::solution
 ```
@@ -390,9 +372,6 @@ possible `f`, and in each the simplifier computes the rest, with the new rule
 `add_mul : (a + b) * c = a * c + b * c` and with `add_comm` for the order. With `<;>` from *Bool*
 it is one line. You prove it on `Bool`; it holds for every type, and it is unlocked as `bind_map_left`
 in this general form.
-
-*Tip.* `ext b`, `rw [bind_apply, bind_apply]`, `simp_rw [Fintype.sum_bool, map_apply, Fintype.sum_bool]`,
-`cases f true <;> cases f false <;> simp [add_mul, add_comm]`.
 :::
 
 :::proofde
@@ -403,9 +382,6 @@ geben die vier möglichen `f`, und in jedem rechnet der Simplifier den Rest aus,
 `add_mul : (a + b) * c = a * c + b * c` und mit `add_comm` für die Reihenfolge. Mit `<;>` aus *Bool*
 ist das eine Zeile. Du beweist es auf `Bool`; es gilt für jeden Typ und wird in dieser allgemeinen Form
 als `bind_map_left` freigeschaltet.
-
-*Tipp.* `ext b`, `rw [bind_apply, bind_apply]`, `simp_rw [Fintype.sum_bool, map_apply, Fintype.sum_bool]`,
-`cases f true <;> cases f false <;> simp [add_mul, add_comm]`.
 :::
 :::solution
 ```
@@ -485,9 +461,6 @@ inside. Then the four possible `f` and the two `b`, and `simp` with the new rule
 `mul_add : a * (b + c) = a * b + a * c`. Where `f` is constant, two sums of four masses are left, in
 another order: `add_add_add_comm : a + b + (c + d) = a + c + (b + d)`, once in each. You prove it on
 `Bool`; it holds for every type, and it is unlocked as `map_bind` in this general form.
-
-*Tip.* `ext b`, `rw [map_apply, bind_apply]`, `simp_rw [Fintype.sum_bool, bind_apply, map_apply, Fintype.sum_bool]`,
-`cases f true <;> cases f false <;> cases b <;> simp [mul_add]`, then `rw [add_add_add_comm]` twice.
 :::
 
 :::proofde
@@ -497,9 +470,6 @@ die inneren. Dann die vier möglichen `f` und die zwei `b`, und `simp` mit der n
 anderer Reihenfolge: `add_add_add_comm : a + b + (c + d) = a + c + (b + d)`, einmal in jeder. Du
 beweist es auf `Bool`; es gilt für jeden Typ und wird in dieser allgemeinen Form als `map_bind`
 freigeschaltet.
-
-*Tipp.* `ext b`, `rw [map_apply, bind_apply]`, `simp_rw [Fintype.sum_bool, bind_apply, map_apply, Fintype.sum_bool]`,
-`cases f true <;> cases f false <;> cases b <;> simp [mul_add]`, dann zweimal `rw [add_add_add_comm]`.
 :::
 :::solution
 ```
@@ -526,18 +496,12 @@ rw [add_add_add_comm]
 At least one `true` is: not both `false`, with probability $`1 - (1 - p)^2`. Your lemmas De
 Morgan, `or_eq : (x || y) = !(!x && !y)` from *Bool*, and `map_bind` from the level before: a move
 after a `do` block goes into it.
-
-*Tip.* On the right side, backwards: `rw [← coin_not]`, `rw [← coin_and]`, `rw [← coin_not]`; then
-`simp only [bind_map_left, map_bind, map_pure, or_eq]`.
 :::
 
 :::proofde
 Mindestens einmal `true` heißt: nicht beide `false`, mit Wahrscheinlichkeit $`1 - (1 - p)^2`. Deine
 Lemmas De Morgan, `or_eq : (x || y) = !(!x && !y)` aus *Bool*, und `map_bind` aus dem Level davor:
 Ein Zug nach einem `do`-Block wandert in ihn hinein.
-
-*Tipp.* Auf der rechten Seite, rückwärts: `rw [← coin_not]`, `rw [← coin_and]`, `rw [← coin_not]`;
-dann `simp only [bind_map_left, map_bind, map_pure, or_eq]`.
 :::
 :::solution
 ```
@@ -572,16 +536,12 @@ Das Ergebnis der Münze wird nicht benutzt (`_`): Was bleibt?
 At every `b`: `ext b`, `bind_apply` and `Fintype.sum_bool`. Both ways go on with the same `ν b`, so
 take it out, with `add_mul` backwards: `← add_mul`. What is left are the two masses of the coin, and
 they add up to one: `simp`. It is unlocked as `coin_unused`.
-
-*Tip.* `ext b`, `rw [bind_apply, Fintype.sum_bool, ← add_mul]`, `simp`.
 :::
 
 :::proofde
 Bei jedem `b`: `ext b`, `bind_apply` und `Fintype.sum_bool`. Beide Wege machen mit demselben `ν b`
 weiter, also zieh es heraus, mit `add_mul` rückwärts: `← add_mul`. Übrig sind die zwei Massen der
 Münze, und sie ergeben zusammen eins: `simp`. Es wird als `coin_unused` freigeschaltet.
-
-*Tipp.* `ext b`, `rw [bind_apply, Fintype.sum_bool, ← add_mul]`, `simp`.
 :::
 :::solution
 ```
@@ -606,15 +566,11 @@ dieselbe: Die Ergebnisse hängen voneinander ab.
 :::proofen
 `x && !x` is never `true`: your lemma `Bool.and_not_self` from *Bool*, marked simp, so `simp` uses it.
 Then the coin is no longer used: `coin_unused` from the level before.
-
-*Tip.* `simp`, then `rw [coin_unused]`.
 :::
 
 :::proofde
 `x && !x` ist nie `true`: dein Lemma `Bool.and_not_self` aus *Bool*, mit der Marke simp, also benutzt
 es `simp`. Dann wird die Münze nicht mehr benutzt: `coin_unused` aus dem Level davor.
-
-*Tipp.* `simp`, dann `rw [coin_unused]`.
 :::
 :::solution
 ```
@@ -674,20 +630,6 @@ cases x <;> rfl
 
 :::de
 *Endgegner: genau einmal `true`*, ohne eine Funktion dafür: mindestens einmal, aber nicht beide.
-:::
-
-:::proofen
-*Boss.* Exactly one `true` is `xor`. Both sides throw the same coins; go under the throws, with `congr`
-and `ext x` (and again for `y`), and look at all four cases, with `<;>` in one line.
-
-*Tip.* `congr`, `ext x`, `congr`, `ext y`, `cases x <;> cases y <;> rfl`.
-:::
-
-:::proofde
-*Endgegner.* Genau einmal `true` ist `xor`. Beide Seiten werfen dieselben Münzen; geh unter die Würfe, mit
-`congr` und `ext x` (und nochmal für `y`), und sieh dir alle vier Fälle an, mit `<;>` in einer Zeile.
-
-*Tipp.* `congr`, `ext x`, `congr`, `ext y`, `cases x <;> cases y <;> rfl`.
 :::
 :::solution
 ```

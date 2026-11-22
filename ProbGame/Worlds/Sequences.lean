@@ -39,8 +39,6 @@ def iidSequence (n : ℕ) (μ : DiscreteMeasure α) : DiscreteMeasure (List α) 
 list of the outcomes.)
 
 For the game two rules: `seq_zero : iidSequence 0 μ = pure []` and `seq_succ : iidSequence (n + 1) μ = do let y ← μ; let l ← iidSequence n μ; pure (y :: l)` (`y :: l` is the list `l` with `y` in front; `[y]` is `y :: []`).
-
-*Tip.* `rw [seq_succ, seq_zero]`, `simp only [pure_bind]`.
 :::
 
 :::proofde
@@ -55,8 +53,6 @@ def iidSequence (n : ℕ) (μ : DiscreteMeasure α) : DiscreteMeasure (List α) 
 Liste der Ergebnisse.)
 
 Fürs Spiel zwei Regeln: `seq_zero : iidSequence 0 μ = pure []` und `seq_succ : iidSequence (n + 1) μ = do let y ← μ; let l ← iidSequence n μ; pure (y :: l)` (`y :: l` ist die Liste `l` mit `y` vorne; `[y]` ist `y :: []`).
-
-*Tipp.* `rw [seq_succ, seq_zero]`, `simp only [pure_bind]`.
 :::
 :::solution
 ```
@@ -77,14 +73,10 @@ simp only [pure_bind]
 
 :::proofen
 `seq_succ_apply : iidSequence (n + 1) μ (a :: l) = μ a * iidSequence n μ l` and `seq_zero_nil : iidSequence 0 μ [] = 1` (`[true, false]` is `true :: false :: []`).
-
-*Tip.* `rw [seq_succ_apply, seq_succ_apply, seq_zero_nil, mul_one, coin_true, coin_false]`.
 :::
 
 :::proofde
 `seq_succ_apply : iidSequence (n + 1) μ (a :: l) = μ a * iidSequence n μ l` und `seq_zero_nil : iidSequence 0 μ [] = 1` (`[true, false]` ist `true :: false :: []`).
-
-*Tipp.* `rw [seq_succ_apply, seq_succ_apply, seq_zero_nil, mul_one, coin_true, coin_false]`.
 :::
 :::solution
 ```
@@ -104,14 +96,10 @@ rw [seq_succ_apply, seq_succ_apply, seq_zero_nil, mul_one, coin_true, coin_false
 
 :::proofen
 `count_true_cons : (y :: l).count true = y.toNat + l.count true`.
-
-*Tip.* `rw [count_true_cons, Bool.toNat_true]`.
 :::
 
 :::proofde
 `count_true_cons : (y :: l).count true = y.toNat + l.count true`.
-
-*Tipp.* `rw [count_true_cons, Bool.toNat_true]`.
 :::
 :::solution
 ```
@@ -127,18 +115,6 @@ rw [count_true_cons, Bool.toNat_true]
 
 :::de
 *Endgegner: binom zählt.* `binom p n` war durch Rekursion definiert, eine Münze und dann der Rest. Es ist, was man denkt: Wirf $`n` Münzen und zähl die `true`.
-:::
-
-:::proofen
-Induction on $`n`. At $`0` both sides are `pure 0` once `([] : List Bool).count true` is computed: `rfl`. In the step `binom_succ`, `seq_succ` and `ih`; then the move `count` goes into the `do` block (`map_bind`, `map_pure`, `bind_map_left`, from *Building with Coins*), and `count_true_cons` counts the first.
-
-*Tip.* `induction' n with n ih`; `rw [seq_zero, map_pure, binom_zero]`, `rfl`; `rw [binom_succ, seq_succ, ih]`, `simp only [map_bind, map_pure, bind_map_left, count_true_cons]`.
-:::
-
-:::proofde
-Induktion über $`n`. Bei $`0` sind beide Seiten `pure 0`, sobald `([] : List Bool).count true` ausgerechnet ist: `rfl`. Im Schritt `binom_succ`, `seq_succ` und `ih`; dann geht der Zug `count` in den `do`-Block (`map_bind`, `map_pure`, `bind_map_left`, aus *Bauen mit Münzen*), und `count_true_cons` zählt das erste.
-
-*Tipp.* `induction' n with n ih`; `rw [seq_zero, map_pure, binom_zero]`, `rfl`; `rw [binom_succ, seq_succ, ih]`, `simp only [map_bind, map_pure, bind_map_left, count_true_cons]`.
 :::
 :::solution
 ```

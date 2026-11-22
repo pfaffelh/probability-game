@@ -59,8 +59,6 @@ wandert zu den natürlichen Zahlen. So wird aus einer Münze eine Zufallszahl.
 maps that agree. As in *Maps*: `congr` reduces the goal to the two maps being equal, `ext b`
 to their being equal at every `b`; then, as in *Bool*, `cases b <;> rfl` does both cases in one
 line.
-
-*Tip.* `congr`, `ext b`, `cases b <;> rfl`.
 :::
 
 :::proofde
@@ -68,8 +66,6 @@ line.
 zwei Abbildungen, die übereinstimmen. Wie in *Abbildungen*: `congr` führt das Ziel darauf zurück,
 dass die beiden Abbildungen gleich sind, `ext b` darauf, dass sie an jeder Stelle `b` gleich sind;
 dann erledigt, wie in *Bool*, `cases b <;> rfl` beide Fälle in einer Zeile.
-
-*Tipp.* `congr`, `ext b`, `cases b <;> rfl`.
 :::
 :::solution
 ```
@@ -144,15 +140,11 @@ def binom (p : I) : ℕ → DiscreteMeasure ℕ
 :::proofen
 `binom` is defined by recursion on $`n`, as the natural numbers are (the definition is in the tip at
 the statement); this is its first case, true by definition.
-
-*Tip.* `rfl`.
 :::
 
 :::proofde
 `binom` ist durch Rekursion über $`n` definiert, wie die natürlichen Zahlen (die Definition steht im
 Tipp an der Aussage); das ist ihr erster Fall, wahr nach Definition.
-
-*Tipp.* `rfl`.
 :::
 :::solution
 ```
@@ -182,14 +174,10 @@ Eine Münze `X`, die Anzahl `Y` der anderen $`n`: Was ist die Anzahl aller $`n +
 
 :::proofen
 The second case of the definition.
-
-*Tip.* `rfl`.
 :::
 
 :::proofde
 Der zweite Fall der Definition.
-
-*Tipp.* `rfl`.
 :::
 :::solution
 ```
@@ -209,14 +197,10 @@ rfl
 
 :::proofen
 `pure_bind : (do let x ← pure a; f x) = f a`.
-
-*Tip.* `rw [pure_bind, Bool.cond_true]`.
 :::
 
 :::proofde
 `pure_bind : (do let x ← pure a; f x) = f a`.
-
-*Tipp.* `rw [pure_bind, Bool.cond_true]`.
 :::
 :::solution
 ```
@@ -236,14 +220,10 @@ rw [pure_bind, Bool.cond_true]
 
 :::proofen
 `bind_assoc : (do let y ← (do let x ← μ; f x); g y) = (do let x ← μ; let y ← f x; g y)`.
-
-*Tip.* `rw [bind_assoc]`.
 :::
 
 :::proofde
 `bind_assoc : (do let y ← (do let x ← μ; f x); g y) = (do let x ← μ; let y ← f x; g y)`.
-
-*Tipp.* `rw [bind_assoc]`.
 :::
 :::solution
 ```
@@ -263,14 +243,10 @@ rw [bind_assoc]
 
 :::proofen
 `add_zero : a + 0 = a`.
-
-*Tip.* `rw [add_zero]`.
 :::
 
 :::proofde
 `add_zero : a + 0 = a`.
-
-*Tipp.* `rw [add_zero]`.
 :::
 :::solution
 ```
@@ -296,8 +272,6 @@ more. To clean up `do` blocks, two new rules: `bind_assoc` (a `do` block in a `d
 block: `(do let y ← (do let x ← μ; f x); g y) = (do let x ← μ; let y ← f x; g y)`) and
 `pure_bind : (do let x ← pure a; f x) = f a` (drawing from a point mass `pure a` always gives `a`);
 and `add_zero : n + 0 = n`.
-
-*Tip.* `rw [binom_succ, binom_succ, binom_zero]`, then `simp only [bind_assoc, pure_bind, add_zero]`.
 :::
 
 :::proofde
@@ -308,8 +282,6 @@ mehr. Zum Aufräumen von `do`-Blöcken zwei neue Regeln: `bind_assoc` (ein `do`-
 `do`-Block ist ein `do`-Block: `(do let y ← (do let x ← μ; f x); g y) = (do let x ← μ; let y ← f x; g y)`)
 und `pure_bind : (do let x ← pure a; f x) = f a` (aus einer Punktmasse `pure a` zieht man immer `a`);
 und `add_zero : n + 0 = n`.
-
-*Tipp.* `rw [binom_succ, binom_succ, binom_zero]`, dann `simp only [bind_assoc, pure_bind, add_zero]`.
 :::
 :::solution
 ```
@@ -344,14 +316,10 @@ wickelt `binom` aus und räumt die `do`-Blöcke auf, wie im Level davor: `simp`,
 
 :::proofen
 `add_assoc : a + b + c = a + (b + c)` (`a + b + c` is `(a + b) + c`).
-
-*Tip.* `rw [add_assoc]`.
 :::
 
 :::proofde
 `add_assoc : a + b + c = a + (b + c)` (`a + b + c` ist `(a + b) + c`).
-
-*Tipp.* `rw [add_assoc]`.
 :::
 :::solution
 ```
@@ -375,14 +343,10 @@ In den nächsten Leveln kommt $`B(2, p)` schon gebaut.
 
 :::proofen
 Three throws are `binom p 3`. New: `add_assoc : a + b + c = a + (b + c)`.
-
-*Tip.* As in *The number of `true`*, and `add_assoc` in the `simp only`.
 :::
 
 :::proofde
 Drei Würfe sind `binom p 3`. Neu: `add_assoc : a + b + c = a + (b + c)`.
-
-*Tipp.* Wie in *Die Anzahl `true`*, und `add_assoc` im `simp only`.
 :::
 :::solution
 ```
@@ -450,21 +414,11 @@ sie. Die Summe unabhängiger Zufallszahlen hat die *Faltung* $`*` ihrer Verteilu
 :::proofen
 *For all $`n` and $`m`.* On the board it was $`B(2, p) * B(2, p) = B(4, p)`; here it is for all $`n` and $`m`: the
 sum of independent binomials is binomial.
-
-*Tip.* Induction on `m`. Case $`0`: `rw [binom_zero]`, `simp only [pure_bind, add_zero, bind_pure]`.
-Case $`m + 1`: write `binom p (m + 1)` with `← binom_succ' p m`, then `n + (m + 1)` as
-`n + m + 1` (`← add_assoc`) and that again with `← binom_succ' p (n + m)`; now `← ih`, and clean up
-with `simp only [bind_assoc, pure_bind, add_assoc]`.
 :::
 
 :::proofde
 *Für alle $`n` und $`m`.* Auf dem Spielfeld war es $`B(2, p) * B(2, p) = B(4, p)`; hier gilt es für alle $`n`
 und $`m`: Die Summe unabhängiger Binomialverteilungen ist binomial.
-
-*Tipp.* Induktion nach `m`. Fall $`0`: `rw [binom_zero]`, `simp only [pure_bind, add_zero, bind_pure]`.
-Fall $`m + 1`: schreibe `binom p (m + 1)` mit `← binom_succ' p m` um, dann `n + (m + 1)` als
-`n + m + 1` (`← add_assoc`) und das wieder mit `← binom_succ' p (n + m)`; jetzt `← ih`, und räume auf
-mit `simp only [bind_assoc, pure_bind, add_assoc]`.
 :::
 :::solution
 ```
@@ -486,24 +440,6 @@ go into two functions.
 :::de
 *Boss: die Mehrheit von dreien.* `true`, wenn mindestens zwei von drei Münzen `true` zeigen. Jede Münze
 muss in zwei Funktionen gehen.
-:::
-
-:::proofen
-*Boss.* The majority of three is: at least two `true`, out of three throws. `decide (2 ≤ n)` is
-`true` when $`2 \le n`. Everything of this world at once.
-
-*Tip.* Unfold `binom p 3` with `binom_succ` (three times) and `binom_zero`; clean up with
-`simp only [map_bind, bind_assoc, pure_bind, map_pure, add_zero]`; then go under the three throws
-and look at all eight cases.
-:::
-
-:::proofde
-*Endgegner.* Die Mehrheit von dreien heißt: mindestens zweimal `true`, bei drei Würfen.
-`decide (2 ≤ n)` ist `true`, wenn $`2 \le n`. Alles aus dieser Welt auf einmal.
-
-*Tipp.* Wickle `binom p 3` mit `binom_succ` (dreimal) und `binom_zero` aus; räume auf mit
-`simp only [map_bind, bind_assoc, pure_bind, map_pure, add_zero]`; dann geh unter die drei Würfe und
-sieh dir alle acht Fälle an.
 :::
 :::solution
 ```

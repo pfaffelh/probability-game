@@ -151,8 +151,6 @@ column `x = false` is the next level). Now the two sides are not the same as the
 
 (a function given by cases: `true` goes to `false`, `false` to `true`). Here Lean knows the value,
 `true`, so it takes that case: `!true` reduces to `false`. Then both sides are the same.
-
-*Tip.* `rfl`.
 :::
 
 :::proofde
@@ -165,8 +163,6 @@ Spalte `x = false` ist das nächste Level). Jetzt sind die beiden Seiten nicht s
 (eine Funktion, durch Fälle gegeben: `true` geht nach `false`, `false` nach `true`). Hier kennt Lean
 den Wert, `true`, also nimmt es diesen Fall: `!true` reduziert zu `false`. Danach sind beide Seiten
 gleich.
-
-*Tipp.* `rfl`.
 :::
 :::solution
 ```
@@ -191,15 +187,11 @@ bewiesen, die Regel `Bool.not_true`.
 
 :::proofen
 `not` is defined by its two cases, and here Lean knows the value: `!false` reduces to `true`.
-
-*Tip.* `rfl`.
 :::
 
 :::proofde
 `not` ist durch seine zwei Fälle definiert, und hier kennt Lean den Wert: `!false` reduziert zu
 `true`.
-
-*Tipp.* `rfl`.
 :::
 :::solution
 ```
@@ -351,8 +343,6 @@ Das sind die Kandidaten für die Lücke. Tippe einen an; ein Tipp auf die gefül
 First the statement: your circuit is `x || ▢`, and it is to be `true` for every `x`. What goes into
 the gap? Then the proof: `||` is defined by cases of its left side, `false || b` reduces to `b`, and
 `true || b` to `true`. So `cases x`, then `rfl` in each case. Your result becomes the lemma `Bool.or_not_self`.
-
-*Tip.* `!x` (or `true`); then `cases x`, `rfl`, `rfl`.
 :::
 
 :::proofde
@@ -360,8 +350,6 @@ Zuerst die Aussage: Deine Schaltung ist `x || ▢`, und sie soll für jedes `x` 
 in die Lücke? Dann der Beweis: `||` ist durch Fälle seiner linken Seite definiert, `false || b`
 reduziert zu `b`, und `true || b` zu `true`. Also `cases x`, dann `rfl` in jedem Fall. Dein Ergebnis
 wird das Lemma `Bool.or_not_self`.
-
-*Tipp.* `!x` (oder `true`); dann `cases x`, `rfl`, `rfl`.
 :::
 :::solution
 ```
@@ -405,15 +393,11 @@ rfl
 :::proofen
 What is `x && x`? `&&` is defined by cases of its left side, as `||`: so `cases x`, then `rfl` in
 each case. Your result becomes the lemma `Bool.and_self`.
-
-*Tip.* `cases x`, `rfl`, `rfl`.
 :::
 
 :::proofde
 Was ist `x && x`? `&&` ist durch Fälle seiner linken Seite definiert, wie `||`: also `cases x`,
 dann in jedem Fall `rfl`. Dein Ergebnis wird das Lemma `Bool.and_self`.
-
-*Tipp.* `cases x`, `rfl`, `rfl`.
 :::
 :::solution
 ```
@@ -439,15 +423,11 @@ rfl
 :::proofen
 The counterpart of *Always true, without always true*, with `&&` instead of `||`. Your result becomes
 the lemma `Bool.and_not_self`.
-
-*Tip.* `cases x`, `rfl`, `rfl`.
 :::
 
 :::proofde
 Das Gegenstück zu *Immer true, ohne immer true*, mit `&&` statt `||`. Dein Ergebnis wird das Lemma
 `Bool.and_not_self`.
-
-*Tipp.* `cases x`, `rfl`, `rfl`.
 :::
 :::solution
 ```
@@ -469,14 +449,6 @@ rfl
 :::de
 *bif mit false.* Der andere Fall: das Zweite.
 :::
-
-:::proofen
-*Tip.* `rfl`.
-:::
-
-:::proofde
-*Tipp.* `rfl`.
-:::
 :::solution
 ```
 rfl
@@ -494,14 +466,6 @@ rfl
 
 :::de
 *bif mit zweimal demselben.* Sind beide Zweige gleich, ist die Bedingung egal.
-:::
-
-:::proofen
-*Tip.* `cases c`, then `rw [Bool.cond_false]` and `rw [Bool.cond_true]`.
-:::
-
-:::proofde
-*Tipp.* `cases c`, dann `rw [Bool.cond_false]` und `rw [Bool.cond_true]`.
 :::
 :::solution
 ```
@@ -540,15 +504,11 @@ Aussagen beweist es?
 :::proofen
 At least one is `true` exactly when not both are `false`. Two variables, so four cases: with `<;>`
 from the level before, in one line. Your result becomes the lemma `or_eq`.
-
-*Tip.* `cases x <;> cases y <;> rfl`.
 :::
 
 :::proofde
 Mindestens eins ist `true` genau dann, wenn nicht beide `false` sind. Zwei Variablen, also vier Fälle:
 mit `<;>` aus dem Level davor in einer Zeile. Dein Ergebnis wird das Lemma `or_eq`.
-
-*Tipp.* `cases x <;> cases y <;> rfl`.
 :::
 :::solution
 ```
@@ -574,18 +534,12 @@ genau ein Eingang `true` ist: mindestens einer, aber nicht beide. In Lean ist da
 
 :::proofen
 The table has four rows now, one for each pair of values: first `x` decides, then `y`, a `bif` in
-each branch of a `bif`. `cases x` makes two goals; in each, `cases y` makes two more: four goals, the
-four rows. With `<;>`, as in the levels before, all in one line.
-
-*Tip.* `cases x <;> cases y <;> rfl`.
+each branch of a `bif`.
 :::
 
 :::proofde
 Die Tafel hat jetzt vier Zeilen, eine für jedes Paar von Werten: erst entscheidet `x`, dann `y`, ein
-`bif` in jedem Zweig eines `bif`. `cases x` macht zwei Ziele; in jedem macht `cases y` zwei weitere:
-vier Ziele, die vier Zeilen. Mit `<;>`, wie in den Leveln davor, alles in einer Zeile.
-
-*Tipp.* `cases x <;> cases y <;> rfl`.
+`bif` in jedem Zweig eines `bif`.
 :::
 :::solution
 ```

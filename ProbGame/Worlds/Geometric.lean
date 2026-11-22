@@ -39,8 +39,6 @@ def geom (p : I) : DiscreteMeasure ℕ := ⟨geomMass p⟩
 ```
 
 The first case.
-
-*Tip.* `rfl`.
 :::
 
 :::proofde
@@ -55,8 +53,6 @@ def geom (p : I) : DiscreteMeasure ℕ := ⟨geomMass p⟩
 ```
 
 Der erste Fall.
-
-*Tipp.* `rfl`.
 :::
 :::solution
 ```
@@ -76,14 +72,10 @@ rfl
 
 :::proofen
 By definition.
-
-*Tip.* `rfl`.
 :::
 
 :::proofde
 Nach Definition.
-
-*Tipp.* `rfl`.
 :::
 :::solution
 ```
@@ -103,14 +95,10 @@ rfl
 
 :::proofen
 Induction on $`k`; `pow_succ' : a ^ (n + 1) = a * a ^ n` and `mul_assoc` (read backwards).
-
-*Tip.* `induction' k with k ih`; `rw [geom_zero, pow_zero, one_mul]`; `rw [geom_succ, ih, ← mul_assoc, ← pow_succ']`.
 :::
 
 :::proofde
 Induktion über $`k`; `pow_succ' : a ^ (n + 1) = a * a ^ n` und `mul_assoc` (rückwärts).
-
-*Tipp.* `induction' k with k ih`; `rw [geom_zero, pow_zero, one_mul]`; `rw [geom_succ, ih, ← mul_assoc, ← pow_succ']`.
 :::
 :::solution
 ```
@@ -132,14 +120,10 @@ rw [geom_succ, ih, ← mul_assoc, ← pow_succ']
 
 :::proofen
 Induction on $`k`; `add_right_comm` brings `k + 1 + m` into the form `k + m + 1`.
-
-*Tip.* `induction' k with k ih`; `rw [zero_add, pow_zero, one_mul]`; `rw [add_right_comm, geom_succ, ih, ← mul_assoc, ← pow_succ']`.
 :::
 
 :::proofde
 Induktion über $`k`; `add_right_comm` bringt `k + 1 + m` in die Form `k + m + 1`.
-
-*Tipp.* `induction' k with k ih`; `rw [zero_add, pow_zero, one_mul]`; `rw [add_right_comm, geom_succ, ih, ← mul_assoc, ← pow_succ']`.
 :::
 :::solution
 ```
@@ -161,14 +145,10 @@ rw [add_right_comm, geom_succ, ih, ← mul_assoc, ← pow_succ']
 
 :::proofen
 `ENNReal.tsum_geometric : ∑' k, r ^ k = (1 - r)⁻¹`, and `one_sub_symm : 1 - ↑(σ p) = ↑p`.
-
-*Tip.* `rw [ENNReal.tsum_geometric, one_sub_symm]`.
 :::
 
 :::proofde
 `ENNReal.tsum_geometric : ∑' k, r ^ k = (1 - r)⁻¹` und `one_sub_symm : 1 - ↑(σ p) = ↑p`.
-
-*Tipp.* `rw [ENNReal.tsum_geometric, one_sub_symm]`.
 :::
 :::solution
 ```
@@ -188,14 +168,10 @@ rw [ENNReal.tsum_geometric, one_sub_symm]
 
 :::proofen
 `ENNReal.tsum_mul_right : ∑' k, f k * a = (∑' k, f k) * a`.
-
-*Tip.* `rw [ENNReal.tsum_mul_right, ENNReal.tsum_geometric, one_sub_symm]`.
 :::
 
 :::proofde
 `ENNReal.tsum_mul_right : ∑' k, f k * a = (∑' k, f k) * a`.
-
-*Tipp.* `rw [ENNReal.tsum_mul_right, ENNReal.tsum_geometric, one_sub_symm]`.
 :::
 :::solution
 ```
@@ -215,14 +191,10 @@ rw [ENNReal.tsum_mul_right, ENNReal.tsum_geometric, one_sub_symm]
 
 :::proofen
 Your formula under the sum (`simp only`, it rewrites under `∑'`), the last level, and `ENNReal.inv_mul_cancel (h₀ : a ≠ 0) (h₁ : a ≠ ⊤) : a⁻¹ * a = 1`, with `mass_ne_zero h : ↑p ≠ 0` and `mass_finite p : ↑p ≠ ⊤`.
-
-*Tip.* `simp only [geom_formula]`, `rw [ENNReal.tsum_mul_right, ENNReal.tsum_geometric, one_sub_symm]`, `rw [ENNReal.inv_mul_cancel (mass_ne_zero h) (mass_finite p)]`.
 :::
 
 :::proofde
 Deine Formel unter der Summe (`simp only`, es schreibt unter `∑'` um), das letzte Level, und `ENNReal.inv_mul_cancel (h₀ : a ≠ 0) (h₁ : a ≠ ⊤) : a⁻¹ * a = 1`, mit `mass_ne_zero h : ↑p ≠ 0` und `mass_finite p : ↑p ≠ ⊤`.
-
-*Tipp.* `simp only [geom_formula]`, `rw [ENNReal.tsum_mul_right, ENNReal.tsum_geometric, one_sub_symm]`, `rw [ENNReal.inv_mul_cancel (mass_ne_zero h) (mass_finite p)]`.
 :::
 :::solution
 ```
@@ -240,18 +212,6 @@ rw [ENNReal.inv_mul_cancel (mass_ne_zero h) (mass_finite p)]
 
 :::de
 *Endgegner: Warten auf das erste true.* Wirf einmal: Bei `true` ist es $`0`; bei `false` fang von vorne an, und zähl eins dazu. Die geometrische Verteilung ist die, die das tut: Sie ist durch ihre Massen definiert, und hier ist sie ein `do`-Block, der sich selbst aufruft.
-:::
-
-:::proofen
-Two distributions on `ℕ` are the same when they have the same mass at every `k`: `ext k`. Then `k` is `0` or `k + 1`: `cases k`. The rules of *Binomial* do the rest.
-
-*Tip.* `ext k`, `cases k`; at `0`: `rw [coin_bind_apply, Bool.cond_true, Bool.cond_false, pure_self, shift_zero, mul_zero, add_zero, mul_one, geom_zero]`; at `k + 1`: `rw [coin_bind_apply, Bool.cond_true, Bool.cond_false, pure_zero_succ, shift_succ, mul_zero, zero_add, geom_succ]`.
-:::
-
-:::proofde
-Zwei Verteilungen auf `ℕ` sind gleich, wenn sie an jedem `k` dieselbe Masse haben: `ext k`. Dann ist `k` gleich `0` oder `k + 1`: `cases k`. Die Regeln aus *Binomial* erledigen den Rest.
-
-*Tipp.* `ext k`, `cases k`; bei `0`: `rw [coin_bind_apply, Bool.cond_true, Bool.cond_false, pure_self, shift_zero, mul_zero, add_zero, mul_one, geom_zero]`; bei `k + 1`: `rw [coin_bind_apply, Bool.cond_true, Bool.cond_false, pure_zero_succ, shift_succ, mul_zero, zero_add, geom_succ]`.
 :::
 :::solution
 ```

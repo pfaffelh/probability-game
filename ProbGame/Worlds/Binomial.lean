@@ -34,16 +34,12 @@ Punkt.
 As for `bind_true`: `bind_apply : (do let a ← μ; f a) b = ∑ a, μ a * f a b` and the two summands of a sum over
 `Bool`, then the masses of the coin. What you prove is unlocked as `coin_bind_apply`, with the mark
 *simp*: from now on `simp` uses it by itself.
-
-*Tip.* `rw [bind_apply, Fintype.sum_bool, coin_true, coin_false]`.
 :::
 
 :::proofde
 Wie bei `bind_true`: `bind_apply : (do let a ← μ; f a) b = ∑ a, μ a * f a b` und die zwei Summanden einer
 Summe über `Bool`, dann die Massen der Münze. Was du beweist, wird als `coin_bind_apply`
 freigeschaltet, mit der Marke *simp*: Ab jetzt benutzt `simp` es von selbst.
-
-*Tipp.* `rw [bind_apply, Fintype.sum_bool, coin_true, coin_false]`.
 :::
 :::solution
 ```
@@ -64,16 +60,12 @@ rw [bind_apply, Fintype.sum_bool, coin_true, coin_false]
 :::proofen
 `pure_apply : (pure a) b = bif a == b then 1 else 0`, from *One Coin*; and
 `beq_self_eq_true : (a == a) = true`. What you prove is unlocked as `pure_self`, with the mark *simp*.
-
-*Tip.* `rw [pure_apply, beq_self_eq_true, Bool.cond_true]`.
 :::
 
 :::proofde
 `pure_apply : (pure a) b = bif a == b then 1 else 0`, aus *Eine Münze*; und
 `beq_self_eq_true : (a == a) = true`. Was du beweist, wird als `pure_self` freigeschaltet, mit der
 Marke *simp*.
-
-*Tipp.* `rw [pure_apply, beq_self_eq_true, Bool.cond_true]`.
 :::
 :::solution
 ```
@@ -144,14 +136,10 @@ rw [binom_zero, pure_zero_succ]
 
 :::proofen
 `shift_succ : (do let Y ← μ; pure (1 + Y)) (k + 1) = μ k` and `shift_zero : (do let Y ← μ; pure (1 + Y)) 0 = 0`. After this level both carry the mark *simp*.
-
-*Tip.* `rw [shift_succ, shift_zero, add_zero]`.
 :::
 
 :::proofde
 `shift_succ : (do let Y ← μ; pure (1 + Y)) (k + 1) = μ k` und `shift_zero : (do let Y ← μ; pure (1 + Y)) 0 = 0`. Nach diesem Level tragen beide die Marke *simp*.
-
-*Tipp.* `rw [shift_succ, shift_zero, add_zero]`.
 :::
 :::solution
 ```
@@ -175,8 +163,6 @@ rw [shift_succ, shift_zero, add_zero]
 `true` branch is `shift_zero`, and `bind_pure` cleans up. Two rules are new: `Bool.toNat_false : false.toNat = 0`
 and `mul_zero : a * 0 = 0`. `simp` does not use a rule by itself in the level that brings it; you
 give it to `simp` with `simp [h₁, h₂]`.
-
-*Tip.* `rw [binom_succ]`, then `simp [Bool.toNat_false, mul_zero]`.
 :::
 
 :::proofde
@@ -185,8 +171,6 @@ Marke *simp*: `coin_bind_apply` teilt den Wurf in `true` und `false`, `Bool.toNa
 `true`-Zweig ist `shift_zero`, und `bind_pure` räumt auf. Zwei Regeln sind neu:
 `Bool.toNat_false : false.toNat = 0` und `mul_zero : a * 0 = 0`. In dem Level, das eine Regel bringt,
 benutzt `simp` sie nicht von selbst; du gibst sie ihm mit `simp [h₁, h₂]`.
-
-*Tipp.* `rw [binom_succ]`, dann `simp [Bool.toNat_false, mul_zero]`.
 :::
 :::solution
 ```
@@ -208,15 +192,11 @@ simp [Bool.toNat_false, mul_zero]
 :::proofen
 As in the level before, now with `shift_succ`, which `simp` also knows. What you prove is unlocked as
 `binom_succ_succ`.
-
-*Tip.* `rw [binom_succ]`, `simp`.
 :::
 
 :::proofde
 Wie im Level davor, jetzt mit `shift_succ`, das `simp` auch kennt. Was du beweist, wird als
 `binom_succ_succ` freigeschaltet.
-
-*Tipp.* `rw [binom_succ]`, `simp`.
 :::
 :::solution
 ```
@@ -241,14 +221,10 @@ Auf dem Spielfeld drei Würfe: Bau `true` genau dann, wenn alle drei `false` sin
 
 :::proofen
 Induction on $`n` (from *Counting*): `pow_zero : a ^ 0 = 1`, `pow_succ : a ^ (n + 1) = a ^ n * a`.
-
-*Tip.* `induction' n with n ih`; `rw [binom_zero, pure_self, pow_zero]`; `rw [binom_succ_zero, ih, pow_succ, mul_comm]`.
 :::
 
 :::proofde
 Induktion über $`n` (aus *Zählen*): `pow_zero : a ^ 0 = 1`, `pow_succ : a ^ (n + 1) = a ^ n * a`.
-
-*Tipp.* `induction' n with n ih`; `rw [binom_zero, pure_self, pow_zero]`; `rw [binom_succ_zero, ih, pow_succ, mul_comm]`.
 :::
 :::solution
 ```
@@ -299,14 +275,10 @@ rw [binom_succ_succ, add_right_comm n 1 k, ih, add_assoc n k 1, ih, mul_zero, mu
 
 :::proofen
 In the step, the second summand asks for $`n + 1` times `true` in $`n` throws: `binom_above p n 0` (Lean reads `n + 0 + 1` as `n + 1`).
-
-*Tip.* `induction' n with n ih`; `rw [binom_zero, pure_self, pow_zero]`; `rw [binom_succ_succ, ih, binom_above p n 0, mul_zero, add_zero, pow_succ, mul_comm]`.
 :::
 
 :::proofde
 Im Schritt fragt der zweite Summand nach $`n + 1`-mal `true` in $`n` Würfen: `binom_above p n 0` (Lean liest `n + 0 + 1` als `n + 1`).
-
-*Tipp.* `induction' n with n ih`; `rw [binom_zero, pure_self, pow_zero]`; `rw [binom_succ_succ, ih, binom_above p n 0, mul_zero, add_zero, pow_succ, mul_comm]`.
 :::
 :::solution
 ```
@@ -317,25 +289,98 @@ rw [binom_succ_succ, ih, binom_above p n 0, mul_zero, add_zero, pow_succ, mul_co
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (k m : ℕ) : binom p (k + m) k = ↑p ^ k * ↑(σ p) ^ m * ((k + m).choose k : ℝ≥0∞)") (lemma := "binom_formula") (new := "ring, one_mul, Nat.choose_self, Nat.choose_zero_right, Nat.choose_succ_succ', Nat.cast_add, Nat.cast_one") (group := "chance.count") (uses := "add_zero, binom_diag, pow_zero, mul_one, Nat.choose_self, Nat.cast_one, zero_add, binom_all_false, one_mul, Nat.choose_zero_right, add_assoc, binom_succ_succ, add_right_comm, Nat.choose_succ_succ', Nat.cast_add, pow_succ, mul_zero, add_comm, binom_succ_zero")
+::::leanonly (proof := "(n : ℕ) : (n.choose 0 : ℝ≥0∞) = 1 ∧ 1 * (n.choose n : ℝ≥0∞) = 1") (new := "Nat.choose_zero_right, Nat.choose_self, Nat.cast_one, one_mul") (group := "chance.count") (uses := "Nat.choose_zero_right, Nat.cast_one, one_mul, Nat.choose_self, Nat.cast_add, mul_one")
+:::en
+*The edges of Pascal's triangle.* `n.choose k` is the number of ways to choose $`k` out of $`n`: $`\binom{n}{k}`. None of $`n`, or all of $`n`: one way each.
+:::
+
+:::de
+*Die Ränder des Pascalschen Dreiecks.* `n.choose k` ist die Anzahl der Möglichkeiten, $`k` aus $`n` zu wählen: $`\binom{n}{k}`. Keins aus $`n`, oder alle aus $`n`: je eine Möglichkeit.
+:::
+
+:::proofen
+`Nat.choose_zero_right : n.choose 0 = 1` and `Nat.choose_self : n.choose n = 1` are about natural numbers; in the statement they stand as masses, `(↑(n.choose 0) : ℝ≥0∞)`. `Nat.cast_one : ↑1 = 1` makes the natural number `1` the mass `1`. And `one_mul : 1 * a = a`. Two statements again: `constructor`.
+:::
+
+:::proofde
+`Nat.choose_zero_right : n.choose 0 = 1` und `Nat.choose_self : n.choose n = 1` handeln von natürlichen Zahlen; in der Aussage stehen sie als Massen, `(↑(n.choose 0) : ℝ≥0∞)`. `Nat.cast_one : ↑1 = 1` macht aus der natürlichen Zahl `1` die Masse `1`. Und `one_mul : 1 * a = a`. Wieder zwei Aussagen: `constructor`.
+:::
+:::solution
+```
+constructor
+rw [Nat.choose_zero_right, Nat.cast_one]
+rw [one_mul, Nat.choose_self, Nat.cast_one]
+```
+:::
+::::
+
+:::::leanonly (proof := "(n k : ℕ) : ((n + 1).choose (k + 1) : ℝ≥0∞) = (n.choose ⟦k ‖ k, k + 1, k + 2⟧ : ℝ≥0∞) + (n.choose (k + 1) : ℝ≥0∞)") (new := "Nat.choose_succ_succ', Nat.cast_add") (group := "chance.count") (uses := "Nat.choose_succ_succ', Nat.cast_add, Nat.cast_one")
+::::hint (anchor := "gap")
+:::en
+One of the $`n + 1` is the first. It is chosen, or it is not: how many are then still to choose among the other $`n`?
+:::
+
+:::de
+Eines der $`n + 1` ist das erste. Es wird gewählt oder nicht: Wie viele sind dann noch unter den anderen $`n` zu wählen?
+:::
+::::
+
+:::en
+*Pascal's triangle.* $`k + 1` out of $`n + 1`: with the first, or without it.
+:::
+
+:::de
+*Das Pascalsche Dreieck.* $`k + 1` aus $`n + 1`: mit dem ersten, oder ohne es.
+:::
+
+:::proofen
+`Nat.choose_succ_succ' : (n + 1).choose (k + 1) = n.choose k + n.choose (k + 1)`, for natural numbers. Then the sum stands inside `↑`: `Nat.cast_add : ↑(a + b) = ↑a + ↑b` takes it out.
+:::
+
+:::proofde
+`Nat.choose_succ_succ' : (n + 1).choose (k + 1) = n.choose k + n.choose (k + 1)`, für natürliche Zahlen. Dann steht die Summe in `↑`: `Nat.cast_add : ↑(a + b) = ↑a + ↑b` holt sie heraus.
+:::
+:::solution
+```
+rw [Nat.choose_succ_succ', Nat.cast_add]
+```
+:::
+:::::
+
+::::leanonly (proof := "(a b x y : ℝ≥0∞) (k m : ℕ) : a * (a ^ k * b ^ (m + 1) * x) + b * (a ^ (k + 1) * b ^ m * y) = a ^ (k + 1) * b ^ (m + 1) * (x + y)") (new := "ring") (group := "chance.count") (uses := "-")
+:::en
+*Computing.* Both summands have the same powers of `a` and `b`. Seen at once, tedious rule by rule.
+:::
+
+:::de
+*Rechnen.* Beide Summanden haben dieselben Potenzen von `a` und `b`. Auf einen Blick zu sehen, Regel für Regel mühsam.
+:::
+
+:::proofen
+A new tactic: `ring` proves an equation that holds by computing with `+`, `*` and powers alone, whatever the letters are. It does not use hypotheses and no rules of the game: only the laws of computing.
+
+*Tip.* `ring`.
+:::
+
+:::proofde
+Eine neue Taktik: `ring` beweist eine Gleichung, die allein durch Rechnen mit `+`, `*` und Potenzen gilt, was auch immer die Buchstaben sind. Sie benutzt keine Voraussetzungen und keine Regeln des Spiels: nur die Rechengesetze.
+
+*Tipp.* `ring`.
+:::
+:::solution
+```
+ring
+```
+:::
+::::
+
+::::leanonly (proof := "(p : I) (k m : ℕ) : binom p (k + m) k = ↑p ^ k * ↑(σ p) ^ m * ((k + m).choose k : ℝ≥0∞)") (lemma := "binom_formula") (group := "chance.count") (uses := "add_zero, binom_diag, pow_zero, mul_one, Nat.choose_self, Nat.cast_one, zero_add, binom_all_false, one_mul, Nat.choose_zero_right, add_assoc, binom_succ_succ, add_right_comm, Nat.choose_succ_succ', Nat.cast_add, pow_succ, mul_zero, add_comm, binom_succ_zero")
 :::en
 *Boss: the binomial formula.* $`k` times `true` and $`m` times `false` in $`k + m` throws has the mass $`p^k (1 - p)^m \binom{k + m}{k}`. (Written with $`k + m` throws, there is no $`n - k`.)
 :::
 
 :::de
 *Endgegner: die Binomialformel.* $`k`-mal `true` und $`m`-mal `false` in $`k + m` Würfen hat die Masse $`p^k (1 - p)^m \binom{k + m}{k}`. (Mit $`k + m` Würfen geschrieben, gibt es kein $`n - k`.)
-:::
-
-:::proofen
-A double induction. On $`m`, for every $`k` (`generalizing k`): with $`m = 0` it is `binom_diag`. In the step on $`m`, an induction on $`k`: with $`k = 0` it is `binom_all_false`; else `binom_succ_succ` splits the first throw, the first summand is `ih2` (one `true` less), the second `ih (k + 1)` (one `false` less). Bring the numbers into their form with `add_right_comm` and `add_assoc`. Pascal's triangle `Nat.choose_succ_succ' : (n + 1).choose (k + 1) = n.choose k + n.choose (k + 1)`, `Nat.cast_add` takes the sum out of `↑`, and what is left is computing: `ring`.
-
-*Tip.* `induction' m with m ih generalizing k`; `rw [add_zero, binom_diag, pow_zero, mul_one, Nat.choose_self, Nat.cast_one, mul_one]`; `induction' k with k ih2`; `rw [zero_add, binom_all_false, pow_zero, one_mul, Nat.choose_zero_right, Nat.cast_one, mul_one]`; `rw [← add_assoc, binom_succ_succ, ih (k + 1), add_right_comm k 1 m, add_assoc k m 1, ih2]`, `rw [Nat.choose_succ_succ', Nat.cast_add]`, `ring`.
-:::
-
-:::proofde
-Eine doppelte Induktion. Über $`m`, für jedes $`k` (`generalizing k`): Mit $`m = 0` ist es `binom_diag`. Im Schritt über $`m` eine Induktion über $`k`: Mit $`k = 0` ist es `binom_all_false`; sonst teilt `binom_succ_succ` den ersten Wurf, der erste Summand ist `ih2` (ein `true` weniger), der zweite `ih (k + 1)` (ein `false` weniger). Bring die Zahlen mit `add_right_comm` und `add_assoc` in ihre Form. Das Pascalsche Dreieck `Nat.choose_succ_succ' : (n + 1).choose (k + 1) = n.choose k + n.choose (k + 1)`, `Nat.cast_add` holt die Summe aus `↑`, und was bleibt, ist Rechnen: `ring`.
-
-*Tipp.* `induction' m with m ih generalizing k`; `rw [add_zero, binom_diag, pow_zero, mul_one, Nat.choose_self, Nat.cast_one, mul_one]`; `induction' k with k ih2`; `rw [zero_add, binom_all_false, pow_zero, one_mul, Nat.choose_zero_right, Nat.cast_one, mul_one]`; `rw [← add_assoc, binom_succ_succ, ih (k + 1), add_right_comm k 1 m, add_assoc k m 1, ih2]`, `rw [Nat.choose_succ_succ', Nat.cast_add]`, `ring`.
 :::
 :::solution
 ```
@@ -365,14 +410,10 @@ Auf dem Spielfeld drei Würfe der Münze `p`: Zähl die `false`. Das Ziel ist bi
 
 :::proofen
 Bring both sides into the form of `binom_formula` (`add_comm`), use it twice; `symm_twice : σ (σ p) = p` and `Nat.choose_symm_add : (m + k).choose m = (m + k).choose k`; then `ring`.
-
-*Tip.* `rw [add_comm k m, binom_formula, add_comm m k, binom_formula, symm_twice, Nat.choose_symm_add]`, `ring`.
 :::
 
 :::proofde
 Bring beide Seiten in die Form von `binom_formula` (`add_comm`), benutze sie zweimal; `symm_twice : σ (σ p) = p` und `Nat.choose_symm_add : (m + k).choose m = (m + k).choose k`; dann `ring`.
-
-*Tipp.* `rw [add_comm k m, binom_formula, add_comm m k, binom_formula, symm_twice, Nat.choose_symm_add]`, `ring`.
 :::
 :::solution
 ```
