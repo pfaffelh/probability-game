@@ -78,8 +78,9 @@ multiply, over the rows they add (`bind_true`): both `true` is `coin (p * q)`.
 
 **Tactics.** `simp` (the game's), `ring`.
 
-**Path.** The simplifier and its quiz. `do` is `bind`; `bind_true`. `coin_and`. The same product
-twice (`ring`). Boss: exactly one `true`, its mass computed.
+**Path.** A board first: one draw, used twice (`bind_pure`). `do` is `bind`; `bind_true`. The
+simplifier and its quiz. `coin_and`. The same product twice (`ring`). Boss: exactly one `true`, its
+mass computed.
 
 ## 6. Laws of `do` (10 levels)
 

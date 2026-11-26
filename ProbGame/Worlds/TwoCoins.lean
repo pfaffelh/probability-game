@@ -49,6 +49,127 @@ Die Schaltung, von oben nach unten gelesen, ist ein `do`-Block in Lean: jede Mü
 Ergebnis, mit dem, was die Bausteine rechnen. Die Beweise lernen die Regeln der `do`-Blöcke eine nach
 der anderen, wenn ein Level sie braucht; zuerst, was ein `do`-Block ist.
 :::
+:::::circuit (height := "440") (inputs := "x y") (gates := "") (coins := "p p") (target := "bool true:p false:1-p") (start := "a=and; a>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; pure (x && x)) = coin p") (new := "bind_pure") (play := "x>a.0; x>a.1") (uses := "Bool.and_self, bind_pure, pure_bind")
+::::hint (anchor := "statement")
+:::en
+`x` is not a random variable: it is the name of one draw from `coin p`, and the whole `do` block is a
+distribution.
+:::
+
+:::de
+`x` ist keine Zufallsvariable: Es ist der Name eines Zugs aus `coin p`, und der ganze `do`-Block ist
+eine Verteilung.
+:::
+::::
+
+:::en
+*One draw, used twice.* An `and` lies on the board already, and the target is the coin itself:
+`true` with $`p`.
+:::
+
+:::de
+*Ein Zug, zweimal benutzt.* Ein `and` liegt schon auf dem Spielfeld, und das Ziel ist die Münze
+selbst: `true` mit $`p`.
+:::
+
+:::proofen
+On the board, the coin `x` went into the `and` twice; in Lean that is `x && x`. `x` is the name of
+one draw from `coin p`, not a random variable: used twice, it is the same value twice. Two coins `x`
+and `y` would be two draws, with $`p^2` (soon, in `coin_and`). What is left, draw `x` and give it
+back, is `coin p` itself.
+
+New: the rule `bind_pure : (do let x ← μ; pure x) = μ`. The `x` of `let x ← coin p` is bound, as the
+`x` of `fun x => …` in *Maps*. (Lean itself reads `do let x ← μ; pure x` as `μ` at once, when you
+type it.)
+:::
+
+:::proofde
+Auf dem Spielfeld ging die Münze `x` zweimal ins `and`; in Lean ist das `x && x`. `x` ist der Name
+eines Zugs aus `coin p`, keine Zufallsvariable: Zweimal benutzt ist es zweimal derselbe Wert. Zwei
+Münzen `x` und `y` wären zwei Züge, mit $`p^2` (bald, in `coin_and`). Was bleibt, `x` ziehen und
+zurückgeben, ist `coin p` selbst.
+
+Neu: die Regel `bind_pure : (do let x ← μ; pure x) = μ`. Das `x` von `let x ← coin p` ist gebunden,
+wie das `x` von `fun x => …` in *Abbildungen*. (Lean selbst liest `do let x ← μ; pure x` sofort als
+`μ`, wenn du es eintippst.)
+:::
+:::solution
+```
+simp_rw [Bool.and_self, bind_pure]
+```
+:::
+:::::
+
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (do let x ← μ; f x) = μ.bind f") (uses := "-")
+:::en
+*`do` is `bind`.* `do let x ← μ; f x` draws `x` from `μ` and goes on with `f x`: `f` says, for each
+result of the first draw, how to go on. As a distribution, this is `μ.bind f`, as `Measure.bind` for
+measures. `do` is only a way to write it, easier to read when several draws follow each other.
+:::
+
+:::de
+*`do` ist `bind`.* `do let x ← μ; f x` zieht `x` aus `μ` und macht mit `f x` weiter: `f` sagt für
+jedes Ergebnis des ersten Zugs, wie es weitergeht. Als Verteilung ist das `μ.bind f`, wie
+`Measure.bind` für Maße. `do` ist nur eine Schreibweise dafür, leichter zu lesen, wenn mehrere Züge
+aufeinander folgen.
+:::
+
+:::proofen
+Both sides are the same, only written differently.
+:::
+
+:::proofde
+Beide Seiten sind dasselbe, nur anders geschrieben.
+:::
+:::solution
+```
+rfl
+```
+:::
+::::
+
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (do let x ← μ; f x) true = μ true * f true true + μ false * f false true") (new := "bind_apply") (lemma := "bind_true") (uses := "bind_apply, Fintype.sum_bool")
+:::en
+*Two ways to true.* The mass of `do let x ← μ; f x` at `true` comes two ways: the first draw is
+`true`, or it is `false`.
+:::
+
+:::de
+*Zwei Wege zu true.* Die Masse von `do let x ← μ; f x` bei `true` kommt auf zwei Wegen: Der erste
+Zug ist `true`, oder er ist `false`.
+:::
+
+:::proofen
+The definition of a draw sums over the first draw `a`: its mass, times the mass of what follows,
+
+```
+(do let a ← μ; f a) b = ∑' a, μ a * (f a) b
+```
+
+On a finite type, `∑'` is the finite sum `∑`, and that is the new rule
+`bind_apply : (do let a ← μ; f a) b = ∑ a, μ a * f a b`. On `Bool` it has two summands
+(`Fintype.sum_bool`). What you prove is unlocked as `bind_true`.
+:::
+
+:::proofde
+Die Definition eines Zugs summiert über den ersten Zug `a`: seine Masse, mal die Masse dessen, was
+folgt,
+
+```
+(do let a ← μ; f a) b = ∑' a, μ a * (f a) b
+```
+
+Auf einem endlichen Typ ist `∑'` die endliche Summe `∑`, und das ist die neue Regel
+`bind_apply : (do let a ← μ; f a) b = ∑ a, μ a * f a b`. Auf `Bool` hat sie zwei Summanden
+(`Fintype.sum_bool`). Was du beweist, wird als `bind_true` freigeschaltet.
+:::
+:::solution
+```
+rw [bind_apply, Fintype.sum_bool]
+```
+:::
+::::
+
 :::::leanonly (proof := "(p : I) : (bif false then coin p false else 0) + (bif !false then coin p true else 0) = ⟦↑p ‖ ↑p, ↑(σ p), 0, 1⟧") (new := "simp") (uses := "-")
 ::::hint (anchor := "gap")
 :::en
@@ -116,127 +237,6 @@ statements does it prove?
 :::de
 *Welche?* `simp` schreibt mit den Regeln um, die die Marke simp tragen, bis keine mehr passt. Welche
 dieser Aussagen beweist es?
-:::
-::::
-
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (do let x ← μ; f x) = μ.bind f") (uses := "-")
-:::en
-*`do` is `bind`.* `do let x ← μ; f x` draws `x` from `μ` and goes on with `f x`: `f` says, for each
-result of the first draw, how to go on. As a distribution, this is `μ.bind f`, as `Measure.bind` for
-measures. `do` is only a way to write it, easier to read when several draws follow each other.
-:::
-
-:::de
-*`do` ist `bind`.* `do let x ← μ; f x` zieht `x` aus `μ` und macht mit `f x` weiter: `f` sagt für
-jedes Ergebnis des ersten Zugs, wie es weitergeht. Als Verteilung ist das `μ.bind f`, wie
-`Measure.bind` für Maße. `do` ist nur eine Schreibweise dafür, leichter zu lesen, wenn mehrere Züge
-aufeinander folgen.
-:::
-
-:::proofen
-Both sides are the same, only written differently.
-:::
-
-:::proofde
-Beide Seiten sind dasselbe, nur anders geschrieben.
-:::
-:::solution
-```
-rfl
-```
-:::
-::::
-
-:::::circuit (height := "440") (inputs := "x y") (gates := "") (coins := "p p") (target := "bool true:p false:1-p") (start := "a=and; a>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; pure (x && x)) = coin p") (new := "bind_pure") (play := "x>a.0; x>a.1") (uses := "Bool.and_self, bind_pure, pure_bind")
-::::hint (anchor := "statement")
-:::en
-`x` is not a random variable: it is the name of one draw from `coin p`, and the whole `do` block is a
-distribution.
-:::
-
-:::de
-`x` ist keine Zufallsvariable: Es ist der Name eines Zugs aus `coin p`, und der ganze `do`-Block ist
-eine Verteilung.
-:::
-::::
-
-:::en
-*One draw, used twice.* An `and` lies on the board already, and the target is the coin itself:
-`true` with $`p`.
-:::
-
-:::de
-*Ein Zug, zweimal benutzt.* Ein `and` liegt schon auf dem Spielfeld, und das Ziel ist die Münze
-selbst: `true` mit $`p`.
-:::
-
-:::proofen
-On the board, the coin `x` went into the `and` twice; in Lean that is `x && x`. `x` is the name of
-one draw from `coin p`, not a random variable: used twice, it is the same value twice. Two coins `x`
-and `y` would be two draws, with $`p^2` (soon, in `coin_and`). What is left, draw `x` and give it
-back, is `coin p` itself.
-
-New: the rule `bind_pure : (do let x ← μ; pure x) = μ`. The `x` of `let x ← coin p` is bound, as the
-`x` of `fun x => …` in *Maps*. (Lean itself reads `do let x ← μ; pure x` as `μ` at once, when you
-type it.)
-:::
-
-:::proofde
-Auf dem Spielfeld ging die Münze `x` zweimal ins `and`; in Lean ist das `x && x`. `x` ist der Name
-eines Zugs aus `coin p`, keine Zufallsvariable: Zweimal benutzt ist es zweimal derselbe Wert. Zwei
-Münzen `x` und `y` wären zwei Züge, mit $`p^2` (bald, in `coin_and`). Was bleibt, `x` ziehen und
-zurückgeben, ist `coin p` selbst.
-
-Neu: die Regel `bind_pure : (do let x ← μ; pure x) = μ`. Das `x` von `let x ← coin p` ist gebunden,
-wie das `x` von `fun x => …` in *Abbildungen*. (Lean selbst liest `do let x ← μ; pure x` sofort als
-`μ`, wenn du es eintippst.)
-:::
-:::solution
-```
-simp_rw [Bool.and_self, bind_pure]
-```
-:::
-:::::
-
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (do let x ← μ; f x) true = μ true * f true true + μ false * f false true") (new := "bind_apply") (lemma := "bind_true") (uses := "bind_apply, Fintype.sum_bool")
-:::en
-*Two ways to true.* The mass of `do let x ← μ; f x` at `true` comes two ways: the first draw is
-`true`, or it is `false`.
-:::
-
-:::de
-*Zwei Wege zu true.* Die Masse von `do let x ← μ; f x` bei `true` kommt auf zwei Wegen: Der erste
-Zug ist `true`, oder er ist `false`.
-:::
-
-:::proofen
-The definition of a draw sums over the first draw `a`: its mass, times the mass of what follows,
-
-```
-(do let a ← μ; f a) b = ∑' a, μ a * (f a) b
-```
-
-On a finite type, `∑'` is the finite sum `∑`, and that is the new rule
-`bind_apply : (do let a ← μ; f a) b = ∑ a, μ a * f a b`. On `Bool` it has two summands
-(`Fintype.sum_bool`). What you prove is unlocked as `bind_true`.
-:::
-
-:::proofde
-Die Definition eines Zugs summiert über den ersten Zug `a`: seine Masse, mal die Masse dessen, was
-folgt,
-
-```
-(do let a ← μ; f a) b = ∑' a, μ a * (f a) b
-```
-
-Auf einem endlichen Typ ist `∑'` die endliche Summe `∑`, und das ist die neue Regel
-`bind_apply : (do let a ← μ; f a) b = ∑ a, μ a * f a b`. Auf `Bool` hat sie zwei Summanden
-(`Fintype.sum_bool`). Was du beweist, wird als `bind_true` freigeschaltet.
-:::
-:::solution
-```
-rw [bind_apply, Fintype.sum_bool]
-```
 :::
 ::::
 
