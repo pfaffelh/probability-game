@@ -56,15 +56,6 @@ Die Aussagen handeln von der Masse bei `true`: Das Spielfeld zeigt die ganze Ver
 bestimmt das Ergebnis.
 :::
 
-:::proofen
-Four rows, as in the boss of *Bool*: by hand, or with the two tactics from *Maps* that check them
-all.
-:::
-
-:::proofde
-Vier Zeilen, wie beim Endgegner von *Bool*: von Hand, oder mit den zwei Taktiken aus *Abbildungen*,
-die alle prüfen.
-:::
 :::solution
 ```
 revert x y
