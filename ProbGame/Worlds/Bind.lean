@@ -4,38 +4,29 @@ import ProbGame.Level
 open Verso.Genre Manual
 open ProbGame
 
-#doc (Manual) "Coins that Wait" =>
+#doc (Manual) "Multi-Stage Experiments" =>
 
 %%%
 htmlSplit := .never
 %%%
 
 :::en
-Every board is given, and your task is always the same: choose what goes into the fields of the `bind`
-gate, and drag it in. First, without coins, as in *Bool*: the `bind` gate looks at `x` (on top)
-and chooses a field, `T` or `F`, and the map in that field is applied to `y` (on the right side).
+Your task is always the same: fill the fields of the `bind` gate. `x` decides which map is chosen,
+`y` determines the result.
 
-Then a coin waits: it is thrown *after* the coin `x`, and **which** coin it is depends on what `x`
-showed. The waiting coin `y` is a `bind` box with a coin in each field: `coin p`, `coin (σ p)`,
-`pure true` or `pure false`, each with its small histogram. `y` becomes
-`bif x then coin q else coin r`: first throw `x`, then, depending on what came, the one or the other
-coin. In Lean: `do let x ← coin p; let y ← (bif x then coin q else coin r); …`.
+Then a second stage: *which* coin `y` is, depends on what the coin `x` showed, as in a tree
+diagram. In Lean: `do let x ← coin p; let y ← (bif x then coin q else coin r); …`.
 
 This world is one of two ways after *Laws of `do`*; the other is *Counting*. They do not need
 each other.
 :::
 
 :::de
-Jedes Spielfeld ist gegeben, und deine Aufgabe ist immer dieselbe: Wähle, was in die Felder des
-Bausteins `bind` kommt, und zieh es hinein. Zuerst ohne Münzen, wie in *Bool*: `bind` schaut auf
-`x` (oben) und wählt ein Feld, `T` oder `F`, und die Abbildung in diesem Feld wird auf `y` (rechts)
-angewandt.
+Deine Aufgabe ist immer dieselbe: Füll die Felder des Bausteins `bind`. `x` entscheidet, welche
+Abbildung gewählt wird, `y` bestimmt das Ergebnis.
 
-Dann wartet eine Münze: Sie wird *nach* der Münze `x` geworfen, und *welche* Münze es ist, hängt davon
-ab, was `x` zeigte. Die wartende Münze `y` ist ein `bind`-Kasten mit einer Münze in jedem Feld:
-`coin p`, `coin (σ p)`, `pure true` oder `pure false`, jede mit ihrem kleinen Histogramm. `y` wird zu
-`bif x then coin q else coin r`: erst `x` werfen, dann, je nachdem was kam, die eine oder die andere
-Münze. In Lean: `do let x ← coin p; let y ← (bif x then coin q else coin r); …`.
+Dann eine zweite Stufe: *Welche* Münze `y` ist, hängt davon ab, was die Münze `x` zeigte, wie
+im Baumdiagramm. In Lean: `do let x ← coin p; let y ← (bif x then coin q else coin r); …`.
 
 Diese Welt ist einer von zwei Wegen nach *Gesetze von `do`*; der andere ist *Zählen*. Sie brauchen
 einander nicht.
@@ -57,26 +48,12 @@ Die Aussagen handeln von der Masse bei `true`: Das Spielfeld zeigt die ganze Ver
 
 ::::circuit (height := "540") (inputs := "x y") (gates := "") (table := "0001") (goal := "x && y") (proof := "(x y : Bool) : (if x then y else false) = (bif x then (bif y then true else false) else (bif y then false else false))") (start := "a=bind@240,250; x>a.0; y>a.1; a>out") (play := "a.T=id; a.F=false") (uses := "-")
 :::en
-*A gate of your own.* First without coins, as in *Bool*. There are four maps `Bool → Bool`:
-`id`, `not`, always `T`, always `F` (see *Maps*). New gate: `bind`. It is on the board already, wired;
-it has two fields, `T` and `F`, and your task is to put a map into each (drag it in, or tap the field
-until it is the one you want). Read it from top to bottom: the input on top chooses
-one of the two fields, `T` or `F` (the blue arrows). The value at the input on the right side goes
-into both fields (the two circles, joined below them); the field chosen applies its map to it. In Lean:
-`do let b ← c; if b then f v else g v`. Make it `and`: when `x` is `true`, `y` itself; when `x` is
-`false`, always `F`. (Tap a column of the output box: the field not used fades.)
+*A gate of your own.* New gate: `bind`. `x` decides which map is chosen, `y` determines the result.
 :::
 
 :::de
-*Ein eigener Baustein.* Zuerst ohne Münzen, wie in *Bool*. Es gibt vier Abbildungen
-`Bool → Bool`: `id`, `not`, immer `T`, immer `F` (siehe *Abbildungen*). Neuer Baustein: `bind`. Er liegt
-schon verdrahtet auf dem Spielfeld; er hat zwei Felder, `T` und `F`, und deine Aufgabe ist, in jedes
-eine Abbildung zu legen (hineinziehen, oder das Feld antippen, bis es die richtige ist). Lies ihn von oben nach unten: Der
-Eingang oben wählt eines der beiden Felder, `T` oder `F` (die blauen Pfeile). Der Wert am Eingang
-rechts geht in beide Felder (die zwei Kreise, unten verbunden); das gewählte Feld wendet seine
-Abbildung darauf an. In Lean:
-`do let b ← c; if b then f v else g v`. Mach daraus `and`: ist `x` `true`, `y` selbst; ist `x` `false`, immer
-`F`. (Tippe eine Spalte des Ausgabekastens an: Das Feld, das nicht benutzt wird, verblasst.)
+*Ein eigener Baustein.* Neuer Baustein: `bind`. `x` entscheidet, welche Abbildung gewählt wird, `y`
+bestimmt das Ergebnis.
 :::
 
 :::proofen
@@ -298,13 +275,13 @@ Zweimal umgedreht: Wo muss die Kette beginnen, um bei `true` zu enden?
 
 :::en
 *A chain: flip, and flip back.* A *Markov chain* goes step by step, and each step depends only on
-where the chain is now: `y` waits for `x`, `z` waits for `y`. Make each step flip: from `true` to
+where the chain is now: `y` comes after `x`, `z` after `y`. Make each step flip: from `true` to
 `false`, from `false` to `true`. Where is the chain after two steps?
 :::
 
 :::de
 *Eine Kette: umdrehen, und zurück.* Eine *Markov-Kette* geht Schritt für Schritt, und jeder Schritt
-hängt nur davon ab, wo die Kette gerade ist: `y` wartet auf `x`, `z` wartet auf `y`. Lass jeden Schritt
+hängt nur davon ab, wo die Kette gerade ist: `y` kommt nach `x`, `z` nach `y`. Lass jeden Schritt
 umdrehen: von `true` nach `false`, von `false` nach `true`. Wo ist die Kette nach zwei
 Schritten?
 :::
@@ -485,13 +462,11 @@ rw [prob_unused]
 
 ::::circuit (inputs := "x y z") (gates := "") (coins := "p ?|? ?|?") (target := "bool true:3p-3p^2+p^3 false:(1-p)^3") (start := "x>y.0; y>z.0; z>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else coin p); let z ← (bif y then pure true else coin p); pure z) true = (⟦↑p + ↑(σ p) * (↑p + ↑(σ p) * ↑p) ‖ ↑p + ↑(σ p) * (↑p + ↑(σ p) * ↑p), ↑p + ↑(σ p) * ↑p, ↑p * ↑p * ↑p, ↑p + ↑p + ↑p⟧ : ℝ≥0∞)") (play := "y.T=1; y.F=p; z.T=1; z.F=p") (uses := "bind_true, bind_false")
 :::en
-*Boss: three tries.* Throw until `true` comes, at most three times. `y` waits for `x`, and `z` waits
-for `y`. `false` only when all three tries fail: $`(1 - p)^3`.
+*Boss: three tries.* Throw until `true` comes, at most three times. `y` comes after `x`, and `z` after `y`. `false` only when all three tries fail: $`(1 - p)^3`.
 :::
 
 :::de
-*Boss: drei Versuche.* Wirf, bis `true` kommt, höchstens dreimal. `y` wartet auf `x`, und `z` wartet auf
-`y`. `false` nur, wenn alle drei Versuche scheitern: $`(1 - p)^3`.
+*Boss: drei Versuche.* Wirf, bis `true` kommt, höchstens dreimal. `y` kommt nach `x`, und `z` nach `y`. `false` nur, wenn alle drei Versuche scheitern: $`(1 - p)^3`.
 :::
 :::solution
 ```

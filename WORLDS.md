@@ -109,7 +109,7 @@ a coin that never shows `true` (`binom_never`). The coin at the other end (`bino
 
 **Open.** One level with a gap.
 
-## 8. Coins that Wait (15 levels)
+## 8. Multi-Stage Experiments (15 levels)
 
 **Goal.** Two-stage experiments: which coin is thrown second depends on the first. The mass of the
 result is the sum over the two ways, `p · q + (1 − p) · r` (total probability).
@@ -182,7 +182,7 @@ geometric stays geometric, a binomial stays binomial (`binom_thin`).
 
 **Tactics.** Everything so far, together; `bind_comm`.
 
-**Open.** Clear; the place where both ways (*Counting*, *Coins that Wait*) meet.
+**Open.** Clear; the place where both ways (*Counting*, *Multi-Stage Experiments*) meet.
 
 ## 14. Hypergeometric (14 levels)
 
@@ -210,7 +210,7 @@ answer to a gap. No level has a folded *Tip* line any more (before: 29, and 113 
 that). A tactic is written with its arguments only in the level that introduces it.
 
 **Questions.** Levels with a gap in the statement: Bool 8, Masses 7, One Coin 11, Maps 6, Two
-Coins 2, Laws of `do` 5, Counting 1, Coins that Wait 6, Balance 3, Sequences 1, Binomial 2,
+Coins 2, Laws of `do` 5, Counting 1, Multi-Stage Experiments 6, Balance 3, Sequences 1, Binomial 2,
 Geometric 6, Thinning 5, Hypergeometric 6. Five quizzes.
 
 **Tactics: three meetings.** A tactic is introduced (its text says what it does), practised in its world,
@@ -222,10 +222,10 @@ Its table now:
 |---|---|---|---|
 | `rfl`, `rw`, `cases`, `<;>` | Bool | everywhere | none |
 | `constructor` | Masses | Masses 1, One Coin 1, Binomial 2 | four levels |
-| `exact` | Masses | Masses 3, One Coin 1, Coins that Wait 1, Balance 1, Thinning 1 | none; a theorem with its argument only twice |
+| `exact` | Masses | Masses 3, One Coin 1, Multi-Stage Experiments 1, Balance 1, Thinning 1 | none; a theorem with its argument only twice |
 | `apply` | Masses | One Coin 4, Hypergeometric 2, five worlds 1 each | mostly `bool_ext`; now also `balance`, `coin_stays` twice |
 | `ext` | One Coin | Laws of `do` 6, Maps 2, Counting 2, three worlds 1 | none |
-| `revert`, `decide` | Maps | Maps 2, Coins that Wait 3 | two worlds |
+| `revert`, `decide` | Maps | Maps 2, Multi-Stage Experiments 3 | two worlds |
 | `simp_rw` | Maps | Laws of `do` 4, Maps 3, Two Coins 1 | gone after *Laws of `do`*: there `simp only` does its work |
 | `simp` | Two Coins | 31 levels in 9 worlds | none |
 | `simp only` | Laws of `do` | 18 levels in 7 worlds | none |
@@ -244,7 +244,7 @@ When which of the four that rewrite: the inventory says it at each (`rw`: not un
 2. Bosses: *Masses* 12 marked; `eq_coin` before the boss in *One Coin*; `binom_add` the boss of
    *Counting*; *Building with Coins* split into *Two Coins* (boss: exactly one `true`) and
    *Laws of `do`* (boss: at least one `true`).
-3. Gaps for the masses in *Coins that Wait*, *Geometric*, *Hypergeometric*.
+3. Gaps for the masses in *Multi-Stage Experiments*, *Geometric*, *Hypergeometric*.
 4. *Geometric* from the waiting coin; *Hypergeometric* with one draw, one of each, and the boss
    *the second ball*.
 5. A first, easy induction in *Counting* (`binom_never`); in *Maps* a quiz and a level for

@@ -14,7 +14,7 @@ htmlSplit := .never
 From coins to numbers: the gate *toNat* makes `false` into $`0` and `true` into $`1`, and *plus*
 adds numbers (on blue wires). Count how many of $`n` coins show `true`: that number has the *binomial
 distribution* $`B(n, p)`, in Lean `binom p n`. Its bars stand over $`0, 1, …, n`.
-This world is one of two ways after *Laws of `do`*; the other is *Coins that Wait*. They do
+This world is one of two ways after *Laws of `do`*; the other is *Multi-Stage Experiments*. They do
 not need each other.
 :::
 
@@ -31,7 +31,7 @@ Von Münzen zu Zahlen: Der Baustein *toNat* macht aus `false` die $`0` und aus `
 *plus* addiert Zahlen (auf blauen Leitungen). Zähle, wie viele von $`n` Münzen `true` zeigen: Diese
 Zahl hat die *Binomialverteilung* $`B(n, p)`, in Lean `binom p n`. Ihre Säulen stehen über
 $`0, 1, …, n`.
-Diese Welt ist einer von zwei Wegen nach *Gesetze von `do`*; der andere ist *Münzen, die warten*. Sie
+Diese Welt ist einer von zwei Wegen nach *Gesetze von `do`*; der andere ist *Mehrstufige Experimente*. Sie
 brauchen einander nicht.
 :::
 

@@ -11,11 +11,11 @@ htmlSplit := .never
 %%%
 
 :::en
-How long until the first `true`? A coin that is thrown again while it shows `false`: the waiting coin of *Coins that Wait*, as often as needed. The geometric distribution: its masses step by step, its formula, its lack of memory, and the `do` block that waits. In Lean only.
+How long until the first `true`? A coin that is thrown again while it shows `false`: the second stage of *Multi-Stage Experiments*, again and again. The geometric distribution: its masses step by step, its formula, its lack of memory, and the `do` block that waits. In Lean only.
 :::
 
 :::de
-Wie lange bis zum ersten `true`? Eine Münze, die nochmal geworfen wird, solange sie `false` zeigt: die wartende Münze aus *Münzen, die warten*, so oft wie nötig. Die geometrische Verteilung: ihre Massen Schritt für Schritt, ihre Formel, ihre Gedächtnislosigkeit, und der `do`-Block, der wartet. Nur in Lean.
+Wie lange bis zum ersten `true`? Eine Münze, die nochmal geworfen wird, solange sie `false` zeigt: die zweite Stufe aus *Mehrstufige Experimente*, immer wieder. Die geometrische Verteilung: ihre Massen Schritt für Schritt, ihre Formel, ihre Gedächtnislosigkeit, und der `do`-Block, der wartet. Nur in Lean.
 :::
 
 ::::leanonly (proof := "(p : I) : (do let x ← coin p; bif x then pure false else coin p) true = (⟦↑(σ p) * ↑p ‖ ↑p * ↑p, ↑(σ p) * ↑p, ↑(σ p), ↑p⟧ : ℝ≥0∞)") (group := "chance.count") (uses := "bind_true, bind_false")
@@ -28,11 +28,11 @@ Wie lange bis zum ersten `true`? Eine Münze, die nochmal geworfen wird, solange
 :::
 
 :::proofen
-A coin that waits, as in *Coins that Wait*.
+A second stage, as in *Multi-Stage Experiments*.
 :::
 
 :::proofde
-Eine Münze, die wartet, wie in *Münzen, die warten*.
+Eine zweite Stufe, wie in *Mehrstufige Experimente*.
 :::
 :::solution
 ```
@@ -44,11 +44,11 @@ simp
 
 ::::leanonly (proof := "(p : I) : (do let x ← coin p; bif x then pure false else (do let y ← coin p; bif y then pure false else coin p)) true = (⟦↑(σ p) * (↑(σ p) * ↑p) ‖ ↑(σ p) * ↑p, ↑p * (↑p * ↑(σ p)), ↑(σ p) * (↑(σ p) * ↑p), ↑(σ p) * ↑(σ p)⟧ : ℝ≥0∞)") (group := "chance.count") (uses := "bind_true, bind_false")
 :::en
-*At the third throw.* `true` exactly when the first `true` comes at the third throw: a waiting coin inside a waiting coin.
+*At the third throw.* `true` exactly when the first `true` comes at the third throw: an experiment in three stages.
 :::
 
 :::de
-*Beim dritten Wurf.* `true` genau dann, wenn das erste `true` beim dritten Wurf kommt: eine wartende Münze in einer wartenden Münze.
+*Beim dritten Wurf.* `true` genau dann, wenn das erste `true` beim dritten Wurf kommt: ein Experiment in drei Stufen.
 :::
 
 :::proofen
@@ -134,11 +134,11 @@ rfl
 
 ::::leanonly (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else coin p); let z ← (bif y then pure true else coin p); pure z) true = geom p 0 + geom p 1 + geom p 2") (group := "chance.count") (uses := "bind_true, geom_succ, geom_zero, bind_false")
 :::en
-*Three tries.* The boss of *Coins that Wait*: throw until `true` comes, at most three times. It comes at the first throw, at the second, or at the third: three masses of `geom p`.
+*Three tries.* The boss of *Multi-Stage Experiments*: throw until `true` comes, at most three times. It comes at the first throw, at the second, or at the third: three masses of `geom p`.
 :::
 
 :::de
-*Drei Versuche.* Der Endgegner aus *Münzen, die warten*: Wirf, bis `true` kommt, höchstens dreimal. Es kommt beim ersten Wurf, beim zweiten oder beim dritten: drei Massen von `geom p`.
+*Drei Versuche.* Der Endgegner aus *Mehrstufige Experimente*: Wirf, bis `true` kommt, höchstens dreimal. Es kommt beim ersten Wurf, beim zweiten oder beim dritten: drei Massen von `geom p`.
 :::
 
 :::proofen

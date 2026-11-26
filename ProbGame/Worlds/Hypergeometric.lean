@@ -11,11 +11,11 @@ htmlSplit := .never
 %%%
 
 :::en
-An urn with white and black balls; balls are drawn one after the other, without putting them back. The hypergeometric distribution, the number of white balls drawn, as a `do` block that draws ball by ball: each draw is a coin that waits (as in *Coins that Wait*), its chance depending on what was drawn before. At the end, a balance (as in *Balance*): the second ball. In Lean only.
+An urn with white and black balls; balls are drawn one after the other, without putting them back. The hypergeometric distribution, the number of white balls drawn, as a `do` block that draws ball by ball: each draw is a stage (as in *Multi-Stage Experiments*), its chance depending on what was drawn before. At the end, a balance (as in *Balance*): the second ball. In Lean only.
 :::
 
 :::de
-Eine Urne mit weißen und schwarzen Kugeln; Kugeln werden eine nach der anderen gezogen, ohne sie zurückzulegen. Die hypergeometrische Verteilung, die Anzahl der gezogenen weißen Kugeln, als `do`-Block, der Kugel für Kugel zieht: Jeder Zug ist eine Münze, die wartet (wie in *Münzen, die warten*), ihre Chance hängt davon ab, was vorher gezogen wurde. Am Ende ein Gleichgewicht (wie in *Gleichgewicht*): die zweite Kugel. Nur in Lean.
+Eine Urne mit weißen und schwarzen Kugeln; Kugeln werden eine nach der anderen gezogen, ohne sie zurückzulegen. Die hypergeometrische Verteilung, die Anzahl der gezogenen weißen Kugeln, als `do`-Block, der Kugel für Kugel zieht: Jeder Zug ist eine Stufe (wie in *Mehrstufige Experimente*), ihre Chance hängt davon ab, was vorher gezogen wurde. Am Ende ein Gleichgewicht (wie in *Gleichgewicht*): die zweite Kugel. Nur in Lean.
 :::
 
 ::::leanonly (proof := "(w b : ℕ) : hyper w b 0 = pure 0") (lemma := "hyper_zero") (group := "chance.count") (uses := "-")

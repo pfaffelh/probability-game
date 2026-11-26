@@ -16,6 +16,17 @@
   // English, unless the player chose German with the switch EN | DE (not the browser's language).
   let LANG = 'en'
   try { LANG = localStorage.getItem('pg:lang') ?? 'en' } catch {}
+  // (the world *Coins that Wait* is called *Multi-Stage Experiments* since 2026-11-26: its progress moves along)
+  try {
+    const o = '/Coins-that-Wait/', n = '/Multi-Stage-Experiments/'
+    for (const k of Object.keys(localStorage)) {
+      const v = localStorage.getItem(k)
+      if (!k.startsWith('pg:') || !(k.includes(o) || v?.includes(o))) continue
+      const k2 = k.split(o).join(n)
+      if (k2 === k || localStorage.getItem(k2) === null) localStorage.setItem(k2, v.split(o).join(n))
+      if (k2 !== k) localStorage.removeItem(k)
+    }
+  } catch {}
   const DE = {
     Moves: 'Züge', Undo: 'Zurück', 'Add a gate': 'Baustein hinzufügen', Gate: 'Baustein', 'Start over': 'Neu anfangen', 'Next level ›': 'Nächstes Level ›',
     Target: 'Ziel', 'In Lean, for every p:': 'In Lean, für jedes p:', 'proved': 'bewiesen',
@@ -50,7 +61,7 @@
   const DE_TITLES = {
     'The Probability Game': 'Das Wahrscheinlichkeits\u00ADspiel',  // (a soft hyphen, for phones)
     'Thinning': 'Ausdünnen', 'Balance': 'Gleichgewicht', 'Hypergeometric': 'Hypergeometrisch', 'Sequences': 'Folgen', 'Binomial': 'Binomial', 'Geometric': 'Geometrisch', 'Masses': 'Massen', 'Rows and masses': 'Zeilen und Massen', 'One Coin': 'Eine Münze', 'Maps': 'Abbildungen', 'Draw, then Compute': 'Erst ziehen, dann rechnen', 'Two Coins': 'Zwei Münzen', 'Laws of ': 'Gesetze von ',
-    'Counting': 'Zählen', 'Walking on the Grid': 'Gehen auf dem Gitter', 'True and False': 'Wahr und falsch', 'Circuits with Coins': 'Schaltungen mit Münzen', 'Coins that Wait': 'Münzen, die warten', 'Circuits': 'Schaltungen', 'Lexicon': 'Lexikon', 'Table of Contents': 'Inhalt', 'Contents': 'Inhalt',
+    'Counting': 'Zählen', 'Walking on the Grid': 'Gehen auf dem Gitter', 'True and False': 'Wahr und falsch', 'Circuits with Coins': 'Schaltungen mit Münzen', 'Multi-Stage Experiments': 'Mehrstufige Experimente', 'Circuits': 'Schaltungen', 'Lexicon': 'Lexikon', 'Table of Contents': 'Inhalt', 'Contents': 'Inhalt',
   }
   function translatePage() {
     const walk = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT)
@@ -2108,8 +2119,10 @@
 
     // ---- what the circuit computes
     // (an input named `true` or `false` is that constant: one value, the rows with the other fall away)
+    // (the rows with `true` first, as the fields of a gate: T left, F right; the tables of the levels are
+    // written with `false` first, and want reads them so)
     get rows() {
-      const n = this.names.length, all = Array.from({ length: 2 ** n }, (_, r) => this.names.map((_, k) => !!((r >> (n - 1 - k)) & 1)))
+      const n = this.names.length, all = Array.from({ length: 2 ** n }, (_, r) => this.names.map((_, k) => !((r >> (n - 1 - k)) & 1)))
       return all.filter(r => this.names.every((nm, k) => (nm !== 'true' && nm !== 'false') || r[k] === (nm === 'true')))
     }
     // the value of each block in a row (null where an input is open)
@@ -2163,7 +2176,7 @@
     want(k) {
       // (`f`: the target is f itself, for the map now in f)
       if (this.table === 'f') { const m = this.fmap; return m ? MAPS[m].f(this.rows[k][0]) : null }
-      const c = this.table[k]; return c === '-' ? null : this.natOut ? Number(c) : c === '1'
+      const c = this.table[this.table.length - 1 - k]; return c === '-' ? null : this.natOut ? Number(c) : c === '1'
     }
     // (without coins) whether a row is there: a dependent input takes only the values its wire allows
     // (null while a dependent input is not wired)
@@ -4503,8 +4516,8 @@
   // the worlds on a side way: which world they come after (not the one above them on the map)
   // The map as a graph, as in verso-nng: each world with the worlds it needs (else the one before it),
   // a branch in a column of its own, the names to the right of the tree.
-  const PREDS = { 'Coins-that-Wait': ['Laws-of--do'], 'Balance': ['Coins-that-Wait'], 'Sequences': ['Counting'], 'Binomial': ['Sequences'], 'Geometric': ['Binomial', 'Coins-that-Wait'], 'Thinning': ['Geometric'], 'Hypergeometric': ['Binomial', 'Balance'] }
-  const COLUMN = { 'Coins-that-Wait': 1, 'Balance': 2, 'Hypergeometric': 1 }
+  const PREDS = { 'Multi-Stage-Experiments': ['Laws-of--do'], 'Balance': ['Multi-Stage-Experiments'], 'Sequences': ['Counting'], 'Binomial': ['Sequences'], 'Geometric': ['Binomial', 'Multi-Stage-Experiments'], 'Thinning': ['Geometric'], 'Hypergeometric': ['Binomial', 'Balance'] }
+  const COLUMN = { 'Multi-Stage-Experiments': 1, 'Balance': 2, 'Hypergeometric': 1 }
   const fetched = new Set()
   function worldMap() {
     const toc = document.querySelector('#toc'), worlds = worldLinks()
@@ -4559,8 +4572,11 @@
       // (the worlds before chance have no number: a sign of their own)
       const sign = /True-and-False\/$/.test(w.path) ? '⊤' : /Walking-on-the-Grid\/$/.test(w.path) ? '⌗' : /Circuits\/$/.test(w.path) ? '∧' : /Masses\/$/.test(w.path) ? 'μ' : '•'
       g.append(svg('text', { x, y: y + 5.5, 'text-anchor': 'middle', class: 'pg-map-n' }, w.num || sign))
-      g.append(svg('text', { x: lx, y: y - 1, class: 'pg-map-name' }, name))
-      g.append(svg('text', { x: lx, y: y + 13, class: 'pg-map-count' }, c ? `${c[0]}/${c[1]}` : ''))
+      // (a long name in two lines: *Mehrstufige Experimente* does not fit beside the tree)
+      const two = name.length > 18 && name.includes(' ') ? [name.slice(0, name.indexOf(' ')), name.slice(name.indexOf(' ') + 1)] : null
+      if (two) two.forEach((t, j) => g.append(svg('text', { x: lx, y: y - 8 + 13 * j, class: 'pg-map-name' }, t)))
+      else g.append(svg('text', { x: lx, y: y - 1, class: 'pg-map-name' }, name))
+      g.append(svg('text', { x: lx, y: two ? y + 18 : y + 13, class: 'pg-map-count' }, c ? `${c[0]}/${c[1]}` : ''))
       map.append(g)
     })
     toc.querySelector('.pg-worlds')?.remove()

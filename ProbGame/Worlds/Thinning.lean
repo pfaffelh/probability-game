@@ -73,13 +73,13 @@ rw [coin_thin, coin_thin, mul_comm]
 :::en
 *Thinning twice.* Thinned with $`q`, and the rest thinned again with $`r`.
 
-On the board all three coins are `p`: a coin `p`, thinned with `p`, and thinned with `p` again. Fill the fields of the two coins that wait.
+On the board all three coins are `p`: a coin `p`, thinned with `p`, and thinned with `p` again. Fill the fields of the coins of the second and the third stage.
 :::
 
 :::de
 *Zweimal ausdünnen.* Mit $`q` ausgedünnt, und der Rest noch einmal mit $`r`.
 
-Auf dem Spielfeld sind alle drei Münzen `p`: eine Münze `p`, mit `p` ausgedünnt und noch einmal mit `p` ausgedünnt. Füll die Felder der zwei Münzen, die warten.
+Auf dem Spielfeld sind alle drei Münzen `p`: eine Münze `p`, mit `p` ausgedünnt und noch einmal mit `p` ausgedünnt. Füll die Felder der Münzen der zweiten und der dritten Stufe.
 :::
 
 :::proofen
@@ -130,13 +130,13 @@ exact geom_first _
 :::en
 *Thinning, counted.* A coin `p`, and then as many coins `q` as it shows (one or none), counted: that is your thinned coin from the first level, counted.
 
-On the board with `q = p`: the coin `p`, thinned by a coin that waits, then counted.
+On the board with `q = p`: the coin `p`, thinned by a coin of a second stage, then counted.
 :::
 
 :::de
 *Ausdünnen, gezählt.* Eine Münze `p`, und dann so viele Münzen `q`, wie sie zeigt (eine oder keine), gezählt: Das ist deine ausgedünnte Münze aus dem ersten Level, gezählt.
 
-Auf dem Spielfeld mit `q = p`: die Münze `p`, ausgedünnt durch eine Münze, die wartet, dann gezählt.
+Auf dem Spielfeld mit `q = p`: die Münze `p`, ausgedünnt durch eine Münze einer zweiten Stufe, dann gezählt.
 :::
 
 :::proofen

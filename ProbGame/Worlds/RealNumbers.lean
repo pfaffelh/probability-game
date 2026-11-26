@@ -11,11 +11,11 @@ htmlSplit := .never
 %%%
 
 :::en
-When does a coin that waits leave `coin p` as it is? When what flows from `false` to `true` is what flows back: a balance, $`(1 - p) r = p (1 - q)`. To use such an equation one computes with a minus, and masses cannot: they are numbers in $`[0, \infty]`, where a minus does not undo a plus. So this world takes the masses to the real numbers, computes there, and comes back with the balance; in *Hypergeometric* it is used again. In Lean only.
+When does a second stage leave `coin p` as it is? When what flows from `false` to `true` is what flows back: a balance, $`(1 - p) r = p (1 - q)`. To use such an equation one computes with a minus, and masses cannot: they are numbers in $`[0, \infty]`, where a minus does not undo a plus. So this world takes the masses to the real numbers, computes there, and comes back with the balance; in *Hypergeometric* it is used again. In Lean only.
 :::
 
 :::de
-Wann lässt eine Münze, die wartet, `coin p`, wie es ist? Wenn das, was von `false` nach `true` fließt, gleich dem ist, was zurückfließt: ein Gleichgewicht, $`(1 - p) r = p (1 - q)`. Um so eine Gleichung zu benutzen, rechnet man mit einem Minus, und Massen können das nicht: Sie sind Zahlen in $`[0, \infty]`, wo ein Minus kein Plus rückgängig macht. Also bringt diese Welt die Massen zu den reellen Zahlen, rechnet dort und kommt mit dem Gleichgewicht zurück; in *Hypergeometrisch* wird es wieder gebraucht. Nur in Lean.
+Wann lässt eine zweite Stufe `coin p`, wie es ist? Wenn das, was von `false` nach `true` fließt, gleich dem ist, was zurückfließt: ein Gleichgewicht, $`(1 - p) r = p (1 - q)`. Um so eine Gleichung zu benutzen, rechnet man mit einem Minus, und Massen können das nicht: Sie sind Zahlen in $`[0, \infty]`, wo ein Minus kein Plus rückgängig macht. Also bringt diese Welt die Massen zu den reellen Zahlen, rechnet dort und kommt mit dem Gleichgewicht zurück; in *Hypergeometrisch* wird es wieder gebraucht. Nur in Lean.
 :::
 
 ::::leanonly (proof := "(p : I) : (↑p : ℝ≥0∞) = ENNReal.ofReal (p : ℝ)") (lemma := "mass_eq_ofReal") (uses := "-")
@@ -270,11 +270,11 @@ ring
 
 ::::leanonly (proof := "(p q r : I) (h : (1 - (p : ℝ)) * r = p * (1 - q)) : (do let x ← coin p; bif x then coin q else coin r) = coin p") (lemma := "coin_stays") (uses := "bool_ext, bind_true, mass_mul_real, ENNReal.ofReal_add, real_mul_nonneg, symm_real, mass_eq_ofReal, balance, bind_false")
 :::en
-*Boss: a balance that stays.* The chain of *Coins that Wait*: from `true` to `coin q`, from `false` to `coin r`. `coin p` stays when what flows from `false` to `true`, $`(1 - p) r`, is what flows back, $`p (1 - q)`: a balance.
+*Boss: a balance that stays.* The chain of *Multi-Stage Experiments*: from `true` to `coin q`, from `false` to `coin r`. `coin p` stays when what flows from `false` to `true`, $`(1 - p) r`, is what flows back, $`p (1 - q)`: a balance.
 :::
 
 :::de
-*Endgegner: ein Gleichgewicht, das bleibt.* Die Kette aus *Münzen, die warten*: von `true` zu `coin q`, von `false` zu `coin r`. `coin p` bleibt, wenn das, was von `false` nach `true` fließt, $`(1 - p) r`, gleich dem ist, was zurückfließt, $`p (1 - q)`: ein Gleichgewicht.
+*Endgegner: ein Gleichgewicht, das bleibt.* Die Kette aus *Mehrstufige Experimente*: von `true` zu `coin q`, von `false` zu `coin r`. `coin p` bleibt, wenn das, was von `false` nach `true` fließt, $`(1 - p) r`, gleich dem ist, was zurückfließt, $`p (1 - q)`: ein Gleichgewicht.
 :::
 :::solution
 ```
