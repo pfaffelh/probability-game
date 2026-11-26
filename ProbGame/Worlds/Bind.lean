@@ -119,15 +119,13 @@ Welche Würfe müssen `true` zeigen, damit `y` `true` ist?
 ::::
 
 :::en
-*Only after true.* `y` is a coin when `x` showed `true`, and surely `false` otherwise: choose its two
-coins. Compare with *Both `true`* of *Two Coins*: the same distribution,
-without an `and`.
+*Only after true.* `bind` for coins: the result of the coin `x` decides which coin is taken for the
+next experiment.
 :::
 
 :::de
-*Nur nach true.* `y` ist eine Münze, wenn `x` `true` zeigte, und sonst sicher `false`: Wähle seine zwei
-Münzen. Vergleiche mit *Beide `true`* aus *Zwei Münzen*: dieselbe Verteilung,
-ohne ein `and`.
+*Nur nach true.* `bind` für Münzen: Das Ergebnis der Münze `x` entscheidet, welche Münze für das
+nächste Experiment genommen wird.
 :::
 
 :::proofen
