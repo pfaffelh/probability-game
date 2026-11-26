@@ -3572,6 +3572,10 @@
         case 'cases': {
           const vs = this.vars(), b = vs.filter(x => /^(Bool|ℕ|Nat)$/.test(x.type))
           const pick = (b.length ? b : vs.filter(x => !/[→:]/.test(x.type) || /=/.test(x.type))).map(x => `cases ${x.name}`)
+          // (a map f : Bool → …: its value at a point is a Bool too, `cases f true`; first f, then the point)
+          const fs = vs.filter(x => /^Bool → Bool$/.test(x.type)).map(x => ({ text: `cases ${x.name}`, label: x.name,
+            next: ['true', 'false'].map(v => ({ text: `cases ${x.name} ${v}`, label: v })) }))
+          if (fs.length) { this.choice = { from: it.name, options: [...pick.map(o => ({ text: o, label: o.replace(/^cases /, '') })), ...fs] }; return this.render() }
           return pick.length ? ask(pick, o => o.replace(/^cases /, '')) : this.nothing(tr('No variable in this goal to split with cases.'))
         }
         case "induction'": {
@@ -3628,7 +3632,8 @@
       const pop = el('span', 'pg-chip-pop')
       for (const o of this.choice.options) {
         const c = el('button', 'pg-chip pg-chip-choice', o.label); c.type = 'button'; c.title = o.text
-        c.addEventListener('click', () => this.put(o.text))
+        // (an option with a second choice: `f`, then `true` or `false`)
+        c.addEventListener('click', () => { if (o.next) { this.choice = { from: this.choice.from, options: o.next }; this.render() } else this.put(o.text) })
         pop.append(c)
       }
       const x = el('button', 'pg-chip-x', '✕'); x.type = 'button'; x.addEventListener('click', () => { this.choice = null; this.render() })

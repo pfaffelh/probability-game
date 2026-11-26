@@ -109,7 +109,7 @@ cases f true <;> cases f false <;> cases b <;> simp
 :::
 :::::
 
-:::::circuit (height := "440") (inputs := "x") (gates := "not, and, or") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : (coin p).map not = (do let x ← coin p; pure (!x))") (play := "a=not; x>a.0; a>out") (uses := "map_eq_pure_bind")
+:::::circuit (height := "440") (inputs := "x") (gates := "not, and, or") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; pure (!x)) = coin (σ p)") (play := "a=not; x>a.0; a>out") (uses := "map_eq_pure_bind, coin_not")
 :::en
 *A gate is a draw.* One coin, one `not`.
 :::
@@ -119,15 +119,15 @@ cases f true <;> cases f false <;> cases b <;> simp
 :::
 
 :::proofen
-Your new law `map_eq_pure_bind`: the gate becomes the `pure` at the end.
+Your new law `map_eq_pure_bind`, read the other way round: a `do` block that only applies a gate is a move.
 :::
 
 :::proofde
-Dein neues Gesetz `map_eq_pure_bind`: Der Baustein wird zum `pure` am Ende.
+Dein neues Gesetz `map_eq_pure_bind`, andersherum gelesen: Ein `do`-Block, der nur einen Baustein anwendet, ist ein Zug.
 :::
 :::solution
 ```
-rw [map_eq_pure_bind]
+rw [← map_eq_pure_bind, coin_not]
 ```
 :::
 :::::
