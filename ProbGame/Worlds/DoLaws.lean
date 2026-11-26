@@ -89,19 +89,15 @@ Ein Zug `μ.map f` ist ein `do`-Block: `x` aus `μ` ziehen, dann sicher `f x`.
 :::
 
 :::proofen
-Compare the masses at every `b`: `ext b`, then `map_apply` on the left and `bind_apply` on the right,
-and with `simp_rw [Fintype.sum_bool, pure_apply]` the sums written out and the masses of `pure`. What
-`f` does is unknown, and so is `b`: `cases f true <;> cases f false <;> cases b`, eight cases, and in
-each `simp` computes. You prove it on `Bool`; it holds for every type, and it is unlocked as
-`map_eq_pure_bind` in this general form.
+Compare the masses at every `b`, with the definitions `map_apply` and `bind_apply`. What `f` does is
+unknown, and so is `b`: eight cases, and in each `simp` computes. You prove it on `Bool`; it holds
+for every type, and it is unlocked as `map_eq_pure_bind` in this general form.
 :::
 
 :::proofde
-Vergleiche die Massen bei jedem `b`: `ext b`, dann `map_apply` links und `bind_apply` rechts, und mit
-`simp_rw [Fintype.sum_bool, pure_apply]` die Summen ausgeschrieben und die Massen von `pure`. Was `f`
-tut, ist unbekannt, und `b` auch: `cases f true <;> cases f false <;> cases b`, acht Fälle, und in
-jedem rechnet `simp`. Du beweist es auf `Bool`; es gilt für jeden Typ und wird in dieser allgemeinen
-Form als `map_eq_pure_bind` freigeschaltet.
+Vergleiche die Massen bei jedem `b`, mit den Definitionen `map_apply` und `bind_apply`. Was `f` tut,
+ist unbekannt, und `b` auch: acht Fälle, und in jedem rechnet `simp`. Du beweist es auf `Bool`; es
+gilt für jeden Typ und wird in dieser allgemeinen Form als `map_eq_pure_bind` freigeschaltet.
 :::
 :::solution
 ```
@@ -135,23 +131,18 @@ Ergebnis bewegen.
 :::
 
 :::proofen
-Two distributions are equal when their masses at every `b` are: `ext b`. Then `bind_apply` on both
-sides, and with `simp_rw [Fintype.sum_bool, map_apply, Fintype.sum_bool]` all sums written out, also
-those inside `map_apply`. What `f` does is unknown: `cases f true` and `cases f false` give the four
-possible `f`, and in each the simplifier computes the rest, with the new rule
-`add_mul : (a + b) * c = a * c + b * c` and with `add_comm` for the order. With `<;>` from *Bool*
-it is one line. You prove it on `Bool`; it holds for every type, and it is unlocked as `bind_map_left`
-in this general form.
+As in the level before: the masses at every `b`, all sums written out, also those inside
+`map_apply`, and the four possible `f`. The simplifier computes the rest, with the new rule
+`add_mul : (a + b) * c = a * c + b * c` and with `add_comm` for the order. You prove it on `Bool`;
+it holds for every type, and it is unlocked as `bind_map_left` in this general form.
 :::
 
 :::proofde
-Zwei Verteilungen sind gleich, wenn ihre Massen bei jedem `b` gleich sind: `ext b`. Dann `bind_apply`
-auf beiden Seiten, und mit `simp_rw [Fintype.sum_bool, map_apply, Fintype.sum_bool]` sind alle Summen
-ausgeschrieben, auch die in `map_apply`. Was `f` tut, ist unbekannt: `cases f true` und `cases f false`
-geben die vier möglichen `f`, und in jedem rechnet der Simplifier den Rest aus, mit der neuen Regel
-`add_mul : (a + b) * c = a * c + b * c` und mit `add_comm` für die Reihenfolge. Mit `<;>` aus *Bool*
-ist das eine Zeile. Du beweist es auf `Bool`; es gilt für jeden Typ und wird in dieser allgemeinen Form
-als `bind_map_left` freigeschaltet.
+Wie im Level davor: die Massen bei jedem `b`, alle Summen ausgeschrieben, auch die in `map_apply`,
+und die vier möglichen `f`. Den Rest rechnet der Simplifier aus, mit der neuen Regel
+`add_mul : (a + b) * c = a * c + b * c` und mit `add_comm` für die Reihenfolge. Du beweist es auf
+`Bool`; es gilt für jeden Typ und wird in dieser allgemeinen Form als `bind_map_left`
+freigeschaltet.
 :::
 :::solution
 ```
@@ -173,29 +164,17 @@ cases f true <;> cases f false <;> simp [add_mul, add_comm]
 :::
 
 :::proofen
-Work backwards, on the right side: `rw [← coin_and]` uses the rule from right to left, and
-`rw [← coin_not]` turns `coin (σ p)` into `(coin p).map not`. Then a gate sits inside the `do` block,
-in `let y ← (coin p).map not`. Your lemma from the level before,
-`bind_map_left : (do let x ← μ.map f; g x) = (do let x ← μ; g (f x))` takes the gate out of the draw
-and into what is computed. But it is needed after `let x ← coin p`, where the name `x` of the `do`
-block occurs, bound. There `simp_rw [bind_map_left]` works; here the new tactic `simp only [rules]`
-does too: the simplifier, but with only the rules you give, as often as it can; it closes the goal
-when the two sides become the same.
-
-*Tip.* `rw [← coin_and]`, `rw [← coin_not]`, `simp only [bind_map_left]`.
+Work backwards, on the right side (`←`). Then a gate sits inside the `do` block, in
+`let y ← (coin p).map not`, under the bound name `x`. The new tactic `simp only [rules]` is the
+simplifier, but with only the rules you give, as often as it can, also under bound names; it closes
+the goal when the two sides become the same.
 :::
 
 :::proofde
-Arbeite rückwärts, auf der rechten Seite: `rw [← coin_and]` benutzt die Regel von rechts nach
-links, und `rw [← coin_not]` macht aus `coin (σ p)` ein `(coin p).map not`. Dann steht ein Baustein im
-`do`-Block, in `let y ← (coin p).map not`. Dein Lemma aus dem Level davor,
-`bind_map_left : (do let x ← μ.map f; g x) = (do let x ← μ; g (f x))` holt den Baustein aus dem Ziehen
-heraus und in das Rechnen hinein. Gebraucht wird sie aber nach `let x ← coin p`, wo der Name `x` des
-`do`-Blocks vorkommt, gebunden. Dort geht `simp_rw [bind_map_left]`; hier tut es auch die neue Taktik
-`simp only [Regeln]`: der Simplifier, aber nur mit den Regeln, die du angibst, so oft es geht; er
-schließt das Ziel, wenn beide Seiten gleich werden.
-
-*Tipp.* `rw [← coin_and]`, `rw [← coin_not]`, `simp only [bind_map_left]`.
+Arbeite rückwärts, auf der rechten Seite (`←`). Dann steht ein Baustein im `do`-Block, in
+`let y ← (coin p).map not`, unter dem gebundenen Namen `x`. Die neue Taktik `simp only [Regeln]` ist
+der Simplifier, aber nur mit den Regeln, die du angibst, so oft es geht, auch unter gebundenen
+Namen; er schließt das Ziel, wenn beide Seiten gleich werden.
 :::
 :::solution
 ```
@@ -226,20 +205,17 @@ Ein Zug nach dem ganzen Ziehen: Wohin kann er hinein?
 :::
 
 :::proofen
-As for `bind_map_left`: `ext b`, `map_apply` and `bind_apply`, and all sums written out, also those
-inside. Then the four possible `f` and the two `b`, and `simp` with the new rule
+As for `bind_map_left`, now with the two `b` as well, and with the new rule
 `mul_add : a * (b + c) = a * b + a * c`. Where `f` is constant, two sums of four masses are left, in
-another order: `add_add_add_comm : a + b + (c + d) = a + c + (b + d)`, once in each. You prove it on
-`Bool`; it holds for every type, and it is unlocked as `map_bind` in this general form.
+another order: `add_add_add_comm : a + b + (c + d) = a + c + (b + d)`. You prove it on `Bool`; it
+holds for every type, and it is unlocked as `map_bind` in this general form.
 :::
 
 :::proofde
-Wie bei `bind_map_left`: `ext b`, `map_apply` und `bind_apply`, und alle Summen ausgeschrieben, auch
-die inneren. Dann die vier möglichen `f` und die zwei `b`, und `simp` mit der neuen Regel
-`mul_add : a * (b + c) = a * b + a * c`. Wo `f` konstant ist, bleiben zwei Summen aus vier Massen, in
-anderer Reihenfolge: `add_add_add_comm : a + b + (c + d) = a + c + (b + d)`, einmal in jeder. Du
-beweist es auf `Bool`; es gilt für jeden Typ und wird in dieser allgemeinen Form als `map_bind`
-freigeschaltet.
+Wie bei `bind_map_left`, jetzt auch mit den zwei `b`, und mit der neuen Regel
+`mul_add : a * (b + c) = a * b + a * c`. Wo `f` konstant ist, bleiben zwei Summen aus vier Massen,
+in anderer Reihenfolge: `add_add_add_comm : a + b + (c + d) = a + c + (b + d)`. Du beweist es auf
+`Bool`; es gilt für jeden Typ und wird in dieser allgemeinen Form als `map_bind` freigeschaltet.
 :::
 :::solution
 ```
@@ -273,15 +249,13 @@ Das Ergebnis der Münze wird nicht benutzt (`_`): Was bleibt?
 :::
 
 :::proofen
-At every `b`: `ext b`, `bind_apply` and `Fintype.sum_bool`. Both ways go on with the same `ν b`, so
-take it out, with `add_mul` backwards: `← add_mul`. What is left are the two masses of the coin, and
-they add up to one: `simp`. It is unlocked as `coin_unused`.
+At every `b`, both ways go on with the same `ν b`: take it out, with `add_mul` backwards. It is
+unlocked as `coin_unused`.
 :::
 
 :::proofde
-Bei jedem `b`: `ext b`, `bind_apply` und `Fintype.sum_bool`. Beide Wege machen mit demselben `ν b`
-weiter, also zieh es heraus, mit `add_mul` rückwärts: `← add_mul`. Übrig sind die zwei Massen der
-Münze, und sie ergeben zusammen eins: `simp`. Es wird als `coin_unused` freigeschaltet.
+Bei jedem `b` machen beide Wege mit demselben `ν b` weiter: Zieh es heraus, mit `add_mul` rückwärts.
+Es wird als `coin_unused` freigeschaltet.
 :::
 :::solution
 ```
@@ -304,13 +278,13 @@ dieselbe: Die Ergebnisse hängen voneinander ab.
 :::
 
 :::proofen
-`x && !x` is never `true`: your lemma `Bool.and_not_self` from *Bool*, marked simp, so `simp` uses it.
-Then the coin is no longer used: `coin_unused` from the level before.
+`x && !x` is never `true`: your lemma `Bool.and_not_self` from *Bool*, marked simp. Then the coin is
+no longer used.
 :::
 
 :::proofde
-`x && !x` ist nie `true`: dein Lemma `Bool.and_not_self` aus *Bool*, mit der Marke simp, also benutzt
-es `simp`. Dann wird die Münze nicht mehr benutzt: `coin_unused` aus dem Level davor.
+`x && !x` ist nie `true`: dein Lemma `Bool.and_not_self` aus *Bool*, mit der Marke simp. Dann wird
+die Münze nicht mehr benutzt.
 :::
 :::solution
 ```
@@ -341,18 +315,15 @@ was sie damit tun.
 :::
 
 :::proofen
-A new tactic: `congr` reduces the goal to the parts in which the two sides differ, here what comes after
-the throw, as a function of `x`. Then `ext x` (from *One Coin*): equal for every `x`. Then two cases.
-
-*Tip.* `congr`, `ext x`, `cases x <;> rfl`.
+A new tactic: `congr` reduces the goal to the parts in which the two sides differ, here what comes
+after the throw, as a function of `x`. For two functions, `ext x` (from *One Coin*) says: equal for
+every `x`.
 :::
 
 :::proofde
 Eine neue Taktik: `congr` führt das Ziel auf die Teile zurück, in denen sich die beiden Seiten
-unterscheiden, hier das, was nach dem Wurf kommt, als Funktion von `x`. Dann `ext x` (aus *Eine Münze*):
-gleich für jedes `x`. Dann zwei Fälle.
-
-*Tipp.* `congr`, `ext x`, `cases x <;> rfl`.
+unterscheiden, hier das, was nach dem Wurf kommt, als Funktion von `x`. Für zwei Funktionen sagt
+`ext x` (aus *Eine Münze*): gleich für jedes `x`.
 :::
 :::solution
 ```
@@ -373,13 +344,13 @@ cases x <;> rfl
 :::
 
 :::proofen
-Both sides throw the same two coins and differ only in what they compute. So `congr` and `ext`, once
-for each coin; then four cases.
+Both sides throw the same two coins and differ only in what they compute: as in the level before,
+once for each coin.
 :::
 
 :::proofde
-Beide Seiten werfen dieselben zwei Münzen und unterscheiden sich nur darin, was sie rechnen. Also
-`congr` und `ext`, einmal für jede Münze; dann vier Fälle.
+Beide Seiten werfen dieselben zwei Münzen und unterscheiden sich nur darin, was sie rechnen: wie im
+Level davor, einmal für jede Münze.
 :::
 :::solution
 ```

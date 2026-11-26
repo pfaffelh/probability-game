@@ -165,11 +165,13 @@ ring
 :::
 
 :::proofen
-First both numbers by their rules. Then `y` is `true` or `false`: `cases y`. In each case the mass of the coin and the two numbers `toNat`; the powers are for `ring`. Your result becomes the lemma `mass_cons`.
+First both counts by their rules. Then `y` is `true` or `false`; the powers are for `ring`. Your
+result becomes the lemma `mass_cons`.
 :::
 
 :::proofde
-Zuerst beide Anzahlen mit ihren Regeln. Dann ist `y` `true` oder `false`: `cases y`. In jedem Fall die Masse der Münze und die zwei Zahlen `toNat`; die Potenzen sind für `ring`. Dein Ergebnis wird das Lemma `mass_cons`.
+Zuerst beide Anzahlen mit ihren Regeln. Dann ist `y` `true` oder `false`; die Potenzen sind für
+`ring`. Dein Ergebnis wird das Lemma `mass_cons`.
 :::
 :::solution
 ```
@@ -194,20 +196,12 @@ ring
 
 :::proofen
 Induction, now over a list: `induction' l with y l ih` leaves the case `[]`, and the case `y :: l`
-with the hypothesis `ih` for `l`. The first is the level *The empty list*. In the second,
-`List.length_cons : (y :: l).length = l.length + 1` is new; then one throw comes off the list, `ih`
-is the rest, and your lemma `mass_cons` puts them together.
-
-*Tip.* `induction' l with y l ih`.
+with the hypothesis `ih` for `l`. New: `List.length_cons : (y :: l).length = l.length + 1`.
 :::
 
 :::proofde
 Induktion, jetzt über eine Liste: `induction' l with y l ih` lässt den Fall `[]`, und den Fall
-`y :: l` mit der Annahme `ih` für `l`. Der erste ist das Level *Die leere Liste*. Im zweiten ist
-`List.length_cons : (y :: l).length = l.length + 1` neu; dann kommt ein Wurf von der Liste, `ih` ist
-der Rest, und dein Lemma `mass_cons` setzt sie zusammen.
-
-*Tipp.* `induction' l with y l ih`.
+`y :: l` mit der Annahme `ih` für `l`. Neu: `List.length_cons : (y :: l).length = l.length + 1`.
 :::
 :::solution
 ```

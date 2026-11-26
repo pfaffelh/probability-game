@@ -28,11 +28,13 @@ Eine Münze wird *ausgedünnt*, wenn jedes `true` nur mit Wahrscheinlichkeit $`q
 :::
 
 :::proofen
-Two distributions on `Bool` are the same when their masses at `true` are: `apply bool_ext`. Then `bind_true` from *Two Coins* splits by the first coin; `simp` computes the rest (the masses of the coins, the `bif`), down to a product of masses: that is `mass_mul`.
+Compare the masses at `true`, split by the first coin, and compute, down to a product of masses:
+that is `mass_mul`.
 :::
 
 :::proofde
-Zwei Verteilungen auf `Bool` sind gleich, wenn ihre Massen bei `true` gleich sind: `apply bool_ext`. Dann teilt `bind_true` aus *Zwei Münzen* nach der ersten Münze; `simp` rechnet den Rest aus (die Massen der Münzen, die `bif`), bis ein Produkt von Massen dasteht: Das ist `mass_mul`.
+Vergleiche die Massen bei `true`, teile nach der ersten Münze, und rechne, bis ein Produkt von
+Massen dasteht: Das ist `mass_mul`.
 :::
 :::solution
 ```
@@ -81,11 +83,13 @@ Auf dem Spielfeld sind alle drei Münzen `p`: eine Münze `p`, mit `p` ausgedün
 :::
 
 :::proofen
-The first two steps are one coin, once they are a `do` block of their own: `rw [← bind_assoc]` (`bind_assoc : (do let y ← (do let x ← μ; f x); g y) = (do let x ← μ; let y ← f x; g y)`). Then your lemma, twice.
+The first two steps are one coin, once they are a `do` block of their own:
+`bind_assoc : (do let y ← (do let x ← μ; f x); g y) = (do let x ← μ; let y ← f x; g y)`, backwards.
 :::
 
 :::proofde
-Die ersten zwei Schritte sind eine Münze, sobald sie ein eigener `do`-Block sind: `rw [← bind_assoc]` (`bind_assoc : (do let y ← (do let x ← μ; f x); g y) = (do let x ← μ; let y ← f x; g y)`). Dann dein Lemma, zweimal.
+Die ersten zwei Schritte sind eine Münze, sobald sie ein eigener `do`-Block sind:
+`bind_assoc : (do let y ← (do let x ← μ; f x); g y) = (do let x ← μ; let y ← f x; g y)`, rückwärts.
 :::
 :::solution
 ```
@@ -104,11 +108,15 @@ rw [← bind_assoc, coin_thin, coin_thin]
 :::
 
 :::proofen
-The first two steps on the right are a thinned coin, once they are a `do` block of their own: `rw [← bind_assoc, coin_thin]`. What stands then is the boss of *Geometric*: `exact geom_first _` (Lean finds the parameter).
+The first two steps on the right are a thinned coin, once they are a `do` block of their own. What
+stands then is the boss of *Geometric*, `geom_first`; a parameter Lean is to find itself is written
+`_`.
 :::
 
 :::proofde
-Die ersten zwei Schritte rechts sind eine ausgedünnte Münze, sobald sie ein eigener `do`-Block sind: `rw [← bind_assoc, coin_thin]`. Was dann dasteht, ist der Endgegner aus *Geometrisch*: `exact geom_first _` (Lean findet den Parameter).
+Die ersten zwei Schritte rechts sind eine ausgedünnte Münze, sobald sie ein eigener `do`-Block sind.
+Was dann dasteht, ist der Endgegner aus *Geometrisch*, `geom_first`; einen Parameter, den Lean
+selbst finden soll, schreibt man `_`.
 :::
 :::solution
 ```
@@ -132,11 +140,13 @@ Auf dem Spielfeld mit `q = p`: die Münze `p`, ausgedünnt durch eine Münze, di
 :::
 
 :::proofen
-`rw [← coin_thin]` writes the coin on the right as a thinned coin. Then both sides start with `coin p`: `congr`, `ext x`, `cases x`.
+Write the coin on the right as a thinned coin (`coin_thin`, backwards). Then both sides start with
+`coin p`.
 :::
 
 :::proofde
-`rw [← coin_thin]` schreibt die Münze rechts als ausgedünnte Münze. Dann beginnen beide Seiten mit `coin p`: `congr`, `ext x`, `cases x`.
+Schreib die Münze rechts als ausgedünnte Münze (`coin_thin`, rückwärts). Dann beginnen beide Seiten
+mit `coin p`.
 :::
 :::solution
 ```
@@ -186,14 +196,10 @@ simp only [pure_bind]
 
 :::proofen
 `bind_comm μ ν : (do let x ← μ; let y ← ν; f x y) = (do let y ← ν; let x ← μ; f x y)`: two independent draws, in the other order. (Independent: `ν` does not use `x`.)
-
-*Tip.* `rw [bind_comm]`.
 :::
 
 :::proofde
 `bind_comm μ ν : (do let x ← μ; let y ← ν; f x y) = (do let y ← ν; let x ← μ; f x y)`: zwei unabhängige Ziehungen, in der anderen Reihenfolge. (Unabhängig: `ν` benutzt `x` nicht.)
-
-*Tipp.* `rw [bind_comm]`.
 :::
 :::solution
 ```
@@ -212,15 +218,16 @@ rw [bind_comm]
 :::
 
 :::proofen
-The two draws stand under `let z ← coin r`: there `rw` does not reach, `simp only` does. But `simp only [bind_comm]` would swap for ever, back and forth. So say which two draws: `bind_comm (coin p) (coin q)` swaps only where `coin p` is drawn right before `coin q`. (A part Lean is to find itself is written `_`.)
-
-*Tip.* `simp only [bind_comm (coin p) (coin q)]`.
+The two draws stand under `let z ← coin r`: there `rw` does not reach, `simp only` does. But
+`simp only [bind_comm]` would swap for ever, back and forth. So say which two draws: `bind_comm μ ν`
+swaps only where `μ` is drawn right before `ν`. (A part Lean is to find itself is written `_`.)
 :::
 
 :::proofde
-Die zwei Ziehungen stehen unter `let z ← coin r`: Dorthin reicht `rw` nicht, `simp only` schon. Aber `simp only [bind_comm]` würde endlos tauschen, hin und her. Sag also, welche zwei Ziehungen: `bind_comm (coin p) (coin q)` tauscht nur dort, wo `coin p` direkt vor `coin q` gezogen wird. (Ein Teil, den Lean selbst finden soll, schreibt man `_`.)
-
-*Tipp.* `simp only [bind_comm (coin p) (coin q)]`.
+Die zwei Ziehungen stehen unter `let z ← coin r`: Dorthin reicht `rw` nicht, `simp only` schon. Aber
+`simp only [bind_comm]` würde endlos tauschen, hin und her. Sag also, welche zwei Ziehungen:
+`bind_comm μ ν` tauscht nur dort, wo `μ` direkt vor `ν` gezogen wird. (Ein Teil, den Lean selbst
+finden soll, schreibt man `_`.)
 :::
 :::solution
 ```

@@ -79,37 +79,26 @@ Welcher der beiden Zweige wird genommen, und was ist dort die Masse der Münze?
 :::
 
 :::proofen
-By hand this is `rw [Bool.cond_false, zero_add, Bool.not_false, Bool.cond_true, coin_true]`: five
-rules, each of them simple, and you know them all. From now on they go into the simplifier, `simp`. It
-rewrites with a whole list of rules, again and again, until none applies any more, and it computes
-with numbers.
+So far every rule by hand, one at a time. From now on the simple ones go into the simplifier,
+`simp`: it rewrites with a whole list of rules, again and again, until none applies any more, and it
+computes with numbers.
 
-Which rules are in the list? In the inventory they now carry the mark *simp*: among yours `coin_true`,
-`coin_false`, `pure_true`, `pure_false`, `add_symm_eq_one`, `tsub_self`, `Bool.not_true`,
-`Bool.not_false`, `Bool.not_not`, `Bool.and_self`, `Bool.cond_true`, `Bool.cond_false`, `Bool.cond_self`,
-`Bool.true_beq`, `Bool.false_beq`, `beq_true`; and a few simple ones that are always there, such as
-`zero_add`, `add_zero`, `mul_one` and `true && b = b`. Not in the list are rules like `bool_ext`, `map_true`, `mass_not` or `add_comm`:
-they change what you prove, or could go on forever, and you apply them yourself. `simp [h]`
-puts a rule `h` into the list for this one call.
-
-*Tip.* `simp`.
+Which rules are in the list? In the inventory they now carry the mark *simp*; a few simple ones are
+always there, such as `zero_add`, `add_zero`, `mul_one` and `true && b = b`. Not in the list are
+rules like `bool_ext`, `map_true`, `mass_not` or `add_comm`: they change what you prove, or could go
+on forever, and you apply them yourself. `simp [h]` puts a rule `h` into the list for this one call.
 :::
 
 :::proofde
-Von Hand ist das `rw [Bool.cond_false, zero_add, Bool.not_false, Bool.cond_true, coin_true]`: fünf
-Regeln, jede einfach, und du kennst sie alle. Ab jetzt stecken wir sie in den Simplifier, `simp`. Er
-schreibt mit einer ganzen Liste von Regeln um, immer wieder, bis keine mehr passt, und er rechnet mit
-Zahlen.
+Bisher jede Regel von Hand, eine nach der anderen. Ab jetzt stecken wir die einfachen in den
+Simplifier, `simp`: Er schreibt mit einer ganzen Liste von Regeln um, immer wieder, bis keine mehr
+passt, und er rechnet mit Zahlen.
 
-Welche Regeln stehen in der Liste? Im Inventar tragen sie jetzt die Marke *simp*: von deinen `coin_true`,
-`coin_false`, `pure_true`, `pure_false`, `add_symm_eq_one`, `tsub_self`, `Bool.not_true`,
-`Bool.not_false`, `Bool.not_not`, `Bool.and_self`, `Bool.cond_true`, `Bool.cond_false`, `Bool.cond_self`,
-`Bool.true_beq`, `Bool.false_beq`, `beq_true`; dazu ein paar einfache, die immer dabei sind, etwa
-`zero_add`, `add_zero`, `mul_one` und `true && b = b`. Nicht in der Liste sind Regeln wie `bool_ext`, `map_true`, `mass_not` oder
-`add_comm`: Sie ändern, was du beweist, oder könnten endlos laufen, und du wendest sie selbst an.
-`simp [h]` nimmt eine Regel `h` für diesen einen Aufruf in die Liste auf.
-
-*Tipp.* `simp`.
+Welche Regeln stehen in der Liste? Im Inventar tragen sie jetzt die Marke *simp*; ein paar einfache
+sind immer dabei, etwa `zero_add`, `add_zero`, `mul_one` und `true && b = b`. Nicht in der Liste
+sind Regeln wie `bool_ext`, `map_true`, `mass_not` oder `add_comm`: Sie ändern, was du beweist, oder
+könnten endlos laufen, und du wendest sie selbst an. `simp [h]` nimmt eine Regel `h` für diesen
+einen Aufruf in die Liste auf.
 :::
 :::solution
 ```
@@ -187,9 +176,9 @@ one draw from `coin p`, not a random variable: used twice, it is the same value 
 and `y` would be two draws, with $`p^2` (soon, in `coin_and`). What is left, draw `x` and give it
 back, is `coin p` itself.
 
-Your lemma `Bool.and_self : (x && x) = x` from *Bool*, and the rule `bind_pure : (do let x ← μ; pure x) = μ`. The `x` of
-`let x ← coin p` is bound, as the `x` of `fun x => …` in *Maps*: so `simp_rw`, not `rw`. (Lean itself
-reads `do let x ← μ; pure x` as `μ` at once, when you type it.)
+New: the rule `bind_pure : (do let x ← μ; pure x) = μ`. The `x` of `let x ← coin p` is bound, as the
+`x` of `fun x => …` in *Maps*. (Lean itself reads `do let x ← μ; pure x` as `μ` at once, when you
+type it.)
 :::
 
 :::proofde
@@ -198,9 +187,9 @@ eines Zugs aus `coin p`, keine Zufallsvariable: Zweimal benutzt ist es zweimal d
 Münzen `x` und `y` wären zwei Züge, mit $`p^2` (bald, in `coin_and`). Was bleibt, `x` ziehen und
 zurückgeben, ist `coin p` selbst.
 
-Dein Lemma `Bool.and_self : (x && x) = x` aus *Bool* und die Regel `bind_pure : (do let x ← μ; pure x) = μ`. Das `x` von
-`let x ← coin p` ist gebunden, wie das `x` von `fun x => …` in *Abbildungen*: also `simp_rw`, nicht
-`rw`. (Lean selbst liest `do let x ← μ; pure x` sofort als `μ`, wenn du es eintippst.)
+Neu: die Regel `bind_pure : (do let x ← μ; pure x) = μ`. Das `x` von `let x ← coin p` ist gebunden,
+wie das `x` von `fun x => …` in *Abbildungen*. (Lean selbst liest `do let x ← μ; pure x` sofort als
+`μ`, wenn du es eintippst.)
 :::
 :::solution
 ```
@@ -261,18 +250,14 @@ rw [bind_apply, Fintype.sum_bool]
 :::
 
 :::proofen
-Your circuit, read from top to bottom, is a `do` block: `let x ← coin p`
-throws a coin and calls its result `x`, and `pure` at the end is the result. Each `←` is a new throw,
-independent of the others. Prove it for two coins `p` and `q` (on the board both were `p`): both
-`true` with probability $`p \cdot q`. It becomes your lemma `coin_and`, independence itself.
+Your circuit, read from top to bottom, is a `do` block: `let x ← coin p` throws a coin and calls its
+result `x`, and `pure` at the end is the result. Each `←` is a new throw, independent of the others.
+Prove it for two coins `p` and `q` (on the board both were `p`): both `true` with probability
+$`p \cdot q`. It becomes your lemma `coin_and`, independence itself.
 
-Two distributions on `Bool` are equal when their masses at `true` are: `apply bool_ext`. Then
-`bind_true`, three times: for the first draw, and for the second draw after `true` and after `false`.
-
-Then the simplifier from the first level of this world. One new rule: `mass_mul : ↑(p * q) = ↑p * ↑q`,
-the product `p * q` in $`[0, 1]` as a mass. It carries no mark simp, so give it along, `simp [mass_mul]`.
-
-*Tip.* `apply bool_ext`, `rw [bind_true, bind_true, bind_true]`, `simp [mass_mul]`.
+Compare the masses at `true`; every draw splits into its two ways (`bind_true`). One new rule:
+`mass_mul : ↑(p * q) = ↑p * ↑q`, the product `p * q` in $`[0, 1]` as a mass. It carries no mark
+simp: `simp [h]` takes a rule `h` along for one call.
 :::
 
 :::proofde
@@ -282,13 +267,9 @@ unabhängig von den anderen. Beweise es für zwei Münzen `p` und `q` (auf dem S
 `p`): beide `true` mit Wahrscheinlichkeit $`p \cdot q`. Es wird dein Lemma `coin_and`, die
 Unabhängigkeit selbst.
 
-Zwei Verteilungen auf `Bool` sind gleich, wenn ihre Massen bei `true` gleich sind: `apply bool_ext`.
-Dann `bind_true`, dreimal: für den ersten Zug, und für den zweiten nach `true` und nach `false`.
-
-Dann der Simplifier aus dem ersten Level dieser Welt. Eine neue Regel: `mass_mul : ↑(p * q) = ↑p * ↑q`,
-das Produkt `p * q` in $`[0, 1]` als Masse. Sie trägt keine Marke simp, also gib sie mit, `simp [mass_mul]`.
-
-*Tipp.* `apply bool_ext`, `rw [bind_true, bind_true, bind_true]`, `simp [mass_mul]`.
+Vergleiche die Massen bei `true`; jeder Zug teilt sich in seine zwei Wege (`bind_true`). Eine neue
+Regel: `mass_mul : ↑(p * q) = ↑p * ↑q`, das Produkt `p * q` in $`[0, 1]` als Masse. Sie trägt keine
+Marke simp: `simp [h]` nimmt eine Regel `h` für einen Aufruf mit.
 :::
 :::solution
 ```
@@ -315,8 +296,6 @@ A new tactic: `ring` proves an equation that holds by computing with `+`, `*` an
 whatever the letters are: the order of factors and summands, brackets, multiplying out. It uses no
 hypothesis and no rule of the game, only the laws of computing, and it does not know what a coin or a
 mass is. So first the rules of the game, with `rw` and `simp`; then `ring` for what is left.
-
-*Tip.* `ring`.
 :::
 
 :::proofde
@@ -325,8 +304,6 @@ gilt, was auch immer die Buchstaben sind: die Reihenfolge von Faktoren und Summa
 Ausmultiplizieren. Sie benutzt keine Annahme und keine Regel des Spiels, nur die Rechengesetze, und
 sie weiß nicht, was eine Münze oder eine Masse ist. Also zuerst die Regeln des Spiels, mit `rw` und
 `simp`; dann `ring` für den Rest.
-
-*Tipp.* `ring`.
 :::
 :::solution
 ```

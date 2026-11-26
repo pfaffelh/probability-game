@@ -28,11 +28,13 @@ Wann lässt eine Münze, die wartet, `coin p`, wie es ist? Wenn das, was von `fa
 :::
 
 :::proofen
-By definition: `rfl`. (Two arrows, two meanings: in `(p : ℝ)` the number $`p` of $`[0, 1]` as a real number, in `(↑p : ℝ≥0∞)` as a mass.)
+By definition. (Two arrows, two meanings: in `(p : ℝ)` the number $`p` of $`[0, 1]` as a real
+number, in `(↑p : ℝ≥0∞)` as a mass.)
 :::
 
 :::proofde
-Nach Definition: `rfl`. (Zwei Pfeile, zwei Bedeutungen: in `(p : ℝ)` die Zahl $`p` aus $`[0, 1]` als reelle Zahl, in `(↑p : ℝ≥0∞)` als Masse.)
+Nach Definition. (Zwei Pfeile, zwei Bedeutungen: in `(p : ℝ)` die Zahl $`p` aus $`[0, 1]` als reelle
+Zahl, in `(↑p : ℝ≥0∞)` als Masse.)
 :::
 :::solution
 ```
@@ -97,15 +99,11 @@ rw [← ENNReal.ofReal_add (real_mul_nonneg p q) (real_mul_nonneg r s)]
 :::
 
 :::proofen
-`symm_real : ↑(σ p) = 1 - ↑p` (as real numbers), then `ring`: it proves an equation that holds by computing with `+`, `-`, `*`.
-
-*Tip.* `rw [symm_real]`, `ring`.
+`symm_real : ↑(σ p) = 1 - ↑p` (as real numbers). What is left holds by computing with `+`, `-`, `*`.
 :::
 
 :::proofde
-`symm_real : ↑(σ p) = 1 - ↑p` (als reelle Zahlen), dann `ring`: Es beweist eine Gleichung, die durch Rechnen mit `+`, `-`, `*` gilt.
-
-*Tipp.* `rw [symm_real]`, `ring`.
+`symm_real : ↑(σ p) = 1 - ↑p` (als reelle Zahlen). Was bleibt, gilt durch Rechnen mit `+`, `-`, `*`.
 :::
 :::solution
 ```
@@ -125,15 +123,15 @@ ring
 :::
 
 :::proofen
-`linear_combination 2 * h`: the goal, left minus right, is twice `h`, left minus right; `ring` checks it. Without the `2` it fails: try it.
-
-*Tip.* `linear_combination 2 * h`.
+The new tactic `linear_combination e`: the goal follows from the hypotheses in `e` by computing.
+With `e = c * h`: the goal, left minus right, is `c` times `h`, left minus right; `ring` checks it.
+Which `c`? With `1` it fails: try it.
 :::
 
 :::proofde
-`linear_combination 2 * h`: Das Ziel, links minus rechts, ist zweimal `h`, links minus rechts; `ring` prüft es. Ohne die `2` scheitert es: Probier es aus.
-
-*Tipp.* `linear_combination 2 * h`.
+Die neue Taktik `linear_combination e`: Das Ziel folgt durch Rechnen aus den Annahmen in `e`. Mit
+`e = c * h`: Das Ziel, links minus rechts, ist `c`-mal `h`, links minus rechts; `ring` prüft es.
+Welches `c`? Mit `1` scheitert es: Probier es aus.
 :::
 :::solution
 ```
@@ -152,11 +150,11 @@ linear_combination 2 * h
 :::
 
 :::proofen
-Now with `h` once: `linear_combination h`. What you prove is unlocked as `balance`.
+Now `h` once is enough. What you prove is unlocked as `balance`.
 :::
 
 :::proofde
-Jetzt mit `h` einmal: `linear_combination h`. Was du beweist, wird als `balance` freigeschaltet.
+Jetzt reicht `h` einmal. Was du beweist, wird als `balance` freigeschaltet.
 :::
 :::solution
 ```
@@ -185,15 +183,13 @@ Bei `true` doppelt so viel wie bei `false`, und zusammen eins.
 :::
 
 :::proofen
-To get rid of $`b`: twice `h` plus `k` is $`3a + 2b = 2 + 2b`, that is $`3a = 2`. A third of it is the goal; `linear_combination` takes such a sum of hypotheses.
-
-*Tip.* `linear_combination (2 * h + k) / 3`.
+Two hypotheses: `linear_combination` also takes a sum of them, such as `(c * h + d * k) / e`. Which
+sum gets rid of $`b`?
 :::
 
 :::proofde
-Um $`b` loszuwerden: Zweimal `h` plus `k` ist $`3a + 2b = 2 + 2b`, also $`3a = 2`. Ein Drittel davon ist das Ziel; `linear_combination` nimmt so eine Summe von Annahmen.
-
-*Tipp.* `linear_combination (2 * h + k) / 3`.
+Zwei Annahmen: `linear_combination` nimmt auch eine Summe davon, etwa `(c * h + d * k) / e`. Welche
+Summe wird $`b` los?
 :::
 :::solution
 ```
@@ -223,14 +219,10 @@ linear_combination (2 * h + k) / 3
 
 :::proofen
 An equation between fractions: the new tactic `field_simp` multiplies it by its denominators. It may do so, since they are not $`0`: that is `h`, and `field_simp` finds it by itself.
-
-*Tip.* `field_simp`.
 :::
 
 :::proofde
 Eine Gleichung zwischen Brüchen: Die neue Taktik `field_simp` multipliziert sie mit ihren Nennern. Das darf sie, weil sie nicht $`0` sind: Das ist `h`, und `field_simp` findet es selbst.
-
-*Tipp.* `field_simp`.
 :::
 :::solution
 ```
@@ -259,11 +251,13 @@ Löse das Gleichgewicht $`(1 - p) r = p (1 - q)` nach $`p` auf.
 :::
 
 :::proofen
-`hp` is a hypothesis, a rule of this level: `rw [hp]` puts the value in for $`p`. What is left is an equation between fractions, and then a computation.
+`hp` is a hypothesis, a rule of this level. What is left is an equation between fractions, and then
+a computation.
 :::
 
 :::proofde
-`hp` ist eine Annahme, eine Regel dieses Levels: `rw [hp]` setzt den Wert für $`p` ein. Übrig bleibt eine Gleichung zwischen Brüchen, und dann eine Rechnung.
+`hp` ist eine Annahme, eine Regel dieses Levels. Übrig bleibt eine Gleichung zwischen Brüchen, und
+dann eine Rechnung.
 :::
 :::solution
 ```

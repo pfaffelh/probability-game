@@ -31,15 +31,13 @@ Punkt.
 :::
 
 :::proofen
-As for `bind_true`: `bind_apply : (do let a ← μ; f a) b = ∑ a, μ a * f a b` and the two summands of a sum over
-`Bool`, then the masses of the coin. What you prove is unlocked as `coin_bind_apply`, with the mark
-*simp*: from now on `simp` uses it by itself.
+As for `bind_true`, now at any point `b` and for a coin. What you prove is unlocked as
+`coin_bind_apply`, with the mark *simp*: from now on `simp` uses it by itself.
 :::
 
 :::proofde
-Wie bei `bind_true`: `bind_apply : (do let a ← μ; f a) b = ∑ a, μ a * f a b` und die zwei Summanden einer
-Summe über `Bool`, dann die Massen der Münze. Was du beweist, wird als `coin_bind_apply`
-freigeschaltet, mit der Marke *simp*: Ab jetzt benutzt `simp` es von selbst.
+Wie bei `bind_true`, jetzt an jedem Punkt `b` und für eine Münze. Was du beweist, wird als
+`coin_bind_apply` freigeschaltet, mit der Marke *simp*: Ab jetzt benutzt `simp` es von selbst.
 :::
 :::solution
 ```
@@ -58,14 +56,13 @@ rw [bind_apply, Fintype.sum_bool, coin_true, coin_false]
 :::
 
 :::proofen
-`pure_apply : (pure a) b = bif a == b then 1 else 0`, from *One Coin*; and
-`beq_self_eq_true : (a == a) = true`. What you prove is unlocked as `pure_self`, with the mark *simp*.
+`pure_apply : (pure a) b = bif a == b then 1 else 0`, from *One Coin*. What you prove is unlocked as
+`pure_self`, with the mark *simp*.
 :::
 
 :::proofde
-`pure_apply : (pure a) b = bif a == b then 1 else 0`, aus *Eine Münze*; und
-`beq_self_eq_true : (a == a) = true`. Was du beweist, wird als `pure_self` freigeschaltet, mit der
-Marke *simp*.
+`pure_apply : (pure a) b = bif a == b then 1 else 0`, aus *Eine Münze*. Was du beweist, wird als
+`pure_self` freigeschaltet, mit der Marke *simp*.
 :::
 :::solution
 ```
@@ -94,12 +91,12 @@ Ohne Wurf: wie oft `true`?
 :::
 
 :::proofen
-Two statements joined by `∧`: `constructor`, as in *Masses*. For the second,
+Two statements joined by `∧`, as in *Masses*. For the second,
 `pure_zero_succ : (pure 0) (k + 1) = 0`.
 :::
 
 :::proofde
-Zwei Aussagen, verbunden mit `∧`: `constructor`, wie in *Massen*. Für das zweite
+Zwei Aussagen, verbunden mit `∧`, wie in *Massen*. Für die zweite
 `pure_zero_succ : (pure 0) (k + 1) = 0`.
 :::
 :::solution
@@ -145,16 +142,14 @@ rw [shift_succ, shift_zero, add_zero]
 
 :::proofen
 `binom_succ` writes the first throw out. The rest is computing, and the rules for it carry the mark
-*simp*: `coin_bind_apply` splits the throw into `true` and `false`, `Bool.toNat_true` and `Bool.toNat_false` count it, the
-`true` branch is `shift_zero`, and `bind_pure` cleans up. One rule is new: `mul_zero : a * 0 = 0`.
-`simp` does not use a rule by itself in the level that brings it; you give it to `simp` with `simp [h]`.
+*simp*. One rule is new: `mul_zero : a * 0 = 0`. `simp` does not use a rule by itself in the level
+that brings it; you give it to `simp` with `simp [h]`.
 :::
 
 :::proofde
 `binom_succ` schreibt den ersten Wurf aus. Der Rest ist Rechnen, und die Regeln dafür tragen die
-Marke *simp*: `coin_bind_apply` teilt den Wurf in `true` und `false`, `Bool.toNat_true` und `Bool.toNat_false` zählen ihn, der
-`true`-Zweig ist `shift_zero`, und `bind_pure` räumt auf. Eine Regel ist neu: `mul_zero : a * 0 = 0`.
-In dem Level, das eine Regel bringt, benutzt `simp` sie nicht von selbst; du gibst sie ihm mit `simp [h]`.
+Marke *simp*. Eine Regel ist neu: `mul_zero : a * 0 = 0`. In dem Level, das eine Regel bringt,
+benutzt `simp` sie nicht von selbst; du gibst sie ihm mit `simp [h]`.
 :::
 :::solution
 ```
@@ -230,14 +225,10 @@ rw [binom_succ_zero, ih, pow_succ, mul_comm]
 
 :::proofen
 Induction on $`n`, but the step needs the statement for another $`k` (once for $`k`, once for $`k + 1`). `induction' n with n ih generalizing k` makes `ih` hold for *every* $`k`. To use it, the numbers have to look as in `ih`: `add_right_comm : a + b + c = a + c + b` and `add_assoc`.
-
-*Tip.* `induction' n with n ih generalizing k`; `rw [zero_add, binom_zero, pure_zero_succ]`; `rw [binom_succ_succ, add_right_comm n 1 k, ih, add_assoc n k 1, ih, mul_zero, mul_zero, add_zero]`.
 :::
 
 :::proofde
 Induktion über $`n`, aber der Schritt braucht die Aussage für ein anderes $`k` (einmal für $`k`, einmal für $`k + 1`). `induction' n with n ih generalizing k` lässt `ih` für *jedes* $`k` gelten. Um es zu benutzen, müssen die Zahlen aussehen wie in `ih`: `add_right_comm : a + b + c = a + c + b` und `add_assoc`.
-
-*Tipp.* `induction' n with n ih generalizing k`; `rw [zero_add, binom_zero, pure_zero_succ]`; `rw [binom_succ_succ, add_right_comm n 1 k, ih, add_assoc n k 1, ih, mul_zero, mul_zero, add_zero]`.
 :::
 :::solution
 ```
@@ -283,11 +274,16 @@ rw [binom_succ_succ, ih, binom_above p n 0, mul_zero, add_zero, pow_succ, mul_co
 :::
 
 :::proofen
-`Nat.choose_zero_right : n.choose 0 = 1` and `Nat.choose_self : n.choose n = 1` are about natural numbers; in the statement they stand as masses, `(↑(n.choose 0) : ℝ≥0∞)`. `Nat.cast_one : ↑1 = 1` makes the natural number `1` the mass `1`. And `one_mul : 1 * a = a`. Two statements again: `constructor`.
+`Nat.choose_zero_right : n.choose 0 = 1` and `Nat.choose_self : n.choose n = 1` are about natural
+numbers; in the statement they stand as masses, `(↑(n.choose 0) : ℝ≥0∞)`. `Nat.cast_one : ↑1 = 1`
+makes the natural number `1` the mass `1`. And `one_mul : 1 * a = a`. Two statements again.
 :::
 
 :::proofde
-`Nat.choose_zero_right : n.choose 0 = 1` und `Nat.choose_self : n.choose n = 1` handeln von natürlichen Zahlen; in der Aussage stehen sie als Massen, `(↑(n.choose 0) : ℝ≥0∞)`. `Nat.cast_one : ↑1 = 1` macht aus der natürlichen Zahl `1` die Masse `1`. Und `one_mul : 1 * a = a`. Wieder zwei Aussagen: `constructor`.
+`Nat.choose_zero_right : n.choose 0 = 1` und `Nat.choose_self : n.choose n = 1` handeln von
+natürlichen Zahlen; in der Aussage stehen sie als Massen, `(↑(n.choose 0) : ℝ≥0∞)`.
+`Nat.cast_one : ↑1 = 1` macht aus der natürlichen Zahl `1` die Masse `1`. Und `one_mul : 1 * a = a`.
+Wieder zwei Aussagen.
 :::
 :::solution
 ```
@@ -389,11 +385,13 @@ Auf dem Spielfeld drei Würfe der Münze `p`: Zähl die `false`. Das Ziel ist bi
 :::
 
 :::proofen
-Bring both sides into the form of `binom_formula` (`add_comm`), use it twice; `symm_twice : σ (σ p) = p` and `Nat.choose_symm_add : (m + k).choose m = (m + k).choose k`; then `ring`.
+Both sides in the form of `binom_formula`; then `symm_twice : σ (σ p) = p` and
+`Nat.choose_symm_add : (m + k).choose m = (m + k).choose k`.
 :::
 
 :::proofde
-Bring beide Seiten in die Form von `binom_formula` (`add_comm`), benutze sie zweimal; `symm_twice : σ (σ p) = p` und `Nat.choose_symm_add : (m + k).choose m = (m + k).choose k`; dann `ring`.
+Beide Seiten in der Form von `binom_formula`; dann `symm_twice : σ (σ p) = p` und
+`Nat.choose_symm_add : (m + k).choose m = (m + k).choose k`.
 :::
 :::solution
 ```

@@ -28,11 +28,11 @@ Wie lange bis zum ersten `true`? Eine Münze, die nochmal geworfen wird, solange
 :::
 
 :::proofen
-A coin that waits, as in *Coins that Wait*: `bind_true`, then `simp` computes.
+A coin that waits, as in *Coins that Wait*.
 :::
 
 :::proofde
-Eine Münze, die wartet, wie in *Münzen, die warten*: `bind_true`, dann rechnet `simp`.
+Eine Münze, die wartet, wie in *Münzen, die warten*.
 :::
 :::solution
 ```
@@ -52,11 +52,11 @@ simp
 :::
 
 :::proofen
-`bind_true` for the first throw, and once more inside: `simp [bind_true]`.
+The first throw as before; what follows is a `do` block again.
 :::
 
 :::proofde
-`bind_true` für den ersten Wurf, und nochmal innen: `simp [bind_true]`.
+Der erste Wurf wie eben; was folgt, ist wieder ein `do`-Block.
 :::
 :::solution
 ```
@@ -142,11 +142,13 @@ rfl
 :::
 
 :::proofen
-The left side as there: `bind_true`, then `simp [bind_true]`. On the right, `geom_succ` and `geom_zero` write the masses out, and `ring` compares.
+The left side as in the first levels of this world. On the right, the two cases of the definition
+write the masses out.
 :::
 
 :::proofde
-Die linke Seite wie dort: `bind_true`, dann `simp [bind_true]`. Rechts schreiben `geom_succ` und `geom_zero` die Massen aus, und `ring` vergleicht.
+Die linke Seite wie in den ersten Leveln dieser Welt. Rechts schreiben die zwei Fälle der Definition
+die Massen aus.
 :::
 :::solution
 ```

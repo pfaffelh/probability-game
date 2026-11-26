@@ -34,29 +34,21 @@ für `not` und für immer `true`. In Lean prüfen es die neuen Taktiken `revert`
 :::
 
 :::proofen
-No rule says what `f` does, so there is nothing to rewrite, and no `rw` here. But there are only four maps `Bool → Bool`, `id`, `not` and the two constant ones, and with
-the two values of `b` these are eight cases. Two new tactics: `revert f b` takes the variables back
-into the statement, here `∀ f b, f (f (f b)) = f b`; then `decide` reduces this statement about
-finitely many cases until it is `true` or `false`, and so checks every case. `decide` alone does not
-work: for one unknown `f` there is nothing to compute. With
-coins this no longer works: a coin `coin p` is a different distribution for every number `p` between
-0 and 1, infinitely many cases. There, the rules do the work, and this lemma: it is unlocked as
-`Bool.apply_apply_apply`.
-
-*Tip.* `revert f b`, then `decide`.
+No rule says what `f` does, so there is nothing to rewrite. But there are only four maps
+`Bool → Bool`, and with the two values of `b` these are eight cases. Two new tactics: `revert f b`
+takes the variables back into the statement, here `∀ f b, f (f (f b)) = f b`; `decide` reduces a
+statement about finitely many cases until it is `true` or `false`, and so checks every case. (For
+one unknown `f` there is nothing to compute: `decide` alone does not work.) Your result is unlocked
+as `Bool.apply_apply_apply`.
 :::
 
 :::proofde
-Keine Regel sagt, was `f` tut; es gibt also nichts umzuschreiben, und hier kein `rw`. Aber es gibt nur vier Abbildungen `Bool → Bool`, `id`, `not` und die
-zwei konstanten, und mit den zwei Werten von `b` sind das acht Fälle. Zwei neue Taktiken: `revert f b`
-nimmt die Variablen zurück in die Aussage, hier `∀ f b, f (f (f b)) = f b`; dann reduziert `decide`
-diese Aussage über endlich viele Fälle, bis sie `true` oder `false` ist, und prüft so jeden Fall.
-`decide` allein geht nicht: Für ein unbekanntes `f` gibt es nichts auszurechnen. Mit
-Münzen geht das nicht mehr: Eine Münze `coin p` ist für jede Zahl `p`
-zwischen 0 und 1 eine andere Verteilung, unendlich viele Fälle. Dort machen die Regeln die Arbeit, und
-dieses Lemma: Es wird als `Bool.apply_apply_apply` freigeschaltet.
-
-*Tipp.* `revert f b`, dann `decide`.
+Keine Regel sagt, was `f` tut; es gibt also nichts umzuschreiben. Aber es gibt nur vier Abbildungen
+`Bool → Bool`, und mit den zwei Werten von `b` sind das acht Fälle. Zwei neue Taktiken: `revert f b`
+nimmt die Variablen zurück in die Aussage, hier `∀ f b, f (f (f b)) = f b`; `decide` reduziert eine
+Aussage über endlich viele Fälle, bis sie `true` oder `false` ist, und prüft so jeden Fall. (Für ein
+unbekanntes `f` gibt es nichts auszurechnen: `decide` allein geht nicht.) Dein Ergebnis wird als
+`Bool.apply_apply_apply` freigeschaltet.
 :::
 :::solution
 ```
@@ -86,17 +78,17 @@ decide
 :::
 
 :::proofen
-Compare the masses at every point: `ext b`. `map_apply` and `Fintype.sum_bool` write the mass as two
-summands; the tests `true == b` and `false == b` are `b` and `!b` (`Bool.true_beq` from *Masses*,
-and the new rule `Bool.false_beq`). Then `cases b`. You prove it on `Bool`; it holds for every type,
-and it is unlocked as `map_id` in this general form.
+Compare the masses at every point (`ext`, from *One Coin*), with the definition `map_apply`. The
+tests `true == b` and `false == b` are `b` and `!b`: `Bool.true_beq` from *Masses*, and the new rule
+`Bool.false_beq`. You prove it on `Bool`; it holds for every type, and it is unlocked as `map_id` in
+this general form.
 :::
 
 :::proofde
-Vergleiche die Massen an jedem Punkt: `ext b`. `map_apply` und `Fintype.sum_bool` schreiben die Masse
-als zwei Summanden; die Tests `true == b` und `false == b` sind `b` und `!b` (`Bool.true_beq` aus
-*Massen*, und die neue Regel `Bool.false_beq`). Dann `cases b`. Du beweist es auf `Bool`; es gilt für
-jeden Typ und wird in dieser allgemeinen Form als `map_id` freigeschaltet.
+Vergleiche die Massen an jedem Punkt (`ext`, aus *Eine Münze*), mit der Definition `map_apply`. Die
+Tests `true == b` und `false == b` sind `b` und `!b`: `Bool.true_beq` aus *Massen*, und die neue
+Regel `Bool.false_beq`. Du beweist es auf `Bool`; es gilt für jeden Typ und wird in dieser
+allgemeinen Form als `map_id` freigeschaltet.
 :::
 :::solution
 ```
@@ -129,23 +121,15 @@ rw [Bool.not_true, Bool.cond_true, Bool.cond_false, add_comm, zero_add]
 :::
 
 :::proofen
-Your lemma from *Bool*, `Bool.not_not : (!(!b)) = b`, should make `!(!x)` into `x`. But
 `rw [Bool.not_not]` does not find `!(!x)`, as in the quiz before: the `x` in `fun x => …` is a
-*bound* name, like the index `x` of a sum `∑ x, …`, and `rw` rewrites only parts without bound names.
-The new tactic `simp_rw [rules]` is `rw`, also under bound names. Then the move does nothing: your
-lemma `map_id : μ.map (fun x => x) = μ`.
-
-*Tip.* `simp_rw [Bool.not_not]`, `rw [map_id]`.
+*bound* name, like the index `x` of a sum `∑ x, …`, and `rw` rewrites only parts without bound
+names. The new tactic `simp_rw [rules]` is `rw`, also under bound names.
 :::
 
 :::proofde
-Dein Lemma aus *Bool*, `Bool.not_not : (!(!b)) = b`, soll aus `!(!x)` ein `x` machen. Aber
 `rw [Bool.not_not]` findet `!(!x)` nicht, wie im Quiz davor: Das `x` in `fun x => …` ist ein
 *gebundener* Name, wie der Index `x` einer Summe `∑ x, …`, und `rw` schreibt nur Teile ohne
-gebundene Namen um. Die neue Taktik `simp_rw [Regeln]` ist `rw`, auch unter gebundenen Namen. Dann
-tut der Zug nichts: dein Lemma `map_id : μ.map (fun x => x) = μ`.
-
-*Tipp.* `simp_rw [Bool.not_not]`, `rw [map_id]`.
+gebundene Namen um. Die neue Taktik `simp_rw [Regeln]` ist `rw`, auch unter gebundenen Namen.
 :::
 :::solution
 ```
@@ -166,18 +150,12 @@ rw [map_id]
 
 :::proofen
 `f true` is not a variable, but it is a `Bool`, so it is `true` or `false`: `cases f true` goes
-through both values, as `cases x` does for a variable. It leaves two goals, with `false` and with
-`true` in place of `f true`. Then the rules from *Bool*; `x + 0` is turned round by `add_comm`, for `zero_add`.
-
-*Tip.* `cases f true`, `rw [Bool.cond_false, Bool.cond_false, zero_add]`, `rw [Bool.cond_true, Bool.cond_true, add_comm, zero_add]`.
+through both values, as `cases x` does for a variable.
 :::
 
 :::proofde
 `f true` ist keine Variable, aber ein `Bool`, also `true` oder `false`: `cases f true` geht beide
-Werte durch, wie `cases x` für eine Variable. Es lässt zwei Ziele, mit `false` und mit `true` an der
-Stelle von `f true`. Dann die Regeln aus *Bool*; `x + 0` dreht `add_comm` um, für `zero_add`.
-
-*Tipp.* `cases f true`, `rw [Bool.cond_false, Bool.cond_false, zero_add]`, `rw [Bool.cond_true, Bool.cond_true, add_comm, zero_add]`.
+Werte durch, wie `cases x` für eine Variable.
 :::
 :::solution
 ```
@@ -200,16 +178,14 @@ mit der Masse `y`.
 :::
 
 :::proofen
-`cases f true`, as in the level before. Then the rules from *Bool*; with
-`simp_rw` every `bif false then … else …` goes at once. You prove it for the test `f true`; it holds
-for every test `c : Bool`, and it is unlocked as
+As in the level before; with `simp_rw` every `bif false then … else …` goes at once. You prove it
+for the test `f true`; it holds for every test `c : Bool`, and it is unlocked as
 `cond_add_cond : (bif c then x else 0) + (bif c then y else 0) = bif c then x + y else 0`.
 :::
 
 :::proofde
-`cases f true`, wie im Level davor. Dann die Regeln aus *Bool*; mit `simp_rw` geht
-jedes `bif false then … else …` auf einmal. Du beweist es für den Test `f true`; es gilt für jeden
-Test `c : Bool` und wird freigeschaltet als
+Wie im Level davor; mit `simp_rw` geht jedes `bif false then … else …` auf einmal. Du beweist es für
+den Test `f true`; es gilt für jeden Test `c : Bool` und wird freigeschaltet als
 `cond_add_cond : (bif c then x else 0) + (bif c then y else 0) = bif c then x + y else 0`.
 :::
 :::solution

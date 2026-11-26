@@ -67,7 +67,7 @@ def coin (p : I) : DiscreteMeasure Bool where
 ```
 
 `I` is the unit interval $`[0, 1]`, where the probability `p` lies; `σ p` is $`1 - p`, again in
-`I`. The arrow `↑` makes a number of `I` a mass in `ℝ≥0∞`. (`μ x` is `μ.weight x`.) So Lean computes the left side to `↑p`: `rfl`, as in *Bool*. The
+`I`. The arrow `↑` makes a number of `I` a mass in `ℝ≥0∞`. (`μ x` is `μ.weight x`.) So the statement holds by definition. The
 statement is the rule `coin_true`; once proved, it is in your inventory.
 :::
 
@@ -90,7 +90,7 @@ def coin (p : I) : DiscreteMeasure Bool where
 
 `I` ist das Einheitsintervall $`[0, 1]`, in dem die Wahrscheinlichkeit `p` liegt; `σ p` ist $`1 - p`,
 wieder in `I`. Der Pfeil `↑` macht aus einer Zahl aus `I` eine Masse in `ℝ≥0∞`. (`μ x` ist
-`μ.weight x`.) Also rechnet Lean die linke Seite zu `↑p` aus: `rfl`, wie in *Bool*.
+`μ.weight x`.) Also gilt die Aussage nach Definition.
 Die Aussage ist die Regel `coin_true`; bewiesen, ist sie in deinem Inventar.
 :::
 :::solution
@@ -160,14 +160,10 @@ rfl
 
 :::proofen
 The new tactic `constructor` makes two goals of `A ∧ B`: first `A`, then `B`. Each of them holds by definition, as before.
-
-*Tip.* `constructor`, `rfl`, `rfl`.
 :::
 
 :::proofde
 Die neue Taktik `constructor` macht aus `A ∧ B` zwei Ziele: erst `A`, dann `B`. Jedes gilt nach Definition, wie zuvor.
-
-*Tipp.* `constructor`, `rfl`, `rfl`.
 :::
 :::solution
 ```
@@ -191,15 +187,14 @@ umschreibt.
 :::
 
 :::proofen
-A rule `h : a = b` is used with `rw [h]`: it rewrites `a` into `b` in the goal (from right to left with `←`,
-later), several at once with `rw [h, k]`. When the goal then reads `x = x`, it is closed.
-`rw [zero_add]` takes the `0 + ` away; then your rule `coin_true`.
+A rule `h : a = b` is used with `rw [h]`: it rewrites `a` into `b` in the goal (from right to left
+with `←`, later), several at once with `rw [h, k]`. When the goal then reads `x = x`, it is closed.
 :::
 
 :::proofde
-Eine Regel `h : a = b` benutzt man mit `rw [h]`: Sie schreibt `a` im Ziel zu `b` um (von rechts nach links
-mit `←`, später), mehrere auf einmal mit `rw [h, k]`. Lautet das Ziel danach `x = x`, ist es geschlossen.
-`rw [zero_add]` nimmt das `0 + ` weg; dann deine Regel `coin_true`.
+Eine Regel `h : a = b` benutzt man mit `rw [h]`: Sie schreibt `a` im Ziel zu `b` um (von rechts nach
+links mit `←`, später), mehrere auf einmal mit `rw [h, k]`. Lautet das Ziel danach `x = x`, ist es
+geschlossen.
 :::
 :::solution
 ```
@@ -227,12 +222,11 @@ endlichen Typs; über `Bool` sind es zwei, und die Regel (aus Mathlib) ist
 :::
 
 :::proofen
-Here `g a` is `bif a then x else y`. After `rw [Fintype.sum_bool]` you have `bif true …` and `bif false …`.
+Here `g a` is `bif a then x else y`.
 :::
 
 :::proofde
-Hier ist `g a` gleich `bif a then x else y`. Nach `rw [Fintype.sum_bool]` stehen da `bif true …` und
-`bif false …`.
+Hier ist `g a` gleich `bif a then x else y`.
 :::
 :::solution
 ```
@@ -273,13 +267,11 @@ cases c <;> rfl
 :::::leanonly (proof := "(b : Bool) : (true == b) = ⟦b ‖ b, !b, true⟧") (lemma := "Bool.true_beq") (new := "beq_self_eq_true") (uses := "beq_self_eq_true")
 ::::hint (anchor := "item:beq_self_eq_true")
 :::en
-`beq_self_eq_true : (a == a) = true`: a point tested against itself. After `cases b` it settles the
-case `true`.
+`beq_self_eq_true : (a == a) = true`: a point tested against itself.
 :::
 
 :::de
-`beq_self_eq_true : (a == a) = true`: ein Punkt, mit sich selbst verglichen. Nach `cases b` erledigt es
-den Fall `true`.
+`beq_self_eq_true : (a == a) = true`: ein Punkt, mit sich selbst verglichen.
 :::
 ::::
 
@@ -341,13 +333,11 @@ Daraus beweist du die Regel der Bausteine, `map_true`: Nach `true` kommt die Mas
 :::
 
 :::proofen
-`rw [map_apply]` writes the mass as a sum, `rw [Fintype.sum_bool]` as its two summands. Then the tests
-`f true == true` and `f false == true`: your rule `beq_true`, twice.
+First the definition, `map_apply`, and the sum written out; what is left are tests against `true`.
 :::
 
 :::proofde
-`rw [map_apply]` schreibt die Masse als Summe, `rw [Fintype.sum_bool]` als ihre zwei Summanden. Dann die
-Tests `f true == true` und `f false == true`: deine Regel `beq_true`, zweimal.
+Zuerst die Definition, `map_apply`, und die Summe ausgeschrieben; übrig bleiben Tests gegen `true`.
 :::
 :::solution
 ```
@@ -377,11 +367,11 @@ Welche Massen von `μ` kommen bei `true` an?
 :::
 
 :::proofen
-After `rw [map_true]` both conditions read `true`: your rule `Bool.cond_true`, twice.
+Your rule `map_true`, for the move *always `true`*.
 :::
 
 :::proofde
-Nach `rw [map_true]` lauten beide Bedingungen `true`: deine Regel `Bool.cond_true`, zweimal.
+Deine Regel `map_true`, für den Zug *immer `true`*.
 :::
 :::solution
 ```
@@ -415,30 +405,25 @@ are two of them.
 ::::hint (anchor := "back")
 :::en
 New: `←`. `rw [← h]` rewrites from right to left: it puts the left side of `h` where its right side
-stands. Here `rw [← Prob.total μ]` makes the `1` of the goal the sum of the masses. Tap `←`, or type `\l`.
+stands. Tap `←`, or type `\l`.
 :::
 
 :::de
 Neu: `←`. `rw [← h]` schreibt von rechts nach links um: Es setzt die linke Seite von `h` dorthin, wo
-ihre rechte steht. Hier macht `rw [← Prob.total μ]` aus der `1` des Ziels die Summe der Massen. Tippe `←` an, oder tippe `\l`.
+ihre rechte steht. Tippe `←` an, oder tippe `\l`.
 :::
 ::::
 
 :::proofen
-`Prob.total μ : ∑' a, μ a = 1` is a sum over all points, `∑'`. Read from right to left,
-`rw [← Prob.total μ]` makes the `1` of the goal this sum. `tsum_fintype` turns a sum over all points
-of a finite type into a finite sum `∑`, and `Fintype.sum_bool` into its two summands.
-
-*Tip.* `rw [← Prob.total μ, tsum_fintype, Fintype.sum_bool]` (type `\l` for `←`, or tap ←).
+`Prob.total μ : ∑' a, μ a = 1` is a sum over all points, `∑'`; read from right to left, it makes the
+`1` of the goal this sum. `tsum_fintype` turns a sum over all points of a finite type into a finite
+sum `∑`.
 :::
 
 :::proofde
-`Prob.total μ : ∑' a, μ a = 1` ist eine Summe über alle Punkte, `∑'`. Von rechts nach links gelesen
-macht `rw [← Prob.total μ]` die `1` des Ziels zu dieser Summe. `tsum_fintype` macht eine Summe über
-alle Punkte eines endlichen Typs zu einer endlichen Summe `∑`, und `Fintype.sum_bool` zu ihren zwei
-Summanden.
-
-*Tipp.* `rw [← Prob.total μ, tsum_fintype, Fintype.sum_bool]` (`\l` tippen für `←`, oder ← antippen).
+`Prob.total μ : ∑' a, μ a = 1` ist eine Summe über alle Punkte, `∑'`; von rechts nach links gelesen
+macht sie die `1` des Ziels zu dieser Summe. `tsum_fintype` macht eine Summe über alle Punkte eines
+endlichen Typs zu einer endlichen Summe `∑`.
 :::
 :::solution
 ```
@@ -468,18 +453,14 @@ rw [← Prob.total μ, tsum_fintype, Fintype.sum_bool]
 
 :::proofen
 Your theorem `mass_total μ : μ true + μ false = 1` holds for every distribution `μ`: a rule with a
-blank. Put the coin in, and `mass_total (coin p)` is exactly the goal. The new tactic `exact h` closes
-a goal that is exactly `h`.
-
-*Tip.* `exact mass_total (coin p)`.
+blank. What goes into the blank is written behind the rule, in brackets when it is more than a name.
+The new tactic `exact h` closes a goal that is exactly `h`.
 :::
 
 :::proofde
 Dein Satz `mass_total μ : μ true + μ false = 1` gilt für jede Verteilung `μ`: eine Regel mit einer
-Leerstelle. Setz die Münze ein, und `mass_total (coin p)` ist genau das Ziel. Die neue Taktik
-`exact h` schließt ein Ziel, das genau `h` ist.
-
-*Tipp.* `exact mass_total (coin p)`.
+Leerstelle. Was in die Leerstelle kommt, schreibt man hinter die Regel, in Klammern, wenn es mehr
+als ein Name ist. Die neue Taktik `exact h` schließt ein Ziel, das genau `h` ist.
 :::
 :::solution
 ```
@@ -498,15 +479,15 @@ exact mass_total (coin p)
 :::
 
 :::proofen
-`rw [← mass_total μ]` makes the `1` the whole mass; `cases b` gives the two points. At `true` the
-goal is exactly the rule `le_self_add : a ≤ a + c`: `exact`. At
-`false` the summands are the wrong way round: `add_comm : a + b = b + a` turns the sum round.
+The `1` is the whole mass, `mass_total μ`, and each mass is one of its summands:
+`le_self_add : a ≤ a + c`. Where the summands stand the wrong way round, `add_comm : a + b = b + a`
+turns the sum round.
 :::
 
 :::proofde
-`rw [← mass_total μ]` macht die `1` zur ganzen Masse; `cases b` gibt die zwei Punkte. Bei `true` ist
-das Ziel genau die Regel `le_self_add : a ≤ a + c`: `exact`.
-Bei `false` stehen die Summanden falsch herum: `add_comm : a + b = b + a` dreht die Summe um.
+Die `1` ist die ganze Masse, `mass_total μ`, und jede Masse ist einer ihrer Summanden:
+`le_self_add : a ≤ a + c`. Wo die Summanden falsch herum stehen, dreht `add_comm : a + b = b + a`
+die Summe um.
 :::
 :::solution
 ```
@@ -531,19 +512,15 @@ exact le_self_add
 :::
 
 :::proofen
-`ne_top_of_le_ne_top : b ≠ ⊤ → a ≤ b → a ≠ ⊤`. `apply h` works backwards: the goal is the conclusion
-of `h`, and what `h` still needs becomes the new goal. With `b = 1` and `ENNReal.one_ne_top : 1 ≠ ⊤`
-given, what is left is `μ b ≤ 1`: your theorem `mass_le_one`.
-
-*Tip.* `apply ne_top_of_le_ne_top ENNReal.one_ne_top`, then `exact mass_le_one μ b`.
+`ne_top_of_le_ne_top : b ≠ ⊤ → a ≤ b → a ≠ ⊤`. The new tactic `apply h` works backwards: the goal is
+the conclusion of `h`, and what `h` still needs becomes the new goal. What `h` needs can also be
+given along, `apply h h₁`: here `ENNReal.one_ne_top : 1 ≠ ⊤`.
 :::
 
 :::proofde
-`ne_top_of_le_ne_top : b ≠ ⊤ → a ≤ b → a ≠ ⊤`. `apply h` arbeitet rückwärts: Das Ziel ist die
-Folgerung von `h`, und was `h` noch braucht, wird das neue Ziel. Mit `b = 1` und
-`ENNReal.one_ne_top : 1 ≠ ⊤` gegeben, bleibt `μ b ≤ 1`: dein Satz `mass_le_one`.
-
-*Tipp.* `apply ne_top_of_le_ne_top ENNReal.one_ne_top`, dann `exact mass_le_one μ b`.
+`ne_top_of_le_ne_top : b ≠ ⊤ → a ≤ b → a ≠ ⊤`. Die neue Taktik `apply h` arbeitet rückwärts: Das
+Ziel ist die Folgerung von `h`, und was `h` noch braucht, wird das neue Ziel. Was `h` braucht, kann
+man auch gleich mitgeben, `apply h h₁`: hier `ENNReal.one_ne_top : 1 ≠ ⊤`.
 :::
 :::solution
 ```

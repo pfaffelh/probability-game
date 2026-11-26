@@ -55,17 +55,13 @@ wandert zu den natürlichen Zahlen. So wird aus einer Münze eine Zufallszahl.
 :::
 
 :::proofen
-`Bool.toNat` counts `true` as $`1` and `false` as $`0`. Both sides move the same coin, with two
-maps that agree. As in *Maps*: `congr` reduces the goal to the two maps being equal, `ext b`
-to their being equal at every `b`; then, as in *Bool*, `cases b <;> rfl` does both cases in one
-line.
+`Bool.toNat` counts `true` as $`1` and `false` as $`0`. Both sides move the same coin, with two maps
+that agree: `congr`, as in *Laws of `do`*.
 :::
 
 :::proofde
 `Bool.toNat` zählt `true` als $`1` und `false` als $`0`. Beide Seiten bewegen dieselbe Münze, mit
-zwei Abbildungen, die übereinstimmen. Wie in *Abbildungen*: `congr` führt das Ziel darauf zurück,
-dass die beiden Abbildungen gleich sind, `ext b` darauf, dass sie an jeder Stelle `b` gleich sind;
-dann erledigt, wie in *Bool*, `cases b <;> rfl` beide Fälle in einer Zeile.
+zwei Abbildungen, die übereinstimmen: `congr`, wie in *Gesetze von `do`*.
 :::
 :::solution
 ```
@@ -265,23 +261,13 @@ rw [add_zero]
 :::
 
 :::proofen
-The binomial distribution `binom p n` is defined as the natural numbers in the Natural Number Game:
-by zero and successor. `binom_zero : binom p 0 = pure 0`: no throw, no `true`.
-`binom_succ : binom p (n + 1) = do let X ← coin p; let Y ← binom p n; pure (X.toNat + Y)`: one throw
-more. To clean up `do` blocks, two new rules: `bind_assoc` (a `do` block in a `do` block is one `do`
-block: `(do let y ← (do let x ← μ; f x); g y) = (do let x ← μ; let y ← f x; g y)`) and
-`pure_bind : (do let x ← pure a; f x) = f a` (drawing from a point mass `pure a` always gives `a`);
-and `add_zero : n + 0 = n`.
+`binom p 2`, written out by its two rules, is a `do` block in a `do` block. The rules of the last
+three levels clean it up (under bound names: `simp only`).
 :::
 
 :::proofde
-Die Binomialverteilung `binom p n` ist definiert wie die natürlichen Zahlen im Natural Number Game:
-durch Null und Nachfolger. `binom_zero : binom p 0 = pure 0`: kein Wurf, kein `true`.
-`binom_succ : binom p (n + 1) = do let X ← coin p; let Y ← binom p n; pure (X.toNat + Y)`: ein Wurf
-mehr. Zum Aufräumen von `do`-Blöcken zwei neue Regeln: `bind_assoc` (ein `do`-Block in einem
-`do`-Block ist ein `do`-Block: `(do let y ← (do let x ← μ; f x); g y) = (do let x ← μ; let y ← f x; g y)`)
-und `pure_bind : (do let x ← pure a; f x) = f a` (aus einer Punktmasse `pure a` zieht man immer `a`);
-und `add_zero : n + 0 = n`.
+`binom p 2`, mit seinen zwei Regeln ausgeschrieben, ist ein `do`-Block in einem `do`-Block. Die
+Regeln der letzten drei Level räumen ihn auf (unter gebundenen Namen: `simp only`).
 :::
 :::solution
 ```
@@ -342,11 +328,11 @@ Später in dieser Welt kommt $`B(2, p)` schon gebaut.
 :::
 
 :::proofen
-Three throws are `binom p 3`. New: `add_assoc : a + b + c = a + (b + c)`.
+Three throws are `binom p 3`: as for two, now with `add_assoc` as well.
 :::
 
 :::proofde
-Drei Würfe sind `binom p 3`. Neu: `add_assoc : a + b + c = a + (b + c)`.
+Drei Würfe sind `binom p 3`: wie bei zweien, jetzt auch mit `add_assoc`.
 :::
 :::solution
 ```
@@ -367,17 +353,15 @@ go into two functions.
 muss in zwei Funktionen gehen.
 :::
 :::proofen
-The majority is a move on the number of `true`: at least two of three. Three throws are `binom p 3`,
-as in the level before; the move at the end goes into the `do` block, with `map_bind` and `map_pure`
-from *Laws of `do`*. Then both sides throw the same three coins and differ only in what they compute:
-`congr` and `ext`, once for each coin, and eight cases.
+The majority is a move on the number of `true`: at least two of three. The move at the end goes into
+the `do` block, with `map_bind` and `map_pure` from *Laws of `do`*. Then both sides throw the same
+three coins and differ only in what they compute.
 :::
 
 :::proofde
-Die Mehrheit ist ein Zug auf der Anzahl der `true`: mindestens zwei von dreien. Drei Würfe sind
-`binom p 3`, wie im Level davor; der Zug am Ende wandert in den `do`-Block, mit `map_bind` und
-`map_pure` aus *Gesetze von `do`*. Dann werfen beide Seiten dieselben drei Münzen und unterscheiden
-sich nur darin, was sie rechnen: `congr` und `ext`, einmal für jede Münze, und acht Fälle.
+Die Mehrheit ist ein Zug auf der Anzahl der `true`: mindestens zwei von dreien. Der Zug am Ende
+wandert in den `do`-Block, mit `map_bind` und `map_pure` aus *Gesetze von `do`*. Dann werfen beide
+Seiten dieselben drei Münzen und unterscheiden sich nur darin, was sie rechnen.
 :::
 :::solution
 ```
@@ -405,24 +389,16 @@ cases x <;> cases y <;> cases z <;> rfl
 
 :::proofen
 For every $`n`: that needs *induction*, as in the Natural Number Game. The new tactic
-`induction' n with n ih` leaves two goals, one after the other: the case $`0`, and the case $`n + 1`,
-with the hypothesis `ih` for $`n`. In the case $`n + 1`, `binom_succ` throws one coin, the new rule
-`coin_zero : coin 0 = pure false` says what it shows, and `ih` is the rest. What is left,
-`pure (false.toNat + 0) = pure 0`, holds by computing: `rfl`. Your result becomes the lemma `binom_never`.
-
-*Tip.* `induction' n with n ih`. Case $`0`: `rw [binom_zero]`. Case $`n + 1`:
-`rw [binom_succ, coin_zero, pure_bind, ih, pure_bind]`, `rfl`.
+`induction' n with n ih` leaves two goals, one after the other: the case $`0`, and the case
+$`n + 1`, with the hypothesis `ih` for $`n`. The new rule `coin_zero : coin 0 = pure false` says
+what the coin shows. Your result becomes the lemma `binom_never`.
 :::
 
 :::proofde
 Für jedes $`n`: Dafür braucht es *Induktion*, wie im Natural Number Game. Die neue Taktik
 `induction' n with n ih` lässt zwei Ziele, eines nach dem anderen: den Fall $`0`, und den Fall
-$`n + 1`, mit der Annahme `ih` für $`n`. Im Fall $`n + 1` wirft `binom_succ` eine Münze, die neue Regel
-`coin_zero : coin 0 = pure false` sagt, was sie zeigt, und `ih` ist der Rest. Was übrig bleibt,
-`pure (false.toNat + 0) = pure 0`, gilt durch Ausrechnen: `rfl`. Dein Ergebnis wird das Lemma `binom_never`.
-
-*Tipp.* `induction' n with n ih`. Fall $`0`: `rw [binom_zero]`. Fall $`n + 1`:
-`rw [binom_succ, coin_zero, pure_bind, ih, pure_bind]`, `rfl`.
+$`n + 1`, mit der Annahme `ih` für $`n`. Die neue Regel `coin_zero : coin 0 = pure false` sagt, was
+die Münze zeigt. Dein Ergebnis wird das Lemma `binom_never`.
 :::
 :::solution
 ```
@@ -447,21 +423,15 @@ kommt heraus.
 :::
 
 :::proofen
-`binom_succ` throws the new coin first; here it comes last, for every `n`. That needs induction,
-as in the level before. Rules can be given their arguments: `binom_succ p n` is the rule for this `n`
-only. The lemma is called `binom_succ'`.
-
-*Tip.* Case $`0`: `rw [binom_zero, binom_succ, binom_zero]`, `simp only [pure_bind, zero_add, add_zero]`.
-Case $`n + 1`: `rw [binom_succ p n, binom_succ p (n + 1), ← ih]`, `simp only [bind_assoc, pure_bind, add_assoc]`.
+`binom_succ` throws the new coin first; here it comes last, for every `n`: induction, as in the
+level before. Rules can be given their arguments: `binom_succ p n` is the rule for this `n` only.
+The lemma is called `binom_succ'`.
 :::
 
 :::proofde
-`binom_succ` wirft die neue Münze zuerst; hier kommt sie zuletzt, für jedes `n`. Dafür braucht es
-Induktion, wie im Level davor. Regeln kann man ihre Argumente mitgeben: `binom_succ p n` ist die Regel
-nur für dieses `n`. Das Lemma heißt `binom_succ'`.
-
-*Tipp.* Fall $`0`: `rw [binom_zero, binom_succ, binom_zero]`, `simp only [pure_bind, zero_add, add_zero]`.
-Fall $`n + 1`: `rw [binom_succ p n, binom_succ p (n + 1), ← ih]`, `simp only [bind_assoc, pure_bind, add_assoc]`.
+`binom_succ` wirft die neue Münze zuerst; hier kommt sie zuletzt, für jedes `n`: Induktion, wie im
+Level davor. Regeln kann man ihre Argumente mitgeben: `binom_succ p n` ist die Regel nur für dieses
+`n`. Das Lemma heißt `binom_succ'`.
 :::
 :::solution
 ```

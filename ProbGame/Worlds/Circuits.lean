@@ -86,8 +86,6 @@ statement Lean shows the *goal*: the variables on top, and after `⊢` what is s
 
 `rfl` is a tactic that proves an equation whose two sides are the same (*reflexivity*: everything is
 equal to itself).
-
-*Tip.* `rfl`.
 :::
 
 :::proofde
@@ -99,8 +97,6 @@ noch zu zeigen ist. Eine *Taktik*, eine Zeile, ändert das Ziel, bis nichts mehr
 
 `rfl` ist eine Taktik, die eine Gleichung beweist, deren beide Seiten gleich sind (*Reflexivität*:
 alles ist sich selbst gleich).
-
-*Tipp.* `rfl`.
 :::
 :::solution
 ```
@@ -220,21 +216,15 @@ rfl
 :::
 
 :::proofen
-`rfl` would compute this as well. Here with your theorems, one step at a time. `rw [Bool.not_true]`
-*rewrites* the goal with `Bool.not_true : (!true) = false`: it replaces the left side of the theorem by
-its right side. Then `Bool.not_false : (!false) = true`. When both sides of the goal are the same,
-`rw` closes it.
-
-*Tip.* `rw [Bool.not_true, Bool.not_false]`.
+`rfl` would compute this as well. Here with your theorems: `rw [h]` *rewrites* the goal with a
+theorem `h : a = b`, it replaces the left side `a` by the right side `b`. When both sides of the
+goal are then the same, `rw` closes it.
 :::
 
 :::proofde
-`rfl` würde auch das ausrechnen. Hier mit deinen Sätzen, Schritt für Schritt. `rw [Bool.not_true]`
-*schreibt* das Ziel mit `Bool.not_true : (!true) = false` *um*: Es ersetzt die linke Seite des Satzes
-durch seine rechte. Dann `Bool.not_false : (!false) = true`. Sind beide Seiten des Ziels gleich,
-schließt `rw` es.
-
-*Tipp.* `rw [Bool.not_true, Bool.not_false]`.
+`rfl` würde auch das ausrechnen. Hier mit deinen Sätzen: `rw [h]` *schreibt* das Ziel mit einem Satz
+`h : a = b` *um*, es ersetzt die linke Seite `a` durch die rechte `b`. Sind danach beide Seiten des
+Ziels gleich, schließt `rw` es.
 :::
 :::solution
 ```
@@ -282,21 +272,15 @@ Beweise sie nacheinander.
 :::proofen
 `!(!x) = x` for every `x`. Now `rfl` does not help: `not` is defined by its cases, and Lean cannot
 reduce `!x` as long as it does not know `x`. The tactic `cases x` splits into the cases `false` and
-`true`, two goals one after the other, as the two rows of the table. In each, both sides reduce to
-the same: `!(!false)` to `!true` and then to `false`. Your result becomes the lemma `Bool.not_not`, as
-it is called in Lean.
-
-*Tip.* `cases x`, then `rfl`, `rfl`.
+`true`, two goals one after the other, as the two rows of the table. Your result becomes the lemma
+`Bool.not_not`, as it is called in Lean.
 :::
 
 :::proofde
 `!(!x) = x` für jedes `x`. Jetzt hilft `rfl` nicht: `not` ist durch seine Fälle definiert, und Lean
 kann `!x` nicht reduzieren, solange es `x` nicht kennt. Die Taktik `cases x` teilt in die Fälle
-`false` und `true`, zwei Ziele nacheinander, wie die zwei Zeilen der Tafel. In jedem reduzieren beide
-Seiten zum selben: `!(!false)` zu `!true` und dann zu `false`. Dein Ergebnis wird das Lemma
-`Bool.not_not`, wie es in Lean heißt.
-
-*Tipp.* `cases x`, dann `rfl`, `rfl`.
+`false` und `true`, zwei Ziele nacheinander, wie die zwei Zeilen der Tafel. Dein Ergebnis wird das
+Lemma `Bool.not_not`, wie es in Lean heißt.
 :::
 :::solution
 ```
@@ -342,14 +326,13 @@ Das sind die Kandidaten für die Lücke. Tippe einen an; ein Tipp auf die gefül
 :::proofen
 First the statement: your circuit is `x || ▢`, and it is to be `true` for every `x`. What goes into
 the gap? Then the proof: `||` is defined by cases of its left side, `false || b` reduces to `b`, and
-`true || b` to `true`. So `cases x`, then `rfl` in each case. Your result becomes the lemma `Bool.or_not_self`.
+`true || b` to `true`. Your result becomes the lemma `Bool.or_not_self`.
 :::
 
 :::proofde
 Zuerst die Aussage: Deine Schaltung ist `x || ▢`, und sie soll für jedes `x` `true` sein. Was gehört
 in die Lücke? Dann der Beweis: `||` ist durch Fälle seiner linken Seite definiert, `false || b`
-reduziert zu `b`, und `true || b` zu `true`. Also `cases x`, dann `rfl` in jedem Fall. Dein Ergebnis
-wird das Lemma `Bool.or_not_self`.
+reduziert zu `b`, und `true || b` zu `true`. Dein Ergebnis wird das Lemma `Bool.or_not_self`.
 :::
 :::solution
 ```
@@ -391,13 +374,12 @@ rfl
 :::
 
 :::proofen
-What is `x && x`? `&&` is defined by cases of its left side, as `||`: so `cases x`, then `rfl` in
-each case. Your result becomes the lemma `Bool.and_self`.
+`&&` is defined by cases of its left side, as `||`. Your result becomes the lemma `Bool.and_self`.
 :::
 
 :::proofde
-Was ist `x && x`? `&&` ist durch Fälle seiner linken Seite definiert, wie `||`: also `cases x`,
-dann in jedem Fall `rfl`. Dein Ergebnis wird das Lemma `Bool.and_self`.
+`&&` ist durch Fälle seiner linken Seite definiert, wie `||`. Dein Ergebnis wird das Lemma
+`Bool.and_self`.
 :::
 :::solution
 ```

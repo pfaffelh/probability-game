@@ -80,13 +80,13 @@ Abbildung darauf an. In Lean:
 :::
 
 :::proofen
-Four rows, as in the boss of *Bool*: by hand `cases x <;> cases y <;> rfl`, or
-`revert x y` and `decide` (from *Maps*), which check them all.
+Four rows, as in the boss of *Bool*: by hand, or with the two tactics from *Maps* that check them
+all.
 :::
 
 :::proofde
-Vier Zeilen, wie beim Endgegner von *Bool*: von Hand `cases x <;> cases y <;> rfl`, oder
-`revert x y` und `decide` (aus *Abbildungen*), die alle prüfen.
+Vier Zeilen, wie beim Endgegner von *Bool*: von Hand, oder mit den zwei Taktiken aus *Abbildungen*,
+die alle prüfen.
 :::
 :::solution
 ```
@@ -157,15 +157,15 @@ ohne ein `and`.
 :::
 
 :::proofen
-`let y ← m; pure y` is just `m` (Lean drops it already when it reads the statement). `rw [bind_true]`
-splits the mass at `true` into the two ways. What is left is computing: which coin each way takes, its
-mass at `true`, products and sums. `simp` (from *Two Coins*) does all that.
+`let y ← m; pure y` is just `m` (Lean drops it already when it reads the statement). The mass at
+`true` comes two ways, `bind_true`; what is left is computing: which coin each way takes, its mass
+at `true`, products and sums.
 :::
 
 :::proofde
-`let y ← m; pure y` ist einfach `m` (Lean lässt es schon beim Lesen der Aussage weg). `rw [bind_true]`
-teilt die Masse bei `true` in die zwei Wege. Was bleibt, ist Rechnen: welche Münze jeder Weg nimmt, ihre
-Masse bei `true`, Produkte und Summen. `simp` (aus *Zwei Münzen*) erledigt das.
+`let y ← m; pure y` ist einfach `m` (Lean lässt es schon beim Lesen der Aussage weg). Die Masse bei
+`true` kommt auf zwei Wegen, `bind_true`; was bleibt, ist Rechnen: welche Münze jeder Weg nimmt,
+ihre Masse bei `true`, Produkte und Summen.
 :::
 :::solution
 ```
@@ -310,19 +310,15 @@ Schritten?
 :::
 
 :::proofen
-`bind_true` for the first coin. What follows is a `do` block again, inside the computation, where `rw`
-would have to pick the right place: give the rule to `simp` instead, `simp [bind_true]`, and it uses
-it wherever it fits.
-
-*Tip.* `rw [bind_true]`, then `simp [bind_true]`.
+What follows the first coin is a `do` block again, inside the computation, where `rw` would have to
+pick the right place. A rule can be given to `simp` instead, `simp [h]`: it uses it wherever it
+fits.
 :::
 
 :::proofde
-`bind_true` für die erste Münze. Was folgt, ist wieder ein `do`-Block, mitten in der Rechnung, wo `rw`
-die richtige Stelle treffen müsste: Gib die Regel stattdessen `simp`, `simp [bind_true]`, und es
-benutzt sie, wo sie passt.
-
-*Tipp.* `rw [bind_true]`, dann `simp [bind_true]`.
+Was auf die erste Münze folgt, ist wieder ein `do`-Block, mitten in der Rechnung, wo `rw` die
+richtige Stelle treffen müsste. Eine Regel kann man stattdessen `simp` geben, `simp [h]`: Es benutzt
+sie, wo sie passt.
 :::
 :::solution
 ```
@@ -342,11 +338,13 @@ simp [bind_true]
 :::
 
 :::proofen
-Each step is sure: `pure_bind : (do let x ← pure a; f x) = f a`. Then your lemma from *Bool*, `Bool.not_not : (!(!b)) = b`, and `bind_pure : (do let x ← μ; pure x) = μ`. All under the `do`: `simp only`.
+Each step is sure: `pure_bind : (do let x ← pure a; f x) = f a`. What is left you know from *Bool*
+and *Two Coins*; all of it under the `do`.
 :::
 
 :::proofde
-Jeder Schritt ist sicher: `pure_bind : (do let x ← pure a; f x) = f a`. Dann dein Lemma aus *Bool*, `Bool.not_not : (!(!b)) = b`, und `bind_pure : (do let x ← μ; pure x) = μ`. Alles unter dem `do`: `simp only`.
+Jeder Schritt ist sicher: `pure_bind : (do let x ← pure a; f x) = f a`. Was bleibt, kennst du aus
+*Bool* und *Zwei Münzen*; alles unter dem `do`.
 :::
 :::solution
 ```
@@ -365,11 +363,11 @@ simp only [pure_bind, Bool.not_not, bind_pure]
 :::
 
 :::proofen
-`bind_true` splits by the first coin; `simp` computes the two branches and the masses of the coins.
+As on the boards before: split by the first coin, then compute.
 :::
 
 :::proofde
-`bind_true` teilt nach der ersten Münze; `simp` rechnet die zwei Zweige und die Massen der Münzen aus.
+Wie auf den Spielfeldern davor: nach der ersten Münze teilen, dann rechnen.
 :::
 :::solution
 ```
@@ -390,14 +388,10 @@ simp
 
 :::proofen
 `bind_false : (do let x ← μ; f x) false = μ true * f true false + μ false * f false false`.
-
-Then `simp`, as before.
 :::
 
 :::proofde
 `bind_false : (do let x ← μ; f x) false = μ true * f true false + μ false * f false false`.
-
-Dann `simp`, wie vorher.
 :::
 :::solution
 ```
@@ -417,11 +411,13 @@ simp
 :::
 
 :::proofen
-Two distributions on `Bool` with the same mass at `true` are the same: `apply bool_ext`. Then the computation of *One step forward*, and the hypothesis `h`.
+Two distributions on `Bool` with the same mass at `true` are the same. Then the computation of *One
+step forward*, and the hypothesis `h`.
 :::
 
 :::proofde
-Zwei Verteilungen auf `Bool` mit derselben Masse bei `true` sind gleich: `apply bool_ext`. Dann die Rechnung aus *Ein Schritt nach vorn*, und die Annahme `h`.
+Zwei Verteilungen auf `Bool` mit derselben Masse bei `true` sind gleich. Dann die Rechnung aus *Ein
+Schritt nach vorn*, und die Annahme `h`.
 :::
 :::solution
 ```
@@ -447,13 +443,13 @@ Schritt vergessen.
 :::
 
 :::proofen
-Both branches are the same: `cond_same : (bif c then a else a) = a` (under the `do`: `simp only`).
-Then the coin `x` is not used: `coin_unused`.
+Both branches are the same: `cond_same : (bif c then a else a) = a`, here under the `do`. Then the
+coin `x` is not used.
 :::
 
 :::proofde
-Beide Zweige sind gleich: `cond_same : (bif c then a else a) = a` (unter dem `do`: `simp only`).
-Dann wird die Münze `x` nicht benutzt: `coin_unused`.
+Beide Zweige sind gleich: `cond_same : (bif c then a else a) = a`, hier unter dem `do`. Dann wird
+die Münze `x` nicht benutzt.
 :::
 :::solution
 ```

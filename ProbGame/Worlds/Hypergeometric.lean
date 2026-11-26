@@ -110,11 +110,13 @@ Eine Kugel gezogen: Mit welcher Chance ist sie weiß?
 :::
 
 :::proofen
-`hyper_succ` writes the draw out; the rest is computing, as in *Binomial*: `simp`, with `hyper_zero` for the draws that are left. Your result becomes the lemma `hyper_one_one`.
+`hyper_succ` writes the draw out; the rest is computing, as in *Binomial*, with `hyper_zero` for the
+draws that are left. Your result becomes the lemma `hyper_one_one`.
 :::
 
 :::proofde
-`hyper_succ` schreibt den Zug aus; der Rest ist Rechnen, wie in *Binomial*: `simp`, mit `hyper_zero` für die Züge, die übrig sind. Dein Ergebnis wird das Lemma `hyper_one_one`.
+`hyper_succ` schreibt den Zug aus; der Rest ist Rechnen, wie in *Binomial*, mit `hyper_zero` für die
+Züge, die übrig sind. Dein Ergebnis wird das Lemma `hyper_one_one`.
 :::
 :::solution
 ```
@@ -178,11 +180,11 @@ Weiß und dann schwarz, oder schwarz und dann weiß. Die zweite Kugel kommt aus 
 :::
 
 :::proofen
-`hyper_succ` for the first draw. The second draws are your two lemmas, for the smaller urns: give `hyper_one_zero` and `hyper_one_one` to `simp`.
+The first draw as before. The second draws are your two lemmas, for the smaller urns.
 :::
 
 :::proofde
-`hyper_succ` für den ersten Zug. Die zweiten Züge sind deine zwei Lemmas, für die kleineren Urnen: Gib `simp` `hyper_one_zero` und `hyper_one_one` mit.
+Der erste Zug wie eben. Die zweiten Züge sind deine zwei Lemmas, für die kleineren Urnen.
 :::
 :::solution
 ```
@@ -326,11 +328,13 @@ rw [coin_unused]
 :::
 
 :::proofen
-`frac_real : ↑(frac w b) = ↑w / (↑w + ↑b)`, in `ℝ`; `Nat.cast_add` and `Nat.cast_one` write `↑(w + 1)` as `↑w + 1`. Then an equation between fractions, as in *Balance*: `field_simp`, and what is left is for `ring`.
+`frac_real : ↑(frac w b) = ↑w / (↑w + ↑b)`, in `ℝ`; `Nat.cast_add` and `Nat.cast_one` write
+`↑(w + 1)` as `↑w + 1`. Then an equation between fractions, as in *Balance*.
 :::
 
 :::proofde
-`frac_real : ↑(frac w b) = ↑w / (↑w + ↑b)`, in `ℝ`; `Nat.cast_add` und `Nat.cast_one` schreiben `↑(w + 1)` als `↑w + 1`. Dann eine Gleichung zwischen Brüchen, wie in *Gleichgewicht*: `field_simp`, und was übrig bleibt, ist für `ring`.
+`frac_real : ↑(frac w b) = ↑w / (↑w + ↑b)`, in `ℝ`; `Nat.cast_add` und `Nat.cast_one` schreiben
+`↑(w + 1)` als `↑w + 1`. Dann eine Gleichung zwischen Brüchen, wie in *Gleichgewicht*.
 :::
 :::solution
 ```
@@ -351,11 +355,12 @@ ring
 :::
 
 :::proofen
-A coin that stays: your lemma `coin_stays` from *Balance*. `apply coin_stays` leaves what the lemma asks for as the goal: the balance, in `ℝ`. Here it holds by computing.
+A coin that stays: your lemma `coin_stays` from *Balance*. What it asks for is the balance, in `ℝ`.
 :::
 
 :::proofde
-Eine Münze, die bleibt: dein Lemma `coin_stays` aus *Gleichgewicht*. `apply coin_stays` lässt als Ziel, was das Lemma verlangt: das Gleichgewicht, in `ℝ`. Hier gilt es durch Rechnen.
+Eine Münze, die bleibt: dein Lemma `coin_stays` aus *Gleichgewicht*. Was es verlangt, ist das
+Gleichgewicht, in `ℝ`.
 :::
 :::solution
 ```
@@ -385,11 +390,13 @@ Erst Weiß, dann Schwarz, oder erst Schwarz, dann Weiß; und $`y` ist $`1 - x`.
 :::
 
 :::proofen
-A hypothesis and a computation: `linear_combination`, from *Balance*. This time the factor in front of `h` is not a number: the goal, left minus right, is $`2x` times `h`, left minus right.
+A hypothesis and a computation: `linear_combination`, from *Balance*. This time the factor in front
+of `h` is not a number.
 :::
 
 :::proofde
-Eine Annahme und eine Rechnung: `linear_combination`, aus *Gleichgewicht*. Diesmal ist der Faktor vor `h` keine Zahl: Das Ziel, links minus rechts, ist $`2x` mal `h`, links minus rechts.
+Eine Annahme und eine Rechnung: `linear_combination`, aus *Gleichgewicht*. Diesmal ist der Faktor
+vor `h` keine Zahl.
 :::
 :::solution
 ```
