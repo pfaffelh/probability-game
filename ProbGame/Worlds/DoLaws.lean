@@ -109,6 +109,29 @@ cases f true <;> cases f false <;> cases b <;> simp
 :::
 :::::
 
+:::::circuit (height := "440") (inputs := "x") (gates := "not, and, or") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : (coin p).map not = (do let x ← coin p; pure (!x))") (play := "a=not; x>a.0; a>out") (uses := "map_eq_pure_bind")
+:::en
+*A gate is a draw.* One coin, one `not`.
+:::
+
+:::de
+*Ein Baustein ist eine Ziehung.* Eine Münze, ein `not`.
+:::
+
+:::proofen
+Your new law `map_eq_pure_bind`: the gate becomes the `pure` at the end.
+:::
+
+:::proofde
+Dein neues Gesetz `map_eq_pure_bind`: Der Baustein wird zum `pure` am Ende.
+:::
+:::solution
+```
+rw [map_eq_pure_bind]
+```
+:::
+:::::
+
 :::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → Bool) (g : Bool → DiscreteMeasure Bool) : (do let x ← μ.map f; g x) = (do let x ← μ; ⟦g (f x) ‖ g (f x), g x, (g x).map f⟧)") (lemma := "bind_map_left") (new := "add_mul") (uses := "bind_apply, Fintype.sum_bool, map_apply, add_mul, add_comm, add_assoc")
 ::::hint (anchor := "gap")
 :::en
@@ -229,6 +252,29 @@ rw [add_add_add_comm]
 :::
 :::::
 
+:::::circuit (height := "480") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:1-p^2 false:p^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && y)).map not = (do let x ← coin p; let y ← coin p; pure (!(x && y)))") (play := "a=and; b=not; x>a.0; y>a.1; a>b.0; b>out") (uses := "map_bind, map_pure, bind_map_left")
+:::en
+*The gate at the end.* Two coins, `and`, then `not`.
+:::
+
+:::de
+*Der Baustein am Ende.* Zwei Münzen, `and`, dann `not`.
+:::
+
+:::proofen
+Your new law `map_bind`, under both draws, and `map_pure` at the end.
+:::
+
+:::proofde
+Dein neues Gesetz `map_bind`, unter beiden Ziehungen, und `map_pure` am Ende.
+:::
+:::solution
+```
+simp only [map_bind, map_pure]
+```
+:::
+:::::
+
 :::::leanonly (proof := "(p : I) (ν : DiscreteMeasure Bool) : (do let _ ← coin p; ν) = ⟦ν ‖ ν, coin p, pure true⟧") (lemma := "coin_unused") (uses := "bind_apply, Fintype.sum_bool, add_mul")
 ::::hint (anchor := "gap")
 :::en
@@ -262,6 +308,29 @@ Es wird als `coin_unused` freigeschaltet.
 ext b
 rw [bind_apply, Fintype.sum_bool, ← add_mul]
 simp
+```
+:::
+:::::
+
+:::::circuit (height := "440") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bernoulli p") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let _ ← coin p; let y ← coin p; pure y) = coin p") (play := "y>out") (uses := "coin_unused, prob_unused")
+:::en
+*One coin too many.* Two coins, and one of them is not used.
+:::
+
+:::de
+*Eine Münze zu viel.* Zwei Münzen, und eine davon wird nicht benutzt.
+:::
+
+:::proofen
+Your new law `coin_unused`.
+:::
+
+:::proofde
+Dein neues Gesetz `coin_unused`.
+:::
+:::solution
+```
+rw [coin_unused]
 ```
 :::
 :::::

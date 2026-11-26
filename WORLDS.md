@@ -82,7 +82,7 @@ multiply, over the rows they add (`bind_true`): both `true` is `coin (p * q)`.
 simplifier on a board (at least one `true`, two ways) and its quiz. `coin_and`. The same product
 twice (`ring`). Boss: exactly one `true`, its mass computed.
 
-## 6. Laws of `do` (10 levels)
+## 6. Laws of `do` (13 levels)
 
 **Goal.** A circuit is rebuilt, not computed: three laws between moves and draws, and a coin that
 is not used.
@@ -90,7 +90,8 @@ is not used.
 **Tactics.** `simp only`, `congr`; `cases f true <;> cases f false` for the laws.
 
 **Path.** A board: flipped twice, by `map_map`. Each law (`map_eq_pure_bind`, `bind_map_left`,
-`map_bind`, `coin_unused`), proved on `Bool` and then used on a board. Boss: at least one `true`
+`map_bind`, `coin_unused`), proved on `Bool` and then used on a board, in one line (a gate is a
+draw; the gate at the end; one coin too many). Boss: at least one `true`
 is `coin (σ (σ p * σ p))`, from `coin_not`, `coin_and` and De Morgan, without computing a mass.
 
 **Open.** The laws are stated for general `μ`, `f`, `g`; only the first has its instance on a
