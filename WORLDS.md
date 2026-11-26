@@ -87,7 +87,7 @@ twice (`ring`). Boss: exactly one `true`, its mass computed.
 **Goal.** A circuit is rebuilt, not computed: three laws between moves and draws, and a coin that
 is not used.
 
-**Tactics.** `simp only`, `congr`; `cases f true <;> cases f false` for the laws.
+**Tactics.** `congr`; `cases f true <;> cases f false` for the laws; `simp_rw` under bound names.
 
 **Path.** A board: flipped twice, by `map_map`. Each law (`map_eq_pure_bind`, `bind_map_left`,
 `map_bind`, `coin_unused`), proved on `Bool` and then used on a board, in one line (a gate is a
@@ -102,7 +102,7 @@ board before it.
 **Goal.** `binom p n` is the number of `true` among `n` coins, built one coin at a time; and
 counts add: `B(n, p)` and `B(m, p)` give `B(n + m, p)`.
 
-**Tactics.** `simp only` with `pure_bind`, `bind_assoc`; `induction'`.
+**Tactics.** `simp_rw` with `pure_bind`, `bind_assoc`; `induction'`.
 
 **Path.** `toNat`. `binom_zero`, `binom_succ`. Two and three coins are `binom p 2`, `binom p 3`; a
 quiz on which circuits are `binom`. The majority of three. A first induction with a one-line step:
@@ -227,17 +227,16 @@ Its table now:
 | `apply` | Masses | One Coin 4, Hypergeometric 2, five worlds 1 each | mostly `bool_ext`; now also `balance`, `coin_stays` twice |
 | `ext` | One Coin | Laws of `do` 6, Maps 2, Counting 2, three worlds 1 | none |
 | `revert`, `decide` | Maps | Maps 2, Multi-Stage Experiments 3 | two worlds |
-| `simp_rw` | Maps | Laws of `do` 4, Maps 3, Two Coins 1 | gone after *Laws of `do`*: there `simp only` does its work |
+| `simp_rw` | Maps | Laws of `do` 4, Maps 3, Two Coins 1 | used on to the end; `simp only` is not given (it would do the same) |
 | `simp` | Two Coins | 31 levels in 9 worlds | none |
-| `simp only` | Laws of `do` | 18 levels in 7 worlds | none |
 | `congr` | Laws of `do` | Laws of `do` 2, Counting 2, Balance 1, Thinning 1 | none |
 | `ring` | Two Coins | 14 levels in 6 worlds | none |
 | `induction'` | Counting | 15 levels in 6 worlds | none |
 | `linear_combination` | Balance | Balance 3, Hypergeometric 1 | one world after its own; none other follows *Balance* |
 | `field_simp` | Balance | Balance 2, Hypergeometric 2 | the same |
 
-When which of the four that rewrite: the inventory says it at each (`rw`: not under bound names;
-`simp_rw`: there, in the order given; `simp only`: there, in any order; `simp`: computing).
+When which of the three that rewrite: the inventory says it at each (`rw`: not under bound names;
+`simp_rw`: there, in the order given; `simp`: computing).
 
 ## What was done (2026-11-22)
 

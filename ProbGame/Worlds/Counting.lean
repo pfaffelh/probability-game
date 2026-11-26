@@ -262,17 +262,17 @@ rw [add_zero]
 
 :::proofen
 `binom p 2`, written out by its two rules, is a `do` block in a `do` block. The rules of the last
-three levels clean it up (under bound names: `simp only`).
+three levels clean it up (under bound names: `simp_rw`).
 :::
 
 :::proofde
 `binom p 2`, mit seinen zwei Regeln ausgeschrieben, ist ein `do`-Block in einem `do`-Block. Die
-Regeln der letzten drei Level räumen ihn auf (unter gebundenen Namen: `simp only`).
+Regeln der letzten drei Level räumen ihn auf (unter gebundenen Namen: `simp_rw`).
 :::
 :::solution
 ```
 rw [binom_succ, binom_succ, binom_zero]
-simp only [bind_assoc, pure_bind, add_zero]
+simp_rw [bind_assoc, pure_bind, add_zero]
 ```
 :::
 ::::
@@ -337,7 +337,7 @@ Drei Würfe sind `binom p 3`: wie bei zweien, jetzt auch mit `add_assoc`.
 :::solution
 ```
 rw [binom_succ, binom_succ, binom_succ, binom_zero]
-simp only [bind_assoc, pure_bind, add_zero, add_assoc]
+simp_rw [bind_assoc, pure_bind, add_zero, add_assoc]
 ```
 :::
 ::::
@@ -366,7 +366,7 @@ Seiten dieselben drei Münzen und unterscheiden sich nur darin, was sie rechnen.
 :::solution
 ```
 rw [binom_succ, binom_succ, binom_succ, binom_zero]
-simp only [map_bind, bind_assoc, pure_bind, map_pure, add_zero]
+simp_rw [map_bind, bind_assoc, pure_bind, map_pure, add_zero]
 congr
 ext x
 congr
@@ -437,9 +437,9 @@ Level davor. Regeln kann man ihre Argumente mitgeben: `binom_succ p n` ist die R
 ```
 induction' n with n ih
 rw [binom_zero, binom_succ, binom_zero]
-simp only [pure_bind, zero_add, add_zero]
+simp_rw [pure_bind, zero_add, add_zero]
 rw [binom_succ p n, binom_succ p (n + 1), ← ih]
-simp only [bind_assoc, pure_bind, add_assoc]
+simp_rw [bind_assoc, pure_bind, add_assoc]
 ```
 :::
 ::::
@@ -468,9 +468,9 @@ und $`m`: Die Summe unabhängiger Binomialverteilungen ist binomial. Dein Ergebn
 ```
 induction' m with m ih
 rw [binom_zero]
-simp only [pure_bind, add_zero, bind_pure]
+simp_rw [pure_bind, add_zero, bind_pure]
 rw [← binom_succ' p m, ← add_assoc, ← binom_succ' p (n + m), ← ih]
-simp only [bind_assoc, pure_bind, add_assoc]
+simp_rw [bind_assoc, pure_bind, add_assoc]
 ```
 :::
 ::::

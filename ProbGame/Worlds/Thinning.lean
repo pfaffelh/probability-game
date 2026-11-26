@@ -151,7 +151,7 @@ mit `coin p`.
 :::solution
 ```
 rw [← coin_thin]
-simp only [bind_assoc]
+simp_rw [bind_assoc]
 congr
 ext x
 cases x
@@ -180,7 +180,7 @@ Mach die ersten zwei Schritte zu einem eigenen Block, benutze dein Lemma, und te
 :::solution
 ```
 rw [← bind_assoc, coin_bind_binom, bind_assoc]
-simp only [pure_bind]
+simp_rw [pure_bind]
 ```
 :::
 ::::
@@ -218,20 +218,18 @@ rw [bind_comm]
 :::
 
 :::proofen
-The two draws stand under `let z ← coin r`: there `rw` does not reach, `simp only` does. But
-`simp only [bind_comm]` would swap for ever, back and forth. So say which two draws: `bind_comm μ ν`
+The two draws stand under `let z ← coin r`: there `rw` does not reach, `simp_rw` does. But `simp_rw [bind_comm]` would swap for ever, back and forth. So say which two draws: `bind_comm μ ν`
 swaps only where `μ` is drawn right before `ν`. (A part Lean is to find itself is written `_`.)
 :::
 
 :::proofde
-Die zwei Ziehungen stehen unter `let z ← coin r`: Dorthin reicht `rw` nicht, `simp only` schon. Aber
-`simp only [bind_comm]` würde endlos tauschen, hin und her. Sag also, welche zwei Ziehungen:
+Die zwei Ziehungen stehen unter `let z ← coin r`: Dorthin reicht `rw` nicht, `simp_rw` schon. Aber `simp_rw [bind_comm]` würde endlos tauschen, hin und her. Sag also, welche zwei Ziehungen:
 `bind_comm μ ν` tauscht nur dort, wo `μ` direkt vor `ν` gezogen wird. (Ein Teil, den Lean selbst
 finden soll, schreibt man `_`.)
 :::
 :::solution
 ```
-simp only [bind_comm (coin p) (coin q)]
+simp_rw [bind_comm (coin p) (coin q)]
 ```
 :::
 ::::
@@ -253,9 +251,9 @@ Auf dem Spielfeld mit $`n = 2` und `q = p`: zwei Würfe, jeder ausgedünnt, und 
 induction' n with n ih
 rw [binom_zero, binom_zero, pure_bind, binom_zero]
 rw [binom_succ, binom_succ (p * q), ← ih]
-simp only [bind_assoc, pure_bind]
-simp only [← binom_add]
-simp only [bind_comm (binom p n) (binom q _)]
+simp_rw [bind_assoc, pure_bind]
+simp_rw [← binom_add]
+simp_rw [bind_comm (binom p n) (binom q _)]
 rw [coin_bind_binom']
 ```
 :::

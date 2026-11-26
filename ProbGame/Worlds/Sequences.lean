@@ -57,7 +57,7 @@ Fürs Spiel zwei Regeln: `seq_zero : iidSequence 0 μ = pure []` und `seq_succ :
 :::solution
 ```
 rw [seq_succ, seq_zero]
-simp only [pure_bind]
+simp_rw [pure_bind]
 ```
 :::
 ::::
@@ -227,7 +227,7 @@ induction' n with n ih
 rw [seq_zero, map_pure, binom_zero]
 rfl
 rw [binom_succ, seq_succ, ih]
-simp only [map_bind, map_pure, bind_map_left, count_true_cons]
+simp_rw [map_bind, map_pure, bind_map_left, count_true_cons]
 ```
 :::
 ::::

@@ -299,11 +299,11 @@ rw [hyper_succ, frac_white, coin_one, pure_bind, Bool.cond_true, Nat.add_sub_can
 *Alle Kugeln ziehen.* Zieh alle $`w + b` Kugeln, eine nach der anderen: Was auch immer unterwegs passiert, am Ende hast du sicher alle $`w` weißen.
 :::
 :::proofen
-Induction on $`w`, for every $`b`; in its step, an induction on $`b`. At the end both branches of the first draw are the same (`cond_same`, under the `do`: `simp only`), and the draw is not used (`coin_unused`).
+Induction on $`w`, for every $`b`; in its step, an induction on $`b`. At the end both branches of the first draw are the same (`cond_same`, under the `do`: `simp_rw`), and the draw is not used (`coin_unused`).
 :::
 
 :::proofde
-Induktion über $`w`, für jedes $`b`; in ihrem Schritt eine Induktion über $`b`. Am Ende sind beide Zweige des ersten Zugs gleich (`cond_same`, unter dem `do`: `simp only`), und der Zug wird nicht benutzt (`coin_unused`).
+Induktion über $`w`, für jedes $`b`; in ihrem Schritt eine Induktion über $`b`. Am Ende sind beide Zweige des ersten Zugs gleich (`cond_same`, unter dem `do`: `simp_rw`), und der Zug wird nicht benutzt (`coin_unused`).
 :::
 :::solution
 ```
@@ -312,7 +312,7 @@ rw [zero_add, hyper_black]
 induction' b with b ih2
 rw [add_zero, hyper_white]
 rw [← add_assoc, hyper_succ, Nat.add_sub_cancel, Nat.add_sub_cancel, ih2, add_right_comm, add_assoc, ih, pure_bind, add_comm 1 w]
-simp only [cond_same]
+simp_rw [cond_same]
 rw [coin_unused]
 ```
 :::

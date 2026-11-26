@@ -266,15 +266,15 @@ rw [ENNReal.tsum_mul_right, ENNReal.tsum_geometric, one_sub_symm]
 :::
 
 :::proofen
-Your formula under the sum (`simp only`, it rewrites under `∑'`), the last level, and `ENNReal.inv_mul_cancel (h₀ : a ≠ 0) (h₁ : a ≠ ⊤) : a⁻¹ * a = 1`, with `mass_ne_zero h : ↑p ≠ 0` and `mass_finite p : ↑p ≠ ⊤`.
+Your formula under the sum (`simp_rw`, it rewrites under `∑'`), the last level, and `ENNReal.inv_mul_cancel (h₀ : a ≠ 0) (h₁ : a ≠ ⊤) : a⁻¹ * a = 1`, with `mass_ne_zero h : ↑p ≠ 0` and `mass_finite p : ↑p ≠ ⊤`.
 :::
 
 :::proofde
-Deine Formel unter der Summe (`simp only`, es schreibt unter `∑'` um), das letzte Level, und `ENNReal.inv_mul_cancel (h₀ : a ≠ 0) (h₁ : a ≠ ⊤) : a⁻¹ * a = 1`, mit `mass_ne_zero h : ↑p ≠ 0` und `mass_finite p : ↑p ≠ ⊤`.
+Deine Formel unter der Summe (`simp_rw`, es schreibt unter `∑'` um), das letzte Level, und `ENNReal.inv_mul_cancel (h₀ : a ≠ 0) (h₁ : a ≠ ⊤) : a⁻¹ * a = 1`, mit `mass_ne_zero h : ↑p ≠ 0` und `mass_finite p : ↑p ≠ ⊤`.
 :::
 :::solution
 ```
-simp only [geom_formula]
+simp_rw [geom_formula]
 rw [ENNReal.tsum_mul_right, ENNReal.tsum_geometric, one_sub_symm]
 rw [ENNReal.inv_mul_cancel (mass_ne_zero h) (mass_finite p)]
 ```

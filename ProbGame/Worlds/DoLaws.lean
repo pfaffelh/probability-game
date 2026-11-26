@@ -176,7 +176,7 @@ cases f true <;> cases f false <;> simp <;> ring
 :::
 :::::
 
-::::circuit (height := "540") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:p(1-p) false:1-p(1-p)") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && !y)) = coin (p * σ p)") (new := "simp only") (play := "a=not; b=and; y>a.0; x>b.0; a>b.1; b>out") (uses := "coin_and, coin_not, bind_map_left, map_bind")
+::::circuit (height := "540") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:p(1-p) false:1-p(1-p)") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && !y)) = coin (p * σ p)") (play := "a=not; b=and; y>a.0; x>b.0; a>b.1; b>out") (uses := "coin_and, coin_not, bind_map_left, map_bind")
 :::en
 *First `true`, then `false`.*
 :::
@@ -186,19 +186,17 @@ cases f true <;> cases f false <;> simp <;> ring
 :::
 
 :::proofen
-The new tactic `simp only [rules]` is the simplifier, but with only the rules you give, as often as
-it can, also under bound names.
+`rw` does not reach under bound names; `simp_rw` (from *Maps*) does.
 :::
 
 :::proofde
-Die neue Taktik `simp only [Regeln]` ist der Simplifier, aber nur mit den Regeln, die du angibst, so
-oft es geht, auch unter gebundenen Namen.
+`rw` reicht nicht unter gebundene Namen; `simp_rw` (aus *Abbildungen*) schon.
 :::
 :::solution
 ```
 rw [← coin_and]
 rw [← coin_not]
-simp only [bind_map_left]
+simp_rw [bind_map_left]
 ```
 :::
 ::::
@@ -259,7 +257,7 @@ Dein neues Gesetz `map_bind`, unter beiden Ziehungen, und `map_pure` am Ende.
 :::
 :::solution
 ```
-simp only [map_bind, map_pure]
+simp_rw [map_bind, map_pure]
 ```
 :::
 :::::
@@ -437,7 +435,7 @@ cases x <;> cases y <;> rfl
 rw [← coin_not]
 rw [← coin_and]
 rw [← coin_not]
-simp only [bind_map_left, map_bind, map_pure, or_eq]
+simp_rw [bind_map_left, map_bind, map_pure, or_eq]
 ```
 :::
 ::::

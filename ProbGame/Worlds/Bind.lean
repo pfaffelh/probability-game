@@ -266,7 +266,7 @@ Jeder Schritt ist sicher: `pure_bind : (do let x ← pure a; f x) = f a`. Was bl
 :::
 :::solution
 ```
-simp only [pure_bind, Bool.not_not, bind_pure]
+simp_rw [pure_bind, Bool.not_not, bind_pure]
 ```
 :::
 ::::
@@ -371,7 +371,7 @@ die Münze `x` nicht benutzt.
 :::
 :::solution
 ```
-simp only [cond_same]
+simp_rw [cond_same]
 rw [coin_unused, coin_true]
 ```
 :::
@@ -395,7 +395,7 @@ rw [coin_unused, coin_true]
 :::
 :::solution
 ```
-simp only [cond_same]
+simp_rw [cond_same]
 rw [prob_unused]
 ```
 :::
