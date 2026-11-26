@@ -1607,7 +1607,7 @@
   Object.assign(DE, {
     'and': 'und', 'or': 'oder', 'xor': 'xor', 'nand': 'nand', 'plus': 'plus',
     'A number does not fit into an input for a coin.': 'Eine Zahl passt nicht in einen Eingang für eine Münze.', 'A coin does not fit into an input for a number (first toNat).': 'Eine Münze passt nicht in einen Eingang für eine Zahl (erst toNat).', 'Output': 'Ausgang', 'yours': 'deine', 'Gates': 'Bausteine',
-    'Connect the output.': 'Verbinde den Ausgang.', 'An input of a gate is still open.': 'Ein Eingang eines Bausteins ist noch offen.',
+    'Connect the output.': 'Verbinde den Ausgang.', 'The right distribution, but not the circuit of the statement: use the gates that are given.': 'Die richtige Verteilung, aber nicht die Schaltung der Aussage: Benutze die gegebenen Bausteine.', 'An input of a gate is still open.': 'Ein Eingang eines Bausteins ist noch offen.',
     '{k} of {n} rows are right.': '{k} von {n} Zeilen stimmen.', 'Now tap an input (a circle above a block).': 'Tippe jetzt einen Eingang an (ein Kreis oben an einem Baustein).',
     'Now tap an output (a dot below a block).': 'Tippe jetzt einen Ausgang an (ein Punkt unten an einem Baustein).',
     'That would go round in a circle.': 'Das ginge im Kreis.', 'always T': 'immer T', 'always F': 'immer F',
@@ -2207,12 +2207,14 @@
       if (this.gatesOn.some(g => GATES[g.kind].slots && [...Array(GATES[g.kind].slots).keys()].some(i => !g.maps?.[i]))) return false
       return outs.every((o, k) => this.rowOk(k, outs))
     }
+    get shapeOk() { return !this.shape || this.leanExpr().replace(/\s+/g, ' ') === this.shape }
     get done() {
       if (this.every.length) return this.every.every(m => this.seen.includes(m)) && !!this.shape && this.leanExpr().replace(/\s+/g, ' ') === this.shape
       const outs = this.outputs()
       if (outs.some(o => o === null)) return false
       if (this.gatesOn.some(g => GATES[g.kind].slots && [...Array(GATES[g.kind].slots).keys()].some(i => !g.maps?.[i]))) return false
-      if (this.random) { const d = this.dist(); return !!d && sameDist(d, this.target) }
+      // (with `shape`: the circuit of the statement, not only its distribution)
+      if (this.random) { const d = this.dist(); return !!d && sameDist(d, this.target) && this.shapeOk }
       return outs.every((o, k) => this.rowOk(k, outs))
     }
     // the circuit as Lean writes it
@@ -2281,6 +2283,7 @@
         const d = this.dist(), t = this.target
         if (!d) return tr('An input of a gate is still open.')
         if (d.space !== t.space) return tr('The distribution lives on {a}, the target on {b}.', { a: spaceName(d.space), b: spaceName(t.space) })
+        if (sameDist(d, t) && !this.shapeOk) return tr('The right distribution, but not the circuit of the statement: use the gates that are given.')
         const k = axis(t.space, [...d.mass.keys(), ...t.mass.keys()]).find(k => !(d.mass.get(k) ?? ZERO).eq(t.mass.get(k) ?? ZERO)) ?? 'true'
         return tr('At {k}: P = {m}, the target has {t}.', { k, m: String(new Poly((d.mass.get(k) ?? ZERO).c)), t: String(t.mass.get(k) ?? ZERO) })
       }

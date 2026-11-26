@@ -39,16 +39,16 @@ ein Zug vor einer Ziehung wandert in das, was folgt; ein Zug nach einem `do`-Blo
 hinein. Du beweist jedes davon auf `Bool`, einmal, indem du Massen ausrechnest. Dann gehört es dir für
 jeden Typ, und ein `do`-Block wird umgeschrieben, nicht ausgerechnet.
 :::
-:::::circuit (height := "440") (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:p false:1-p") (context := "Lean/Rules.lean") (proof := "(p : I) : ((coin p).map not).map not = coin p") (play := "a=not; b=not; x>a.0; a>b.0; b>out") (uses := "map_map, Bool.not_not, map_id")
+:::::circuit (height := "440") (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:p false:1-p") (context := "Lean/Rules.lean") (proof := "(p : I) : ((coin p).map not).map not = coin p") (shape := "!(!x)") (start := "a=not; x>a.0") (play := "b=not; a>b.0; b>out") (uses := "map_map, Bool.not_not, map_id")
 :::hint (anchor := "none")
 :::
 
 :::en
-*Flipped twice.* The target is the coin itself. Build it with two `not`. (Without any gate it comes out too: that is what the statement says.)
+*Flipped twice.* One `not` is given; the target is the coin itself.
 :::
 
 :::de
-*Zweimal umgedreht.* Das Ziel ist die Münze selbst. Bau sie mit zwei `nicht`. (Ohne Baustein kommt sie auch heraus: Das ist, was die Aussage sagt.)
+*Zweimal umgedreht.* Ein `nicht` ist gegeben; das Ziel ist die Münze selbst.
 :::
 
 :::proofen
