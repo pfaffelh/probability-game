@@ -132,7 +132,7 @@ rw [← map_eq_pure_bind, coin_not]
 :::
 :::::
 
-:::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → Bool) (g : Bool → DiscreteMeasure Bool) : (do let x ← μ.map f; g x) = (do let x ← μ; ⟦g (f x) ‖ g (f x), g x, (g x).map f⟧)") (lemma := "bind_map_left") (new := "add_mul") (uses := "bind_apply, Fintype.sum_bool, map_apply, add_mul, add_comm, add_assoc")
+:::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → Bool) (g : Bool → DiscreteMeasure Bool) : (do let x ← μ.map f; g x) = (do let x ← μ; ⟦g (f x) ‖ g (f x), g x, (g x).map f⟧)") (lemma := "bind_map_left") (uses := "bind_apply, Fintype.sum_bool, map_apply")
 ::::hint (anchor := "gap")
 :::en
 First move with `f`, then go on with `g`: in one draw, with what does `g` go on?
@@ -155,16 +155,15 @@ Ergebnis bewegen.
 
 :::proofen
 As in the level before: the masses at every `b`, all sums written out, also those inside
-`map_apply`, and the four possible `f`. The simplifier computes the rest, with the new rule
-`add_mul : (a + b) * c = a * c + b * c` and with `add_comm` for the order. You prove it on `Bool`;
-it holds for every type, and it is unlocked as `bind_map_left` in this general form.
+`map_apply`, and the four possible `f`. The simplifier computes, `ring` (from *Two Coins*) does the
+rest. You prove it on `Bool`; it holds for every type, and it is unlocked as `bind_map_left` in this
+general form.
 :::
 
 :::proofde
 Wie im Level davor: die Massen bei jedem `b`, alle Summen ausgeschrieben, auch die in `map_apply`,
-und die vier möglichen `f`. Den Rest rechnet der Simplifier aus, mit der neuen Regel
-`add_mul : (a + b) * c = a * c + b * c` und mit `add_comm` für die Reihenfolge. Du beweist es auf
-`Bool`; es gilt für jeden Typ und wird in dieser allgemeinen Form als `bind_map_left`
+und die vier möglichen `f`. Der Simplifier rechnet, `ring` (aus *Zwei Münzen*) erledigt den Rest. Du
+beweist es auf `Bool`; es gilt für jeden Typ und wird in dieser allgemeinen Form als `bind_map_left`
 freigeschaltet.
 :::
 :::solution
@@ -172,7 +171,7 @@ freigeschaltet.
 ext b
 rw [bind_apply, bind_apply]
 simp_rw [Fintype.sum_bool, map_apply, Fintype.sum_bool]
-cases f true <;> cases f false <;> simp [add_mul, add_comm]
+cases f true <;> cases f false <;> simp <;> ring
 ```
 :::
 :::::
@@ -204,7 +203,7 @@ simp only [bind_map_left]
 :::
 ::::
 
-:::::leanonly (proof := "(μ : DiscreteMeasure Bool) (g : Bool → DiscreteMeasure Bool) (f : Bool → Bool) : (do let x ← μ; g x).map f = (do let x ← μ; ⟦(g x).map f ‖ (g x).map f, g (f x), g x⟧)") (lemma := "map_bind") (new := "mul_add, add_add_add_comm") (uses := "map_apply, bind_apply, Fintype.sum_bool, mul_add, add_add_add_comm")
+:::::leanonly (proof := "(μ : DiscreteMeasure Bool) (g : Bool → DiscreteMeasure Bool) (f : Bool → Bool) : (do let x ← μ; g x).map f = (do let x ← μ; ⟦(g x).map f ‖ (g x).map f, g (f x), g x⟧)") (lemma := "map_bind") (uses := "map_apply, bind_apply, Fintype.sum_bool")
 ::::hint (anchor := "gap")
 :::en
 A move after the whole draw: where can it go inside?
@@ -224,26 +223,20 @@ Ein Zug nach dem ganzen Ziehen: Wohin kann er hinein?
 :::
 
 :::proofen
-As for `bind_map_left`, now with the two `b` as well, and with the new rule
-`mul_add : a * (b + c) = a * b + a * c`. Where `f` is constant, two sums of four masses are left, in
-another order: `add_add_add_comm : a + b + (c + d) = a + c + (b + d)`. You prove it on `Bool`; it
-holds for every type, and it is unlocked as `map_bind` in this general form.
+As for `bind_map_left`, now with the two `b` as well. You prove it on `Bool`; it holds for every
+type, and it is unlocked as `map_bind` in this general form.
 :::
 
 :::proofde
-Wie bei `bind_map_left`, jetzt auch mit den zwei `b`, und mit der neuen Regel
-`mul_add : a * (b + c) = a * b + a * c`. Wo `f` konstant ist, bleiben zwei Summen aus vier Massen,
-in anderer Reihenfolge: `add_add_add_comm : a + b + (c + d) = a + c + (b + d)`. Du beweist es auf
-`Bool`; es gilt für jeden Typ und wird in dieser allgemeinen Form als `map_bind` freigeschaltet.
+Wie bei `bind_map_left`, jetzt auch mit den zwei `b`. Du beweist es auf `Bool`; es gilt für jeden
+Typ und wird in dieser allgemeinen Form als `map_bind` freigeschaltet.
 :::
 :::solution
 ```
 ext b
 rw [map_apply, bind_apply]
 simp_rw [Fintype.sum_bool, bind_apply, map_apply, Fintype.sum_bool]
-cases f true <;> cases f false <;> cases b <;> simp [mul_add]
-rw [add_add_add_comm]
-rw [add_add_add_comm]
+cases f true <;> cases f false <;> cases b <;> simp <;> ring
 ```
 :::
 :::::
@@ -271,7 +264,7 @@ simp only [map_bind, map_pure]
 :::
 :::::
 
-:::::leanonly (proof := "(p : I) (ν : DiscreteMeasure Bool) : (do let _ ← coin p; ν) = ⟦ν ‖ ν, coin p, pure true⟧") (lemma := "coin_unused") (uses := "bind_apply, Fintype.sum_bool, add_mul")
+:::::leanonly (proof := "(p : I) (ν : DiscreteMeasure Bool) : (do let _ ← coin p; ν) = ⟦ν ‖ ν, coin p, pure true⟧") (lemma := "coin_unused") (new := "add_mul") (uses := "bind_apply, Fintype.sum_bool, add_mul")
 ::::hint (anchor := "gap")
 :::en
 The outcome of the coin is not used (`_`): what is left?
@@ -291,13 +284,15 @@ Das Ergebnis der Münze wird nicht benutzt (`_`): Was bleibt?
 :::
 
 :::proofen
-At every `b`, both ways go on with the same `ν b`: take it out, with `add_mul` backwards. It is
-unlocked as `coin_unused`.
+At every `b`, both ways go on with the same `ν b`. `ring` cannot use that $`p` and $`1 - p` add up
+to one; so take `ν b` out yourself, with the new rule `add_mul : (a + b) * c = a * c + b * c`,
+backwards. It is unlocked as `coin_unused`.
 :::
 
 :::proofde
-Bei jedem `b` machen beide Wege mit demselben `ν b` weiter: Zieh es heraus, mit `add_mul` rückwärts.
-Es wird als `coin_unused` freigeschaltet.
+Bei jedem `b` machen beide Wege mit demselben `ν b` weiter. `ring` kann nicht benutzen, dass sich
+$`p` und $`1 - p` zu eins addieren; zieh `ν b` also selbst heraus, mit der neuen Regel
+`add_mul : (a + b) * c = a * c + b * c`, rückwärts. Es wird als `coin_unused` freigeschaltet.
 :::
 :::solution
 ```
