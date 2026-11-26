@@ -209,9 +209,8 @@ its statement, or a new tactic and what it does: never the sequence of tactics, 
 answer to a gap. No level has a folded *Tip* line any more (before: 29, and 113 of 129 before
 that). A tactic is written with its arguments only in the level that introduces it.
 
-**Questions.** Levels with a gap in the statement: Bool 8, Masses 7, One Coin 11, Maps 6, Two
-Coins 2, Laws of `do` 5, Counting 1, Multi-Stage Experiments 6, Balance 3, Sequences 1, Binomial 2,
-Geometric 6, Thinning 5, Hypergeometric 6. Five quizzes.
+**Questions.** Levels with a gap in the statement, only in Lean levels (on a board the answer can be read
+off the board): Bool 3, Masses 6, One Coin 10, Maps 6, Two Coins 1, Laws of `do` 5, Counting 1, Balance 3, Sequences 1, Binomial 2, Geometric 6, Thinning 2, Hypergeometric 6. Five quizzes.
 
 **Tactics: three meetings.** A tactic is introduced (its text says what it does), practised in its world,
 and used again in a later world. `python3 tests/tactics.py` counts, from the solutions, the levels

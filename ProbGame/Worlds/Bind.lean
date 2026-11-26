@@ -33,17 +33,13 @@ einander nicht.
 :::
 
 :::proofen
-The statements are about the mass at `true`: the board shows the whole distribution, and your lemma
-`bool_ext` says that the mass at `true` decides it. The new rule
-`bind_true : (do let x ← μ; f x) true = μ true * f true true + μ false * f false true` goes both ways: through
-`true` (the mass `μ true`, then the mass of `f true` at `true`) and through `false`.
+The statements are about the mass at `true`; your lemma `bind_true` from *Two Coins* goes both
+ways: through `true` and through `false`.
 :::
 
 :::proofde
-Die Aussagen handeln von der Masse bei `true`: Das Spielfeld zeigt die ganze Verteilung, und dein Lemma
-`bool_ext` sagt, dass die Masse bei `true` sie festlegt. Die neue Regel
-`bind_true : (do let x ← μ; f x) true = μ true * f true true + μ false * f false true` geht beide Wege: über
-`true` (die Masse `μ true`, dann die Masse von `f true` bei `true`) und über `false`.
+Die Aussagen handeln von der Masse bei `true`; dein Lemma `bind_true` aus *Zwei Münzen* geht beide
+Wege: über `true` und über `false`.
 :::
 
 ::::circuit (height := "540") (inputs := "x y") (gates := "") (table := "0001") (goal := "x && y") (proof := "(x y : Bool) : (bif x then y else false) = (x && y)") (start := "a=bind@240,250; x>a.0; y>a.1; a>out") (play := "a.T=id; a.F=false") (uses := "-")
@@ -107,17 +103,7 @@ decide
 :::
 ::::
 
-:::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:p^2 false:1-p^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then coin p else pure false); pure y) true = (⟦↑p * ↑p ‖ ↑p * ↑p, ↑p, ↑p + ↑p, ↑p * ↑(σ p)⟧ : ℝ≥0∞)") (play := "y.T=p; y.F=0") (uses := "bind_true, bind_false")
-::::hint (anchor := "gap")
-:::en
-Which throws must show `true` for `y` to be `true`?
-:::
-
-:::de
-Welche Würfe müssen `true` zeigen, damit `y` `true` ist?
-:::
-::::
-
+:::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:p^2 false:1-p^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then coin p else pure false); pure y) true = (↑p * ↑p : ℝ≥0∞)") (play := "y.T=p; y.F=0") (uses := "bind_true, bind_false")
 :::en
 *Only after true.* `bind` for coins: the result of the coin `x` decides which coin is taken for the
 next experiment.
@@ -147,17 +133,7 @@ simp
 :::
 :::::
 
-:::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bernoulli p") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else pure false); pure y) true = (⟦↑p ‖ ↑p, ↑(σ p), 1, ↑p * ↑p⟧ : ℝ≥0∞)") (play := "y.T=1; y.F=0") (uses := "bind_true, bind_false")
-::::hint (anchor := "gap")
-:::en
-`y` copies `x`: when is it `true`?
-:::
-
-:::de
-`y` kopiert `x`: Wann ist es `true`?
-:::
-::::
-
+:::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bernoulli p") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else pure false); pure y) true = (↑p : ℝ≥0∞)") (play := "y.T=1; y.F=0") (uses := "bind_true, bind_false")
 :::en
 *Copying.* `y` is surely `true` after `true`, and surely `false` after `false`: it copies `x`.
 :::
@@ -181,17 +157,7 @@ simp
 :::
 :::::
 
-:::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:2p-p^2 false:(1-p)^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else coin p); pure y) true = (⟦↑p + ↑(σ p) * ↑p ‖ ↑p + ↑(σ p) * ↑p, ↑p + ↑p, ↑p * ↑p, ↑(σ p) * ↑p⟧ : ℝ≥0∞)") (play := "y.T=1; y.F=p") (uses := "bind_true, bind_false")
-::::hint (anchor := "gap")
-:::en
-Two ways to `true`: at the first throw, or at the second. What must the first throw show for a second one?
-:::
-
-:::de
-Zwei Wege zu `true`: beim ersten Wurf oder beim zweiten. Was muss der erste Wurf zeigen, damit es einen zweiten gibt?
-:::
-::::
-
+:::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:2p-p^2 false:(1-p)^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else coin p); pure y) true = (↑p + ↑(σ p) * ↑p : ℝ≥0∞)") (play := "y.T=1; y.F=p") (uses := "bind_true, bind_false")
 :::en
 *One more try.* When `x` showed `true`, that is enough: `y` is surely `true`. When it showed `false`,
 throw again. Compare with *At least one `true`* of *Laws of `do`*: the same as `x || y`, but the
@@ -219,17 +185,7 @@ simp
 :::
 :::::
 
-:::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:1-2p+2p^2 false:2p-2p^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then coin p else coin (σ p)); pure y) true = (↑p * ↑p + ⟦↑(σ p) * ↑(σ p) ‖ ↑(σ p) * ↑(σ p), ↑(σ p) * ↑p, ↑p * ↑(σ p)⟧ : ℝ≥0∞)") (play := "y.T=p; y.F=1-p") (uses := "bind_true, bind_false")
-::::hint (anchor := "gap")
-:::en
-The second way to `true` goes through `x = false`: which coin is thrown then?
-:::
-
-:::de
-Der zweite Weg zu `true` geht über `x = false`: Welche Münze wird dann geworfen?
-:::
-::::
-
+:::::circuit (height := "480") (inputs := "x y") (gates := "") (coins := "p ?|?") (target := "bool true:1-2p+2p^2 false:2p-2p^2") (start := "x>y.0; y>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then coin p else coin (σ p)); pure y) true = (↑p * ↑p + ↑(σ p) * ↑(σ p) : ℝ≥0∞)") (play := "y.T=p; y.F=1-p") (uses := "bind_true, bind_false")
 :::en
 *A coin that remembers.* After `true` the coin `p` again, after `false` the flipped coin $`1 - p`:
 the second throw tends to repeat the first.
@@ -257,17 +213,7 @@ simp
 :::
 :::::
 
-:::::circuit (inputs := "x y z") (gates := "") (coins := "p ?|? ?|?") (target := "bernoulli p") (start := "x>y.0; y>z.0; z>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure false else pure true); let z ← (bif y then pure false else pure true); pure z) true = (⟦↑p ‖ ↑p, ↑(σ p), ↑p * ↑p, ↑p * ↑(σ p)⟧ : ℝ≥0∞)") (play := "y.T=0; y.F=1; z.T=0; z.F=1") (uses := "bind_true, bind_false")
-::::hint (anchor := "gap")
-:::en
-Flipped twice: where must the chain start to end at `true`?
-:::
-
-:::de
-Zweimal umgedreht: Wo muss die Kette beginnen, um bei `true` zu enden?
-:::
-::::
-
+:::::circuit (inputs := "x y z") (gates := "") (coins := "p ?|? ?|?") (target := "bernoulli p") (start := "x>y.0; y>z.0; z>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure false else pure true); let z ← (bif y then pure false else pure true); pure z) true = (↑p : ℝ≥0∞)") (play := "y.T=0; y.F=1; z.T=0; z.F=1") (uses := "bind_true, bind_false")
 :::en
 *A chain: flip, and flip back.* A *Markov chain* goes step by step, and each step depends only on
 where the chain is now: `y` comes after `x`, `z` after `y`. Make each step flip: from `true` to
@@ -455,7 +401,7 @@ rw [prob_unused]
 :::
 ::::
 
-::::circuit (inputs := "x y z") (gates := "") (coins := "p ?|? ?|?") (target := "bool true:3p-3p^2+p^3 false:(1-p)^3") (start := "x>y.0; y>z.0; z>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else coin p); let z ← (bif y then pure true else coin p); pure z) true = (⟦↑p + ↑(σ p) * (↑p + ↑(σ p) * ↑p) ‖ ↑p + ↑(σ p) * (↑p + ↑(σ p) * ↑p), ↑p + ↑(σ p) * ↑p, ↑p * ↑p * ↑p, ↑p + ↑p + ↑p⟧ : ℝ≥0∞)") (play := "y.T=1; y.F=p; z.T=1; z.F=p") (uses := "bind_true, bind_false")
+::::circuit (inputs := "x y z") (gates := "") (coins := "p ?|? ?|?") (target := "bool true:3p-3p^2+p^3 false:(1-p)^3") (start := "x>y.0; y>z.0; z>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← (bif x then pure true else coin p); let z ← (bif y then pure true else coin p); pure z) true = (↑p + ↑(σ p) * (↑p + ↑(σ p) * ↑p) : ℝ≥0∞)") (play := "y.T=1; y.F=p; z.T=1; z.F=p") (uses := "bind_true, bind_false")
 :::en
 *Boss: three tries.* Throw until `true` comes, at most three times. `y` comes after `x`, and `z` after `y`. `false` only when all three tries fail: $`(1 - p)^3`.
 :::

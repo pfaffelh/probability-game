@@ -312,7 +312,7 @@ ring
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:2p(1-p) false:p^2+(1-p)^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure ((x || y) && !(x && y))) true = (⟦2 * ↑p * ↑(σ p) ‖ 2 * ↑p * ↑(σ p), ↑p * ↑(σ p), ↑p * ↑p, 1 - ↑p * ↑p⟧ : ℝ≥0∞)") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out") (uses := "bind_true, bind_false")
+::::circuit (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:2p(1-p) false:p^2+(1-p)^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure ((x || y) && !(x && y))) true = (2 * ↑p * ↑(σ p) : ℝ≥0∞)") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out") (uses := "bind_true, bind_false")
 :::en
 *Boss: exactly one `true`*, without a function for it: at least one, but not both.
 :::

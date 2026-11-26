@@ -291,29 +291,9 @@ rfl
 :::
 :::::
 
-:::::circuit (height := "500") (inputs := "x") (gates := "not, or, and") (table := "11") (goal := "true") (proof := "(x : Bool) : (x || ⟦!x ‖ x, !x, true, false⟧) = true") (lemma := "Bool.or_not_self") (play := "a=not; b=or; x>a.0; x>b.0; a>b.1; b>out") (uses := "-")
+:::::circuit (height := "500") (inputs := "x") (gates := "not, or, and") (table := "11") (goal := "true") (proof := "(x : Bool) : (x || !x) = true") (lemma := "Bool.or_not_self") (play := "a=not; b=or; x>a.0; x>b.0; a>b.1; b>out") (uses := "-")
 :::hint (anchor := "none")
 :::
-
-::::hint (anchor := "gap")
-:::en
-First the statement: fill the gap ▢ so that `x || ▢` is `true` for every `x`.
-:::
-
-:::de
-Zuerst die Aussage: Füll die Lücke ▢ so, dass `x || ▢` für jedes `x` gleich `true` ist.
-:::
-::::
-
-::::hint (anchor := "keys")
-:::en
-These are the candidates for the gap. Tap one; a tap on the filled gap opens it again.
-:::
-
-:::de
-Das sind die Kandidaten für die Lücke. Tippe einen an; ein Tipp auf die gefüllte Lücke öffnet sie wieder.
-:::
-::::
 
 :::en
 *Always true, without always true.* An output can feed several inputs: wire `x` twice.
@@ -324,15 +304,13 @@ Das sind die Kandidaten für die Lücke. Tippe einen an; ein Tipp auf die gefül
 :::
 
 :::proofen
-First the statement: your circuit is `x || ▢`, and it is to be `true` for every `x`. What goes into
-the gap? Then the proof: `||` is defined by cases of its left side, `false || b` reduces to `b`, and
-`true || b` to `true`. Your result becomes the lemma `Bool.or_not_self`.
+`||` is defined by cases of its left side: `false || b` reduces to `b`, and `true || b` to `true`.
+Your result becomes the lemma `Bool.or_not_self`.
 :::
 
 :::proofde
-Zuerst die Aussage: Deine Schaltung ist `x || ▢`, und sie soll für jedes `x` `true` sein. Was gehört
-in die Lücke? Dann der Beweis: `||` ist durch Fälle seiner linken Seite definiert, `false || b`
-reduziert zu `b`, und `true || b` zu `true`. Dein Ergebnis wird das Lemma `Bool.or_not_self`.
+`||` ist durch Fälle seiner linken Seite definiert: `false || b` reduziert zu `b`, und `true || b`
+zu `true`. Dein Ergebnis wird das Lemma `Bool.or_not_self`.
 :::
 :::solution
 ```
@@ -361,7 +339,7 @@ rfl
 :::
 ::::
 
-::::circuit (height := "500") (inputs := "x") (gates := "not, or, and") (table := "01") (goal := "x") (proof := "(x : Bool) : (x && x) = ⟦x ‖ x, !x, true, false⟧") (lemma := "Bool.and_self") (play := "a=and; x>a.0; x>a.1; a>out") (uses := "-")
+::::circuit (height := "500") (inputs := "x") (gates := "not, or, and") (table := "01") (goal := "x") (proof := "(x : Bool) : (x && x) = x") (lemma := "Bool.and_self") (play := "a=and; x>a.0; x>a.1; a>out") (uses := "-")
 :::hint (anchor := "none")
 :::
 
@@ -390,7 +368,7 @@ rfl
 :::
 ::::
 
-::::circuit (height := "500") (inputs := "x") (gates := "not, or, and") (table := "00") (goal := "false") (proof := "(x : Bool) : (x && !x) = ⟦false ‖ false, true, x, !x⟧") (lemma := "Bool.and_not_self") (play := "a=not; b=and; x>a.0; x>b.0; a>b.1; b>out") (uses := "-")
+::::circuit (height := "500") (inputs := "x") (gates := "not, or, and") (table := "00") (goal := "false") (proof := "(x : Bool) : (x && !x) = false") (lemma := "Bool.and_not_self") (play := "a=not; b=and; x>a.0; x>b.0; a>b.1; b>out") (uses := "-")
 :::hint (anchor := "none")
 :::
 
@@ -471,7 +449,7 @@ Aussagen beweist es?
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "not, and") (table := "0111") (goal := "x || y") (proof := "(x y : Bool) : (x || y) = ⟦!(!x && !y) ‖ !(!x && !y), !(x && y), !x && !y⟧") (lemma := "or_eq") (play := "a=not; b=not; c=and; d=not; x>a.0; y>b.0; a>c.0; b>c.1; c>d.0; d>out") (uses := "-")
+::::circuit (inputs := "x y") (gates := "not, and") (table := "0111") (goal := "x || y") (proof := "(x y : Bool) : (x || y) = !(!x && !y)") (lemma := "or_eq") (play := "a=not; b=not; c=and; d=not; x>a.0; y>b.0; a>c.0; b>c.1; c>d.0; d>out") (uses := "-")
 :::hint (anchor := "none")
 :::
 
@@ -499,7 +477,7 @@ cases x <;> cases y <;> rfl
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "and, or, not") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : ((x || y) && !(x && y)) = (bif x then (bif y then ⟦false ‖ true, false⟧ else ⟦true ‖ true, false⟧) else (bif y then ⟦true ‖ true, false⟧ else ⟦false ‖ true, false⟧))") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out") (uses := "-")
+::::circuit (inputs := "x y") (gates := "and, or, not") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : ((x || y) && !(x && y)) = (bif x then (bif y then false else true) else (bif y then true else false))") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out") (uses := "-")
 :::hint (anchor := "none")
 :::
 
