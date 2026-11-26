@@ -46,7 +46,7 @@ Die Aussagen handeln von der Masse bei `true`: Das Spielfeld zeigt die ganze Ver
 `true` (die Masse `μ true`, dann die Masse von `f true` bei `true`) und über `false`.
 :::
 
-::::circuit (height := "540") (inputs := "x y") (gates := "") (table := "0001") (goal := "x && y") (proof := "(x y : Bool) : (if x then y else false) = (bif x then (bif y then true else false) else (bif y then false else false))") (start := "a=bind@240,250; x>a.0; y>a.1; a>out") (play := "a.T=id; a.F=false") (uses := "-")
+::::circuit (height := "540") (inputs := "x y") (gates := "") (table := "0001") (goal := "x && y") (proof := "(x y : Bool) : (bif x then y else false) = (x && y)") (start := "a=bind@240,250; x>a.0; y>a.1; a>out") (play := "a.T=id; a.F=false") (uses := "-")
 :::en
 *A gate of your own.* New gate: `bind`. `x` decides which map is chosen, `y` determines the result.
 :::
@@ -64,7 +64,10 @@ decide
 :::
 ::::
 
-::::circuit (height := "540") (inputs := "x y") (gates := "") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : (if x then !y else y) = (bif x then (bif y then false else true) else (bif y then true else false))") (start := "a=bind@240,250; x>a.0; y>a.1; a>out") (play := "a.T=not; a.F=id") (uses := "-")
+::::circuit (height := "540") (inputs := "x y") (gates := "") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : (bif x then !y else y) = (x ^^ y)") (start := "a=bind@240,250; x>a.0; y>a.1; a>out") (play := "a.T=not; a.F=id") (uses := "-")
+:::hint (anchor := "none")
+:::
+
 :::en
 *xor, chosen yourself.* `true` when exactly one input is. With `bind`: for `x = true` one map of `y`,
 for `x = false` another. Four maps for each field: sixteen gates with two inputs, all of them.
@@ -83,7 +86,10 @@ decide
 :::
 ::::
 
-::::circuit (height := "540") (inputs := "x y") (gates := "") (table := "1101") (goal := "!x || y") (proof := "(x y : Bool) : (if x then y else true) = (bif x then (bif y then true else false) else (bif y then true else true))") (start := "a=bind@240,250; x>a.0; y>a.1; a>out") (play := "a.T=id; a.F=true") (uses := "-")
+::::circuit (height := "540") (inputs := "x y") (gates := "") (table := "1101") (goal := "!x || y") (proof := "(x y : Bool) : (bif x then y else true) = (!x || y)") (start := "a=bind@240,250; x>a.0; y>a.1; a>out") (play := "a.T=id; a.F=true") (uses := "-")
+:::hint (anchor := "none")
+:::
+
 :::en
 *If x, then y.* The implication: `false` only when `x` is `true` and `y` is `false`. In Lean
 `!x || y`.

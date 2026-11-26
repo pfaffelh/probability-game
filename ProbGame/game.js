@@ -1566,13 +1566,13 @@
     or: { n: 2, f: ([a, b]) => a || b, lean: ([a, b]) => `${arg(a)} || ${arg(b)}`, sym: '∨', label: 'or' },
     xor: { n: 2, f: ([a, b]) => a !== b, lean: ([a, b]) => `${arg(a)} ^^ ${arg(b)}`, sym: '⊕', label: 'xor' },
     // a gate of your own: for `true` the one value, for `false` the other (`if c then a else b`)
-    if: { n: 3, ports: ['c', 'T', 'F'], f: ([c, a, b]) => (c ? a : b), lean: ([c, a, b]) => `if ${c} then ${a} else ${b}`, sym: 'if', label: 'if' },
+    if: { n: 3, ports: ['c', 'T', 'F'], f: ([c, a, b]) => (c ? a : b), lean: ([c, a, b]) => `bif ${c} then ${a} else ${b}`, sym: 'if', label: 'if' },
     // a gate built of two maps Bool → Bool: `c` chooses the map (the one for true or the one for
     // false), and `v` goes through it: `if c then f v else g v`; the maps are put into its two fields
     // (its inputs: c on top decides which field; v at the right side goes into both)
     bind: { n: 2, inPos: [[0, 0], [51, 42, 'right']], h: 104, slots: 2, sym: 'bind', label: 'bind',
       f: ([c, v], gate) => { const m = gate?.maps?.[c ? 0 : 1]; return m ? MAPS[m].f(v) : null },
-      lean: ([c, v], gate) => `if ${c} then ${gate?.maps?.[0] ? MAPS[gate.maps[0]].lean(v) : '?'} else ${gate?.maps?.[1] ? MAPS[gate.maps[1]].lean(v) : '?'}` },
+      lean: ([c, v], gate) => `bif ${c} then ${gate?.maps?.[0] ? MAPS[gate.maps[0]].lean(v) : '?'} else ${gate?.maps?.[1] ? MAPS[gate.maps[1]].lean(v) : '?'}` },
     // an unknown map f: one field for one of the four maps, the same in every f on the board
     f: { n: 1, h: 84, slots: 1, shared: true, sym: 'f', label: 'f',
       f: ([v], gate) => { const m = gate?.maps?.[0]; return m ? MAPS[m].f(v) : null }, lean: ([v]) => `f ${arg(v)}` },
