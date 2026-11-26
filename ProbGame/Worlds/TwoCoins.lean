@@ -170,17 +170,7 @@ rw [bind_apply, Fintype.sum_bool]
 :::
 ::::
 
-:::::leanonly (proof := "(p : I) : (bif false then coin p false else 0) + (bif !false then coin p true else 0) = ⟦↑p ‖ ↑p, ↑(σ p), 0, 1⟧") (new := "simp") (uses := "-")
-::::hint (anchor := "gap")
-:::en
-Which of the two branches is taken, and what is the mass of the coin there?
-:::
-
-:::de
-Welcher der beiden Zweige wird genommen, und was ist dort die Masse der Münze?
-:::
-::::
-
+:::::circuit (height := "440") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:2p-p^2 false:(1-p)^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x || y)) true = (↑p + ↑(σ p) * ↑p : ℝ≥0∞)") (play := "a=or; x>a.0; y>a.1; a>out") (new := "simp") (uses := "bind_true, bind_false")
 ::::hint (anchor := "item:simp")
 :::en
 `simp`: the simplifier, with all rules marked simp.
@@ -192,17 +182,17 @@ Welcher der beiden Zweige wird genommen, und was ist dort die Masse der Münze?
 ::::
 
 :::en
-*The simplifier.* What you did by hand so far, now in one move.
+*At least one true.* Split by the first coin: two ways to `true`.
 :::
 
 :::de
-*Der Simplifier.* Was du bisher von Hand gemacht hast, jetzt in einem Zug.
+*Mindestens einmal true.* Nach der ersten Münze geteilt: zwei Wege zu `true`.
 :::
 
 :::proofen
-So far every rule by hand, one at a time. From now on the simple ones go into the simplifier,
-`simp`: it rewrites with a whole list of rules, again and again, until none applies any more, and it
-computes with numbers.
+The right side is the two ways: `bind_true`, once for each draw. What is left is computing, and from
+now on the simplifier does it: `simp` rewrites with a whole list of rules, again and again, until
+none applies any more, and it computes with numbers.
 
 Which rules are in the list? In the inventory they now carry the mark *simp*; a few simple ones are
 always there, such as `zero_add`, `add_zero`, `mul_one` and `true && b = b`. Not in the list are
@@ -211,9 +201,9 @@ on forever, and you apply them yourself. `simp [h]` puts a rule `h` into the lis
 :::
 
 :::proofde
-Bisher jede Regel von Hand, eine nach der anderen. Ab jetzt stecken wir die einfachen in den
-Simplifier, `simp`: Er schreibt mit einer ganzen Liste von Regeln um, immer wieder, bis keine mehr
-passt, und er rechnet mit Zahlen.
+Die rechte Seite sind die zwei Wege: `bind_true`, einmal für jeden Zug. Was bleibt, ist Rechnen, und
+das macht ab jetzt der Simplifier: `simp` schreibt mit einer ganzen Liste von Regeln um, immer
+wieder, bis keine mehr passt, und er rechnet mit Zahlen.
 
 Welche Regeln stehen in der Liste? Im Inventar tragen sie jetzt die Marke *simp*; ein paar einfache
 sind immer dabei, etwa `zero_add`, `add_zero`, `mul_one` und `true && b = b`. Nicht in der Liste
@@ -223,6 +213,7 @@ einen Aufruf in die Liste auf.
 :::
 :::solution
 ```
+rw [bind_true, bind_true, bind_true]
 simp
 ```
 :::
