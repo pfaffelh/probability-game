@@ -187,17 +187,13 @@ cases f true <;> cases f false <;> simp [add_mul, add_comm]
 :::
 
 :::proofen
-Work backwards, on the right side (`←`). Then a gate sits inside the `do` block, in
-`let y ← (coin p).map not`, under the bound name `x`. The new tactic `simp only [rules]` is the
-simplifier, but with only the rules you give, as often as it can, also under bound names; it closes
-the goal when the two sides become the same.
+The new tactic `simp only [rules]` is the simplifier, but with only the rules you give, as often as
+it can, also under bound names.
 :::
 
 :::proofde
-Arbeite rückwärts, auf der rechten Seite (`←`). Dann steht ein Baustein im `do`-Block, in
-`let y ← (coin p).map not`, unter dem gebundenen Namen `x`. Die neue Taktik `simp only [Regeln]` ist
-der Simplifier, aber nur mit den Regeln, die du angibst, so oft es geht, auch unter gebundenen
-Namen; er schließt das Ziel, wenn beide Seiten gleich werden.
+Die neue Taktik `simp only [Regeln]` ist der Simplifier, aber nur mit den Regeln, die du angibst, so
+oft es geht, auch unter gebundenen Namen.
 :::
 :::solution
 ```
