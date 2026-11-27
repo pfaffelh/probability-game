@@ -2254,17 +2254,35 @@
       return tree(0, [])
     }
     // the statement of a circuit: it is the target table, `(x && y) = (bif x then … else …)`
-    // (the right side: the level's own, `(x : Bool) : (x || !x) = true`; else the goal, else the table)
+    // (the level's own statement, `(x : Bool) : (x || !x) = true`, with the circuit built on the side
+    // that is not the goal: the goal may stand left, `(x || y) = !(!x && !y)`; else circuit = goal, or table)
     statement() {
-      const t = this.tableFn(), xs = this.names.join(' ')
-      return `(${xs} : Bool) : (${this.leanExpr()}) = ${this.rightSide() ?? (this.goal ? `(${this.goal})` : t)}`
+      const t = this.tableFn(), xs = this.names.join(' '), e = this.leanExpr()
+      const own = this.sides(this.root.dataset.proof ?? ''), bare = x => {
+        // (without whitespace, and without outer brackets that enclose all of it)
+        x = x.replace(/\s+/g, ' ').trim()
+        while (x[0] === '(') { let d = 0, k = 0; for (; k < x.length; k++) { if (x[k] === '(') d++; else if (x[k] === ')' && --d === 0) break } if (k !== x.length - 1) break; x = x.slice(1, -1).trim() }
+        return x
+      }
+      if (own && this.goal) {
+        const [b, l, r] = own, g = bare(this.goal)
+        if (bare(r) === g) return `${b}: (${e}) = ${r}`
+        if (bare(l) === g) return `${b}: ${l} = (${e})`
+      }
+      return `(${xs} : Bool) : (${e}) = ${this.goal ? `(${this.goal})` : t}`
     }
-    rightSide() {
-      const p = this.root.dataset.proof ?? '', i = p.indexOf(' : (')
-      if (i < 0 || /⟦/.test(p)) return null
-      let d = 0, j = i + 3
-      for (; j < p.length; j++) if (p[j] === '(') d++; else if (p[j] === ')' && --d === 0) break
-      return /^\)\s*=\s*([^]+)$/.exec(p.slice(j))?.[1] ?? null
+    // binders, left side, right side of a statement `binders : l = r` (null with gaps or no top-level =)
+    sides(p) {
+      if (/⟦/.test(p)) return null
+      let d = 0, colon = -1, eq = -1
+      for (let i = 0; i < p.length; i++) {
+        const c = p[i]
+        if ('([{'.includes(c)) d++
+        else if (')]}'.includes(c)) d--
+        else if (d === 0 && c === ':' && colon < 0 && p[i + 1] !== '=') colon = i
+        else if (d === 0 && c === '=' && colon >= 0 && eq < 0 && !'<>=!:'.includes(p[i - 1]) && p[i + 1] !== '=') eq = i
+      }
+      return colon < 0 || eq < 0 ? null : [p.slice(0, colon), p.slice(colon + 1, eq).trim(), p.slice(eq + 1).trim()]
     }
     status() {
       if (this.done) return 'goals accomplished 🎉'
@@ -2979,6 +2997,9 @@
   // LEAN_SIGS end
   // the tactics kept in every world, once earned (the others only in the worlds that use them)
   const TACTICS_KEPT = new Set(['rfl', 'exact', 'rw', 'cases', 'ring'])
+  // the worlds whose levels list their other natural solutions too (several `:::solution`): your lemmas
+  // of the world show only where a solution uses them
+  const WORLDS_ALL_SOLUTIONS = new Set(['ProbGame.Worlds.Circuits'])
   const INVENTORY = [
     { name: 'rw', kind: 'tactic', insert: 'rw []', sig: 'rw [h]   rw [← h]   rw [h₁, h₂]',
       en: 'Rewrites the goal with the equation h: its left side becomes its right side (with ←, the other way round). Closes the goal when it then reads a = a. It does not rewrite under bound names (fun x => …, a do block): there, simp_rw (the rules in the order given) or simp only (in any order).',
@@ -3268,7 +3289,7 @@
       this.statement = root.dataset.proof; this.lemma = root.dataset.lemma
       // what this level may use, and what is new in it (ProbGame/Level.lean: from the levels before it)
       const names = a => { try { return new Set(JSON.parse(root.dataset[a] ?? '[]')) } catch { return new Set() } }
-      this.group = root.dataset.group; this.inventory = names('inventory'); this.newHere = names('new')
+      this.group = root.dataset.group; this.world = root.dataset.world; this.inventory = names('inventory'); this.newHere = names('new')
       // (the theorems of this level only, if the level names them: the tactics: see available, the
       // theorems not needed here are left out, to keep the inventory short and to show the way)
       this.uses = root.dataset.uses ? new Set(root.dataset.uses.split(',').map(x => x.trim()).filter(Boolean)) : null
@@ -3345,7 +3366,8 @@
       if (!item || !this.inventory.has(item.name)) return false
       if (item.kind === 'tactic') return TACTICS_KEPT.has(item.name) || !this.worldTactics || this.worldTactics.has(item.name)
       if (!this.uses || this.uses.has(item.name)) return true
-      return item.kind === 'lemma' && [...document.querySelectorAll('[data-lemma]')].some(e => e.dataset.lemma === item.name)
+      // (in a world whose levels have their other solutions written down, not: there `uses` knows them)
+      return item.kind === 'lemma' && !WORLDS_ALL_SOLUTIONS.has(this.world) && [...document.querySelectorAll('[data-lemma]')].some(e => e.dataset.lemma === item.name)
     }
     isNew(item) { return this.newHere.has(item.name) }
     // the tactics that the levels of this world use (the page is the world): from the solutions

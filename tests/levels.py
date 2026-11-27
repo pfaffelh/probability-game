@@ -35,17 +35,20 @@ def levels_of(path):
             fence, kind = HEAD.match(l).groups()
             end = next(j for j in range(i + 1, len(lines)) if lines[j] == fence)
             body = lines[i + 1:end]
-            solution = []
-            if ':::solution' in body:
-                k = body.index(':::solution') + 2          # after the opening ```
-                solution = body[k:body.index('```', k)]
+            # (a level may have several solutions, one `:::solution` each: the first is the one played)
+            solutions = []
+            for j, b in enumerate(body):
+                if b == ':::solution':
+                    k = j + 2                               # after the opening ```
+                    solutions.append(body[k:body.index('```', k)])
+            solution = solutions[0] if solutions else []
             key, default = CONTEXT[kind]
             out.append({'kind': kind, 'edition': edition, 'play': attr(l, 'play') or '', 'start': attr(l, 'start') or '',
                         # (gaps ⟦…⟧: Lean gets the statement filled as meant; the filling, for the playthrough)
                         # (⟦!x ‖ x, !x, false⟧: what is meant, before ‖)
                         'proof': re.sub(r'⟦([^⟧‖]*)(‖[^⟧]*)?⟧', lambda m: '(' + m.group(1).strip() + ')', attr(l, 'proof')) if attr(l, 'proof') else None,
                         'gaps': [g.strip() for g in re.findall(r'⟦([^⟧‖]*)(?:‖[^⟧]*)?⟧', attr(l, 'proof') or '')],
-                        'lemma': attr(l, 'lemma'), 'solution': solution,
+                        'lemma': attr(l, 'lemma'), 'solution': solution, 'solutions': solutions,
                         'new': [x.strip() for x in (attr(l, 'new') or '').split(',') if x.strip()],
                         # (a choice: the statements, the tactic, the numbers of those it proves)
                         'tactic': attr(l, 'tactic'), 'statements': [s.strip() for s in (attr(l, 'statements') or '').split(';;') if s.strip()],

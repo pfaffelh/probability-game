@@ -27,10 +27,11 @@ for world, levels in worlds().items():
         if not l['solution']:
             failures += 1; print('FAIL no :::solution for', l['proof'][:80]); continue
         context = (here / l['context']).read_text()
-        s = post('/start', {'context': context, 'statement': 'example ' + l['proof']})
-        c = post('/check', {'session': s['session'], 'proof': '\n'.join(l['solution'])}) if 'session' in s else s
-        ok = c.get('completed')
-        failures += not ok
-        print('ok  ' if ok else 'FAIL', ' '.join(l['proof'].split())[:90])
+        for n, sol in enumerate(l['solutions'], 1):
+            s = post('/start', {'context': context, 'statement': 'example ' + l['proof']})
+            c = post('/check', {'session': s['session'], 'proof': '\n'.join(sol)}) if 'session' in s else s
+            ok = c.get('completed')
+            failures += not ok
+            print('ok  ' if ok else 'FAIL', ' '.join(l['proof'].split())[:90] + (f'  (solution {n})' if n > 1 else ''))
 print(f'{failures} failures')
 sys.exit(1 if failures else 0)

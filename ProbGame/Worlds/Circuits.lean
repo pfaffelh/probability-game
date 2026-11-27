@@ -196,7 +196,7 @@ rfl
 :::
 ::::
 
-:::::leanonly (proof := ": (!(!true)) = true") (context := "Lean/WorldBool.lean") (group := "bool") (new := "rw") (uses := "Bool.not_true, Bool.not_false, rw")
+:::::leanonly (proof := ": (!(!true)) = true") (context := "Lean/WorldBool.lean") (group := "bool") (new := "rw") (uses := "Bool.not_true, Bool.not_false, rfl, rw")
 ::::hint (anchor := "item:rw")
 :::en
 `rw [h]` rewrites the goal with a theorem `h : a = b`: every `a` becomes `b`.
@@ -231,9 +231,20 @@ Ziels gleich, schließt `rw` es.
 rw [Bool.not_true, Bool.not_false]
 ```
 :::
+:::solution
+```
+rfl
+```
+:::
+:::solution
+```
+rw [Bool.not_true]
+rfl
+```
+:::
 :::::
 
-:::::circuit (height := "500") (inputs := "x") (gates := "not") (table := "01") (goal := "x") (shape := "!(!x)") (start := "a=not; x>a.0") (proof := "(x : Bool) : (!(!x)) = x") (lemma := "Bool.not_not") (new := "cases") (play := "b=not; a>b.0; b>out") (uses := "cases, rfl")
+:::::circuit (height := "500") (inputs := "x") (gates := "not") (table := "01") (goal := "x") (shape := "!(!x)") (start := "a=not; x>a.0") (proof := "(x : Bool) : (!(!x)) = x") (lemma := "Bool.not_not") (new := "cases") (play := "b=not; a>b.0; b>out") (uses := "Bool.not_false, Bool.not_true, cases, rfl, rw")
 :::hint (anchor := "none")
 :::
 
@@ -289,9 +300,16 @@ rfl
 rfl
 ```
 :::
+:::solution
+```
+cases x
+rw [Bool.not_false, Bool.not_true]
+rw [Bool.not_true, Bool.not_false]
+```
+:::
 :::::
 
-:::::circuit (height := "500") (inputs := "x") (gates := "not, or, and") (table := "11") (goal := "true") (proof := "(x : Bool) : (x || !x) = true") (lemma := "Bool.or_not_self") (play := "a=not; b=or; x>a.0; x>b.0; a>b.1; b>out") (uses := "cases, rfl")
+:::::circuit (height := "500") (inputs := "x") (gates := "not, or, and") (table := "11") (goal := "true") (proof := "(x : Bool) : (x || !x) = true") (lemma := "Bool.or_not_self") (play := "a=not; b=or; x>a.0; x>b.0; a>b.1; b>out") (uses := "Bool.not_false, Bool.not_true, cases, rfl, rw")
 :::hint (anchor := "none")
 :::
 
@@ -316,6 +334,15 @@ zu `true`. Dein Ergebnis wird das Lemma `Bool.or_not_self`.
 ```
 cases x
 rfl
+rfl
+```
+:::
+:::solution
+```
+cases x
+rw [Bool.not_false]
+rfl
+rw [Bool.not_true]
 rfl
 ```
 :::
@@ -371,9 +398,16 @@ rfl
 cases x <;> rfl
 ```
 :::
+:::solution
+```
+cases x
+rfl
+rfl
+```
+:::
 :::::
 
-:::::circuit (height := "500") (inputs := "x") (gates := "not, or, and") (table := "00") (goal := "false") (proof := "(x : Bool) : (x && !x) = false") (lemma := "Bool.and_not_self") (play := "a=not; b=and; x>a.0; x>b.0; a>b.1; b>out") (uses := "<;>, cases, rfl")
+:::::circuit (height := "500") (inputs := "x") (gates := "not, or, and") (table := "00") (goal := "false") (proof := "(x : Bool) : (x && !x) = false") (lemma := "Bool.and_not_self") (play := "a=not; b=and; x>a.0; x>b.0; a>b.1; b>out") (uses := "Bool.not_false, Bool.not_true, <;>, cases, rfl, rw")
 ::::hint (anchor := "none")
 ::::
 
@@ -399,6 +433,22 @@ Das Gegenstück zu *Immer true, ohne immer true*, mit `&&` statt `||`. Dein Erge
 cases x <;> rfl
 ```
 :::
+:::solution
+```
+cases x
+rfl
+rfl
+```
+:::
+:::solution
+```
+cases x
+rw [Bool.not_false]
+rfl
+rw [Bool.not_true]
+rfl
+```
+:::
 :::::
 
 ::::leanonly (proof := "(a b : Bool) : (bif false then a else b) = ⟦b ‖ a, b, true, false⟧") (lemma := "Bool.cond_false") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "rfl")
@@ -419,7 +469,7 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(c a : Bool) : (bif c then a else a) = ⟦a ‖ a, c, true, false⟧") (lemma := "Bool.cond_self") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "Bool.cond_false, Bool.cond_true, cases, rw")
+::::leanonly (proof := "(c a : Bool) : (bif c then a else a) = ⟦a ‖ a, c, true, false⟧") (lemma := "Bool.cond_self") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "Bool.cond_false, Bool.cond_true, <;>, cases, rfl, rw")
 :::hint (anchor := "none")
 :::
 
@@ -437,6 +487,18 @@ rw [Bool.cond_false]
 rw [Bool.cond_true]
 ```
 :::
+:::solution
+```
+cases c
+rfl
+rfl
+```
+:::
+:::solution
+```
+cases c <;> rfl
+```
+:::
 ::::
 
 ::::quiz (tactic := "cases x <;> rfl") (statements := "(x : Bool) : (x && x) = x ;; (x : Bool) : x = true ;; (x : Bool) : (x || !x) = true ;; (x y : Bool) : (x && y) = (y && x) ;; (x : Bool) : (!x) = x ;; (x : Bool) : (true && x) = x") (answer := "1, 3, 6")
@@ -449,7 +511,7 @@ rw [Bool.cond_true]
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "not, and") (table := "0111") (goal := "x || y") (proof := "(x y : Bool) : (x || y) = !(!x && !y)") (lemma := "or_eq") (play := "a=not; b=not; c=and; d=not; x>a.0; y>b.0; a>c.0; b>c.1; c>d.0; d>out") (uses := "<;>, cases, rfl")
+::::circuit (inputs := "x y") (gates := "not, and") (table := "0111") (goal := "x || y") (proof := "(x y : Bool) : (x || y) = !(!x && !y)") (lemma := "or_eq") (play := "a=not; b=not; c=and; d=not; x>a.0; y>b.0; a>c.0; b>c.1; c>d.0; d>out") (uses := "Bool.not_false, Bool.not_true, <;>, cases, rfl, rw")
 :::hint (anchor := "none")
 :::
 
@@ -473,6 +535,30 @@ mit `<;>` in einer Zeile. Dein Ergebnis wird das Lemma `or_eq`.
 :::solution
 ```
 cases x <;> cases y <;> rfl
+```
+:::
+:::solution
+```
+cases x
+cases y
+rfl
+rfl
+cases y
+rfl
+rfl
+```
+:::
+:::solution
+```
+cases x <;> cases y
+rw [Bool.not_false]
+rfl
+rw [Bool.not_false, Bool.not_true]
+rfl
+rw [Bool.not_true, Bool.not_false]
+rfl
+rw [Bool.not_true]
+rfl
 ```
 :::
 ::::
@@ -502,6 +588,17 @@ genau ein Eingang `true` ist: mindestens einer, aber nicht beide. In Lean ist da
 :::solution
 ```
 cases x <;> cases y <;> rfl
+```
+:::
+:::solution
+```
+cases x
+cases y
+rfl
+rfl
+cases y
+rfl
+rfl
 ```
 :::
 ::::

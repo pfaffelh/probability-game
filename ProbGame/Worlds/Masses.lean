@@ -103,17 +103,15 @@ rfl
 :::::leanonly (proof := "(p : I) : coin p false = ⟦σ p ‖ p, σ p, 1, 0⟧") (lemma := "coin_false") (uses := "rfl")
 ::::hint (anchor := "statement")
 :::en
-We have `p : I`, and `I` is a subtype of `ℝ`: the real numbers `x` with `0 ≤ x ≤ 1`. As a mass, `p`
-becomes `↑p : ℝ≥0∞`. We have `1 - ↑p : ℝ≥0∞`, but also `σ p := 1 - p : I`. In other words, `σ p` and
-`1 - ↑p` are the same number, but `σ p` has type `I` and `1 - ↑p` has type `ℝ≥0∞`. The statement
-makes `σ p` a mass: `↑(σ p)`.
+`σ p` is $`1 - p`.
+
+Only the type differs: `σ p : I`, but `1 - ↑p : ℝ≥0∞`.
 :::
 
 :::de
-Wir haben `p : I`, und `I` ist ein Subtyp von `ℝ`: die reellen Zahlen `x` mit `0 ≤ x ≤ 1`. Als Masse
-wird `p` zu `↑p : ℝ≥0∞`. Es gibt `1 - ↑p : ℝ≥0∞`, aber auch `σ p := 1 - p : I`. Mit anderen Worten:
-`σ p` und `1 - ↑p` sind dieselbe Zahl, aber `σ p` hat den Typ `I` und `1 - ↑p` den Typ `ℝ≥0∞`. Die
-Aussage macht `σ p` zur Masse: `↑(σ p)`.
+`σ p` ist $`1 - p`.
+
+Nur der Typ ist ein anderer: `σ p : I`, aber `1 - ↑p : ℝ≥0∞`.
 :::
 ::::
 

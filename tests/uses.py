@@ -31,8 +31,12 @@ for f in sorted(glob.glob(str(root / 'ProbGame/Worlds/*.lean'))):
             end = next(j for j in range(i + 1, len(lines)) if lines[j] == m.group(1))
             body = lines[i + 1:end]
             if ':::solution' in body and '(uses := "!' not in lines[i]:
-                k = body.index(':::solution') + 2; sol = []
-                while body[k] != '```': sol.append(body[k]); k += 1
+                # (all its solutions: a theorem or tactic that one of them uses is shown)
+                sol = []
+                for j, b in enumerate(body):
+                    if b == ':::solution':
+                        k = j + 2
+                        while body[k] != '```': sol.append(body[k]); k += 1
                 used = []
                 for t in re.findall(r"[A-Za-z_][\w.']*", '\n'.join(sol)):
                     if t in theorems and t not in used: used.append(t)

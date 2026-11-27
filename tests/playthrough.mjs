@@ -128,6 +128,13 @@ for (const path of paths) {
       const r = await prove([...(lv.gaps ?? []), ...lv.solution], `${path} level ${i + 1}`)  // (the gaps of the statement first)
       proof = r ? `NOT: ${r}` : 'ok'
       if (r) fail(`${path} level ${i + 1}: proof ${r}`)
+      // (the other solutions of the level: Start over, then each; the inventory must allow them)
+      for (const [n, sol] of (lv.solutions ?? []).slice(1).entries()) {
+        await page.locator(".pg-restart").click(); await page.waitForTimeout(300); await idle()
+        const r2 = await prove([...(lv.gaps ?? []), ...sol], `${path} level ${i + 1} solution ${n + 2}`)
+        proof += r2 ? `, solution ${n + 2} NOT: ${r2}` : `, ${n + 2} ok`
+        if (r2) fail(`${path} level ${i + 1}: solution ${n + 2} ${r2}`)
+      }
     }
     console.log(`  ${i + 1} ${lv.kind}: board ${board}${green ? ' (green)' : ''}, proof ${proof} (${Date.now() - t0} ms)`)
     if (i < levels.length - 1) {
