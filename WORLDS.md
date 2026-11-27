@@ -212,6 +212,11 @@ answer to a gap. No level has a folded *Tip* line any more (before: 29, and 113 
 that). A tactic is written with its arguments only in the level that introduces it.
 A new tactic with a tip of its own shows only that tip, not the card of the tactic.
 
+**One step more.** This is a learning game: one step more is good. A rule given only for
+convenience is better shown as what it means, with the handy form proved by the player as a lemma
+(`map_apply` as the image measure, `∑ a with f a = b, μ a`; `map_bool`, written out on `Bool`, is
+yours). Where `rfl` would skip the rewriting to be learnt, the level takes it away (`-rfl` in `uses`).
+
 **Tactics per world.** A world has the tactics that its levels use (their solutions and quizzes,
 written into `uses` by `tests/uses.py`), as far as earned; `rfl`, `exact`, `rw`, `cases` and `ring`
 stay in every world once earned. So `linear_combination` and `field_simp` are there only in Balance
