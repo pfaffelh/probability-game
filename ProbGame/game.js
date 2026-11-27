@@ -2252,9 +2252,17 @@
       return tree(0, [])
     }
     // the statement of a circuit: it is the target table, `(x && y) = (bif x then … else …)`
+    // (the right side: the level's own, `(x : Bool) : (x || !x) = true`; else the goal, else the table)
     statement() {
       const t = this.tableFn(), xs = this.names.join(' ')
-      return `(${xs} : Bool) : (${this.leanExpr()}) = ${t ?? `(${this.goal})`}`
+      return `(${xs} : Bool) : (${this.leanExpr()}) = ${this.rightSide() ?? (this.goal ? `(${this.goal})` : t)}`
+    }
+    rightSide() {
+      const p = this.root.dataset.proof ?? '', i = p.indexOf(' : (')
+      if (i < 0 || /⟦/.test(p)) return null
+      let d = 0, j = i + 3
+      for (; j < p.length; j++) if (p[j] === '(') d++; else if (p[j] === ')' && --d === 0) break
+      return /^\)\s*=\s*([^]+)$/.exec(p.slice(j))?.[1] ?? null
     }
     status() {
       if (this.done) return 'goals accomplished 🎉'

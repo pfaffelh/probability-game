@@ -368,9 +368,16 @@ rfl
 :::
 ::::
 
-::::circuit (height := "500") (inputs := "x") (gates := "not, or, and") (table := "00") (goal := "false") (proof := "(x : Bool) : (x && !x) = false") (lemma := "Bool.and_not_self") (play := "a=not; b=and; x>a.0; x>b.0; a>b.1; b>out") (uses := "cases, rfl")
-:::hint (anchor := "none")
+:::::circuit (height := "500") (inputs := "x") (gates := "not, or, and") (table := "00") (goal := "false") (proof := "(x : Bool) : (x && !x) = false") (lemma := "Bool.and_not_self") (play := "a=not; b=and; x>a.0; x>b.0; a>b.1; b>out") (new := "<;>") (uses := "<;>, cases, rfl")
+::::hint (anchor := "item:<;>")
+:::en
+`t₁ <;> t₂` runs `t₂` on every goal that `t₁` leaves.
 :::
+
+:::de
+`t₁ <;> t₂` führt `t₂` auf jedem Ziel aus, das `t₁` übrig lässt.
+:::
+::::
 
 :::en
 *Never both.* Always `false`, without always `false`: `x` and its opposite.
@@ -391,12 +398,10 @@ Das Gegenstück zu *Immer true, ohne immer true*, mit `&&` statt `||`. Dein Erge
 :::
 :::solution
 ```
-cases x
-rfl
-rfl
+cases x <;> rfl
 ```
 :::
-::::
+:::::
 
 ::::leanonly (proof := "(a b : Bool) : (bif false then a else b) = ⟦b ‖ a, b, true, false⟧") (lemma := "Bool.cond_false") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "rfl")
 :::hint (anchor := "none")
@@ -436,16 +441,13 @@ rw [Bool.cond_true]
 :::
 ::::
 
-::::quiz (tactic := "cases x <;> rfl") (statements := "(x : Bool) : (x && x) = x ;; (x : Bool) : x = true ;; (x : Bool) : (x || !x) = true ;; (x y : Bool) : (x && y) = (y && x) ;; (x : Bool) : (!x) = x ;; (x : Bool) : (true && x) = x") (answer := "1, 3, 6") (new := "<;>")
+::::quiz (tactic := "cases x <;> rfl") (statements := "(x : Bool) : (x && x) = x ;; (x : Bool) : x = true ;; (x : Bool) : (x || !x) = true ;; (x y : Bool) : (x && y) = (y && x) ;; (x : Bool) : (!x) = x ;; (x : Bool) : (true && x) = x") (answer := "1, 3, 6")
 :::en
-*Which ones?* New: `t₁ <;> t₂` runs `t₂` on every goal that `t₁` leaves. So `cases x <;> rfl` is
-`cases x`, and then `rfl` in both cases, in one line. Which of these statements does it prove?
+*Which ones?* Which of these statements does `cases x <;> rfl` prove?
 :::
 
 :::de
-*Welche?* Neu: `t₁ <;> t₂` führt `t₂` auf jedem Ziel aus, das `t₁` übrig lässt. Also ist
-`cases x <;> rfl` erst `cases x` und dann `rfl` in beiden Fällen, in einer Zeile. Welche dieser
-Aussagen beweist es?
+*Welche?* Welche dieser Aussagen beweist `cases x <;> rfl`?
 :::
 ::::
 
