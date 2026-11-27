@@ -154,14 +154,14 @@ Ergebnis bewegen.
 :::
 
 :::proofen
-As in the level before: the masses at every `b`, all sums written out, also those inside
+As in the level before: the masses at every `b`, all sums written out, and
 `map_apply`, and the four possible `f`. The simplifier computes, `ring` (from *Two Coins*) does the
 rest. You prove it on `Bool`; it holds for every type, and it is unlocked as `bind_map_left` in this
 general form.
 :::
 
 :::proofde
-Wie im Level davor: die Massen bei jedem `b`, alle Summen ausgeschrieben, auch die in `map_apply`,
+Wie im Level davor: die Massen bei jedem `b`, alle Summen ausgeschrieben, und `map_apply`,
 und die vier möglichen `f`. Der Simplifier rechnet, `ring` (aus *Zwei Münzen*) erledigt den Rest. Du
 beweist es auf `Bool`; es gilt für jeden Typ und wird in dieser allgemeinen Form als `bind_map_left`
 freigeschaltet.
@@ -170,7 +170,7 @@ freigeschaltet.
 ```
 ext b
 rw [bind_apply, bind_apply]
-simp_rw [Fintype.sum_bool, map_apply, Fintype.sum_bool]
+simp_rw [Fintype.sum_bool, map_apply]
 cases f true <;> cases f false <;> simp <;> ring
 ```
 :::

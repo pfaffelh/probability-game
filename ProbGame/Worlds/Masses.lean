@@ -282,57 +282,35 @@ rw [beq_self_eq_true]
 :::
 :::::
 
-::::leanonly (proof := "(f : Bool → Bool) (μ : DiscreteMeasure Bool) : (μ.map f) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)") (new := "map_apply") (lemma := "map_true") (uses := "map_apply, Fintype.sum_bool, beq_true, rw")
+::::leanonly (proof := "(f : Bool → Bool) (μ : DiscreteMeasure Bool) : (μ.map f) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)") (new := "map_apply") (lemma := "map_true") (uses := "map_apply, beq_true, rw")
 :::en
-*Where the mass goes.* A move `μ.map f` takes each point `a` with its mass `μ a` to `f a`. So the
-mass at `b` afterwards is the sum of the masses `μ a` of the points with `f a = b`. Lean defines it
-so:
+*Where the mass goes.* A move `μ.map f` takes each point `a` with its mass `μ a` to `f a`. On `Bool`
+the game writes this as the rule
 
-```
-def map (f : α → β) (μ : DiscreteMeasure α) : DiscreteMeasure β where
-  weight := fun b => ∑' a, (f⁻¹' {b}).indicator μ.weight a
-```
+`map_apply : (μ.map f) b = (bif f true == b then μ true else 0) + (bif f false == b then μ false else 0)`.
 
-(`f⁻¹' {b}` are the points `a` with `f a = b`; `indicator` is `μ a` there and `0` elsewhere; `∑'`
-is a sum over possibly infinitely many points.) On a finite type, as `Bool`, it is a finite sum `∑`,
-and the game writes the definition as the rule
-
-`map_apply : (μ.map f) b = ∑ a, (bif f a == b then μ a else 0)`.
-
-From it you prove the rule of the gates, `map_true`: to `true` comes the mass at `true` when `f true`
-is `true`, and the mass at `false` when `f false` is `true`.
+From it you prove the rule of the gates, `map_true`.
 :::
 
 :::de
 *Wohin die Masse geht.* Ein Zug `μ.map f` bringt jeden Punkt `a` mit seiner Masse `μ a` nach `f a`.
-Die Masse bei `b` danach ist also die Summe der Massen `μ a` der Punkte mit `f a = b`. Lean definiert
-es so:
+Auf `Bool` schreibt das Spiel das als Regel
 
-```
-def map (f : α → β) (μ : DiscreteMeasure α) : DiscreteMeasure β where
-  weight := fun b => ∑' a, (f⁻¹' {b}).indicator μ.weight a
-```
+`map_apply : (μ.map f) b = (bif f true == b then μ true else 0) + (bif f false == b then μ false else 0)`.
 
-(`f⁻¹' {b}` sind die Punkte `a` mit `f a = b`; `indicator` ist dort `μ a` und sonst `0`; `∑'` ist
-eine Summe über möglicherweise unendlich viele Punkte.) Auf einem endlichen Typ, wie `Bool`, ist es
-eine endliche Summe `∑`, und das Spiel schreibt die Definition als Regel
-
-`map_apply : (μ.map f) b = ∑ a, (bif f a == b then μ a else 0)`.
-
-Daraus beweist du die Regel der Bausteine, `map_true`: Nach `true` kommt die Masse bei `true`, wenn
-`f true` gleich `true` ist, und die Masse bei `false`, wenn `f false` gleich `true` ist.
+Daraus beweist du die Regel der Bausteine, `map_true`.
 :::
 
 :::proofen
-First the definition, `map_apply`, and the sum written out; what is left are tests against `true`.
+First the definition, `map_apply`; what is left are tests against `true`.
 :::
 
 :::proofde
-Zuerst die Definition, `map_apply`, und die Summe ausgeschrieben; übrig bleiben Tests gegen `true`.
+Zuerst die Definition, `map_apply`; übrig bleiben Tests gegen `true`.
 :::
 :::solution
 ```
-rw [map_apply, Fintype.sum_bool]
+rw [map_apply]
 rw [beq_true, beq_true]
 ```
 :::

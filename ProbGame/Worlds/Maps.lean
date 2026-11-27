@@ -68,7 +68,7 @@ decide
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) : μ.map (fun x => x) = ⟦μ ‖ μ, μ.map not⟧") (lemma := "map_id") (new := "Bool.false_beq") (uses := "map_apply, Fintype.sum_bool, Bool.true_beq, Bool.false_beq, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, Bool.not_true, add_comm, add_zero, mul_zero, add_assoc, cases, ext, rw")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) : μ.map (fun x => x) = ⟦μ ‖ μ, μ.map not⟧") (lemma := "map_id") (new := "Bool.false_beq") (uses := "map_apply, Bool.true_beq, Bool.false_beq, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, Bool.not_true, add_comm, add_zero, mul_zero, add_assoc, cases, ext, rw")
 :::en
 *Doing nothing.* The move `fun x => x` leaves every point where it is.
 :::
@@ -93,7 +93,7 @@ allgemeinen Form als `map_id` freigeschaltet.
 :::solution
 ```
 ext b
-rw [map_apply, Fintype.sum_bool, Bool.true_beq, Bool.false_beq]
+rw [map_apply, Bool.true_beq, Bool.false_beq]
 cases b
 rw [Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add]
 rw [Bool.not_true, Bool.cond_true, Bool.cond_false, add_comm, zero_add]
@@ -198,7 +198,7 @@ simp_rw [Bool.cond_true]
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f g : Bool → Bool) : (μ.map f).map g = μ.map ⟦fun x => g (f x) ‖ fun x => g (f x), fun x => f (g x), g⟧") (lemma := "map_map") (uses := "map_apply, Fintype.sum_bool, Bool.false_beq, Bool.not_true, beq_self_eq_true, Bool.cond_false, Bool.cond_true, zero_add, Bool.cond_self, cond_add_cond, Bool.true_beq, Bool.not_false, add_comm, add_zero, mul_zero, add_assoc, cases, ext, rw, simp_rw")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f g : Bool → Bool) : (μ.map f).map g = μ.map ⟦fun x => g (f x) ‖ fun x => g (f x), fun x => f (g x), g⟧") (lemma := "map_map") (uses := "map_apply, Bool.false_beq, Bool.not_true, beq_self_eq_true, Bool.cond_false, Bool.cond_true, zero_add, Bool.cond_self, cond_add_cond, Bool.true_beq, Bool.not_false, add_comm, add_zero, mul_zero, add_assoc, cases, ext, rw, simp_rw")
 :::en
 *Boss: two moves are one.* First the move `f`, then the move `g`: which one move is that?
 :::
@@ -218,7 +218,7 @@ freigeschaltet.
 :::solution
 ```
 ext b
-simp_rw [map_apply, Fintype.sum_bool]
+simp_rw [map_apply]
 cases f true
 cases f false
 rw [Bool.false_beq, Bool.not_true, beq_self_eq_true]
