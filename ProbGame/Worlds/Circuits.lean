@@ -477,7 +477,7 @@ cases x <;> cases y <;> rfl
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "and, or, not") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : ((x || y) && !(x && y)) = (bif x then (bif y then false else true) else (bif y then true else false))") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out") (uses := "<;>, cases, rfl")
+::::circuit (inputs := "x y") (gates := "and, or, not") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : ((x || y) && !(x && y)) = (x ^^ y)") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out") (uses := "<;>, cases, rfl")
 :::hint (anchor := "none")
 :::
 
@@ -493,13 +493,11 @@ genau ein Eingang `true` ist: mindestens einer, aber nicht beide. In Lean ist da
 :::
 
 :::proofen
-The table has four rows now, one for each pair of values: first `x` decides, then `y`, a `bif` in
-each branch of a `bif`.
+`x ^^ y` (*xor*) is `true` when exactly one of `x` and `y` is `true`.
 :::
 
 :::proofde
-Die Tafel hat jetzt vier Zeilen, eine für jedes Paar von Werten: erst entscheidet `x`, dann `y`, ein
-`bif` in jedem Zweig eines `bif`.
+`x ^^ y` (*xor*) ist `true`, wenn genau eines von `x` und `y` `true` ist.
 :::
 :::solution
 ```
