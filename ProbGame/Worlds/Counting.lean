@@ -43,7 +43,7 @@ Monadengesetze (`bind_assoc`, `pure_bind`) bringen ihn in die Form des Spielfeld
 einmal brauchst du *Induktion*, wie im Natural Number Game.
 :::
 
-::::circuit (height := "440") (route := "count") (inputs := "x") (gates := "not, toNat") (coins := "p") (target := "nat 0:1-p 1:p") (context := "Lean/Rules.lean") (proof := "(p : I) : (coin p).map Bool.toNat = (coin p).map (fun b => if b then 1 else 0)") (play := "a=toNat; x>a.0; a>out") (uses := "-")
+::::circuit (height := "440") (route := "count") (inputs := "x") (gates := "not, toNat") (coins := "p") (target := "nat 0:1-p 1:p") (context := "Lean/Rules.lean") (proof := "(p : I) : (coin p).map Bool.toNat = (coin p).map (fun b => if b then 1 else 0)") (play := "a=toNat; x>a.0; a>out") (uses := "<;>, cases, congr, ext, rfl")
 :::en
 *From sides to numbers.* `Bool.toNat` counts `true` as $`1` and `false` as $`0`: the distribution
 moves to the natural numbers. This is how a coin becomes a random number.
@@ -72,7 +72,7 @@ cases b <;> rfl
 :::
 ::::
 
-::::circuit (height := "540") (route := "count") (inputs := "x") (gates := "not, alwaysT, alwaysF, toNat") (coins := "p") (target := "pure 0") (context := "Lean/Rules.lean") (proof := "(p : I) : ((coin p).map (fun _ => false)).map Bool.toNat = pure 0") (play := "a=alwaysF; b=toNat; x>a.0; a>b.0; b>out") (uses := "coin_const, map_pure")
+::::circuit (height := "540") (route := "count") (inputs := "x") (gates := "not, alwaysT, alwaysF, toNat") (coins := "p") (target := "pure 0") (context := "Lean/Rules.lean") (proof := "(p : I) : ((coin p).map (fun _ => false)).map Bool.toNat = pure 0") (play := "a=alwaysF; b=toNat; x>a.0; a>b.0; b>out") (uses := "coin_const, map_pure, rfl, rw")
 :::en
 *Surely zero.* A point mass on the numbers, however you get there.
 :::
@@ -96,7 +96,7 @@ rfl
 :::
 ::::
 
-:::::leanonly (proof := "(p : I) : binom p 0 = pure 0") (lemma := "binom_zero") (group := "chance.count") (uses := "-")
+:::::leanonly (proof := "(p : I) : binom p 0 = pure 0") (lemma := "binom_zero") (group := "chance.count") (uses := "rfl")
 ::::hint (anchor := "statement")
 :::en
 `binom p n`: the number of `true` in $`n` throws of `coin p`. Lean defines it by recursion on $`n`:
@@ -149,7 +149,7 @@ rfl
 :::
 :::::
 
-:::::leanonly (proof := "(p : I) (n : ℕ) : binom p (n + 1) = (do let X ← coin p; let Y ← binom p n; pure ⟦X.toNat + Y ‖ X.toNat + Y, Y, X.toNat⟧)") (lemma := "binom_succ") (group := "chance.count") (uses := "-")
+:::::leanonly (proof := "(p : I) (n : ℕ) : binom p (n + 1) = (do let X ← coin p; let Y ← binom p n; pure ⟦X.toNat + Y ‖ X.toNat + Y, Y, X.toNat⟧)") (lemma := "binom_succ") (group := "chance.count") (uses := "rfl")
 ::::hint (anchor := "gap")
 :::en
 One coin `X`, the count `Y` of the other $`n`: what is the count of all $`n + 1`?
@@ -182,7 +182,7 @@ rfl
 :::
 :::::
 
-::::leanonly (proof := "(p : I) : (do let x ← (pure true : DiscreteMeasure Bool); bif x then coin p else pure false) = coin p") (new := "pure_bind") (group := "chance.count") (uses := "pure_bind, Bool.cond_true, bind_pure, Bool.cond_false")
+::::leanonly (proof := "(p : I) : (do let x ← (pure true : DiscreteMeasure Bool); bif x then coin p else pure false) = coin p") (new := "pure_bind") (group := "chance.count") (uses := "pure_bind, Bool.cond_true, bind_pure, Bool.cond_false, rw")
 :::en
 *Drawing a sure value.* Drawing from `pure a` gives `a`, surely.
 :::
@@ -205,7 +205,7 @@ rw [pure_bind, Bool.cond_true]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : (do let y ← (do let x ← coin p; pure (!x)); pure (!y)) = (do let x ← coin p; let y ← pure (!x); pure (!y))") (new := "bind_assoc") (group := "chance.count") (uses := "bind_assoc")
+::::leanonly (proof := "(p : I) : (do let y ← (do let x ← coin p; pure (!x)); pure (!y)) = (do let x ← coin p; let y ← pure (!x); pure (!y))") (new := "bind_assoc") (group := "chance.count") (uses := "bind_assoc, rw")
 :::en
 *A do block in a do block.* A `do` block inside another can be written out: one step after the other.
 :::
@@ -228,7 +228,7 @@ rw [bind_assoc]
 :::
 ::::
 
-::::leanonly (proof := "(x : Bool) : x.toNat + 0 = x.toNat") (new := "add_zero") (group := "chance.count") (uses := "add_zero, zero_add")
+::::leanonly (proof := "(x : Bool) : x.toNat + 0 = x.toNat") (new := "add_zero") (group := "chance.count") (uses := "add_zero, zero_add, rw")
 :::en
 *Plus zero.* `x.toNat` is the number of `x`: $`1` for `true`, $`0` for `false`. Adding zero changes nothing.
 :::
@@ -251,7 +251,7 @@ rw [add_zero]
 :::
 ::::
 
-::::circuit (route := "count") (inputs := "x y") (gates := "toNat, plus, and, or, not") (coins := "p p") (target := "nat 0:(1-p)^2 1:2p(1-p) 2:p^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x.toNat + y.toNat)) = binom p 2") (play := "a=toNat; b=toNat; c=plus; x>a.0; y>b.0; a>c.0; b>c.1; c>out") (uses := "binom_succ, binom_zero, bind_assoc, pure_bind, add_zero, bind_pure, zero_add")
+::::circuit (route := "count") (inputs := "x y") (gates := "toNat, plus, and, or, not") (coins := "p p") (target := "nat 0:(1-p)^2 1:2p(1-p) 2:p^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x.toNat + y.toNat)) = binom p 2") (play := "a=toNat; b=toNat; c=plus; x>a.0; y>b.0; a>c.0; b>c.1; c>out") (uses := "binom_succ, binom_zero, bind_assoc, pure_bind, add_zero, bind_pure, zero_add, rw, simp_rw")
 :::en
 *The number of `true`.* From coins to numbers ($`0` and $`1`), and add them: the binomial distribution $`B(2, p)`.
 :::
@@ -291,7 +291,7 @@ wickelt `binom` aus und räumt die `do`-Blöcke auf, wie im Level davor: `simp`,
 :::
 ::::
 
-::::leanonly (proof := "(x y z : Bool) : x.toNat + y.toNat + z.toNat = x.toNat + (y.toNat + z.toNat)") (new := "add_assoc") (group := "chance.count") (uses := "add_assoc, add_comm, add_right_comm")
+::::leanonly (proof := "(x y z : Bool) : x.toNat + y.toNat + z.toNat = x.toNat + (y.toNat + z.toNat)") (new := "add_assoc") (group := "chance.count") (uses := "add_assoc, add_comm, add_right_comm, rw")
 :::en
 *Brackets.* In a sum, the brackets can move.
 :::
@@ -314,7 +314,7 @@ rw [add_assoc]
 :::
 ::::
 
-::::circuit (height := "660") (route := "count") (size := "big") (inputs := "x y z") (gates := "toNat, plus") (coins := "p p p") (target := "nat 0:(1-p)^3 1:3p(1-p)^2 2:3p^2(1-p) 3:p^3") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; let z ← coin p; pure (x.toNat + y.toNat + z.toNat)) = binom p 3") (play := "a=toNat; b=toNat; c=toNat; d=plus; e=plus; x>a.0; y>b.0; z>c.0; a>d.0; b>d.1; d>e.0; c>e.1; e>out") (uses := "binom_succ, binom_zero, bind_assoc, pure_bind, add_zero, add_assoc, bind_pure, zero_add, add_comm, add_right_comm")
+::::circuit (height := "660") (route := "count") (size := "big") (inputs := "x y z") (gates := "toNat, plus") (coins := "p p p") (target := "nat 0:(1-p)^3 1:3p(1-p)^2 2:3p^2(1-p) 3:p^3") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; let z ← coin p; pure (x.toNat + y.toNat + z.toNat)) = binom p 3") (play := "a=toNat; b=toNat; c=toNat; d=plus; e=plus; x>a.0; y>b.0; z>c.0; a>d.0; b>d.1; d>e.0; c>e.1; e>out") (uses := "binom_succ, binom_zero, bind_assoc, pure_bind, add_zero, add_assoc, bind_pure, zero_add, add_comm, add_right_comm, rw, simp_rw")
 :::en
 *Three coins.* Count the `true`s among three coins. Throw $`n` coins and count how often `true`
 comes up: that is the *binomial distribution* $`B(n, p)`, with
@@ -342,7 +342,7 @@ simp_rw [bind_assoc, pure_bind, add_zero, add_assoc]
 :::
 ::::
 
-::::circuit (height := "660") (route := "count") (size := "big") (inputs := "x y z") (gates := "and, or") (coins := "p p p") (target := "bool true:3p^2-2p^3 false:1-3p^2+2p^3") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; let z ← coin p; pure ((x && y) || (x && z) || (y && z))) = (binom p 3).map (fun n => decide (2 ≤ n))") (play := "a=and; b=and; c=and; d=or; e=or; x>a.0; y>a.1; x>b.0; z>b.1; y>c.0; z>c.1; a>d.0; b>d.1; d>e.0; c>e.1; e>out") (uses := "binom_succ, binom_zero, map_bind, bind_assoc, pure_bind, map_pure, add_zero, bind_map_left, bind_pure, zero_add")
+::::circuit (height := "660") (route := "count") (size := "big") (inputs := "x y z") (gates := "and, or") (coins := "p p p") (target := "bool true:3p^2-2p^3 false:1-3p^2+2p^3") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; let z ← coin p; pure ((x && y) || (x && z) || (y && z))) = (binom p 3).map (fun n => decide (2 ≤ n))") (play := "a=and; b=and; c=and; d=or; e=or; x>a.0; y>a.1; x>b.0; z>b.1; y>c.0; z>c.1; a>d.0; b>d.1; d>e.0; c>e.1; e>out") (uses := "binom_succ, binom_zero, map_bind, bind_assoc, pure_bind, map_pure, add_zero, bind_map_left, bind_pure, zero_add, <;>, cases, congr, ext, rfl, rw, simp_rw")
 :::en
 *The majority of three.* `true` when at least two of three coins show `true`. Each coin has to
 go into two functions.
@@ -378,7 +378,7 @@ cases x <;> cases y <;> cases z <;> rfl
 :::
 ::::
 
-::::leanonly (proof := "(n : ℕ) : binom 0 n = pure 0") (lemma := "binom_never") (new := "induction', coin_zero") (group := "chance.count") (uses := "binom_zero, binom_succ, coin_zero, pure_bind, coin_one, bind_pure")
+::::leanonly (proof := "(n : ℕ) : binom 0 n = pure 0") (lemma := "binom_never") (new := "induction', coin_zero") (group := "chance.count") (uses := "binom_zero, binom_succ, coin_zero, pure_bind, coin_one, bind_pure, induction', rfl, rw")
 :::en
 *A coin that never shows `true`.* The coin with $`p = 0` shows `false`, surely. Throw it $`n` times and count the `true`: surely $`0`, for every $`n`.
 :::
@@ -410,7 +410,7 @@ rfl
 :::
 ::::
 
-::::circuit (route := "count") (inputs := "x y z") (gates := "toNat, plus") (coins := "p p p") (target := "nat 0:(1-p)^3 1:3p(1-p)^2 2:3p^2(1-p) 3:p^3") (start := "a=toNat@120,160; b=toNat@240,160; c=plus@180,270; x>a.0; y>b.0; a>c.0; b>c.1") (context := "Lean/Rules.lean") (proof := "(p : I) (n : ℕ) : (do let X ← binom p n; let Y ← coin p; pure (X + Y.toNat)) = binom p (n + 1)") (lemma := "binom_succ'") (play := "d=toNat; e=plus; z>d.0; c>e.0; d>e.1; e>out") (uses := "binom_zero, binom_succ, pure_bind, zero_add, add_zero, bind_assoc, add_assoc, bind_pure, mul_zero, add_comm, add_right_comm")
+::::circuit (route := "count") (inputs := "x y z") (gates := "toNat, plus") (coins := "p p p") (target := "nat 0:(1-p)^3 1:3p(1-p)^2 2:3p^2(1-p) 3:p^3") (start := "a=toNat@120,160; b=toNat@240,160; c=plus@180,270; x>a.0; y>b.0; a>c.0; b>c.1") (context := "Lean/Rules.lean") (proof := "(p : I) (n : ℕ) : (do let X ← binom p n; let Y ← coin p; pure (X + Y.toNat)) = binom p (n + 1)") (lemma := "binom_succ'") (play := "d=toNat; e=plus; z>d.0; c>e.0; d>e.1; e>out") (uses := "binom_zero, binom_succ, pure_bind, zero_add, add_zero, bind_assoc, add_assoc, bind_pure, mul_zero, add_comm, add_right_comm, induction', rw, simp_rw")
 :::en
 *A new building block.* $`B(2, p)` is already built: the two coins on the left, counted and added
 (it stays). Add one more coin `z`: one more throw, one more chance to count, and $`B(3, p)` comes out.
@@ -444,7 +444,7 @@ simp_rw [bind_assoc, pure_bind, add_assoc]
 :::
 ::::
 
-::::circuit (height := "540") (route := "count") (inputs := "x y z w") (gates := "plus") (coins := "p p p p") (target := "nat 0:(1-p)^4 1:4p(1-p)^3 2:6p^2(1-p)^2 3:4p^3(1-p) 4:p^4") (start := "a=toNat@62,150; b=toNat@176,150; c=plus@119,255; d=toNat@304,150; e=toNat@418,150; f=plus@361,255; x>a.0; y>b.0; a>c.0; b>c.1; z>d.0; w>e.0; d>f.0; e>f.1") (context := "Lean/Rules.lean") (proof := "(p : I) (n m : ℕ) : (do let X ← binom p n; let Y ← binom p m; pure (X + Y)) = binom p (n + m)") (lemma := "binom_add") (play := "g=plus; c>g.0; f>g.1; g>out") (uses := "binom_zero, pure_bind, add_zero, bind_pure, binom_succ', add_assoc, bind_assoc, binom_succ, zero_add, add_comm, add_right_comm")
+::::circuit (height := "540") (route := "count") (inputs := "x y z w") (gates := "plus") (coins := "p p p p") (target := "nat 0:(1-p)^4 1:4p(1-p)^3 2:6p^2(1-p)^2 3:4p^3(1-p) 4:p^4") (start := "a=toNat@62,150; b=toNat@176,150; c=plus@119,255; d=toNat@304,150; e=toNat@418,150; f=plus@361,255; x>a.0; y>b.0; a>c.0; b>c.1; z>d.0; w>e.0; d>f.0; e>f.1") (context := "Lean/Rules.lean") (proof := "(p : I) (n m : ℕ) : (do let X ← binom p n; let Y ← binom p m; pure (X + Y)) = binom p (n + m)") (lemma := "binom_add") (play := "g=plus; c>g.0; f>g.1; g>out") (uses := "binom_zero, pure_bind, add_zero, bind_pure, binom_succ', add_assoc, bind_assoc, binom_succ, zero_add, add_comm, add_right_comm, induction', rw, simp_rw")
 :::en
 *Boss: $`B(2, p) * B(2, p) = B(4, p)`.* Two independent binomials, both already built: add them. The sum
 of independent random numbers has the *convolution* $`*` of their distributions as its distribution.

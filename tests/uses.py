@@ -1,11 +1,13 @@
 """Writes `(uses := "…")` into every level that has a `:::solution`: the theorems (rules and lemmas of
-the inventory in game.js) that its solution uses. The game then shows only these theorems in the
-level (all the tactics earned stay). A level whose `uses` was set by hand keeps it: mark it with
+the inventory in game.js) that its solution uses, and its tactics. The game then shows only these
+theorems in the level, and in a world only the tactics that its levels use (all levels of the world
+together, quizzes too) and the ones always kept (rfl, exact, rw, cases, ring, once earned). A level whose `uses` was set by hand keeps it: mark it with
 `(uses := "!…")`.
     python3 tests/uses.py            (all worlds of ProbGame/Worlds)"""
 import re, glob, pathlib
 root = pathlib.Path(__file__).resolve().parent.parent
 js = (root / 'ProbGame/game.js').read_text()
+tactics = set(re.findall(r"\{ name: '([^']+)', kind: 'tactic'", js)) | set(re.findall(r'\{ name: "([^"]+)", kind: \'tactic\'', js))
 theorems = set(re.findall(r"\{ name: '([^']+)', kind: '(?:rule|lemma)'", js)) | set(re.findall(r'\{ name: "([^"]+)", kind: \'(?:rule|lemma)\'', js))
 # The natural partners of a theorem: shown with it (when earned), so that the inventory may also lead
 # astray a little, without being convoluted.
@@ -37,6 +39,8 @@ for f in sorted(glob.glob(str(root / 'ProbGame/Worlds/*.lean'))):
                 for t in list(used):
                     for u in partners.get(t, []):
                         if u in theorems and u not in used: used.append(u)
+                text = '\n'.join(sol)
+                used += [t for t in sorted(tactics) if (t in text if t == '<;>' else re.search(r"(?<![\w.'])" + re.escape(t) + r"(?![\w.'])", text))]
                 new = re.sub(r' \(uses := "[^"]*"\)', '', lines[i]) + (f' (uses := "{", ".join(used)}")' if used else ' (uses := "-")')
                 if new != lines[i]: lines[i] = new; changed += 1
             i = end

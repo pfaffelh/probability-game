@@ -18,7 +18,7 @@ An urn with white and black balls; balls are drawn one after the other, without 
 Eine Urne mit weißen und schwarzen Kugeln; Kugeln werden eine nach der anderen gezogen, ohne sie zurückzulegen. Die hypergeometrische Verteilung, die Anzahl der gezogenen weißen Kugeln, als `do`-Block, der Kugel für Kugel zieht: Jeder Zug ist eine Stufe (wie in *Mehrstufige Experimente*), ihre Chance hängt davon ab, was vorher gezogen wurde. Am Ende ein Gleichgewicht (wie in *Gleichgewicht*): die zweite Kugel. Nur in Lean.
 :::
 
-::::leanonly (proof := "(w b : ℕ) : hyper w b 0 = pure 0") (lemma := "hyper_zero") (group := "chance.count") (uses := "-")
+::::leanonly (proof := "(w b : ℕ) : hyper w b 0 = pure 0") (lemma := "hyper_zero") (group := "chance.count") (uses := "rfl")
 :::en
 *No draw.* An urn with $`w` white and $`b` black balls. `hyper w b n` is the number of white balls in $`n` draws, one after the other, without putting a ball back. With no draw: none.
 :::
@@ -67,7 +67,7 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(w b n : ℕ) : hyper w b (n + 1) = (do let X ← coin (frac w b); bif X then (do let Y ← hyper ⟦w - 1 ‖ w, w - 1, w + 1⟧ ⟦b ‖ b - 1, b, b + 1⟧ n; pure (1 + Y)) else hyper w (b - 1) n)") (lemma := "hyper_succ") (group := "chance.count") (uses := "-")
+::::leanonly (proof := "(w b n : ℕ) : hyper w b (n + 1) = (do let X ← coin (frac w b); bif X then (do let Y ← hyper ⟦w - 1 ‖ w, w - 1, w + 1⟧ ⟦b ‖ b - 1, b, b + 1⟧ n; pure (1 + Y)) else hyper w (b - 1) n)") (lemma := "hyper_succ") (group := "chance.count") (uses := "rfl")
 :::en
 *One ball after the other.* The first ball is white with chance $`w / (w + b)`, and then one more is counted. From which urn are the other $`n` balls drawn then: how many white, how many black? (After a black ball: one black less.)
 :::
@@ -90,7 +90,7 @@ rfl
 :::
 ::::
 
-:::::leanonly (proof := "(w b : ℕ) : hyper w b 1 1 = ⟦↑(frac w b) ‖ ↑(σ (frac w b)), ↑(frac w b), ↑(frac b w), 1⟧") (lemma := "hyper_one_one") (group := "chance.count") (uses := "hyper_succ, hyper_zero")
+:::::leanonly (proof := "(w b : ℕ) : hyper w b 1 1 = ⟦↑(frac w b) ‖ ↑(σ (frac w b)), ↑(frac w b), ↑(frac b w), 1⟧") (lemma := "hyper_one_one") (group := "chance.count") (uses := "hyper_succ, hyper_zero, rw, simp")
 ::::hint (anchor := "gap")
 :::en
 One ball drawn: with which chance is it white?
@@ -126,7 +126,7 @@ simp [hyper_zero]
 :::
 :::::
 
-:::::leanonly (proof := "(w b : ℕ) : hyper w b 1 0 = ⟦↑(σ (frac w b)) ‖ ↑(frac w b), 0, ↑(σ (frac w b)), ↑(frac w (b - 1))⟧") (lemma := "hyper_one_zero") (new := "pure_one_zero") (group := "chance.count") (uses := "hyper_succ, hyper_zero, pure_one_zero")
+:::::leanonly (proof := "(w b : ℕ) : hyper w b 1 0 = ⟦↑(σ (frac w b)) ‖ ↑(frac w b), 0, ↑(σ (frac w b)), ↑(frac w (b - 1))⟧") (lemma := "hyper_one_zero") (new := "pure_one_zero") (group := "chance.count") (uses := "hyper_succ, hyper_zero, pure_one_zero, rw, simp")
 ::::hint (anchor := "gap")
 :::en
 One ball drawn: with which chance is it not white?
@@ -160,7 +160,7 @@ simp [hyper_zero, pure_one_zero]
 :::
 :::::
 
-:::::leanonly (proof := "(w b : ℕ) : hyper w b 2 1 = (⟦↑(frac w b) * ↑(σ (frac (w - 1) b)) + ↑(σ (frac w b)) * ↑(frac w (b - 1)) ‖ ↑(frac w b) * ↑(σ (frac w b)) + ↑(σ (frac w b)) * ↑(frac w b), ↑(frac w b) * ↑(σ (frac (w - 1) b)) + ↑(σ (frac w b)) * ↑(frac w (b - 1)), ↑(frac w b) * ↑(σ (frac (w - 1) b))⟧ : ℝ≥0∞)") (group := "chance.count") (uses := "hyper_succ, hyper_one_zero, hyper_one_one, hyper_zero")
+:::::leanonly (proof := "(w b : ℕ) : hyper w b 2 1 = (⟦↑(frac w b) * ↑(σ (frac (w - 1) b)) + ↑(σ (frac w b)) * ↑(frac w (b - 1)) ‖ ↑(frac w b) * ↑(σ (frac w b)) + ↑(σ (frac w b)) * ↑(frac w b), ↑(frac w b) * ↑(σ (frac (w - 1) b)) + ↑(σ (frac w b)) * ↑(frac w (b - 1)), ↑(frac w b) * ↑(σ (frac (w - 1) b))⟧ : ℝ≥0∞)") (group := "chance.count") (uses := "hyper_succ, hyper_one_zero, hyper_one_one, hyper_zero, rw, simp")
 ::::hint (anchor := "gap")
 :::en
 White and then black, or black and then white. The second ball comes from another urn than the first.
@@ -194,7 +194,7 @@ simp [hyper_one_zero, hyper_one_one]
 :::
 :::::
 
-::::leanonly (proof := "(b : ℕ) : coin (frac 0 b) = pure false") (new := "frac_zero") (group := "chance.count") (uses := "frac_zero, coin_zero, frac_white, coin_one")
+::::leanonly (proof := "(b : ℕ) : coin (frac 0 b) = pure false") (new := "frac_zero") (group := "chance.count") (uses := "frac_zero, coin_zero, frac_white, coin_one, rw")
 :::en
 *No white ball.* Without white balls, the ball drawn is surely black.
 :::
@@ -217,7 +217,7 @@ rw [frac_zero, coin_zero]
 :::
 ::::
 
-::::leanonly (proof := "(b n : ℕ) : hyper 0 b n = pure 0") (lemma := "hyper_black") (group := "chance.count") (uses := "hyper_zero, hyper_succ, frac_zero, coin_zero, pure_bind, Bool.cond_false, frac_white, coin_one, bind_pure, Bool.cond_true")
+::::leanonly (proof := "(b n : ℕ) : hyper 0 b n = pure 0") (lemma := "hyper_black") (group := "chance.count") (uses := "hyper_zero, hyper_succ, frac_zero, coin_zero, pure_bind, Bool.cond_false, frac_white, coin_one, bind_pure, Bool.cond_true, induction', rw")
 :::en
 *Only black.* From an urn without white balls, no white one is ever drawn.
 :::
@@ -242,7 +242,7 @@ rw [hyper_succ, frac_zero, coin_zero, pure_bind, Bool.cond_false, ih]
 :::
 ::::
 
-::::leanonly (proof := "(w : ℕ) : coin (frac (w + 1) 0) = pure true") (new := "frac_white, coin_one") (group := "chance.count") (uses := "frac_white, coin_one, frac_zero, coin_zero")
+::::leanonly (proof := "(w : ℕ) : coin (frac (w + 1) 0) = pure true") (new := "frac_white, coin_one") (group := "chance.count") (uses := "frac_white, coin_one, frac_zero, coin_zero, rw")
 :::en
 *No black ball.* Without black balls (and with at least one white one), the ball drawn is surely white.
 :::
@@ -265,7 +265,7 @@ rw [frac_white, coin_one]
 :::
 ::::
 
-::::leanonly (proof := "(w : ℕ) : hyper w 0 w = pure w") (lemma := "hyper_white") (new := "Nat.add_sub_cancel") (group := "chance.count") (uses := "hyper_zero, hyper_succ, frac_white, coin_one, pure_bind, Bool.cond_true, Nat.add_sub_cancel, add_comm, frac_zero, coin_zero, bind_pure, Bool.cond_false, add_assoc")
+::::leanonly (proof := "(w : ℕ) : hyper w 0 w = pure w") (lemma := "hyper_white") (new := "Nat.add_sub_cancel") (group := "chance.count") (uses := "hyper_zero, hyper_succ, frac_white, coin_one, pure_bind, Bool.cond_true, Nat.add_sub_cancel, add_comm, frac_zero, coin_zero, bind_pure, Bool.cond_false, add_assoc, induction', rw")
 :::en
 *Only white.* $`w` draws from an urn with $`w` white balls: all of them, surely.
 :::
@@ -290,7 +290,7 @@ rw [hyper_succ, frac_white, coin_one, pure_bind, Bool.cond_true, Nat.add_sub_can
 :::
 ::::
 
-::::leanonly (proof := "(w b : ℕ) : hyper w b (w + b) = pure w") (lemma := "hyper_all") (group := "chance.count") (uses := "zero_add, hyper_black, add_zero, hyper_white, add_assoc, hyper_succ, Nat.add_sub_cancel, add_right_comm, pure_bind, add_comm, cond_same, coin_unused, mul_zero, hyper_zero, bind_pure, prob_unused")
+::::leanonly (proof := "(w b : ℕ) : hyper w b (w + b) = pure w") (lemma := "hyper_all") (group := "chance.count") (uses := "zero_add, hyper_black, add_zero, hyper_white, add_assoc, hyper_succ, Nat.add_sub_cancel, add_right_comm, pure_bind, add_comm, cond_same, coin_unused, mul_zero, hyper_zero, bind_pure, prob_unused, induction', rw, simp_rw")
 :::en
 *Drawing all the balls.* Draw all $`w + b` balls, one after the other: whatever happens on the way, in the end you surely have all $`w` white ones.
 :::
@@ -318,7 +318,7 @@ rw [coin_unused]
 :::
 ::::
 
-::::leanonly (proof := "(w b : ℕ) : 1 - ((frac (w + 1) b : I) : ℝ) = (b : ℝ) / ((w : ℝ) + 1 + b)") (new := "frac_real") (group := "chance.count") (uses := "frac_real, Nat.cast_add, Nat.cast_one")
+::::leanonly (proof := "(w b : ℕ) : 1 - ((frac (w + 1) b : I) : ℝ) = (b : ℝ) / ((w : ℝ) + 1 + b)") (new := "frac_real") (group := "chance.count") (uses := "frac_real, Nat.cast_add, Nat.cast_one, field_simp, ring, rw")
 :::en
 *The share of black.* As in *Balance*, chances are compared as real numbers. One minus the share of white is the share of black. ($`w + 1` white balls: an empty urn has no shares.)
 :::
@@ -345,7 +345,7 @@ ring
 :::
 ::::
 
-::::leanonly (proof := "(w b : ℕ) : (do let X ← coin (frac w b); bif X then coin (frac w b) else coin (frac w b)) = coin (frac w b)") (group := "chance.count") (uses := "coin_stays")
+::::leanonly (proof := "(w b : ℕ) : (do let X ← coin (frac w b); bif X then coin (frac w b) else coin (frac w b)) = coin (frac w b)") (group := "chance.count") (uses := "coin_stays, apply, ring")
 :::en
 *Put back.* The first ball is drawn, looked at, and put back. Then the urn is the same after white and after black, and the second ball is white with the same chance as the first.
 :::
@@ -370,7 +370,7 @@ ring
 :::
 ::::
 
-:::::leanonly (proof := "(x y : ℝ) (h : x + y = 1) : x * y + y * x = ⟦2 * x * (1 - x) ‖ x * (1 - x), 2 * x * (1 - x), 1 - x * x⟧") (group := "chance.count") (uses := "-")
+:::::leanonly (proof := "(x y : ℝ) (h : x + y = 1) : x * y + y * x = ⟦2 * x * (1 - x) ‖ x * (1 - x), 2 * x * (1 - x), 1 - x * x⟧") (group := "chance.count") (uses := "linear_combination")
 ::::hint (anchor := "gap")
 :::en
 White then black, or black then white; and $`y` is $`1 - x`.
@@ -405,7 +405,7 @@ linear_combination 2 * x * h
 :::
 :::::
 
-::::leanonly (proof := "(w b : ℕ) : (do let X ← coin (frac (w + 1) (b + 1)); bif X then coin (frac w (b + 1)) else coin (frac (w + 1) b)) = coin (⟦frac (w + 1) (b + 1) ‖ frac w (b + 1), frac (w + 1) b, frac (w + 1) (b + 1), frac w b⟧)") (group := "chance.count") (uses := "coin_stays, frac_real")
+::::leanonly (proof := "(w b : ℕ) : (do let X ← coin (frac (w + 1) (b + 1)); bif X then coin (frac w (b + 1)) else coin (frac (w + 1) b)) = coin (⟦frac (w + 1) (b + 1) ‖ frac w (b + 1), frac (w + 1) b, frac (w + 1) (b + 1), frac w b⟧)") (group := "chance.count") (uses := "coin_stays, frac_real, apply, field_simp, ring, rw, simp")
 :::en
 *Boss: the second ball.* An urn with $`w + 1` white and $`b + 1` black balls. The first ball is drawn and put aside, unseen. The second ball: white with which chance?
 :::

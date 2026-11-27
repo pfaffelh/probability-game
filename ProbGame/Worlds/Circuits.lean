@@ -45,7 +45,7 @@ und die Aussage sagt, dass sie die Zieltafel ist. Die Lean-Hälfte ist hier kurz
 Welten danach.
 :::
 
-:::::circuit (height := "300") (inputs := "x") (gates := "") (table := "01") (goal := "x") (shape := "x") (proof := "(x : Bool) : x = x") (new := "rfl") (play := "x>out") (uses := "-")
+:::::circuit (height := "300") (inputs := "x") (gates := "") (table := "01") (goal := "x") (shape := "x") (proof := "(x : Bool) : x = x") (new := "rfl") (play := "x>out") (uses := "rfl")
 :::en
 *A wire.* The output is to be the input itself. Wire `x` to the output: tap `x`, then the output.
 :::
@@ -105,7 +105,7 @@ rfl
 :::
 :::::
 
-:::::circuit (height := "400") (inputs := "x") (gates := "not") (table := "10") (goal := "!x") (shape := "!x") (proof := ": (!true) = false") (lemma := "Bool.not_true") (play := "a=not; x>a.0; a>out") (uses := "-")
+:::::circuit (height := "400") (inputs := "x") (gates := "not") (table := "10") (goal := "!x") (shape := "!x") (proof := ": (!true) = false") (lemma := "Bool.not_true") (play := "a=not; x>a.0; a>out") (uses := "rfl")
 :::en
 *Not.* The output is to be the other value: `false` for `true`, and `true` for `false`. Drag `not`
 onto the board, then wire `x` to it and it to the output.
@@ -167,7 +167,7 @@ rfl
 :::
 :::::
 
-::::leanonly (proof := ": (!false) = true") (lemma := "Bool.not_false") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "-")
+::::leanonly (proof := ": (!false) = true") (lemma := "Bool.not_false") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "rfl")
 :::hint (anchor := "none")
 :::
 
@@ -196,14 +196,14 @@ rfl
 :::
 ::::
 
-:::::leanonly (proof := ": (!(!true)) = true") (context := "Lean/WorldBool.lean") (group := "bool") (new := "rw") (uses := "Bool.not_true, Bool.not_false")
+:::::leanonly (proof := ": (!(!true)) = true") (context := "Lean/WorldBool.lean") (group := "bool") (new := "rw") (uses := "Bool.not_true, Bool.not_false, rw")
 ::::hint (anchor := "item:rw")
 :::en
-`rw [h]` rewrites the goal with a theorem `h : a = b`: every `a` becomes `b`. Use your theorems `Bool.not_true` and `Bool.not_false`.
+`rw [h]` rewrites the goal with a theorem `h : a = b`: every `a` becomes `b`.
 :::
 
 :::de
-`rw [h]` schreibt das Ziel mit einem Satz `h : a = b` um: Jedes `a` wird zu `b`. Benutze deine Sätze `Bool.not_true` und `Bool.not_false`.
+`rw [h]` schreibt das Ziel mit einem Satz `h : a = b` um: Jedes `a` wird zu `b`.
 :::
 ::::
 
@@ -233,7 +233,7 @@ rw [Bool.not_true, Bool.not_false]
 :::
 :::::
 
-:::::circuit (height := "500") (inputs := "x") (gates := "not") (table := "01") (goal := "x") (shape := "!(!x)") (start := "a=not; x>a.0") (proof := "(x : Bool) : (!(!x)) = x") (lemma := "Bool.not_not") (new := "cases") (play := "b=not; a>b.0; b>out") (uses := "-")
+:::::circuit (height := "500") (inputs := "x") (gates := "not") (table := "01") (goal := "x") (shape := "!(!x)") (start := "a=not; x>a.0") (proof := "(x : Bool) : (!(!x)) = x") (lemma := "Bool.not_not") (new := "cases") (play := "b=not; a>b.0; b>out") (uses := "cases, rfl")
 :::hint (anchor := "none")
 :::
 
@@ -291,7 +291,7 @@ rfl
 :::
 :::::
 
-:::::circuit (height := "500") (inputs := "x") (gates := "not, or, and") (table := "11") (goal := "true") (proof := "(x : Bool) : (x || !x) = true") (lemma := "Bool.or_not_self") (play := "a=not; b=or; x>a.0; x>b.0; a>b.1; b>out") (uses := "-")
+:::::circuit (height := "500") (inputs := "x") (gates := "not, or, and") (table := "11") (goal := "true") (proof := "(x : Bool) : (x || !x) = true") (lemma := "Bool.or_not_self") (play := "a=not; b=or; x>a.0; x>b.0; a>b.1; b>out") (uses := "cases, rfl")
 :::hint (anchor := "none")
 :::
 
@@ -321,7 +321,7 @@ rfl
 :::
 :::::
 
-::::leanonly (proof := "(a b : Bool) : (bif true then a else b) = ⟦a ‖ a, b, true, false⟧") (lemma := "Bool.cond_true") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "-")
+::::leanonly (proof := "(a b : Bool) : (bif true then a else b) = ⟦a ‖ a, b, true, false⟧") (lemma := "Bool.cond_true") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "rfl")
 :::en
 *bif with true.* `bif` is Lean's *Boolean if*: `bif c then a else b` is if-then-else with a
 condition `c : Bool`.
@@ -339,7 +339,7 @@ rfl
 :::
 ::::
 
-::::circuit (height := "500") (inputs := "x") (gates := "not, or, and") (table := "01") (goal := "x") (proof := "(x : Bool) : (x && x) = x") (lemma := "Bool.and_self") (play := "a=and; x>a.0; x>a.1; a>out") (uses := "-")
+::::circuit (height := "500") (inputs := "x") (gates := "not, or, and") (table := "01") (goal := "x") (proof := "(x : Bool) : (x && x) = x") (lemma := "Bool.and_self") (play := "a=and; x>a.0; x>a.1; a>out") (uses := "cases, rfl")
 :::hint (anchor := "none")
 :::
 
@@ -368,7 +368,7 @@ rfl
 :::
 ::::
 
-::::circuit (height := "500") (inputs := "x") (gates := "not, or, and") (table := "00") (goal := "false") (proof := "(x : Bool) : (x && !x) = false") (lemma := "Bool.and_not_self") (play := "a=not; b=and; x>a.0; x>b.0; a>b.1; b>out") (uses := "-")
+::::circuit (height := "500") (inputs := "x") (gates := "not, or, and") (table := "00") (goal := "false") (proof := "(x : Bool) : (x && !x) = false") (lemma := "Bool.and_not_self") (play := "a=not; b=and; x>a.0; x>b.0; a>b.1; b>out") (uses := "cases, rfl")
 :::hint (anchor := "none")
 :::
 
@@ -398,7 +398,7 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(a b : Bool) : (bif false then a else b) = ⟦b ‖ a, b, true, false⟧") (lemma := "Bool.cond_false") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "-")
+::::leanonly (proof := "(a b : Bool) : (bif false then a else b) = ⟦b ‖ a, b, true, false⟧") (lemma := "Bool.cond_false") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "rfl")
 :::hint (anchor := "none")
 :::
 
@@ -416,7 +416,7 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(c a : Bool) : (bif c then a else a) = ⟦a ‖ a, c, true, false⟧") (lemma := "Bool.cond_self") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "Bool.cond_false, Bool.cond_true")
+::::leanonly (proof := "(c a : Bool) : (bif c then a else a) = ⟦a ‖ a, c, true, false⟧") (lemma := "Bool.cond_self") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "Bool.cond_false, Bool.cond_true, cases, rw")
 :::hint (anchor := "none")
 :::
 
@@ -449,7 +449,7 @@ Aussagen beweist es?
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "not, and") (table := "0111") (goal := "x || y") (proof := "(x y : Bool) : (x || y) = !(!x && !y)") (lemma := "or_eq") (play := "a=not; b=not; c=and; d=not; x>a.0; y>b.0; a>c.0; b>c.1; c>d.0; d>out") (uses := "-")
+::::circuit (inputs := "x y") (gates := "not, and") (table := "0111") (goal := "x || y") (proof := "(x y : Bool) : (x || y) = !(!x && !y)") (lemma := "or_eq") (play := "a=not; b=not; c=and; d=not; x>a.0; y>b.0; a>c.0; b>c.1; c>d.0; d>out") (uses := "<;>, cases, rfl")
 :::hint (anchor := "none")
 :::
 
@@ -477,7 +477,7 @@ cases x <;> cases y <;> rfl
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "and, or, not") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : ((x || y) && !(x && y)) = (bif x then (bif y then false else true) else (bif y then true else false))") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out") (uses := "-")
+::::circuit (inputs := "x y") (gates := "and, or, not") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : ((x || y) && !(x && y)) = (bif x then (bif y then false else true) else (bif y then true else false))") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out") (uses := "<;>, cases, rfl")
 :::hint (anchor := "none")
 :::
 

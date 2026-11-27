@@ -49,7 +49,7 @@ Die Schaltung, von oben nach unten gelesen, ist ein `do`-Block in Lean: jede Mü
 Ergebnis, mit dem, was die Bausteine rechnen. Die Beweise lernen die Regeln der `do`-Blöcke eine nach
 der anderen, wenn ein Level sie braucht; zuerst, was ein `do`-Block ist.
 :::
-:::::circuit (height := "440") (inputs := "x y") (gates := "") (coins := "p p") (target := "bool true:p false:1-p") (start := "a=and; a>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; pure (x && x)) = coin p") (new := "bind_pure") (play := "x>a.0; x>a.1") (uses := "Bool.and_self, bind_pure, pure_bind")
+:::::circuit (height := "440") (inputs := "x y") (gates := "") (coins := "p p") (target := "bool true:p false:1-p") (start := "a=and; a>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; pure (x && x)) = coin p") (new := "bind_pure") (play := "x>a.0; x>a.1") (uses := "Bool.and_self, bind_pure, pure_bind, simp_rw")
 ::::hint (anchor := "statement")
 :::en
 `x` is not a random variable: it is the name of one draw from `coin p`, and the whole `do` block is a
@@ -100,7 +100,7 @@ simp_rw [Bool.and_self, bind_pure]
 :::
 :::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (do let x ← μ; f x) = μ.bind f") (uses := "-")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (do let x ← μ; f x) = μ.bind f") (uses := "rfl")
 :::en
 *`do` is `bind`.* `do let x ← μ; f x` draws `x` from `μ` and goes on with `f x`: `f` says, for each
 result of the first draw, how to go on. As a distribution, this is `μ.bind f`, as `Measure.bind` for
@@ -128,7 +128,7 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (do let x ← μ; f x) true = μ true * f true true + μ false * f false true") (new := "bind_apply") (lemma := "bind_true") (uses := "bind_apply, Fintype.sum_bool")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (do let x ← μ; f x) true = μ true * f true true + μ false * f false true") (new := "bind_apply") (lemma := "bind_true") (uses := "bind_apply, Fintype.sum_bool, rw")
 :::en
 *Two ways to true.* The mass of `do let x ← μ; f x` at `true` comes two ways: the first draw is
 `true`, or it is `false`.
@@ -170,7 +170,7 @@ rw [bind_apply, Fintype.sum_bool]
 :::
 ::::
 
-:::::circuit (height := "440") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:2p-p^2 false:(1-p)^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x || y)) true = (↑p + ↑(σ p) * ↑p : ℝ≥0∞)") (play := "a=or; x>a.0; y>a.1; a>out") (new := "simp") (uses := "bind_true, bind_false")
+:::::circuit (height := "440") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:2p-p^2 false:(1-p)^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x || y)) true = (↑p + ↑(σ p) * ↑p : ℝ≥0∞)") (play := "a=or; x>a.0; y>a.1; a>out") (new := "simp") (uses := "bind_true, bind_false, rw, simp")
 ::::hint (anchor := "item:simp")
 :::en
 `simp`: the simplifier, with all rules marked simp.
@@ -231,7 +231,7 @@ dieser Aussagen beweist es?
 :::
 ::::
 
-::::circuit (height := "440") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:p^2 false:1-p^2") (context := "Lean/Rules.lean") (proof := "(p q : I) : (do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)") (lemma := "coin_and") (new := "mass_mul") (play := "a=and; x>a.0; y>a.1; a>out") (uses := "bool_ext, bind_true, mass_mul, bind_false")
+::::circuit (height := "440") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:p^2 false:1-p^2") (context := "Lean/Rules.lean") (proof := "(p q : I) : (do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)") (lemma := "coin_and") (new := "mass_mul") (play := "a=and; x>a.0; y>a.1; a>out") (uses := "bool_ext, bind_true, mass_mul, bind_false, apply, rw, simp")
 :::en
 *Both `true`.* Two coins, and `true` only when both show `true`.
 :::
@@ -271,7 +271,7 @@ simp [mass_mul]
 :::
 ::::
 
-::::leanonly (proof := "(a b : ℝ≥0∞) : a * b + b * a = 2 * a * b") (new := "ring") (uses := "-")
+::::leanonly (proof := "(a b : ℝ≥0∞) : a * b + b * a = 2 * a * b") (new := "ring") (uses := "ring")
 :::en
 *The same product twice.* `a * b` and `b * a` are the same number. The simplifier does not use that:
 it would turn the product round for ever.
@@ -303,7 +303,7 @@ ring
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:2p(1-p) false:p^2+(1-p)^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure ((x || y) && !(x && y))) true = (2 * ↑p * ↑(σ p) : ℝ≥0∞)") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out") (uses := "bind_true, bind_false")
+::::circuit (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:2p(1-p) false:p^2+(1-p)^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure ((x || y) && !(x && y))) true = (2 * ↑p * ↑(σ p) : ℝ≥0∞)") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out") (uses := "bind_true, bind_false, ring, rw, simp")
 :::en
 *Boss: exactly one `true`*, without a function for it: at least one, but not both.
 :::

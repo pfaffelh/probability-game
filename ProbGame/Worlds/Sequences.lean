@@ -18,7 +18,7 @@ Throwing $`n` coins one after the other gives a list of $`n` outcomes: `iidSeque
 $`n` Münzen nacheinander werfen ergibt eine Liste von $`n` Ergebnissen: `iidSequence n (coin p)`, eine Verteilung auf Listen (unabhängig, identisch verteilt). Die Masse einer Liste hängt nur davon ab, wie viele `true` und wie viele `false` sie hat. Der Endgegner: `binom p n` ist die Anzahl der `true` darin. Nur in Lean.
 :::
 
-::::leanonly (proof := "(p : I) : iidSequence 1 (coin p) = (do let y ← coin p; pure [y])") (new := "seq_zero, seq_succ") (group := "chance.count") (uses := "seq_succ, seq_zero, pure_bind, bind_pure")
+::::leanonly (proof := "(p : I) : iidSequence 1 (coin p) = (do let y ← coin p; pure [y])") (new := "seq_zero, seq_succ") (group := "chance.count") (uses := "seq_succ, seq_zero, pure_bind, bind_pure, rw, simp_rw")
 :::en
 *One throw, as a list.* `iidSequence n μ` draws $`n` times from `μ`, independently, and gives the list of the outcomes: a distribution on lists.
 :::
@@ -62,7 +62,7 @@ simp_rw [pure_bind]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : iidSequence 2 (coin p) [true, false] = ⟦↑p * ↑(σ p) ‖ ↑p * ↑p, ↑p + ↑(σ p), ↑p * ↑(σ p), ↑p⟧") (new := "seq_succ_apply, seq_zero_nil, mul_one") (group := "chance.count") (uses := "seq_succ_apply, seq_zero_nil, mul_one, coin_true, coin_false, one_mul, coin_total")
+::::leanonly (proof := "(p : I) : iidSequence 2 (coin p) [true, false] = ⟦↑p * ↑(σ p) ‖ ↑p * ↑p, ↑p + ↑(σ p), ↑p * ↑(σ p), ↑p⟧") (new := "seq_succ_apply, seq_zero_nil, mul_one") (group := "chance.count") (uses := "seq_succ_apply, seq_zero_nil, mul_one, coin_true, coin_false, one_mul, coin_total, rw")
 :::en
 *The mass of a sequence.* Independent: the mass of a list is the product of the masses of its entries. First `true`, then `false`.
 :::
@@ -85,7 +85,7 @@ rw [seq_succ_apply, seq_succ_apply, seq_zero_nil, mul_one, coin_true, coin_false
 :::
 ::::
 
-::::leanonly (proof := "(l : List Bool) : (true :: l).count true = 1 + l.count true") (new := "count_true_cons, Bool.toNat_true") (group := "chance.count") (uses := "count_true_cons, Bool.toNat_true")
+::::leanonly (proof := "(l : List Bool) : (true :: l).count true = 1 + l.count true") (new := "count_true_cons, Bool.toNat_true") (group := "chance.count") (uses := "count_true_cons, Bool.toNat_true, rw")
 :::en
 *Counting true.* `l.count true` is the number of `true` in the list `l`. One in front counts as its number, `toNat`.
 :::
@@ -108,7 +108,7 @@ rw [count_true_cons, Bool.toNat_true]
 :::
 ::::
 
-::::leanonly (proof := "(l : List Bool) : (true :: l).count false = l.count false") (new := "count_false_cons, Bool.toNat_false") (group := "chance.count") (uses := "count_false_cons, Bool.not_true, Bool.toNat_false, zero_add, Bool.not_false, add_zero, mul_zero")
+::::leanonly (proof := "(l : List Bool) : (true :: l).count false = l.count false") (new := "count_false_cons, Bool.toNat_false") (group := "chance.count") (uses := "count_false_cons, Bool.not_true, Bool.toNat_false, zero_add, Bool.not_false, add_zero, mul_zero, rw")
 :::en
 *Counting false.* A `true` in front is no `false` more.
 :::
@@ -131,7 +131,7 @@ rw [count_false_cons, Bool.not_true, Bool.toNat_false, zero_add]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : iidSequence ([] : List Bool).length (coin p) [] = ↑p ^ ([] : List Bool).count true * ↑(σ p) ^ ([] : List Bool).count false") (new := "List.length_nil, List.count_nil") (group := "chance.count") (uses := "List.length_nil, seq_zero_nil, List.count_nil")
+::::leanonly (proof := "(p : I) : iidSequence ([] : List Bool).length (coin p) [] = ↑p ^ ([] : List Bool).count true * ↑(σ p) ^ ([] : List Bool).count false") (new := "List.length_nil, List.count_nil") (group := "chance.count") (uses := "List.length_nil, seq_zero_nil, List.count_nil, ring, rw")
 :::en
 *The empty list.* A list `l` of throws has a mass: a factor $`p` for every `true` in it, a factor $`1 - p` for every `false`. First for the empty list: no throw, no factor.
 :::
@@ -155,7 +155,7 @@ ring
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (y : Bool) (l : List Bool) : coin p y * (↑p ^ l.count true * ↑(σ p) ^ l.count false) = ↑p ^ (y :: l).count true * ↑(σ p) ^ (y :: l).count false") (lemma := "mass_cons") (group := "chance.count") (uses := "count_true_cons, count_false_cons, coin_false, Bool.toNat_false, Bool.not_false, Bool.toNat_true, coin_true, Bool.not_true, coin_total")
+::::leanonly (proof := "(p : I) (y : Bool) (l : List Bool) : coin p y * (↑p ^ l.count true * ↑(σ p) ^ l.count false) = ↑p ^ (y :: l).count true * ↑(σ p) ^ (y :: l).count false") (lemma := "mass_cons") (group := "chance.count") (uses := "count_true_cons, count_false_cons, coin_false, Bool.toNat_false, Bool.not_false, Bool.toNat_true, coin_true, Bool.not_true, coin_total, cases, ring, rw")
 :::en
 *One more in front.* One more throw `y` in front of the list `l`: its mass `coin p y` is one factor more, $`p` or $`1 - p`.
 :::
@@ -185,7 +185,7 @@ ring
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (l : List Bool) : iidSequence l.length (coin p) l = ↑p ^ l.count true * ↑(σ p) ^ l.count false") (lemma := "seq_mass") (new := "List.length_cons") (group := "chance.count") (uses := "List.length_nil, seq_zero_nil, List.count_nil, List.length_cons, seq_succ_apply, mass_cons")
+::::leanonly (proof := "(p : I) (l : List Bool) : iidSequence l.length (coin p) l = ↑p ^ l.count true * ↑(σ p) ^ l.count false") (lemma := "seq_mass") (new := "List.length_cons") (group := "chance.count") (uses := "List.length_nil, seq_zero_nil, List.count_nil, List.length_cons, seq_succ_apply, mass_cons, induction', ring, rw")
 :::en
 *The mass of a list.* Whatever the order: a list with $`k` times `true` and $`m` times `false` has the mass $`p^k (1 - p)^m`. (How many such lists there are: *Binomial*.)
 :::
@@ -213,7 +213,7 @@ rw [List.length_cons, seq_succ_apply, ih, mass_cons]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) (n : ℕ) : binom p n = (iidSequence n (coin p)).map (fun l => l.count true)") (lemma := "binom_eq_count") (group := "chance.count") (uses := "seq_zero, map_pure, binom_zero, binom_succ, seq_succ, map_bind, bind_map_left, count_true_cons")
+::::leanonly (proof := "(p : I) (n : ℕ) : binom p n = (iidSequence n (coin p)).map (fun l => l.count true)") (lemma := "binom_eq_count") (group := "chance.count") (uses := "seq_zero, map_pure, binom_zero, binom_succ, seq_succ, map_bind, bind_map_left, count_true_cons, induction', rfl, rw, simp_rw")
 :::en
 *Boss: binom counts.* `binom p n` was defined by recursion, one coin and then the rest. It is what one thinks: throw $`n` coins and count the `true`.
 :::

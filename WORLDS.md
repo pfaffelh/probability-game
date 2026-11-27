@@ -210,6 +210,12 @@ back: a balance.
 its statement, or a new tactic and what it does: never the sequence of tactics, and never the
 answer to a gap. No level has a folded *Tip* line any more (before: 29, and 113 of 129 before
 that). A tactic is written with its arguments only in the level that introduces it.
+A new tactic with a tip of its own shows only that tip, not the card of the tactic.
+
+**Tactics per world.** A world has the tactics that its levels use (their solutions and quizzes,
+written into `uses` by `tests/uses.py`), as far as earned; `rfl`, `exact`, `rw`, `cases` and `ring`
+stay in every world once earned. So `linear_combination` and `field_simp` are there only in Balance
+and Hypergeometric, `revert` and `decide` only in Maps and Multi-Stage Experiments.
 
 **Questions.** Levels with a gap in the statement, only in Lean levels (on a board the answer can be read
 off the board): Bool 3, Masses 6, One Coin 10, Maps 6, Two Coins 1, Laws of `do` 5, Counting 1, Balance 3, Sequences 1, Binomial 2, Geometric 6, Thinning 2, Hypergeometric 6. Five quizzes.

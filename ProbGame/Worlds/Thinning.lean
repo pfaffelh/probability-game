@@ -18,7 +18,7 @@ A coin is *thinned* when each `true` is kept only with probability $`q`, decided
 Eine Münze wird *ausgedünnt*, wenn jedes `true` nur mit Wahrscheinlichkeit $`q` behalten wird; eine zweite Münze entscheidet. Ausgedünnt bleibt eine Münze eine Münze, eine geometrische Verteilung geometrisch und eine Binomialverteilung binomial.
 :::
 
-::::leanonly (proof := "(p q : I) : (do let x ← coin p; bif x then coin q else pure false) = coin ⟦p * q⟧") (lemma := "coin_thin") (group := "chance.count") (uses := "bool_ext, bind_true, mass_mul, bind_false")
+::::leanonly (proof := "(p q : I) : (do let x ← coin p; bif x then coin q else pure false) = coin ⟦p * q⟧") (lemma := "coin_thin") (group := "chance.count") (uses := "bool_ext, bind_true, mass_mul, bind_false, apply, rw, simp")
 :::en
 *Keeping with probability q.* A coin `p` is thrown; a `true` is kept with probability $`q` (a second coin `q` decides), a `false` stays `false`. What is left is again a coin: the coin is *thinned*. With which probability does it show `true`? Fill the gap, then prove it.
 :::
@@ -46,7 +46,7 @@ rw [mass_mul]
 :::
 ::::
 
-::::leanonly (proof := "(p q : I) : (do let x ← coin p; bif x then coin q else pure false) = (do let x ← coin q; bif x then coin p else pure false)") (group := "chance.count") (uses := "coin_thin, mul_comm")
+::::leanonly (proof := "(p q : I) : (do let x ← coin p; bif x then coin q else pure false) = (do let x ← coin q; bif x then coin p else pure false)") (group := "chance.count") (uses := "coin_thin, mul_comm, rw")
 :::en
 *Which first?* First `p`, then `q`, or first `q`, then `p`: the same coin.
 :::
@@ -69,7 +69,7 @@ rw [coin_thin, coin_thin, mul_comm]
 :::
 ::::
 
-::::circuit (route := "count") (inputs := "x y z") (gates := "") (coins := "p ?|? ?|?") (target := "bernoulli p^3") (start := "x>y.0; y>z.0; z>out") (context := "Lean/Rules.lean") (proof := "(p q r : I) : (do let x ← coin p; let y ← (bif x then coin q else pure false); bif y then coin r else pure false) = coin (p * q * r)") (play := "y.T=p; y.F=0; z.T=p; z.F=0") (uses := "bind_assoc, coin_thin")
+::::circuit (route := "count") (inputs := "x y z") (gates := "") (coins := "p ?|? ?|?") (target := "bernoulli p^3") (start := "x>y.0; y>z.0; z>out") (context := "Lean/Rules.lean") (proof := "(p q r : I) : (do let x ← coin p; let y ← (bif x then coin q else pure false); bif y then coin r else pure false) = coin (p * q * r)") (play := "y.T=p; y.F=0; z.T=p; z.F=0") (uses := "bind_assoc, coin_thin, rw")
 :::en
 *Thinning twice.* Thinned with $`q`, and the rest thinned again with $`r`.
 
@@ -98,7 +98,7 @@ rw [← bind_assoc, coin_thin, coin_thin]
 :::
 ::::
 
-::::leanonly (proof := "(p q : I) : geom ⟦p * q⟧ = (do let x ← coin p; let y ← (bif x then coin q else pure false); bif y then pure 0 else (do let Y ← geom ⟦p * q⟧; pure (1 + Y)))") (group := "chance.count") (uses := "bind_assoc, coin_thin, geom_first")
+::::leanonly (proof := "(p q : I) : geom ⟦p * q⟧ = (do let x ← coin p; let y ← (bif x then coin q else pure false); bif y then pure 0 else (do let Y ← geom ⟦p * q⟧; pure (1 + Y)))") (group := "chance.count") (uses := "bind_assoc, coin_thin, geom_first, exact, rw")
 :::en
 *Waiting for a kept true.* Throw a coin `p` again and again; each `true` is kept with probability $`q` (a coin `q` decides). How many throws before the first `true` that is kept? Each throw, thinned, is a coin again: so the waiting is geometric, with which parameter? On the right: one thinned throw; on `true` it is $`0`, else start again and add one.
 :::
@@ -126,7 +126,7 @@ exact geom_first _
 :::
 ::::
 
-::::circuit (height := "640") (route := "count") (inputs := "x y") (gates := "toNat") (coins := "p ?|?") (target := "nat 0:1-p^2 1:p^2") (start := "x>y.0") (context := "Lean/Rules.lean") (proof := "(p q : I) : (do let C ← coin p; binom q C.toNat) = (do let B ← coin (p * q); pure B.toNat)") (lemma := "coin_bind_binom") (play := "y.T=p; y.F=0; a=toNat; y>a.0; a>out") (uses := "coin_thin, bind_assoc, binom_zero, binom_succ")
+::::circuit (height := "640") (route := "count") (inputs := "x y") (gates := "toNat") (coins := "p ?|?") (target := "nat 0:1-p^2 1:p^2") (start := "x>y.0") (context := "Lean/Rules.lean") (proof := "(p q : I) : (do let C ← coin p; binom q C.toNat) = (do let B ← coin (p * q); pure B.toNat)") (lemma := "coin_bind_binom") (play := "y.T=p; y.F=0; a=toNat; y>a.0; a>out") (uses := "coin_thin, bind_assoc, binom_zero, binom_succ, cases, congr, ext, rw, simp, simp_rw")
 :::en
 *Thinning, counted.* A coin `p`, and then as many coins `q` as it shows (one or none), counted: that is your thinned coin from the first level, counted.
 
@@ -161,7 +161,7 @@ simp [binom_succ, binom_zero]
 :::
 ::::
 
-::::leanonly (proof := "(p q : I) (f : ℕ → DiscreteMeasure ℕ) : (do let C ← coin p; let U ← binom q C.toNat; f U) = (do let B ← coin (p * q); f B.toNat)") (lemma := "coin_bind_binom'") (group := "chance.count") (uses := "bind_assoc, coin_bind_binom, pure_bind, bind_pure")
+::::leanonly (proof := "(p q : I) (f : ℕ → DiscreteMeasure ℕ) : (do let C ← coin p; let U ← binom q C.toNat; f U) = (do let B ← coin (p * q); f B.toNat)") (lemma := "coin_bind_binom'") (group := "chance.count") (uses := "bind_assoc, coin_bind_binom, pure_bind, bind_pure, rw, simp_rw")
 :::en
 *With something after it.* The same, when the `do` block goes on.
 :::
@@ -185,7 +185,7 @@ simp_rw [pure_bind]
 :::
 ::::
 
-::::leanonly (proof := "(p q : I) : (do let x ← coin p; let y ← coin q; pure (x && !y)) = (do let y ← coin q; let x ← coin p; pure (x && !y))") (new := "bind_comm") (group := "chance.count") (uses := "bind_comm")
+::::leanonly (proof := "(p q : I) : (do let x ← coin p; let y ← coin q; pure (x && !y)) = (do let y ← coin q; let x ← coin p; pure (x && !y))") (new := "bind_comm") (group := "chance.count") (uses := "bind_comm, rw")
 :::en
 *Which coin first?* Two coins, thrown independently: it does not matter which is thrown first.
 :::
@@ -208,7 +208,7 @@ rw [bind_comm]
 :::
 ::::
 
-::::leanonly (proof := "(p q r : I) : (do let z ← coin r; let x ← coin p; let y ← coin q; pure (z && x && !y)) = (do let z ← coin r; let y ← coin q; let x ← coin p; pure (z && x && !y))") (group := "chance.count") (uses := "bind_comm")
+::::leanonly (proof := "(p q r : I) : (do let z ← coin r; let x ← coin p; let y ← coin q; pure (z && x && !y)) = (do let z ← coin r; let y ← coin q; let x ← coin p; pure (z && x && !y))") (group := "chance.count") (uses := "bind_comm, simp_rw")
 :::en
 *Swapping further down.* The same two coins, but a third one is thrown before them.
 :::
@@ -234,7 +234,7 @@ simp_rw [bind_comm (coin p) (coin q)]
 :::
 ::::
 
-::::circuit (height := "660") (size := "big") (route := "count") (inputs := "x y z w") (gates := "toNat, plus") (coins := "p ?|? p ?|?") (target := "nat 0:(1-p^2)^2 1:2p^2(1-p^2) 2:p^4") (start := "x>y.0; z>w.0") (context := "Lean/Rules.lean") (proof := "(p q : I) (n : ℕ) : (do let X ← binom p n; binom q X) = binom (p * q) n") (lemma := "binom_thin") (play := "y.T=p; y.F=0; w.T=p; w.F=0; a=toNat; b=toNat; c=plus; y>a.0; w>b.0; a>c.0; b>c.1; c>out") (uses := "binom_zero, pure_bind, binom_succ, bind_assoc, binom_add, bind_comm, coin_bind_binom', bind_pure")
+::::circuit (height := "660") (size := "big") (route := "count") (inputs := "x y z w") (gates := "toNat, plus") (coins := "p ?|? p ?|?") (target := "nat 0:(1-p^2)^2 1:2p^2(1-p^2) 2:p^4") (start := "x>y.0; z>w.0") (context := "Lean/Rules.lean") (proof := "(p q : I) (n : ℕ) : (do let X ← binom p n; binom q X) = binom (p * q) n") (lemma := "binom_thin") (play := "y.T=p; y.F=0; w.T=p; w.F=0; a=toNat; b=toNat; c=plus; y>a.0; w>b.0; a>c.0; b>c.1; c>out") (uses := "binom_zero, pure_bind, binom_succ, bind_assoc, binom_add, bind_comm, coin_bind_binom', bind_pure, induction', rw, simp_rw")
 :::en
 *Boss: thinning a binomial.* Of $`n` throws with $`p`, each `true` is kept with probability $`q`. The number kept is binomial again: with which parameter?
 

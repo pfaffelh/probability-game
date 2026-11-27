@@ -26,7 +26,7 @@ Wahrscheinlichkeit $`p` `true` zeigt und mit Wahrscheinlichkeit $`1 - p` `false`
 `(coin p : DiscreteMeasure Bool)`.
 :::
 
-:::::circuit (height := "400") (inputs := "x") (gates := "") (coins := "p") (target := "bool true:p false:1-p") (context := "Lean/Rules.lean") (proof := "(p : I) : coin p true = p") (lemma := "coin_true") (play := "x>out") (uses := "-")
+:::::circuit (height := "400") (inputs := "x") (gates := "") (coins := "p") (target := "bool true:p false:1-p") (context := "Lean/Rules.lean") (proof := "(p : I) : coin p true = p") (lemma := "coin_true") (play := "x>out") (uses := "rfl")
 :::en
 *The mass at true.* Wire the coin `x` to the output.
 :::
@@ -100,7 +100,7 @@ rfl
 :::
 :::::
 
-:::::leanonly (proof := "(p : I) : coin p false = ⟦σ p ‖ p, σ p, 1, 0⟧") (lemma := "coin_false") (uses := "-")
+:::::leanonly (proof := "(p : I) : coin p false = ⟦σ p ‖ p, σ p, 1, 0⟧") (lemma := "coin_false") (uses := "rfl")
 ::::hint (anchor := "statement")
 :::en
 We have `p : I`, and `I` is a subtype of `ℝ`: the real numbers `x` with `0 ≤ x ≤ 1`. As a mass, `p`
@@ -139,7 +139,7 @@ rfl
 :::
 :::::
 
-:::::leanonly (proof := "(p : I) : coin p true = p ∧ coin p false = σ p") (new := "constructor") (uses := "-")
+:::::leanonly (proof := "(p : I) : coin p true = p ∧ coin p false = σ p") (new := "constructor") (uses := "constructor, rfl")
 ::::hint (anchor := "item:constructor")
 :::en
 `constructor`: a goal `A ∧ B` becomes two goals, `A` and `B`.
@@ -174,7 +174,7 @@ rfl
 :::
 :::::
 
-::::leanonly (proof := "(p : I) : 0 + coin p true = p") (new := "zero_add") (uses := "zero_add, coin_true, add_zero, mul_zero, coin_false, coin_total")
+::::leanonly (proof := "(p : I) : 0 + coin p true = p") (new := "zero_add") (uses := "zero_add, coin_true, add_zero, mul_zero, coin_false, coin_total, rw")
 :::en
 *Zero plus.* Not every rule is a definition: `zero_add : 0 + a = a` is a rule of arithmetic, given
 here (it is proved in Mathlib, not by `rfl`). A rule is used by rewriting with it, with `rw`.
@@ -204,7 +204,7 @@ rw [coin_true]
 :::
 ::::
 
-::::leanonly (proof := "(x y : ℝ≥0∞) : ∑ a, (bif a then x else y) = x + y") (new := "Fintype.sum_bool") (uses := "Fintype.sum_bool, Bool.cond_true, Bool.cond_false")
+::::leanonly (proof := "(x y : ℝ≥0∞) : ∑ a, (bif a then x else y) = x + y") (new := "Fintype.sum_bool") (uses := "Fintype.sum_bool, Bool.cond_true, Bool.cond_false, rw")
 :::en
 *A sum over Bool.* A move collects masses: it adds up the masses of all points that go to the same
 place. So we need sums. `∑ a, g a` is the sum of `g a` over all points `a` of a finite type; over `Bool`
@@ -235,7 +235,7 @@ rw [Fintype.sum_bool, Bool.cond_true, Bool.cond_false]
 :::
 ::::
 
-::::leanonly (proof := "(c : Bool) : (c == true) = ⟦c ‖ c, !c, true⟧") (lemma := "beq_true") (uses := "-")
+::::leanonly (proof := "(c : Bool) : (c == true) = ⟦c ‖ c, !c, true⟧") (lemma := "beq_true") (uses := "<;>, cases, rfl")
 :::hint (anchor := "none")
 :::
 
@@ -264,7 +264,7 @@ cases c <;> rfl
 :::
 ::::
 
-:::::leanonly (proof := "(b : Bool) : (true == b) = ⟦b ‖ b, !b, true⟧") (lemma := "Bool.true_beq") (new := "beq_self_eq_true") (uses := "beq_self_eq_true")
+:::::leanonly (proof := "(b : Bool) : (true == b) = ⟦b ‖ b, !b, true⟧") (lemma := "Bool.true_beq") (new := "beq_self_eq_true") (uses := "beq_self_eq_true, cases, rfl, rw")
 ::::hint (anchor := "item:beq_self_eq_true")
 :::en
 `beq_self_eq_true : (a == a) = true`: a point tested against itself.
@@ -291,7 +291,7 @@ rw [beq_self_eq_true]
 :::
 :::::
 
-::::leanonly (proof := "(f : Bool → Bool) (μ : DiscreteMeasure Bool) : (μ.map f) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)") (new := "map_apply") (lemma := "map_true") (uses := "map_apply, Fintype.sum_bool, beq_true")
+::::leanonly (proof := "(f : Bool → Bool) (μ : DiscreteMeasure Bool) : (μ.map f) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)") (new := "map_apply") (lemma := "map_true") (uses := "map_apply, Fintype.sum_bool, beq_true, rw")
 :::en
 *Where the mass goes.* A move `μ.map f` takes each point `a` with its mass `μ a` to `f a`. So the
 mass at `b` afterwards is the sum of the masses `μ a` of the points with `f a = b`. Lean defines it
@@ -347,7 +347,7 @@ rw [beq_true, beq_true]
 :::
 ::::
 
-:::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (μ.map (fun _ => true)) true = ⟦μ true + μ false ‖ μ true, μ false, μ true + μ false, 0⟧") (uses := "map_true, Bool.cond_true, Bool.cond_false")
+:::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (μ.map (fun _ => true)) true = ⟦μ true + μ false ‖ μ true, μ false, μ true + μ false, 0⟧") (uses := "map_true, Bool.cond_true, Bool.cond_false, rw")
 ::::hint (anchor := "gap")
 :::en
 Which masses of `μ` come to `true`?
@@ -381,7 +381,7 @@ rw [Bool.cond_true, Bool.cond_true]
 :::
 :::::
 
-:::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ true + μ false = 1") (lemma := "mass_total") (new := "Prob.total, tsum_fintype") (uses := "Prob.total, tsum_fintype, Fintype.sum_bool")
+:::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ true + μ false = 1") (lemma := "mass_total") (new := "Prob.total, tsum_fintype") (uses := "Prob.total, tsum_fintype, Fintype.sum_bool, rw")
 :::en
 *The whole mass.* `[Prob μ]` says: `μ` is a distribution, its masses add up to one. On `Bool` there
 are two of them.
@@ -432,7 +432,7 @@ rw [← Prob.total μ, tsum_fintype, Fintype.sum_bool]
 :::
 :::::
 
-:::::leanonly (proof := "(p : I) : coin p true + coin p false = ⟦1 ‖ 0, 1, p⟧") (lemma := "coin_total") (new := "exact") (uses := "mass_total, coin_total")
+:::::leanonly (proof := "(p : I) : coin p true + coin p false = ⟦1 ‖ 0, 1, p⟧") (lemma := "coin_total") (new := "exact") (uses := "mass_total, coin_total, exact")
 ::::hint (anchor := "item:exact")
 :::en
 `exact h`: closes a goal that is exactly `h`.
@@ -469,7 +469,7 @@ exact mass_total (coin p)
 :::
 :::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b ≤ 1") (lemma := "mass_le_one") (new := "le_self_add, add_comm") (uses := "mass_total, add_comm, le_self_add, coin_total, add_assoc")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b ≤ 1") (lemma := "mass_le_one") (new := "le_self_add, add_comm") (uses := "mass_total, add_comm, le_self_add, coin_total, add_assoc, cases, exact, rw")
 :::en
 *At most one.* Each mass is a part of the whole mass, so at most one.
 :::
@@ -500,7 +500,7 @@ exact le_self_add
 :::
 ::::
 
-:::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b ≠ ⟦⊤ ‖ 0, 1, ⊤⟧") (lemma := "mass_ne_top") (new := "apply, ne_top_of_le_ne_top, ENNReal.one_ne_top") (uses := "ne_top_of_le_ne_top, ENNReal.one_ne_top, mass_le_one")
+:::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b ≠ ⟦⊤ ‖ 0, 1, ⊤⟧") (lemma := "mass_ne_top") (new := "apply, ne_top_of_le_ne_top, ENNReal.one_ne_top") (uses := "ne_top_of_le_ne_top, ENNReal.one_ne_top, mass_le_one, apply, exact")
 :::en
 *Finite.* Masses are numbers in $`[0, \infty]`; a mass of a distribution is finite, `≠ ⊤`
 (`⊤` is $`\infty`): it is at most one, and one is finite.
@@ -530,7 +530,7 @@ exact mass_le_one μ b
 :::
 :::::
 
-:::::circuit (height := "440") (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : ((coin p).map not) true = σ p") (play := "a=not; x>a.0; a>out") (uses := "map_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, coin_false, add_zero, mul_zero, coin_true, coin_total")
+:::::circuit (height := "440") (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : ((coin p).map not) true = σ p") (play := "a=not; x>a.0; a>out") (uses := "map_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, coin_false, add_zero, mul_zero, coin_true, coin_total, rw")
 :::hint (anchor := "none")
 :::
 

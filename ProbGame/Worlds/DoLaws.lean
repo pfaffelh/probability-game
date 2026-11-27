@@ -39,7 +39,7 @@ ein Zug vor einer Ziehung wandert in das, was folgt; ein Zug nach einem `do`-Blo
 hinein. Du beweist jedes davon auf `Bool`, einmal, indem du Massen ausrechnest. Dann gehört es dir für
 jeden Typ, und ein `do`-Block wird umgeschrieben, nicht ausgerechnet.
 :::
-:::::circuit (height := "440") (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:p false:1-p") (context := "Lean/Rules.lean") (proof := "(p : I) : ((coin p).map not).map not = coin p") (shape := "!(!x)") (start := "a=not; x>a.0") (play := "b=not; a>b.0; b>out") (uses := "map_map, Bool.not_not, map_id")
+:::::circuit (height := "440") (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:p false:1-p") (context := "Lean/Rules.lean") (proof := "(p : I) : ((coin p).map not).map not = coin p") (shape := "!(!x)") (start := "a=not; x>a.0") (play := "b=not; a>b.0; b>out") (uses := "map_map, Bool.not_not, map_id, rw, simp_rw")
 :::hint (anchor := "none")
 :::
 
@@ -69,7 +69,7 @@ rw [map_id]
 :::
 :::::
 
-:::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → Bool) : μ.map f = (do let x ← μ; ⟦pure (f x) ‖ pure (f x), pure x, μ.map f⟧)") (lemma := "map_eq_pure_bind") (uses := "map_apply, bind_apply, Fintype.sum_bool, pure_apply")
+:::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → Bool) : μ.map f = (do let x ← μ; ⟦pure (f x) ‖ pure (f x), pure x, μ.map f⟧)") (lemma := "map_eq_pure_bind") (uses := "map_apply, bind_apply, Fintype.sum_bool, pure_apply, <;>, cases, ext, rw, simp, simp_rw")
 ::::hint (anchor := "statement")
 :::en
 A move `μ.map f` is a `do` block: draw `x` from `μ`, then `f x` for sure.
@@ -109,7 +109,7 @@ cases f true <;> cases f false <;> cases b <;> simp
 :::
 :::::
 
-:::::circuit (height := "440") (inputs := "x") (gates := "not, and, or") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; pure (!x)) = coin (σ p)") (play := "a=not; x>a.0; a>out") (uses := "map_eq_pure_bind, coin_not")
+:::::circuit (height := "440") (inputs := "x") (gates := "not, and, or") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; pure (!x)) = coin (σ p)") (play := "a=not; x>a.0; a>out") (uses := "map_eq_pure_bind, coin_not, rw")
 :::en
 *A gate is a draw.* One coin, one `not`.
 :::
@@ -132,7 +132,7 @@ rw [← map_eq_pure_bind, coin_not]
 :::
 :::::
 
-:::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → Bool) (g : Bool → DiscreteMeasure Bool) : (do let x ← μ.map f; g x) = (do let x ← μ; ⟦g (f x) ‖ g (f x), g x, (g x).map f⟧)") (lemma := "bind_map_left") (uses := "bind_apply, Fintype.sum_bool, map_apply")
+:::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → Bool) (g : Bool → DiscreteMeasure Bool) : (do let x ← μ.map f; g x) = (do let x ← μ; ⟦g (f x) ‖ g (f x), g x, (g x).map f⟧)") (lemma := "bind_map_left") (uses := "bind_apply, Fintype.sum_bool, map_apply, <;>, cases, ext, ring, rw, simp, simp_rw")
 ::::hint (anchor := "gap")
 :::en
 First move with `f`, then go on with `g`: in one draw, with what does `g` go on?
@@ -176,7 +176,7 @@ cases f true <;> cases f false <;> simp <;> ring
 :::
 :::::
 
-::::circuit (height := "540") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:p(1-p) false:1-p(1-p)") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && !y)) = coin (p * σ p)") (play := "a=not; b=and; y>a.0; x>b.0; a>b.1; b>out") (uses := "coin_and, coin_not, bind_map_left, map_bind")
+::::circuit (height := "540") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:p(1-p) false:1-p(1-p)") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && !y)) = coin (p * σ p)") (play := "a=not; b=and; y>a.0; x>b.0; a>b.1; b>out") (uses := "coin_and, coin_not, bind_map_left, map_bind, rw, simp_rw")
 :::en
 *First `true`, then `false`.*
 :::
@@ -201,7 +201,7 @@ simp_rw [bind_map_left]
 :::
 ::::
 
-:::::leanonly (proof := "(μ : DiscreteMeasure Bool) (g : Bool → DiscreteMeasure Bool) (f : Bool → Bool) : (do let x ← μ; g x).map f = (do let x ← μ; ⟦(g x).map f ‖ (g x).map f, g (f x), g x⟧)") (lemma := "map_bind") (uses := "map_apply, bind_apply, Fintype.sum_bool")
+:::::leanonly (proof := "(μ : DiscreteMeasure Bool) (g : Bool → DiscreteMeasure Bool) (f : Bool → Bool) : (do let x ← μ; g x).map f = (do let x ← μ; ⟦(g x).map f ‖ (g x).map f, g (f x), g x⟧)") (lemma := "map_bind") (uses := "map_apply, bind_apply, Fintype.sum_bool, <;>, cases, ext, ring, rw, simp, simp_rw")
 ::::hint (anchor := "gap")
 :::en
 A move after the whole draw: where can it go inside?
@@ -239,7 +239,7 @@ cases f true <;> cases f false <;> cases b <;> simp <;> ring
 :::
 :::::
 
-:::::circuit (height := "480") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:1-p^2 false:p^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && y)).map not = (do let x ← coin p; let y ← coin p; pure (!(x && y)))") (play := "a=and; b=not; x>a.0; y>a.1; a>b.0; b>out") (uses := "map_bind, map_pure, bind_map_left")
+:::::circuit (height := "480") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:1-p^2 false:p^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x && y)).map not = (do let x ← coin p; let y ← coin p; pure (!(x && y)))") (play := "a=and; b=not; x>a.0; y>a.1; a>b.0; b>out") (uses := "map_bind, map_pure, bind_map_left, simp_rw")
 :::en
 *The gate at the end.* Two coins, `and`, then `not`.
 :::
@@ -262,7 +262,7 @@ simp_rw [map_bind, map_pure]
 :::
 :::::
 
-:::::leanonly (proof := "(p : I) (ν : DiscreteMeasure Bool) : (do let _ ← coin p; ν) = ⟦ν ‖ ν, coin p, pure true⟧") (lemma := "coin_unused") (new := "add_mul") (uses := "bind_apply, Fintype.sum_bool, add_mul")
+:::::leanonly (proof := "(p : I) (ν : DiscreteMeasure Bool) : (do let _ ← coin p; ν) = ⟦ν ‖ ν, coin p, pure true⟧") (lemma := "coin_unused") (new := "add_mul") (uses := "bind_apply, Fintype.sum_bool, add_mul, ext, rw, simp")
 ::::hint (anchor := "gap")
 :::en
 The outcome of the coin is not used (`_`): what is left?
@@ -301,7 +301,7 @@ simp
 :::
 :::::
 
-:::::circuit (height := "440") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bernoulli p") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let _ ← coin p; let y ← coin p; pure y) = coin p") (play := "y>out") (uses := "coin_unused, prob_unused")
+:::::circuit (height := "440") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bernoulli p") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let _ ← coin p; let y ← coin p; pure y) = coin p") (play := "y>out") (uses := "coin_unused, prob_unused, rw")
 :::en
 *One coin too many.* Two coins, and one of them is not used.
 :::
@@ -324,7 +324,7 @@ rw [coin_unused]
 :::
 :::::
 
-::::circuit (height := "540") (inputs := "x") (gates := "and, or, not") (coins := "p") (target := "pure false") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; pure (x && !x)) = pure false") (play := "a=not; b=and; x>a.0; x>b.0; a>b.1; b>out") (uses := "coin_unused, prob_unused")
+::::circuit (height := "540") (inputs := "x") (gates := "and, or, not") (coins := "p") (target := "pure false") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; pure (x && !x)) = pure false") (play := "a=not; b=and; x>a.0; x>b.0; a>b.1; b>out") (uses := "coin_unused, prob_unused, rw, simp")
 :::en
 *Surely `false`, with a single coin.* A coin that goes into two functions is the same coin in both:
 the results depend on each other.
@@ -352,7 +352,7 @@ rw [coin_unused]
 :::
 ::::
 
-:::::leanonly (proof := "(p : I) : (do let x ← coin p; pure (x && x)) = (do let x ← coin p; pure ⟦x || x ‖ x || x, !x, x && !x⟧)") (new := "congr") (uses := "-")
+:::::leanonly (proof := "(p : I) : (do let x ← coin p; pure (x && x)) = (do let x ← coin p; pure ⟦x || x ‖ x || x, !x, x && !x⟧)") (new := "congr") (uses := "<;>, cases, congr, ext, rfl")
 ::::hint (anchor := "gap")
 :::en
 Which result is the same as `x && x`, for every `x`?
@@ -392,7 +392,7 @@ cases x <;> rfl
 :::
 :::::
 
-::::circuit (height := "540") (inputs := "x y") (gates := "or, not") (coins := "p p") (target := "bool true:1-p^2 false:p^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (!x || !y)) = (do let x ← coin p; let y ← coin p; pure (!(x && y)))") (play := "a=not; b=not; c=or; x>a.0; y>b.0; a>c.0; b>c.1; c>out") (uses := "-")
+::::circuit (height := "540") (inputs := "x y") (gates := "or, not") (coins := "p p") (target := "bool true:1-p^2 false:p^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (!x || !y)) = (do let x ← coin p; let y ← coin p; pure (!(x && y)))") (play := "a=not; b=not; c=or; x>a.0; y>b.0; a>c.0; b>c.1; c>out") (uses := "<;>, cases, congr, ext, rfl")
 :::en
 *Not both `true`*, without an `and`: only `or` and `not` are there.
 :::
@@ -421,7 +421,7 @@ cases x <;> cases y <;> rfl
 :::
 ::::
 
-::::circuit (height := "440") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:2p-p^2 false:(1-p)^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x || y)) = coin (σ (σ p * σ p))") (play := "a=or; x>a.0; y>a.1; a>out") (uses := "coin_not, coin_and, bind_map_left, map_bind, map_pure, or_eq")
+::::circuit (height := "440") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:2p-p^2 false:(1-p)^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x || y)) = coin (σ (σ p * σ p))") (play := "a=or; x>a.0; y>a.1; a>out") (uses := "coin_not, coin_and, bind_map_left, map_bind, map_pure, or_eq, rw, simp_rw")
 :::en
 *Boss: at least one `true`.* `false` only when both show `false`: $`(1 - p)^2`.
 :::

@@ -18,7 +18,7 @@ When does a second stage leave `coin p` as it is? When what flows from `false` t
 Wann lässt eine zweite Stufe `coin p`, wie es ist? Wenn das, was von `false` nach `true` fließt, gleich dem ist, was zurückfließt: ein Gleichgewicht, $`(1 - p) r = p (1 - q)`. Um so eine Gleichung zu benutzen, rechnet man mit einem Minus, und Massen können das nicht: Sie sind Zahlen in $`[0, \infty]`, wo ein Minus kein Plus rückgängig macht. Also bringt diese Welt die Massen zu den reellen Zahlen, rechnet dort und kommt mit dem Gleichgewicht zurück; in *Hypergeometrisch* wird es wieder gebraucht. Nur in Lean.
 :::
 
-::::leanonly (proof := "(p : I) : (↑p : ℝ≥0∞) = ENNReal.ofReal (p : ℝ)") (lemma := "mass_eq_ofReal") (uses := "-")
+::::leanonly (proof := "(p : I) : (↑p : ℝ≥0∞) = ENNReal.ofReal (p : ℝ)") (lemma := "mass_eq_ofReal") (uses := "rfl")
 :::en
 *A mass is a real number.* Masses live in $`[0, \infty]` (`ℝ≥0∞`): there is no minus there that would undo a plus, and `ring` cannot use $`p + (1 - p) = 1`. Real numbers (`ℝ`) can. The way there: `↑p` is the real number $`p`, made a mass by `ENNReal.ofReal`.
 :::
@@ -43,7 +43,7 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(p q : I) : (↑p * ↑q : ℝ≥0∞) = ENNReal.ofReal ((p : ℝ) * q)") (new := "mass_mul_real") (uses := "mass_mul_real")
+::::leanonly (proof := "(p q : I) : (↑p * ↑q : ℝ≥0∞) = ENNReal.ofReal ((p : ℝ) * q)") (new := "mass_mul_real") (uses := "mass_mul_real, rw")
 :::en
 *Products.* A product of masses is the mass of the product of the real numbers.
 :::
@@ -66,7 +66,7 @@ rw [mass_mul_real]
 :::
 ::::
 
-::::leanonly (proof := "(p q r s : I) : ENNReal.ofReal ((p : ℝ) * q) + ENNReal.ofReal ((r : ℝ) * s) = ENNReal.ofReal ((p : ℝ) * q + r * s)") (new := "ENNReal.ofReal_add, real_mul_nonneg") (uses := "ENNReal.ofReal_add, real_mul_nonneg")
+::::leanonly (proof := "(p q r s : I) : ENNReal.ofReal ((p : ℝ) * q) + ENNReal.ofReal ((r : ℝ) * s) = ENNReal.ofReal ((p : ℝ) * q + r * s)") (new := "ENNReal.ofReal_add, real_mul_nonneg") (uses := "ENNReal.ofReal_add, real_mul_nonneg, rw")
 :::en
 *Sums, with a condition.* `ENNReal.ofReal` turns a negative number into $`0`; so a sum goes through it only when both summands are $`\ge 0`. That is the hard part of the change: the conditions.
 :::
@@ -89,7 +89,7 @@ rw [← ENNReal.ofReal_add (real_mul_nonneg p q) (real_mul_nonneg r s)]
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : (p : ℝ) + (σ p : I) = 1") (new := "symm_real, ring") (uses := "symm_real")
+::::leanonly (proof := "(p : I) : (p : ℝ) + (σ p : I) = 1") (new := "symm_real, ring") (uses := "symm_real, ring, rw")
 :::en
 *1 − p, really.* In `ℝ`, `σ p` is really $`1 - p`, and now computing knows that $`p + (1 - p) = 1`.
 :::
@@ -113,7 +113,7 @@ ring
 :::
 ::::
 
-::::leanonly (proof := "(x y : ℝ) (h : x - y = 2) : 2 * x = 2 * y + 4") (new := "linear_combination") (uses := "-")
+::::leanonly (proof := "(x y : ℝ) (h : x - y = 2) : 2 * x = 2 * y + 4") (new := "linear_combination") (uses := "linear_combination")
 :::en
 *Twice a hypothesis.* From $`x - y = 2` follows $`2x = 2y + 4`: take the hypothesis twice. In the real numbers that is computing, and a tactic does it.
 :::
@@ -140,7 +140,7 @@ linear_combination 2 * h
 :::
 ::::
 
-::::leanonly (proof := "(p q r : ℝ) (h : (1 - p) * r = p * (1 - q)) : p * q + (1 - p) * r = p") (lemma := "balance") (uses := "-")
+::::leanonly (proof := "(p q r : ℝ) (h : (1 - p) * r = p * (1 - q)) : p * q + (1 - p) * r = p") (lemma := "balance") (uses := "linear_combination")
 :::en
 *Computing with a hypothesis.* The goal follows from `h` by computing: add `h` to it, and both sides agree.
 :::
@@ -163,7 +163,7 @@ linear_combination h
 :::
 ::::
 
-:::::leanonly (proof := "(a b : ℝ) (h : a + b = 1) (k : a = 2 * b) : a = ⟦2/3 ‖ 1/3, 1/2, 2/3⟧") (uses := "-")
+:::::leanonly (proof := "(a b : ℝ) (h : a + b = 1) (k : a = 2 * b) : a = ⟦2/3 ‖ 1/3, 1/2, 2/3⟧") (uses := "linear_combination")
 ::::hint (anchor := "gap")
 :::en
 At `true` twice as much as at `false`, and together one.
@@ -198,7 +198,7 @@ linear_combination (2 * h + k) / 3
 :::
 :::::
 
-:::::leanonly (proof := "(a b : ℝ) (h : a + b ≠ 0) : a / (a + b) + b / (a + b) = ⟦1 ‖ 1, a + b, 1 / (a + b)⟧") (new := "field_simp") (uses := "-")
+:::::leanonly (proof := "(a b : ℝ) (h : a + b ≠ 0) : a / (a + b) + b / (a + b) = ⟦1 ‖ 1, a + b, 1 / (a + b)⟧") (new := "field_simp") (uses := "field_simp")
 ::::hint (anchor := "item:field_simp")
 :::en
 `field_simp`: an equation between fractions, multiplied by its denominators.
@@ -231,7 +231,7 @@ field_simp
 :::
 :::::
 
-:::::leanonly (proof := "(p q r : ℝ) (h : r + 1 - q ≠ 0) (hp : p = ⟦r / (r + 1 - q) ‖ r / (r + 1 - q), r / (1 - q), (1 - q) / (r + 1 - q)⟧) : (1 - p) * r = p * (1 - q)") (uses := "-")
+:::::leanonly (proof := "(p q r : ℝ) (h : r + 1 - q ≠ 0) (hp : p = ⟦r / (r + 1 - q) ‖ r / (r + 1 - q), r / (1 - q), (1 - q) / (r + 1 - q)⟧) : (1 - p) * r = p * (1 - q)") (uses := "field_simp, ring, rw")
 ::::hint (anchor := "gap")
 :::en
 Solve the balance $`(1 - p) r = p (1 - q)` for $`p`.
@@ -268,7 +268,7 @@ ring
 :::
 :::::
 
-::::leanonly (proof := "(p q r : I) (h : (1 - (p : ℝ)) * r = p * (1 - q)) : (do let x ← coin p; bif x then coin q else coin r) = coin p") (lemma := "coin_stays") (uses := "bool_ext, bind_true, mass_mul_real, ENNReal.ofReal_add, real_mul_nonneg, symm_real, mass_eq_ofReal, balance, bind_false")
+::::leanonly (proof := "(p q r : I) (h : (1 - (p : ℝ)) * r = p * (1 - q)) : (do let x ← coin p; bif x then coin q else coin r) = coin p") (lemma := "coin_stays") (uses := "bool_ext, bind_true, mass_mul_real, ENNReal.ofReal_add, real_mul_nonneg, symm_real, mass_eq_ofReal, balance, bind_false, apply, congr, exact, rw, simp")
 :::en
 *Boss: a balance that stays.* The chain of *Multi-Stage Experiments*: from `true` to `coin q`, from `false` to `coin r`. `coin p` stays when what flows from `false` to `true`, $`(1 - p) r`, is what flows back, $`p (1 - q)`: a balance.
 :::

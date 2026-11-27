@@ -2967,6 +2967,8 @@
     "geom_first": "theorem geom_first (p : I) : geom p = do let x ← coin p; bif x then pure 0 else do let Y ← geom p; pure (1 + Y)"
     }
   // LEAN_SIGS end
+  // the tactics kept in every world, once earned (the others only in the worlds that use them)
+  const TACTICS_KEPT = new Set(['rfl', 'exact', 'rw', 'cases', 'ring'])
   const INVENTORY = [
     { name: 'rw', kind: 'tactic', insert: 'rw []', sig: 'rw [h]   rw [← h]   rw [h₁, h₂]',
       en: 'Rewrites the goal with the equation h: its left side becomes its right side (with ←, the other way round). Closes the goal when it then reads a = a. It does not rewrite under bound names (fun x => …, a do block): there, simp_rw (the rules in the order given) or simp only (in any order).',
@@ -2994,18 +2996,12 @@
     { name: 'revert', kind: 'tactic', insert: 'revert ', sig: 'revert x y',
       en: 'Takes variables back into the statement: from x : Bool and ⊢ P x it makes ⊢ ∀ x, P x.',
       de: 'Nimmt Variablen zurück in die Aussage: Aus x : Bool und ⊢ P x macht es ⊢ ∀ x, P x.' },
-    { name: 'norm_num', kind: 'tactic', insert: 'norm_num', sig: 'norm_num   norm_num [h₁, h₂, …]',
-      en: 'The simplifier, plus computing with numbers: rewrites with the rules marked simp until none applies, and computes bif true then a else b and the like. norm_num [h] adds your rule h.',
-      de: 'Der Simplifier, plus Rechnen mit Zahlen: schreibt mit den Regeln mit der Marke simp um, bis keine mehr passt, und rechnet bif true then a else b und Ähnliches aus. norm_num [h] nimmt deine Regel h dazu.' },
     { name: 'simp', kind: 'tactic', insert: 'simp', sig: 'simp   simp [h₁, h₂, …]',
       en: 'The simplifier: rewrites with the rules marked simp, again and again, until none applies, and computes bif true then a else b and the like. simp [h] adds your rule h.',
       de: 'Der Simplifier: schreibt mit den Regeln mit der Marke simp um, immer wieder, bis keine mehr passt, und rechnet bif true then a else b und Ähnliches aus. simp [h] nimmt deine Regel h dazu.' },
     { name: 'simp_rw', kind: 'tactic', insert: 'simp_rw []', sig: 'simp_rw [h₁, h₂, …]',
       en: 'Like rw, but also under bound names (the x in fun x => …, ∑ x, …, let x ← μ): rewrites with each rule in turn, as often as it can. For when the order of the rules matters; else simp only.',
       de: 'Wie rw, aber auch unter gebundenen Namen (das x in fun x => …, ∑ x, …, let x ← μ): schreibt mit jeder Regel der Reihe nach um, so oft es geht. Für den Fall, dass die Reihenfolge der Regeln zählt; sonst simp only.' },
-    { name: 'simp only', kind: 'tactic', insert: 'simp only []', sig: 'simp only [h₁, h₂, …]',
-      en: 'Rewrites with the given rules everywhere, also inside do blocks, in any order, as often as it can; closes the goal when both sides become the same.',
-      de: 'Schreibt mit den angegebenen Regeln überall um, auch in do-Blöcken, in beliebiger Reihenfolge, so oft es geht; schließt das Ziel, wenn beide Seiten gleich werden.' },
     { name: '<;>', kind: 'tactic', insert: ' <;> ', sig: 't₁ <;> t₂',
       en: 'Runs t₂ on every goal that t₁ leaves: cases x <;> cases y <;> rfl.',
       de: 'Führt t₂ auf jedem Ziel aus, das t₁ übrig lässt: cases x <;> cases y <;> rfl.' },
@@ -3263,7 +3259,7 @@
       // what this level may use, and what is new in it (ProbGame/Level.lean: from the levels before it)
       const names = a => { try { return new Set(JSON.parse(root.dataset[a] ?? '[]')) } catch { return new Set() } }
       this.group = root.dataset.group; this.inventory = names('inventory'); this.newHere = names('new')
-      // (the theorems of this level only, if the level names them: the tactics earned stay, the
+      // (the theorems of this level only, if the level names them: the tactics: see available, the
       // theorems not needed here are left out, to keep the inventory short and to show the way)
       this.uses = root.dataset.uses ? new Set(root.dataset.uses.split(',').map(x => x.trim()).filter(Boolean)) : null
       this.context = root.dataset.proofContext ?? ''
@@ -3333,13 +3329,26 @@
       return n === 1 ? tr('One goal left.') : tr('{n} goals left.', { n })
     }
     // the inventory at this level: what was introduced up to here; the lemma of this level is not yet
-    // (tactics always; your lemmas of this world always, once earned; other theorems where the level needs them)
+    // (tactics: those kept always, once earned, and those that the levels of this world use; your
+    // lemmas of this world always, once earned; other theorems where the level needs them)
     available(item) {
       if (!item || !this.inventory.has(item.name)) return false
-      if (item.kind === 'tactic' || !this.uses || this.uses.has(item.name)) return true
+      if (item.kind === 'tactic') return TACTICS_KEPT.has(item.name) || !this.worldTactics || this.worldTactics.has(item.name)
+      if (!this.uses || this.uses.has(item.name)) return true
       return item.kind === 'lemma' && [...document.querySelectorAll('[data-lemma]')].some(e => e.dataset.lemma === item.name)
     }
     isNew(item) { return this.newHere.has(item.name) }
+    // the tactics that the levels of this world use (the page is the world): from the solutions
+    // (`uses`, written by tests/uses.py) and the quizzes; none known, all earned ones
+    get worldTactics() {
+      if (this._worldTactics !== undefined) return this._worldTactics
+      const tactics = INVENTORY.filter(i => i.kind === 'tactic').map(i => i.name), s = new Set()
+      for (const e of document.querySelectorAll('[data-uses]')) for (const x of e.dataset.uses.split(',')) if (tactics.includes(x.trim())) s.add(x.trim())
+      const esc = t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      for (const e of document.querySelectorAll('[data-tactic]'))
+        for (const t of tactics) if (t === '<;>' ? e.dataset.tactic.includes(t) : new RegExp(`(?<![\\w.'])${esc(t)}(?![\\w.'])`).test(e.dataset.tactic)) s.add(t)
+      return this._worldTactics = s.size ? s : null
+    }
     // where an item comes in: world 0 has an inventory of its own (`w0`), the other worlds share one (`at`)
     get world0() { return this.group === 'walk' }
     get worldB() { return this.group === 'bool' }
@@ -3862,7 +3871,7 @@
       // (a theorem: its whole statement in Lean, as Lean prints it; a tactic: how it is written)
       // (but where Lean states a monad law for every monad m, as the core of Lean does, the game's own form)
       const fullOf = item => (!this.world0 && LEAN_SIGS[item.name] && !/>>=|<\$>|Monad m/.test(LEAN_SIGS[item.name]) && LEAN_SIGS[item.name]) || sigOf(item)
-      const simpOn = this.inventory.has('simp'), isSimp = item => simpOn && SIMP.has(item.name)
+      const simpOn = this.available(INVENTORY.find(i => i.name === 'simp')), isSimp = item => simpOn && SIMP.has(item.name)
       const textOf0 = item => this.world0 && item.en0 ? (LANG === 'de' ? item.de0 : item.en0) : this.worldB && item.enb ? (LANG === 'de' ? item.deb : item.enb) : (LANG === 'de' ? item.de : item.en)
       const textOf = item => (textOf0(item) ?? '') + (isSimp(item) ? ' ' + tr('simp: the simplifier uses it by itself.') : '')
       for (const [kind, title] of [['tactic', tr('Tactics')], ['rule', tr('Theorems')]]) {
@@ -4340,8 +4349,8 @@
       const all = [...roots[k].querySelectorAll(':scope > .pg-text > .pg-hint')].filter(proofHint)
       const hints = all.filter(h => h.dataset.at.startsWith('item:')), hinted = new Set(hints.map(h => h.dataset.at.slice(5)))
       const at = h => () => (PROOF_AT[h.dataset.at] ? visible(roots[k].querySelector(PROOF_AT[h.dataset.at])) : null)
-      // (a new item with a hint of its own: the hint, with the card of the item)
-      const steps = [...all.filter(h => !h.dataset.at.startsWith('item:')).map(h => ({ nodes: hintText(h), anchor: at(h) })), ...hints.map(h => { const it = INVENTORY.find(i => i.name === h.dataset.at.slice(5)); return { head: it && newItems(k).includes(it) ? tr('New in this proof') : undefined, nodes: [...(it && newItems(k).includes(it) ? [itemCard(it)] : []), ...hintText(h)], anchor: atItem(k, h.dataset.at.slice(5)) } }),
+      // (a new item with a hint of its own: the hint alone, without the card of the item)
+      const steps = [...all.filter(h => !h.dataset.at.startsWith('item:')).map(h => ({ nodes: hintText(h), anchor: at(h) })), ...hints.map(h => { const it = INVENTORY.find(i => i.name === h.dataset.at.slice(5)); return { head: it && newItems(k).includes(it) ? tr('New in this proof') : undefined, nodes: hintText(h), anchor: atItem(k, h.dataset.at.slice(5)) } }),
         ...newItems(k).filter(it => !hinted.has(it.name)).map(it => ({ head: tr('New in this proof'), nodes: [itemCard(it)], anchor: atItem(k, it.name) }))]
       return [...(auto && steps.length ? [] : [{ nodes: clone(levels[k].proof?.texts ?? []) }]), ...steps]
     }

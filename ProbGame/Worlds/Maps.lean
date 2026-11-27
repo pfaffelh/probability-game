@@ -22,7 +22,7 @@ Abbildungen auf `Bool`, und Züge mit ihnen. Es gibt genau vier Abbildungen `Boo
 unbekannte Abbildung `f : Bool → Bool` gilt für jede Abbildung, wenn sie für jede der vier gilt.
 :::
 
-::::leanonly (proof := "(f : Bool → Bool) (b : Bool) : f (f (f b)) = ⟦f b ‖ b, f b, f (f b)⟧") (lemma := "Bool.apply_apply_apply") (new := "revert, decide") (group := "bool") (uses := "-")
+::::leanonly (proof := "(f : Bool → Bool) (b : Bool) : f (f (f b)) = ⟦f b ‖ b, f b, f (f b)⟧") (lemma := "Bool.apply_apply_apply") (new := "revert, decide") (group := "bool") (uses := "decide, revert")
 :::en
 *Three times.* Whatever map `f : Bool → Bool` is: what does it do, applied three times? Check it for
 `not` and for always `true`. In Lean the new tactics `revert` and `decide` check it, in every case at once.
@@ -68,7 +68,7 @@ decide
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) : μ.map (fun x => x) = ⟦μ ‖ μ, μ.map not⟧") (lemma := "map_id") (new := "Bool.false_beq") (uses := "map_apply, Fintype.sum_bool, Bool.true_beq, Bool.false_beq, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, Bool.not_true, add_comm, add_zero, mul_zero, add_assoc")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) : μ.map (fun x => x) = ⟦μ ‖ μ, μ.map not⟧") (lemma := "map_id") (new := "Bool.false_beq") (uses := "map_apply, Fintype.sum_bool, Bool.true_beq, Bool.false_beq, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, Bool.not_true, add_comm, add_zero, mul_zero, add_assoc, cases, ext, rw")
 :::en
 *Doing nothing.* The move `fun x => x` leaves every point where it is.
 :::
@@ -111,7 +111,7 @@ rw [Bool.not_true, Bool.cond_true, Bool.cond_false, add_comm, zero_add]
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) : μ.map (fun x => !(!x)) = ⟦μ ‖ μ, μ.map not⟧") (new := "simp_rw") (uses := "Bool.not_not, map_id")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) : μ.map (fun x => !(!x)) = ⟦μ ‖ μ, μ.map not⟧") (new := "simp_rw") (uses := "Bool.not_not, map_id, rw, simp_rw")
 :::en
 *Turned over twice, in one move.* The move `fun x => !(!x)`: turn over, and turn over again.
 :::
@@ -139,7 +139,7 @@ rw [map_id]
 :::
 ::::
 
-::::leanonly (proof := "(f : Bool → Bool) (x : ℝ≥0∞) : (bif f true then x else 0) + (bif f true then 0 else x) = ⟦x ‖ x + x, x, 0⟧") (uses := "Bool.cond_false, zero_add, Bool.cond_true, add_comm, add_zero, mul_zero, add_assoc")
+::::leanonly (proof := "(f : Bool → Bool) (x : ℝ≥0∞) : (bif f true then x else 0) + (bif f true then 0 else x) = ⟦x ‖ x + x, x, 0⟧") (uses := "Bool.cond_false, zero_add, Bool.cond_true, add_comm, add_zero, mul_zero, add_assoc, cases, rw")
 :::en
 *A test is `true` or `false`.* The mass `x` behind the test `f true`, once in the `then` branch and once in the `else` branch. What `f` does is unknown.
 :::
@@ -166,7 +166,7 @@ rw [Bool.cond_true, Bool.cond_true, add_comm, zero_add]
 :::
 ::::
 
-::::leanonly (proof := "(f : Bool → Bool) (x y : ℝ≥0∞) : (bif f true then x else 0) + (bif f true then y else 0) = bif f true then ⟦x + y ‖ x + y, x, y, x * y⟧ else 0") (lemma := "cond_add_cond") (uses := "Bool.cond_false, zero_add, Bool.cond_true, add_zero, mul_zero")
+::::leanonly (proof := "(f : Bool → Bool) (x y : ℝ≥0∞) : (bif f true then x else 0) + (bif f true then y else 0) = bif f true then ⟦x + y ‖ x + y, x, y, x * y⟧ else 0") (lemma := "cond_add_cond") (uses := "Bool.cond_false, zero_add, Bool.cond_true, add_zero, mul_zero, cases, rw, simp_rw")
 :::en
 *Two masses behind one test.* Twice the same test `f true`: once with the mass `x`, once with the
 mass `y`.
@@ -198,7 +198,7 @@ simp_rw [Bool.cond_true]
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f g : Bool → Bool) : (μ.map f).map g = μ.map ⟦fun x => g (f x) ‖ fun x => g (f x), fun x => f (g x), g⟧") (lemma := "map_map") (uses := "map_apply, Fintype.sum_bool, Bool.false_beq, Bool.not_true, beq_self_eq_true, Bool.cond_false, Bool.cond_true, zero_add, Bool.cond_self, cond_add_cond, Bool.true_beq, Bool.not_false, add_comm, add_zero, mul_zero, add_assoc")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f g : Bool → Bool) : (μ.map f).map g = μ.map ⟦fun x => g (f x) ‖ fun x => g (f x), fun x => f (g x), g⟧") (lemma := "map_map") (uses := "map_apply, Fintype.sum_bool, Bool.false_beq, Bool.not_true, beq_self_eq_true, Bool.cond_false, Bool.cond_true, zero_add, Bool.cond_self, cond_add_cond, Bool.true_beq, Bool.not_false, add_comm, add_zero, mul_zero, add_assoc, cases, ext, rw, simp_rw")
 :::en
 *Boss: two moves are one.* First the move `f`, then the move `g`: which one move is that?
 :::
