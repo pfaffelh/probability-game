@@ -339,9 +339,16 @@ rfl
 :::
 ::::
 
-::::circuit (height := "500") (inputs := "x") (gates := "not, or, and") (table := "01") (goal := "x") (proof := "(x : Bool) : (x && x) = x") (lemma := "Bool.and_self") (play := "a=and; x>a.0; x>a.1; a>out") (uses := "cases, rfl")
-:::hint (anchor := "none")
+:::::circuit (height := "500") (inputs := "x") (gates := "not, or, and") (table := "01") (goal := "x") (proof := "(x : Bool) : (x && x) = x") (lemma := "Bool.and_self") (play := "a=and; x>a.0; x>a.1; a>out") (new := "<;>") (uses := "<;>, cases, rfl")
+::::hint (anchor := "item:<;>")
+:::en
+`t₁ <;> t₂` runs `t₂` on every goal that `t₁` leaves.
 :::
+
+:::de
+`t₁ <;> t₂` führt `t₂` auf jedem Ziel aus, das `t₁` übrig lässt.
+:::
+::::
 
 :::en
 *Twice the same.* `x` and `x`: wire `x` into both inputs of an `and`.
@@ -361,22 +368,13 @@ rfl
 :::
 :::solution
 ```
-cases x
-rfl
-rfl
+cases x <;> rfl
 ```
 :::
-::::
+:::::
 
-:::::circuit (height := "500") (inputs := "x") (gates := "not, or, and") (table := "00") (goal := "false") (proof := "(x : Bool) : (x && !x) = false") (lemma := "Bool.and_not_self") (play := "a=not; b=and; x>a.0; x>b.0; a>b.1; b>out") (new := "<;>") (uses := "<;>, cases, rfl")
-::::hint (anchor := "item:<;>")
-:::en
-`t₁ <;> t₂` runs `t₂` on every goal that `t₁` leaves.
-:::
-
-:::de
-`t₁ <;> t₂` führt `t₂` auf jedem Ziel aus, das `t₁` übrig lässt.
-:::
+:::::circuit (height := "500") (inputs := "x") (gates := "not, or, and") (table := "00") (goal := "false") (proof := "(x : Bool) : (x && !x) = false") (lemma := "Bool.and_not_self") (play := "a=not; b=and; x>a.0; x>b.0; a>b.1; b>out") (uses := "<;>, cases, rfl")
+::::hint (anchor := "none")
 ::::
 
 :::en
@@ -465,12 +463,12 @@ rw [Bool.cond_true]
 
 :::proofen
 At least one is `true` exactly when not both are `false`. Two variables, so four cases: with `<;>`
-from the level before, in one line. Your result becomes the lemma `or_eq`.
+in one line. Your result becomes the lemma `or_eq`.
 :::
 
 :::proofde
 Mindestens eins ist `true` genau dann, wenn nicht beide `false` sind. Zwei Variablen, also vier Fälle:
-mit `<;>` aus dem Level davor in einer Zeile. Dein Ergebnis wird das Lemma `or_eq`.
+mit `<;>` in einer Zeile. Dein Ergebnis wird das Lemma `or_eq`.
 :::
 :::solution
 ```
