@@ -1749,7 +1749,7 @@
       this.answer = new Set((d.answer || '').split(',').map(s => Number(s.trim()) - 1).filter(i => i >= 0))
       this.board = root.querySelector('.pg-board'); this.picture = null
       this.key = `pg:${location.pathname}:${index}`
-      this.picked = new Set(); this.verdicts = null; this.msg = ''; this.busy = false
+      this.picked = new Set(); this.verdicts = null; this.msg = ''; this.busy = false; this.wrong = false
       try { for (const i of JSON.parse(localStorage.getItem(this.key + ':picked') ?? '[]')) this.picked.add(i) } catch {}
       if (this.solved) this.ask().then(() => this.render())
       this.render()
@@ -1760,7 +1760,7 @@
     get canReset() { return this.picked.size > 0 || !!this.msg }
     status() { return this.msg }
     undo() {}
-    reset() { this.picked.clear(); this.msg = ''; this.save(); this.render() }
+    reset() { this.picked.clear(); this.msg = ''; this.wrong = false; this.save(); this.render() }
     save() { try { localStorage.setItem(this.key + ':picked', JSON.stringify([...this.picked])) } catch {} }
     same() { return this.statements.every((_, i) => this.picked.has(i) === this.verdicts[i].ok) }
     async post(path, body) {
@@ -1797,7 +1797,7 @@
         this.msg = tr('Right: this is what Lean says.')
         try { localStorage.setItem(this.key, '1') } catch {}
         this.render(); this.onSolved?.()
-      } else { this.msg = tr('Not quite: at least one choice is wrong.'); this.render() }
+      } else { this.msg = tr('Not quite: at least one choice is wrong.'); this.wrong = true; this.render() }
     }
     render() {
       const box = el('div', 'pg-quiz-box'), list = el('div', 'pg-quiz-list')
@@ -1808,7 +1808,7 @@
         const k = s.indexOf(') : '), binders = k < 0 ? '' : s.slice(0, k + 1), stmt = k < 0 ? s : s.slice(k + 4)
         b.title = binders
         b.append(el('span', 'pg-quiz-mark', this.picked.has(i) ? '☑' : '☐'), el('code', 'pg-quiz-stmt', stmt))
-        b.addEventListener('click', () => { if (this.picked.has(i)) this.picked.delete(i); else this.picked.add(i); this.msg = ''; this.save(); this.render() })
+        b.addEventListener('click', () => { if (this.picked.has(i)) this.picked.delete(i); else this.picked.add(i); this.msg = ''; this.wrong = false; this.save(); this.render() })
         const row = el('div', 'pg-quiz-row'); row.append(b)
         if (shown) {
           const v = this.verdicts[i]
@@ -1822,6 +1822,8 @@
       const go = el('button', 'pg-quiz-check', tr('Check')); go.type = 'button'; go.disabled = this.busy || shown
       go.addEventListener('click', () => this.check())
       box.append(q, list, go)
+      // (a wrong choice: a red warning right at the button, until the choice changes)
+      if (this.wrong && !shown) box.append(el('div', 'pg-quiz-warn', '✗ ' + tr('Not quite: at least one choice is wrong.')))
       this.board.replaceChildren(box)
       this.onRendered?.()
     }

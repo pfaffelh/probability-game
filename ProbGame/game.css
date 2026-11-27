@@ -794,3 +794,5 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 .pg-quiz-err { margin: 0.25em 0 0; font-size: 0.85em; white-space: pre-wrap; overflow-wrap: anywhere; color: #555; }
 .pg-quiz-check { align-self: flex-start; padding: 0.45em 1.2em; border-radius: 8px; border: 1px solid #2f6fb3; background: #2f6fb3; color: #fff; font: inherit; cursor: pointer; }
 .pg-quiz-check:disabled { opacity: 0.5; cursor: default; }
+.pg-quiz-warn { padding: 0.6em 0.9em; border: 2px solid #c53030; border-radius: 8px; background: #fde8e8; color: #9b2c2c; font-weight: 600; animation: pg-quiz-shake 0.35s; }
+@keyframes pg-quiz-shake { 25% { transform: translateX(-6px) } 75% { transform: translateX(6px) } }
