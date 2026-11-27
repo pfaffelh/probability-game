@@ -151,11 +151,27 @@ attribute [simp] coin_true coin_false pure_true pure_false
   rw [← coin_true, ← coin_false, coin_total]
 
 /-- The definition of a move on `Bool`, as the game writes it: the mass of `μ.map f` at `b` is the
-mass at `true` when `f true` is `b`, and the mass at `false` when `f false` is `b`. -/
+sum of the masses `μ a` of the points `a` that `f` sends to `b` (the image measure, `μ ∘ f⁻¹`). -/
 theorem map_apply (f : Bool → Bool) (μ : DiscreteMeasure Bool) (b : Bool) :
+    (μ.map f) b = ∑ a with f a = b, μ a := by
+  rw [MeasureTheory.DiscreteMeasure.map_apply_eq_tsum_mul, tsum_fintype, Finset.sum_filter]
+  congr 1
+  funext a
+  by_cases h : f a = b <;> simp [Set.indicator, h]
+
+/-- A sum over the points with `f a = b`, as a sum over all points with a test. -/
+theorem sum_with {α : Type} [Fintype α] (f : α → Bool) (b : Bool) (g : α → ℝ≥0∞) :
+    (∑ a with f a = b, g a) = ∑ a, (bif f a == b then g a else 0) := by
+  rw [Finset.sum_filter]
+  congr 1
+  funext a
+  cases h : f a <;> cases b <;> simp
+
+/-- A move on `Bool`, written out (proved by the player in *Masses*): to `b` comes the mass at
+`true` when `f true` is `b`, and the mass at `false` when `f false` is `b`. -/
+theorem map_bool (f : Bool → Bool) (μ : DiscreteMeasure Bool) (b : Bool) :
     (μ.map f) b = (bif f true == b then μ true else 0) + (bif f false == b then μ false else 0) := by
-  rw [MeasureTheory.DiscreteMeasure.map_apply_eq_tsum_mul, tsum_fintype, Fintype.sum_bool]
-  cases f true <;> cases f false <;> cases b <;> simp [Set.indicator]
+  rw [map_apply, sum_with, Fintype.sum_bool]
 
 /-- Where the mass of a move goes: the mass of `μ.map f` at `true` is the mass of `μ` at the points
 that `f` sends to `true` (`bif c then a else b` is `a` when `c` is `true`, else `b`). -/

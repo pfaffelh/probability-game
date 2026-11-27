@@ -69,7 +69,7 @@ rw [map_id]
 :::
 :::::
 
-:::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → Bool) : μ.map f = (do let x ← μ; ⟦pure (f x) ‖ pure (f x), pure x, μ.map f⟧)") (lemma := "map_eq_pure_bind") (uses := "map_apply, bind_apply, Fintype.sum_bool, pure_apply, <;>, cases, ext, rw, simp, simp_rw")
+:::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → Bool) : μ.map f = (do let x ← μ; ⟦pure (f x) ‖ pure (f x), pure x, μ.map f⟧)") (lemma := "map_eq_pure_bind") (uses := "map_bool, bind_apply, Fintype.sum_bool, pure_apply, <;>, cases, ext, rw, simp, simp_rw")
 ::::hint (anchor := "statement")
 :::en
 A move `μ.map f` is a `do` block: draw `x` from `μ`, then `f x` for sure.
@@ -89,20 +89,20 @@ Ein Zug `μ.map f` ist ein `do`-Block: `x` aus `μ` ziehen, dann sicher `f x`.
 :::
 
 :::proofen
-Compare the masses at every `b`, with the definitions `map_apply` and `bind_apply`. What `f` does is
+Compare the masses at every `b`, with `map_bool` and the definition `bind_apply`. What `f` does is
 unknown, and so is `b`: eight cases, and in each `simp` computes. You prove it on `Bool`; it holds
 for every type, and it is unlocked as `map_eq_pure_bind` in this general form.
 :::
 
 :::proofde
-Vergleiche die Massen bei jedem `b`, mit den Definitionen `map_apply` und `bind_apply`. Was `f` tut,
+Vergleiche die Massen bei jedem `b`, mit `map_bool` und der Definition `bind_apply`. Was `f` tut,
 ist unbekannt, und `b` auch: acht Fälle, und in jedem rechnet `simp`. Du beweist es auf `Bool`; es
 gilt für jeden Typ und wird in dieser allgemeinen Form als `map_eq_pure_bind` freigeschaltet.
 :::
 :::solution
 ```
 ext b
-rw [map_apply, bind_apply]
+rw [map_bool, bind_apply]
 simp_rw [Fintype.sum_bool, pure_apply]
 cases f true <;> cases f false <;> cases b <;> simp
 ```
@@ -132,7 +132,7 @@ rw [← map_eq_pure_bind, coin_not]
 :::
 :::::
 
-:::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → Bool) (g : Bool → DiscreteMeasure Bool) : (do let x ← μ.map f; g x) = (do let x ← μ; ⟦g (f x) ‖ g (f x), g x, (g x).map f⟧)") (lemma := "bind_map_left") (uses := "bind_apply, Fintype.sum_bool, map_apply, <;>, cases, ext, ring, rw, simp, simp_rw")
+:::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → Bool) (g : Bool → DiscreteMeasure Bool) : (do let x ← μ.map f; g x) = (do let x ← μ; ⟦g (f x) ‖ g (f x), g x, (g x).map f⟧)") (lemma := "bind_map_left") (uses := "bind_apply, Fintype.sum_bool, map_bool, <;>, cases, ext, ring, rw, simp, simp_rw")
 ::::hint (anchor := "gap")
 :::en
 First move with `f`, then go on with `g`: in one draw, with what does `g` go on?
@@ -155,13 +155,13 @@ Ergebnis bewegen.
 
 :::proofen
 As in the level before: the masses at every `b`, all sums written out, and
-`map_apply`, and the four possible `f`. The simplifier computes, `ring` (from *Two Coins*) does the
+`map_bool`, and the four possible `f`. The simplifier computes, `ring` (from *Two Coins*) does the
 rest. You prove it on `Bool`; it holds for every type, and it is unlocked as `bind_map_left` in this
 general form.
 :::
 
 :::proofde
-Wie im Level davor: die Massen bei jedem `b`, alle Summen ausgeschrieben, und `map_apply`,
+Wie im Level davor: die Massen bei jedem `b`, alle Summen ausgeschrieben, und `map_bool`,
 und die vier möglichen `f`. Der Simplifier rechnet, `ring` (aus *Zwei Münzen*) erledigt den Rest. Du
 beweist es auf `Bool`; es gilt für jeden Typ und wird in dieser allgemeinen Form als `bind_map_left`
 freigeschaltet.
@@ -170,7 +170,7 @@ freigeschaltet.
 ```
 ext b
 rw [bind_apply, bind_apply]
-simp_rw [Fintype.sum_bool, map_apply]
+simp_rw [Fintype.sum_bool, map_bool]
 cases f true <;> cases f false <;> simp <;> ring
 ```
 :::
@@ -201,7 +201,7 @@ simp_rw [bind_map_left]
 :::
 ::::
 
-:::::leanonly (proof := "(μ : DiscreteMeasure Bool) (g : Bool → DiscreteMeasure Bool) (f : Bool → Bool) : (do let x ← μ; g x).map f = (do let x ← μ; ⟦(g x).map f ‖ (g x).map f, g (f x), g x⟧)") (lemma := "map_bind") (uses := "map_apply, bind_apply, Fintype.sum_bool, <;>, cases, ext, ring, rw, simp, simp_rw")
+:::::leanonly (proof := "(μ : DiscreteMeasure Bool) (g : Bool → DiscreteMeasure Bool) (f : Bool → Bool) : (do let x ← μ; g x).map f = (do let x ← μ; ⟦(g x).map f ‖ (g x).map f, g (f x), g x⟧)") (lemma := "map_bind") (uses := "map_bool, bind_apply, Fintype.sum_bool, <;>, cases, ext, ring, rw, simp, simp_rw")
 ::::hint (anchor := "gap")
 :::en
 A move after the whole draw: where can it go inside?
@@ -232,8 +232,8 @@ Typ und wird in dieser allgemeinen Form als `map_bind` freigeschaltet.
 :::solution
 ```
 ext b
-rw [map_apply, bind_apply]
-simp_rw [Fintype.sum_bool, bind_apply, map_apply, Fintype.sum_bool]
+rw [map_bool, bind_apply]
+simp_rw [Fintype.sum_bool, bind_apply, map_bool, Fintype.sum_bool]
 cases f true <;> cases f false <;> cases b <;> simp <;> ring
 ```
 :::

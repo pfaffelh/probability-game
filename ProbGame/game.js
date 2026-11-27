@@ -27,6 +27,15 @@
       if (k2 !== k) localStorage.removeItem(k)
     }
   } catch {}
+  // (*Masses* has a new level 8, `map_bool`, since 2026-11-27: the progress of the levels from 8 on moves one up)
+  try {
+    if (!localStorage.getItem('pg:moved:masses-map-bool')) {
+      const re = /^pg:(\/[^/]+\/Masses\/):(\d+)((?::.*)?)$/
+      const keys = Object.keys(localStorage).map(k => [k, re.exec(k)]).filter(([, m]) => m && Number(m[2]) >= 7)
+      for (const [k, m] of keys.sort((a, b) => b[1][2] - a[1][2])) { localStorage.setItem(`pg:${m[1]}:${Number(m[2]) + 1}${m[3]}`, localStorage.getItem(k)); localStorage.removeItem(k) }
+      localStorage.setItem('pg:moved:masses-map-bool', '1')
+    }
+  } catch {}
   // (*Bool* has a new level 12, `(b == b) = true`, since 2026-11-27: the progress of the levels from 12 on moves one up)
   try {
     if (!localStorage.getItem('pg:moved:bool-beq')) {
@@ -2873,7 +2882,9 @@
     "coin_true": "theorem coin_true (p : I) : (coin p) true = ↑p",
     "coin_false": "theorem coin_false (p : I) : (coin p) false = ↑(σ p)",
     "map_true": "theorem map_true (f : Bool → Bool) (μ : DiscreteMeasure Bool) : (μ.map f) true = (bif f true then μ true else 0) + bif f false then μ false else 0",
-    "map_apply": "theorem map_apply (f : Bool → Bool) (μ : DiscreteMeasure Bool) (b : Bool) : (μ.map f) b = (bif f true == b then μ true else 0) + bif f false == b then μ false else 0",
+    "map_apply": "theorem map_apply (f : Bool → Bool) (μ : DiscreteMeasure Bool) (b : Bool) : (μ.map f) b = ∑ a with f a = b, μ a",
+    "sum_with": "theorem sum_with {α : Type} [Fintype α] (f : α → Bool) (b : Bool) (g : α → ℝ≥0∞) : ∑ a with f a = b, g a = ∑ a, bif f a == b then g a else 0",
+    "map_bool": "theorem map_bool (f : Bool → Bool) (μ : DiscreteMeasure Bool) (b : Bool) : (μ.map f) b = (bif f true == b then μ true else 0) + bif f false == b then μ false else 0",
     "Fintype.sum_bool": "theorem Fintype.sum_bool {α : Type u_1} [AddCommMonoid α] (f : Bool → α) : ∑ b, f b = f true + f false",
     "Bool.true_beq": "theorem Bool.true_beq (b : Bool) : (true == b) = b",
     "beq_true": "theorem beq_true (b : Bool) : (b == true) = b",
@@ -3076,7 +3087,9 @@
     { name: 'coin_true', kind: 'lemma', sig: '(coin p) true = ↑p', en: 'Proved by you in Masses: the mass of the coin at true.', de: 'Von dir bewiesen in „Massen“: die Masse der Münze bei true.' },
     { name: 'coin_false', kind: 'lemma', sig: '(coin p) false = ↑(σ p)', en: 'Proved by you in Masses: the mass of the coin at false.', de: 'Von dir bewiesen in „Massen“: die Masse der Münze bei false.' },
     { name: 'map_true', kind: 'lemma', sig: '(μ.map f) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)', en: 'Proved by you in Masses: where the mass of a move goes; to true comes the mass of the points that f sends to true.', de: 'Von dir bewiesen in „Massen“: wohin die Masse eines Zuges geht; nach true kommt die Masse der Punkte, die f nach true schickt.' },
-    { name: 'map_apply', kind: 'rule', sig: '(μ.map f) b = (bif f true == b then μ true else 0) + (bif f false == b then μ false else 0)', en: 'The definition of a move, on Bool: to b comes the mass at true when f true is b, and the mass at false when f false is b.', de: 'Die Definition eines Zuges, auf Bool: Nach b kommt die Masse bei true, wenn f true gleich b ist, und die Masse bei false, wenn f false gleich b ist.' },
+    { name: 'map_apply', kind: 'rule', sig: '(μ.map f) b = ∑ a with f a = b, μ a', en: 'The definition of a move: the mass at b is the sum of the masses of the points a with f a = b.', de: 'Die Definition eines Zuges: Die Masse bei b ist die Summe der Massen der Punkte a mit f a = b.' },
+    { name: 'sum_with', kind: 'rule', sig: '(∑ a with f a = b, g a) = ∑ a, (bif f a == b then g a else 0)', en: 'A sum over the points with f a = b, as a sum over all points with a test.', de: 'Eine Summe über die Punkte mit f a = b, als Summe über alle Punkte mit einem Test.' },
+    { name: 'map_bool', kind: 'lemma', sig: '(μ.map f) b = (bif f true == b then μ true else 0) + (bif f false == b then μ false else 0)', en: 'Proved by you in Masses: a move on Bool, written out.', de: 'Von dir bewiesen in „Massen“: ein Zug auf Bool, ausgeschrieben.' },
     { name: 'Fintype.sum_bool', kind: 'rule', sig: '∑ a, g a = g true + g false', en: 'A sum over Bool: its two summands.', de: 'Eine Summe über Bool: ihre zwei Summanden.' },
     { name: 'Bool.true_beq', kind: 'lemma', sig: '(true == b) = b', en: 'Proved by you in Masses: testing true against b gives b itself.', de: 'Von dir bewiesen in „Massen“: Der Test von true gegen b gibt b selbst.' },
     { name: 'beq_true', kind: 'lemma', sig: '(c == true) = c', en: 'Proved by you in Masses: testing for true gives c itself.', de: 'Von dir bewiesen in „Massen“: Der Test auf true gibt c selbst.' },

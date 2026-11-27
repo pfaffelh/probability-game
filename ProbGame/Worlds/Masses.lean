@@ -282,35 +282,63 @@ rw [beq_self_eq_true]
 :::
 :::::
 
-::::leanonly (proof := "(f : Bool → Bool) (μ : DiscreteMeasure Bool) : (μ.map f) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)") (new := "map_apply") (lemma := "map_true") (uses := "map_apply, beq_true, rw")
+::::leanonly (proof := "(f : Bool → Bool) (μ : DiscreteMeasure Bool) (b : Bool) : (μ.map f) b = (bif f true == b then μ true else 0) + (bif f false == b then μ false else 0)") (new := "map_apply, sum_with") (lemma := "map_bool") (uses := "map_apply, sum_with, Fintype.sum_bool, rw")
 :::en
-*Where the mass goes.* A move `μ.map f` takes each point `a` with its mass `μ a` to `f a`. On `Bool`
-the game writes this as the rule
+*Where the mass goes.* A move `μ.map f` takes each point `a` with its mass `μ a` to `f a`. So the
+mass at `b` is the sum of the masses of the points with `f a = b`:
 
-`map_apply : (μ.map f) b = (bif f true == b then μ true else 0) + (bif f false == b then μ false else 0)`.
-
-From it you prove the rule of the gates, `map_true`.
+`map_apply : (μ.map f) b = ∑ a with f a = b, μ a`.
 :::
 
 :::de
 *Wohin die Masse geht.* Ein Zug `μ.map f` bringt jeden Punkt `a` mit seiner Masse `μ a` nach `f a`.
-Auf `Bool` schreibt das Spiel das als Regel
+Die Masse bei `b` ist also die Summe der Massen der Punkte mit `f a = b`:
 
-`map_apply : (μ.map f) b = (bif f true == b then μ true else 0) + (bif f false == b then μ false else 0)`.
-
-Daraus beweist du die Regel der Bausteine, `map_true`.
+`map_apply : (μ.map f) b = ∑ a with f a = b, μ a`.
 :::
 
 :::proofen
-First the definition, `map_apply`; what is left are tests against `true`.
+`sum_with` writes the sum over the points with `f a = b` as a sum over all points, with a test.
+Your result becomes the lemma `map_bool`.
 :::
 
 :::proofde
-Zuerst die Definition, `map_apply`; übrig bleiben Tests gegen `true`.
+`sum_with` schreibt die Summe über die Punkte mit `f a = b` als Summe über alle Punkte, mit einem
+Test. Dein Ergebnis wird das Lemma `map_bool`.
+:::
+:::solution
+```
+rw [map_apply, sum_with, Fintype.sum_bool]
+```
 :::
 :::solution
 ```
 rw [map_apply]
+rw [sum_with]
+rw [Fintype.sum_bool]
+```
+:::
+::::
+
+::::leanonly (proof := "(f : Bool → Bool) (μ : DiscreteMeasure Bool) : (μ.map f) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)") (lemma := "map_true") (uses := "map_bool, beq_true, rw")
+:::en
+*The rule of the gates.* `map_bool` at `b = true`.
+:::
+
+:::de
+*Die Regel der Bausteine.* `map_bool` bei `b = true`.
+:::
+
+:::proofen
+What is left after `map_bool` are tests against `true`.
+:::
+
+:::proofde
+Nach `map_bool` bleiben Tests gegen `true`.
+:::
+:::solution
+```
+rw [map_bool]
 rw [beq_true, beq_true]
 ```
 :::

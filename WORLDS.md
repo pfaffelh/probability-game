@@ -15,7 +15,7 @@ A world is measured against four questions.
 
 For each world: its goal, the tactics, how the levels get there, and what is open. The six
 proposals of the first version of this file are carried out, and after them the thin tactics got
-their levels (see the end); "open" is what is left. 14 worlds, 165 levels.
+their levels (see the end); "open" is what is left. 14 worlds, 166 levels.
 
 ## 1. Bool (15 levels)
 
@@ -30,7 +30,7 @@ both cases (`cases`). The `bif` rules. A quiz on `cases x <;> rfl`. Two inputs, 
 
 **Open.** The boss has the same proof line as De Morgan before it; it is harder on the board only.
 
-## 2. Masses (14 levels)
+## 2. Masses (15 levels)
 
 **Goal.** A distribution on `Bool` is two masses that add up to 1, and a map moves each mass to its
 image (`map_true`).
