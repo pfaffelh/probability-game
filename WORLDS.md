@@ -15,9 +15,9 @@ A world is measured against four questions.
 
 For each world: its goal, the tactics, how the levels get there, and what is open. The six
 proposals of the first version of this file are carried out, and after them the thin tactics got
-their levels (see the end); "open" is what is left. 14 worlds, 164 levels.
+their levels (see the end); "open" is what is left. 14 worlds, 165 levels.
 
-## 1. Bool (14 levels)
+## 1. Bool (15 levels)
 
 **Goal.** A circuit is a function, and a function on `Bool` is its truth table: two circuits are
 equal when all rows agree.

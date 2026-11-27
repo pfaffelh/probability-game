@@ -27,6 +27,15 @@
       if (k2 !== k) localStorage.removeItem(k)
     }
   } catch {}
+  // (*Bool* has a new level 12, `(b == b) = true`, since 2026-11-27: the progress of the levels from 12 on moves one up)
+  try {
+    if (!localStorage.getItem('pg:moved:bool-beq')) {
+      const re = /^pg:(\/[^/]+\/Circuits\/):(\d+)((?::.*)?)$/
+      const keys = Object.keys(localStorage).map(k => [k, re.exec(k)]).filter(([, m]) => m && Number(m[2]) >= 11)
+      for (const [k, m] of keys.sort((a, b) => b[1][2] - a[1][2])) { localStorage.setItem(`pg:${m[1]}:${Number(m[2]) + 1}${m[3]}`, localStorage.getItem(k)); localStorage.removeItem(k) }
+      localStorage.setItem('pg:moved:bool-beq', '1')
+    }
+  } catch {}
   const DE = {
     Moves: 'Züge', Undo: 'Zurück', 'Add a gate': 'Baustein hinzufügen', Gate: 'Baustein', 'Start over': 'Neu anfangen', 'Next level ›': 'Nächstes Level ›',
     Target: 'Ziel', 'In Lean, for every p:': 'In Lean, für jedes p:', 'proved': 'bewiesen',
@@ -3144,7 +3153,7 @@
     { name: 'ring', kind: 'tactic', insert: 'ring', sig: 'ring', en: 'Proves an equation that holds by computing with + and * alone (commutative, associative, distributive, powers), whatever the letters are.', de: 'Beweist eine Gleichung, die allein durch Rechnen mit + und * gilt (kommutativ, assoziativ, distributiv, Potenzen), was auch immer die Buchstaben sind.' },
     { name: 'mass_mul', kind: 'rule', sig: '↑(p * q) = ↑p * ↑q', en: 'A product of numbers in [0, 1], as a mass.', de: 'Ein Produkt von Zahlen in [0, 1], als Masse.' },
     { name: 'coin_bind_apply', kind: 'lemma', sig: '(do let b ← coin p; f b) x = ↑p * f true x + ↑(σ p) * f false x', en: 'Proved by you in Binomial: a draw that starts with a coin, at any point, through true and through false.', de: 'Von dir bewiesen in „Binomial“: ein Ziehen, das mit einer Münze beginnt, an jedem Punkt, über true und über false.' },
-    { name: 'beq_self_eq_true', kind: 'rule', sig: '(a == a) = true', en: 'A point tested against itself.', de: 'Ein Punkt, mit sich selbst verglichen.' },
+    { name: 'beq_self_eq_true', kind: 'lemma', sig: '(a == a) = true', en: 'Proved by you in Bool: a point tested against itself (on Bool; it holds for every type with ==).', de: 'Von dir bewiesen in „Bool“: ein Punkt, mit sich selbst verglichen (auf Bool; es gilt für jeden Typ mit ==).' },
     { name: 'pure_self', kind: 'lemma', sig: '(pure a) a = 1', en: 'Proved by you in Binomial: a point mass at its point.', de: 'Von dir bewiesen in „Binomial“: eine Punktmasse an ihrem Punkt.' },
     { name: 'pure_zero_succ', kind: 'rule', sig: '(pure 0) (k + 1) = 0', en: 'The point mass at 0 has nothing at k + 1.', de: 'Die Punktmasse bei 0 hat bei k + 1 nichts.' },
     { name: 'shift_succ', kind: 'rule', sig: '(do let Y ← μ; pure (1 + Y)) (k + 1) = μ k', en: 'One more: the mass at k + 1 is the old mass at k.', de: 'Eins mehr: Die Masse bei k + 1 ist die alte Masse bei k.' },
@@ -3293,6 +3302,8 @@
       // (the theorems of this level only, if the level names them: the tactics: see available, the
       // theorems not needed here are left out, to keep the inventory short and to show the way)
       this.uses = root.dataset.uses ? new Set(root.dataset.uses.split(',').map(x => x.trim()).filter(Boolean)) : null
+      // (`-rfl` in `uses`: the level takes this tactic away, so that the player rewrites)
+      this.without = new Set([...(this.uses ?? [])].filter(x => /^-./.test(x)).map(x => x.slice(1)))
       this.context = root.dataset.proofContext ?? ''
       this.key = level.key + ':proof'
       this.lines = []
@@ -3364,6 +3375,7 @@
     // lemmas of this world always, once earned; other theorems where the level needs them)
     available(item) {
       if (!item || !this.inventory.has(item.name)) return false
+      if (item.kind === 'tactic' && this.without.has(item.name)) return false
       if (item.kind === 'tactic') return TACTICS_KEPT.has(item.name) || !this.worldTactics || this.worldTactics.has(item.name)
       if (!this.uses || this.uses.has(item.name)) return true
       // (in a world whose levels have their other solutions written down, not: there `uses` knows them)

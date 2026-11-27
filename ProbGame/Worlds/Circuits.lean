@@ -196,7 +196,7 @@ rfl
 :::
 ::::
 
-:::::leanonly (proof := ": (!(!true)) = true") (context := "Lean/WorldBool.lean") (group := "bool") (new := "rw") (uses := "Bool.not_true, Bool.not_false, rfl, rw")
+:::::leanonly (proof := ": (!(!true)) = true") (context := "Lean/WorldBool.lean") (group := "bool") (new := "rw") (uses := "Bool.not_true, Bool.not_false, rw, -rfl")
 ::::hint (anchor := "item:rw")
 :::en
 `rw [h]` rewrites the goal with a theorem `h : a = b`: every `a` becomes `b`.
@@ -229,17 +229,6 @@ Ziels gleich, schließt `rw` es.
 :::solution
 ```
 rw [Bool.not_true, Bool.not_false]
-```
-:::
-:::solution
-```
-rfl
-```
-:::
-:::solution
-```
-rw [Bool.not_true]
-rfl
 ```
 :::
 :::::
@@ -469,7 +458,7 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(c a : Bool) : (bif c then a else a) = ⟦a ‖ a, c, true, false⟧") (lemma := "Bool.cond_self") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "Bool.cond_false, Bool.cond_true, <;>, cases, rfl, rw")
+::::leanonly (proof := "(c a : Bool) : (bif c then a else a) = ⟦a ‖ a, c, true, false⟧") (lemma := "Bool.cond_self") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "Bool.cond_false, Bool.cond_true, cases, rw, -rfl")
 :::hint (anchor := "none")
 :::
 
@@ -487,16 +476,35 @@ rw [Bool.cond_false]
 rw [Bool.cond_true]
 ```
 :::
+::::
+
+::::leanonly (proof := "(b : Bool) : (b == b) = ⟦true ‖ true, false, b⟧") (lemma := "beq_self_eq_true") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "<;>, cases, rfl")
+:::en
+*Tested against itself.* `a == b` asks whether `a` and `b` are equal, and answers `true` or `false`.
+:::
+
+:::de
+*Mit sich selbst verglichen.* `a == b` fragt, ob `a` und `b` gleich sind, und antwortet `true` oder `false`.
+:::
+
+:::proofen
+`==` on `Bool` is defined by cases, as `&&` and `||`. Your result becomes the lemma `beq_self_eq_true`.
+:::
+
+:::proofde
+`==` ist auf `Bool` durch Fälle definiert, wie `&&` und `||`. Dein Ergebnis wird das Lemma
+`beq_self_eq_true`.
+:::
 :::solution
 ```
-cases c
-rfl
-rfl
+cases b <;> rfl
 ```
 :::
 :::solution
 ```
-cases c <;> rfl
+cases b
+rfl
+rfl
 ```
 :::
 ::::

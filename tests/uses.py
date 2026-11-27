@@ -45,6 +45,9 @@ for f in sorted(glob.glob(str(root / 'ProbGame/Worlds/*.lean'))):
                         if u in theorems and u not in used: used.append(u)
                 text = '\n'.join(sol)
                 used += [t for t in sorted(tactics) if (t in text if t == '<;>' else re.search(r"(?<![\w.'])" + re.escape(t) + r"(?![\w.'])", text))]
+                # (`-rfl`: the level takes the tactic away; set by hand, kept)
+                old = re.search(r'\(uses := "([^"]*)"\)', lines[i])
+                used += [x.strip() for x in (old.group(1).split(',') if old else []) if x.strip().startswith('-') and x.strip() != '-']
                 new = re.sub(r' \(uses := "[^"]*"\)', '', lines[i]) + (f' (uses := "{", ".join(used)}")' if used else ' (uses := "-")')
                 if new != lines[i]: lines[i] = new; changed += 1
             i = end

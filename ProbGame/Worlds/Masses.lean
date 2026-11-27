@@ -172,7 +172,7 @@ rfl
 :::
 :::::
 
-::::leanonly (proof := "(p : I) : 0 + coin p true = p") (new := "zero_add") (uses := "zero_add, coin_true, add_zero, mul_zero, coin_false, coin_total, rw")
+::::leanonly (proof := "(p : I) : 0 + coin p true = p") (new := "zero_add") (uses := "zero_add, coin_true, add_zero, mul_zero, coin_false, coin_total, rw, -rfl")
 :::en
 *Zero plus.* Not every rule is a definition: `zero_add : 0 + a = a` is a rule of arithmetic, given
 here (it is proved in Mathlib, not by `rfl`). A rule is used by rewriting with it, with `rw`.
@@ -202,7 +202,7 @@ rw [coin_true]
 :::
 ::::
 
-::::leanonly (proof := "(x y : ℝ≥0∞) : ∑ a, (bif a then x else y) = x + y") (new := "Fintype.sum_bool") (uses := "Fintype.sum_bool, Bool.cond_true, Bool.cond_false, rw")
+::::leanonly (proof := "(x y : ℝ≥0∞) : ∑ a, (bif a then x else y) = x + y") (new := "Fintype.sum_bool") (uses := "Fintype.sum_bool, Bool.cond_true, Bool.cond_false, rw, -rfl")
 :::en
 *A sum over Bool.* A move collects masses: it adds up the masses of all points that go to the same
 place. So we need sums. `∑ a, g a` is the sum of `g a` over all points `a` of a finite type; over `Bool`
@@ -262,15 +262,8 @@ cases c <;> rfl
 :::
 ::::
 
-:::::leanonly (proof := "(b : Bool) : (true == b) = ⟦b ‖ b, !b, true⟧") (lemma := "Bool.true_beq") (new := "beq_self_eq_true") (uses := "beq_self_eq_true, cases, rfl, rw")
-::::hint (anchor := "item:beq_self_eq_true")
-:::en
-`beq_self_eq_true : (a == a) = true`: a point tested against itself.
-:::
-
-:::de
-`beq_self_eq_true : (a == a) = true`: ein Punkt, mit sich selbst verglichen.
-:::
+:::::leanonly (proof := "(b : Bool) : (true == b) = ⟦b ‖ b, !b, true⟧") (lemma := "Bool.true_beq") (uses := "beq_self_eq_true, cases, rfl, rw")
+::::hint (anchor := "none")
 ::::
 
 :::en
@@ -345,7 +338,7 @@ rw [beq_true, beq_true]
 :::
 ::::
 
-:::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (μ.map (fun _ => true)) true = ⟦μ true + μ false ‖ μ true, μ false, μ true + μ false, 0⟧") (uses := "map_true, Bool.cond_true, Bool.cond_false, rw")
+:::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (μ.map (fun _ => true)) true = ⟦μ true + μ false ‖ μ true, μ false, μ true + μ false, 0⟧") (uses := "map_true, Bool.cond_true, Bool.cond_false, rw, -rfl")
 ::::hint (anchor := "gap")
 :::en
 Which masses of `μ` come to `true`?
@@ -528,7 +521,7 @@ exact mass_le_one μ b
 :::
 :::::
 
-:::::circuit (height := "440") (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : ((coin p).map not) true = σ p") (play := "a=not; x>a.0; a>out") (uses := "map_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, coin_false, add_zero, mul_zero, coin_true, coin_total, rw")
+:::::circuit (height := "440") (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : ((coin p).map not) true = σ p") (play := "a=not; x>a.0; a>out") (uses := "map_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, coin_false, add_zero, mul_zero, coin_true, coin_total, rw, -rfl")
 :::hint (anchor := "none")
 :::
 
