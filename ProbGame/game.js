@@ -3323,7 +3323,7 @@
       try { this.lines = JSON.parse(localStorage.getItem(this.key) ?? '[]') } catch {}
       // Gaps: a part of the statement marked ⟦…⟧ is open; the player fills it first and then proves the
       // statement as filled. A wrong filling is no stop: its proof just never comes to an end.
-      this.template = this.statement
+      this.template = this.statement; this.levelRoot = root
       this.gapCount = (this.template.match(/⟦[^⟧]*⟧/g) ?? []).length
       this.fill = []
       try { this.fill = JSON.parse(localStorage.getItem(this.key + ':gaps') ?? '[]').slice(0, this.gapCount) } catch {}
@@ -3359,6 +3359,16 @@
       return this.template.replace(/⟦[^⟧]*⟧/g, () => { const f = this.fill[i++]; return f === undefined ? '▢' : /\s/.test(f) ? `(${f})` : f })
     }
     saveFill() { try { localStorage.setItem(this.key + ':gaps', JSON.stringify(this.fill)) } catch {} }
+    // a filling that is not what is meant, with a sentence of the level for it: `:::hint (anchor := "wrong:a + b - a")`
+    wrongHint() {
+      const meant = (this.template.match(/⟦[^⟧]*⟧/g) ?? []).map(g => g.slice(1, -1).split('‖')[0].trim())
+      for (const [k, f] of this.fill.entries()) {
+        if (f === meant[k]) continue
+        const h = [...this.levelRoot.querySelectorAll('.pg-hint')].find(h => h.dataset.at === `wrong:${f}`)
+        if (h) return h
+      }
+      return null
+    }
     // the gaps (from the k-th on) open again; the proof starts anew
     reopen(k = 0) {
       if (this.busy) return
@@ -3789,6 +3799,9 @@
       if (this.gapCount && !this.gapsOpen) {
         const again = el('button', 'pg-tool pg-gap-again', '✎ ' + tr('Fill the gaps anew')); again.type = 'button'; again.disabled = this.busy
         again.addEventListener('click', () => this.reopen(0))
+        // (a wrong filling with a sentence of its own: said at once, in red, under the statement)
+        const w = this.wrongHint()
+        if (w) { const box = el('div', 'pg-quiz-warn pg-gap-wrong'); box.append(...[...w.children].map(c => c.cloneNode(true))); parts.push(box) }
         parts.push(again)
       } else if (this.gapsOpen && this.gapChoices) parts.push(el('div', 'pg-info pg-gap-info', tr('What belongs in the gap ▢? Choose it below. Then you prove the statement as you filled it: if it is wrong, the proof will not come to an end.')))
       else if (this.gapsOpen) parts.push(el('div', 'pg-info pg-gap-info', tr('What belongs in the gap ▢? Put it together below and take it with Run. Then you prove the statement as you filled it: if it is wrong, the proof will not come to an end.')))
@@ -4360,7 +4373,7 @@
     // (`back`: at the key ←)
     const PROOF_AT = { gap: '.pg-gap-now', keys: '.pg-keys', back: '.pg-key-back', statement: '.pg-proof-statement', lean: null }
     const proofHint = h => h.dataset.at.startsWith('item:') || h.dataset.at in PROOF_AT
-    const boardHints = k => [...roots[k].querySelectorAll(':scope > .pg-text > .pg-hint:not([data-at="none"])')].filter(h => !proofHint(h) && !/^(after|old):/.test(h.dataset.at))
+    const boardHints = k => [...roots[k].querySelectorAll(':scope > .pg-text > .pg-hint:not([data-at="none"])')].filter(h => !proofHint(h) && !/^(after|old|wrong):/.test(h.dataset.at))
     // (a hint in between: `after:cases`, once a line of the proof with the tactic cases is taken, at the
     // goals; the button Tips shows it again when the proof has such a line)
     const tacOf = line => line.trim().split(/[\s\[]/)[0]

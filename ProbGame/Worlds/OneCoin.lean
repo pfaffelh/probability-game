@@ -92,6 +92,26 @@ Welche der drei gilt für alle `a b : ℝ≥0∞`? Probier `b < a`, und probier 
 :::
 ::::
 
+::::hint (anchor := "wrong:a + b - a")
+:::en
+This does not hold for all `a b`: try `a = ∞`.
+:::
+
+:::de
+Das gilt nicht für alle `a b`: Probier `a = ∞`.
+:::
+::::
+
+::::hint (anchor := "wrong:b - a + a")
+:::en
+This does not hold for all `a b`: try `b < a`.
+:::
+
+:::de
+Das gilt nicht für alle `a b`: Probier `b < a`.
+:::
+::::
+
 :::proofen
 `tsub_self : a - a = 0` holds for every `a`, also for `a = ∞`. (For a finite `a` also
 `a + b - a = b`: the rule `ENNReal.add_sub_cancel_left`, in *The rest of the mass*.)
