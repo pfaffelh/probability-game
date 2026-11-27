@@ -13,3 +13,6 @@ and the moves of the coins in the worlds after this one. After each move the gam
 where `e` is the value (`!(!true)`) or the map (`fun (b : Bool) => !(!b)`); `id` makes sure that
 `simp` has something to do.
 -/
+
+/-- De Morgan, proved by the player in *Bool* (level `or_eq`): needed by the boss of the world. -/
+theorem or_eq (x y : Bool) : (x || y) = !(!x && !y) := by cases x <;> cases y <;> rfl

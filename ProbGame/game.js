@@ -3099,7 +3099,7 @@
     { name: 'Bool.cond_self', kind: 'lemma', sig: '(bif c then a else a) = a', en: 'Proved by you in Bool: twice the same, whatever the condition.', de: 'Von dir bewiesen in „Bool“: zweimal dasselbe, egal welche Bedingung.' },
     { name: 'Bool.cond_false', kind: 'lemma', sig: '(bif false then a else b) = b', en: 'Proved by you in Bool: bif with false is the second.', de: 'Von dir bewiesen in „Bool“: bif mit false ist das Zweite.' },
     { name: 'zero_add', kind: 'rule', sig: '0 + a = a', en: 'Adding to zero.', de: 'Zu null addieren.' },
-    { name: 'coin_not_true', kind: 'lemma', sig: '((coin p).map not) true = ↑(σ p)', en: 'Proved by you in One Coin.', de: 'Von dir bewiesen in „Eine Münze“.' },
+    { name: 'coin_not_true', kind: 'lemma', sig: '((coin p).map not) true = ↑(σ p)', en: 'Proved by you in Masses.', de: 'Von dir bewiesen in „Massen“.' },
     { name: 'coin_not', kind: 'lemma', sig: '(coin p).map not = coin (σ p)', en: 'Proved by you: the boss of One Coin. Flipping a coin swaps the masses.', de: 'Von dir bewiesen: der Endgegner von „Eine Münze“. Umdrehen tauscht die Massen.' },
     { name: 'coin_total', kind: 'lemma', sig: '(coin p) true + (coin p) false = 1', en: 'Proved by you in Masses: the total mass of a coin is one.', de: 'Von dir bewiesen in „Massen“: Die Gesamtmasse einer Münze ist eins.' },
     { name: 'pure_apply', kind: 'rule', sig: '(pure a) b = bif a == b then 1 else 0', en: 'The definition of a point mass: one at its point, zero elsewhere.', de: 'Die Definition einer Punktmasse: eins an ihrem Punkt, null sonst.' },
@@ -3516,7 +3516,8 @@
           for (const [k, id] of ids.entries()) {
             const it = INVENTORY.find(i => i.name === id)
             if (it && it.kind !== 'tactic' && !this.available(it)) return tr('{x} is not unlocked yet.', { x: id })
-            if (!it && !local.has(id) && id !== '_' && (k === 0 || /[._]/.test(id))) return tr('{x} is not in your inventory.', { x: id })
+            // (`x.toNat` with a local x is the player's own: the name before the first dot counts)
+            if (!it && !local.has(id) && !local.has(id.split('.')[0]) && id !== '_' && (k === 0 || /[._]/.test(id))) return tr('{x} is not in your inventory.', { x: id })
           }
         }
       }
