@@ -15,7 +15,7 @@ A world is measured against four questions.
 
 For each world: its goal, the tactics, how the levels get there, and what is open. The six
 proposals of the first version of this file are carried out, and after them the thin tactics got
-their levels (see the end); "open" is what is left. 15 worlds, 182 levels.
+their levels (see the end); "open" is what is left. 15 worlds, 181 levels.
 
 ## 1. Bool (25 levels)
 
@@ -64,7 +64,7 @@ true of each output by the choice μ true, μ false, 1, 0 (the one at false foll
 `map_apply`, then `map_true`, `map_id` (by `bool_ext`, one line), `map_not_true :
 (μ.map not) true = μ false`. Boss: `map_pure`, the hardest of the moves.
 
-## 4. One Coin (8 levels)
+## 4. One Coin (7 levels)
 
 **Goal.** The coin: its two masses, and every distribution on `Bool` is a coin (`eq_coin`); a flipped
 coin is the coin `σ p`.
@@ -74,7 +74,7 @@ coin is the coin `σ p`.
 **Path.** The masses of the coin (the first board with a coin); the rule
 `add_symm_eq_one` (from ENNReal), with it `coin_total`. Every distribution is a coin (`eq_coin`). The sure
 coin, `coin_one : coin 1 = pure true`. Surely `false` on the board.
-`coin_not_true` on the board, by the boss of DiscreteMeasure. Boss: `coin_not`.
+Boss: `coin_not`, on the board (a `not` after the coin), by `eq_coin` and the boss of DiscreteMeasure.
 
 ## 5. Maps (7 levels)
 

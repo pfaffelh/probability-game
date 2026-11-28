@@ -301,53 +301,7 @@ rw [map_bool, Bool.true_beq, Bool.cond_false, Bool.cond_false, zero_add]
 :::
 ::::
 
-:::::circuit (height := "440") (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : ((coin p).map not) true = σ p") (lemma := "coin_not_true") (play := "a=not; x>a.0; a>out") (uses := "map_not_true, coin_false, map_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, map_bool, beq_true, coin_true, coin_total, add_zero, mul_zero, rw, -rfl")
-:::hint (anchor := "none")
-:::
-
-:::hint (anchor := "none")
-:::
-
-:::en
-*Boss: where does the mass go?* The coin `x` is thrown at the top; below, the output with the target:
-`false` with mass $`p`, `true` with $`1 - p`. Put a `not` between them. Then look at `true`: its mass
-came from `false`.
-:::
-
-:::de
-*Endgegner: Wohin geht die Masse?* Oben wird die Münze `x` geworfen; unten der Ausgang mit dem Ziel: `false`
-mit Masse $`p`, `true` mit $`1 - p`. Setz ein `nicht` dazwischen. Dann sieh dir `true` an: Seine
-Masse kam von `false`.
-:::
-
-:::proofen
-*Now the proof.* The boss of *DiscreteMeasure*, for the coin.
-:::
-
-:::proofde
-*Jetzt der Beweis.* Der Endgegner von *DiscreteMeasure*, für die Münze.
-:::
-:::solution
-```
-rw [map_not_true, coin_false]
-```
-:::
-:::solution
-```
-rw [map_true]
-rw [Bool.not_true, Bool.not_false]
-rw [Bool.cond_false, Bool.cond_true, zero_add]
-rw [coin_false]
-```
-:::
-:::solution
-```
-rw [map_bool, beq_true, beq_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, coin_false]
-```
-:::
-:::::
-
-:::::leanonly (proof := "(p : I) : (coin p).map not = coin ⟦σ p ‖ p, σ p⟧") (lemma := "coin_not") (uses := "bool_ext, map_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, coin_false, coin_true, eq_coin, coin_not_true, add_zero, mul_zero, coin_total, apply, exact, rw")
+:::::circuit (height := "440") (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : (coin p).map not = coin ⟦σ p ‖ p, σ p⟧") (lemma := "coin_not") (play := "a=not; x>a.0; a>out") (uses := "eq_coin, map_not_true, coin_false, bool_ext, coin_true, map_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, coin_total, add_zero, mul_zero, apply, rw")
 ::::hint (anchor := "gap")
 :::en
 Flip the coin `p`: what is its mass at `true` now?
@@ -359,21 +313,39 @@ Dreh die Münze `p` um: Was ist jetzt ihre Masse bei `true`?
 ::::
 
 :::en
-*Boss: flip the coin.* Not just the mass at `true`: the whole coin.
+*Boss: flip the coin.* The coin `x` is thrown at the top; below, the output with the target: `false`
+with mass $`p`, `true` with $`1 - p`. Put a `not` between them: the mass at `true` came from `false`.
 :::
 
 :::de
-*Endgegner: Dreh die Münze um.* Nicht nur die Masse bei `true`: die ganze Münze.
+*Endgegner: Dreh die Münze um.* Oben wird die Münze `x` geworfen; unten der Ausgang mit dem Ziel:
+`false` mit Masse $`p`, `true` mit $`1 - p`. Setz ein `nicht` dazwischen: Die Masse bei `true` kam
+von `false`.
 :::
 
 :::proofen
-Flipping turns the coin `p` into the coin $`1 - p`: the whole coin, not only its mass at `true`.
+Flipping turns the coin `p` into the coin $`1 - p`: the whole coin, not only its mass at `true`. A
+distribution on `Bool` is a coin (`eq_coin`), and its mass at `true` is the boss of *DiscreteMeasure*.
 Your result becomes the lemma `coin_not`, which the next worlds use all the time.
 :::
 
 :::proofde
 Umdrehen macht aus der Münze $`p` die Münze $`1 - p`: die ganze Münze, nicht nur ihre Masse bei
-`true`. Dein Ergebnis wird das Lemma `coin_not`, das die nächsten Welten ständig benutzen.
+`true`. Eine Verteilung auf `Bool` ist eine Münze (`eq_coin`), und ihre Masse bei `true` ist der
+Endgegner von *DiscreteMeasure*. Dein Ergebnis wird das Lemma `coin_not`, das die nächsten Welten
+ständig benutzen.
+:::
+:::solution
+```
+apply eq_coin
+rw [map_not_true, coin_false]
+```
+:::
+:::solution
+```
+apply bool_ext
+rw [map_not_true, coin_false, coin_true]
+```
 :::
 :::solution
 ```
@@ -382,24 +354,6 @@ rw [map_true]
 rw [Bool.not_true, Bool.not_false]
 rw [Bool.cond_false, Bool.cond_true, zero_add]
 rw [coin_false, coin_true]
-```
-:::
-:::solution
-```
-apply eq_coin
-rw [map_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, coin_false]
-```
-:::
-:::solution
-```
-apply eq_coin
-exact coin_not_true p
-```
-:::
-:::solution
-```
-apply bool_ext
-rw [coin_not_true, coin_true]
 ```
 :::
 :::::

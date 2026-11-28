@@ -254,6 +254,20 @@
       localStorage.setItem('pg:moved:2026-11-29j', '1')
     }
   } catch {}
+  // (since 2026-11-29: One Coin 7, `coin_not_true` on the board, is gone; the boss `coin_not` has its board)
+  try {
+    if (!localStorage.getItem('pg:moved:2026-11-29k')) {
+      const re = /^pg:(\/[^/]+\/)One-Coin\/:(\d+)((?::.*)?)$/
+      const moved = []
+      for (const k of Object.keys(localStorage)) {
+        const m = re.exec(k), i = m && Number(m[2])
+        if (m && i >= 6) moved.push([k, i === 6 ? null : `pg:${m[1]}One-Coin/:${i - 1}${m[3]}`, localStorage.getItem(k)])
+      }
+      for (const [k] of moved) localStorage.removeItem(k)
+      for (const [, k, v] of moved) if (k) localStorage.setItem(k, v)
+      localStorage.setItem('pg:moved:2026-11-29k', '1')
+    }
+  } catch {}
   const DE = {
     Moves: 'Züge', Undo: 'Zurück', 'Add a gate': 'Baustein hinzufügen', Gate: 'Baustein', 'Start over': 'Neu anfangen', 'Next level ›': 'Nächstes Level ›',
     Target: 'Ziel', 'In Lean, for every p:': 'In Lean, für jedes p:', 'proved': 'bewiesen',
@@ -3508,7 +3522,6 @@
     { name: 'Bool.cond_self', kind: 'lemma', sig: '(bif c then a else a) = a', en: 'Proved by you in Bool: twice the same, whatever the condition.', de: 'Von dir bewiesen in „Bool“: zweimal dasselbe, egal welche Bedingung.' },
     { name: 'Bool.cond_false', kind: 'lemma', sig: '(bif false then a else b) = b', en: 'Proved by you in Bool: bif with false is the second.', de: 'Von dir bewiesen in „Bool“: bif mit false ist das Zweite.' },
     { name: 'zero_add', kind: 'rule', sig: '0 + a = a', en: 'Adding to zero.', de: 'Zu null addieren.' },
-    { name: 'coin_not_true', kind: 'lemma', sig: '((coin p).map not) true = ↑(σ p)', en: 'Proved by you in One Coin.', de: 'Von dir bewiesen in „Eine Münze“.' },
     { name: 'coin_not', kind: 'lemma', sig: '(coin p).map not = coin (σ p)', en: 'Proved by you: the boss of One Coin. Flipping a coin swaps the masses.', de: 'Von dir bewiesen: der Endgegner von „Eine Münze“. Umdrehen tauscht die Massen.' },
     { name: 'coin_total', kind: 'lemma', sig: '(coin p) true + (coin p) false = 1', en: 'Proved by you in One Coin: the total mass of a coin is one.', de: 'Von dir bewiesen in „Eine Münze“: Die Gesamtmasse einer Münze ist eins.' },
     { name: 'pure_apply', kind: 'rule', sig: '(pure a) b = bif a == b then 1 else 0', en: 'The definition of a point mass: one at its point, zero elsewhere.', de: 'Die Definition einer Punktmasse: eins an ihrem Punkt, null sonst.' },
