@@ -22,48 +22,6 @@ Abbildungen auf `Bool`, und Züge mit ihnen. Es gibt genau vier Abbildungen `Boo
 unbekannte Abbildung `f : Bool → Bool` gilt für jede Abbildung, wenn sie für jede der vier gilt.
 :::
 
-::::leanonly (proof := "(f : Bool → Bool) (b : Bool) : f (f (f b)) = ⟦f b ‖ b, f b, f (f b)⟧") (lemma := "Bool.apply_apply_apply") (new := "revert, decide") (group := "bool") (uses := "<;>, cases, decide, revert")
-:::en
-*Three times.* Whatever map `f : Bool → Bool` is: what does it do, applied three times? Check it for
-`not` and for always `true`. In Lean the new tactics `revert` and `decide` check it, in every case at once.
-:::
-
-:::de
-*Dreimal.* Welche Abbildung `f : Bool → Bool` auch immer: Was tut sie, dreimal angewandt? Prüf es
-für `not` und für immer `true`. In Lean prüfen es die neuen Taktiken `revert` und `decide`, in allen Fällen auf einmal.
-:::
-
-:::proofen
-No rule says what `f` does, so there is nothing to rewrite. But there are only four maps
-`Bool → Bool`, and with the two values of `b` these are eight cases. Two new tactics: `revert f b`
-takes the variables back into the statement, here `∀ f b, f (f (f b)) = f b`; `decide` reduces a
-statement about finitely many cases until it is `true` or `false`, and so checks every case. (For
-one unknown `f` there is nothing to compute: `decide` alone does not work.) Your result is unlocked
-as `Bool.apply_apply_apply`.
-:::
-
-:::proofde
-Keine Regel sagt, was `f` tut; es gibt also nichts umzuschreiben. Aber es gibt nur vier Abbildungen
-`Bool → Bool`, und mit den zwei Werten von `b` sind das acht Fälle. Zwei neue Taktiken: `revert f b`
-nimmt die Variablen zurück in die Aussage, hier `∀ f b, f (f (f b)) = f b`; `decide` reduziert eine
-Aussage über endlich viele Fälle, bis sie `true` oder `false` ist, und prüft so jeden Fall. (Für ein
-unbekanntes `f` gibt es nichts auszurechnen: `decide` allein geht nicht.) Dein Ergebnis wird als
-`Bool.apply_apply_apply` freigeschaltet.
-:::
-:::solution
-```
-revert f b
-decide
-```
-:::
-:::solution
-```
-revert f
-cases b <;> decide
-```
-:::
-::::
-
 ::::quiz (tactic := "revert f b; decide") (statements := "(f : Bool → Bool) (b : Bool) : f (f b) = b ;; (f : Bool → Bool) (b : Bool) : f (f (f (f b))) = f (f b) ;; (f : Bool → Bool) (b : Bool) : f (f b) = f b ;; (f : Bool → Bool) (b : Bool) : (f b && !f b) = false ;; (f : Bool → Bool) (b : Bool) : (f b || f (!b)) = true") (answer := "2, 4")
 :::en
 *For every map?* Which of these statements hold for every map `f : Bool → Bool` and every `b`? Go through the four maps. Lean checks your choice with `revert f b` and `decide`.
@@ -74,7 +32,22 @@ cases b <;> decide
 :::
 ::::
 
-::::quiz (tactic := "rw [Bool.not_not]") (context := "Lean/Rules.lean") (statements := "(b : Bool) : (!(!b)) = b ;; (μ : DiscreteMeasure Bool) : μ.map (fun b => !(!b)) = μ.map (fun b => b) ;; (f : Bool → Bool) (b : Bool) : f (!(!b)) = f b ;; : (fun b : Bool => !(!b)) = (fun b => b) ;; (a : Bool) : (a && !(!a)) = (a && a)") (answer := "1, 3, 5")
+:::::quiz (tactic := "rw [Bool.not_not]") (context := "Lean/Rules.lean") (statements := "(b : Bool) : (!(!b)) = b ;; (μ : DiscreteMeasure Bool) : μ.map (fun b => !(!b)) = μ.map (fun b => b) ;; (f : Bool → Bool) (b : Bool) : f (!(!b)) = f b ;; : (fun b : Bool => !(!b)) = (fun b => b) ;; (a : Bool) : (a && !(!a)) = (a && a)") (answer := "1, 3, 5")
+::::hint (anchor := "solved")
+:::en
+Why two fail: in `fun b => !(!b)` the `b` is *bound*, a name that exists only inside the `fun`.
+`rw` rewrites a part of the goal that stands there on its own, and `!(!b)` with a bound `b` is no such
+part: Lean does not find the pattern. In the other three, `b` and `a` are variables of the statement.
+The next level brings a tactic that rewrites under `fun`.
+:::
+
+:::de
+Warum zwei scheitern: In `fun b => !(!b)` ist das `b` *gebunden*, ein Name, den es nur innerhalb des
+`fun` gibt. `rw` schreibt einen Teil des Ziels um, der für sich dasteht, und `!(!b)` mit gebundenem
+`b` ist kein solcher Teil: Lean findet das Muster nicht. In den anderen drei sind `b` und `a`
+Variablen der Aussage. Das nächste Level bringt eine Taktik, die unter `fun` umschreibt.
+:::
+::::
 :::en
 *Where does `rw` fail?* Your lemma from *Bool*, `Bool.not_not : (!(!b)) = b`. Every statement here has a `!(!…)` in it, and yet `rw [Bool.not_not]` proves only some of them. Which? Look at where the `b` comes from.
 :::
@@ -82,7 +55,7 @@ cases b <;> decide
 :::de
 *Wo scheitert `rw`?* Dein Lemma aus *Bool*, `Bool.not_not : (!(!b)) = b`. Jede Aussage hier enthält ein `!(!…)`, und doch beweist `rw [Bool.not_not]` nur manche. Welche? Schau, woher das `b` kommt.
 :::
-::::
+:::::
 
 ::::leanonly (proof := "(μ : DiscreteMeasure Bool) : μ.map (fun x => !(!x)) = ⟦μ ‖ μ, μ.map not⟧") (new := "simp_rw") (uses := "Bool.not_not, map_id, exact, rw, simp_rw")
 :::en
@@ -119,93 +92,6 @@ simp_rw [Bool.not_not, map_id]
 ```
 simp_rw [Bool.not_not]
 exact map_id μ
-```
-:::
-::::
-
-::::leanonly (proof := "(f : Bool → Bool) (x : ℝ≥0∞) : (bif f true then x else 0) + (bif f true then 0 else x) = ⟦x ‖ x + x, x, 0⟧") (uses := "Bool.cond_false, zero_add, Bool.cond_true, add_comm, add_zero, mul_zero, add_assoc, cases, rw, simp_rw")
-:::en
-*A test is `true` or `false`.* The mass `x` behind the test `f true`, once in the `then` branch and once in the `else` branch. What `f` does is unknown.
-:::
-
-:::de
-*Ein Test ist `true` oder `false`.* Die Masse `x` hinter dem Test `f true`, einmal im `then`-Zweig und einmal im `else`-Zweig. Was `f` tut, ist unbekannt.
-:::
-
-:::proofen
-`f true` is not a variable, but it is a `Bool`, so it is `true` or `false`: `cases f true` goes
-through both values, as `cases x` does for a variable.
-:::
-
-:::proofde
-`f true` ist keine Variable, aber ein `Bool`, also `true` oder `false`: `cases f true` geht beide
-Werte durch, wie `cases x` für eine Variable.
-:::
-:::solution
-```
-cases f true
-rw [Bool.cond_false, Bool.cond_false, zero_add]
-rw [Bool.cond_true, Bool.cond_true, add_comm, zero_add]
-```
-:::
-:::solution
-```
-cases f true
-rw [Bool.cond_false, Bool.cond_false, zero_add]
-rw [Bool.cond_true, Bool.cond_true, add_zero]
-```
-:::
-:::solution
-```
-cases f true
-simp_rw [Bool.cond_false, zero_add]
-simp_rw [Bool.cond_true, add_zero]
-```
-:::
-::::
-
-::::leanonly (proof := "(f : Bool → Bool) (x y : ℝ≥0∞) : (bif f true then x else 0) + (bif f true then y else 0) = bif f true then ⟦x + y ‖ x + y, x, y, x * y⟧ else 0") (lemma := "cond_add_cond") (uses := "Bool.cond_false, zero_add, Bool.cond_true, add_zero, mul_zero, cases, rw, simp_rw")
-:::en
-*Two masses behind one test.* Twice the same test `f true`: once with the mass `x`, once with the
-mass `y`.
-:::
-
-:::de
-*Zwei Massen hinter einem Test.* Zweimal derselbe Test `f true`: einmal mit der Masse `x`, einmal
-mit der Masse `y`.
-:::
-
-:::proofen
-As in the level before; with `simp_rw` every `bif false then … else …` goes at once. You prove it
-for the test `f true`; it holds for every test `c : Bool`, and it is unlocked as
-`cond_add_cond : (bif c then x else 0) + (bif c then y else 0) = bif c then x + y else 0`.
-:::
-
-:::proofde
-Wie im Level davor; mit `simp_rw` geht jedes `bif false then … else …` auf einmal. Du beweist es für
-den Test `f true`; es gilt für jeden Test `c : Bool` und wird freigeschaltet als
-`cond_add_cond : (bif c then x else 0) + (bif c then y else 0) = bif c then x + y else 0`.
-:::
-:::solution
-```
-cases f true
-simp_rw [Bool.cond_false]
-rw [zero_add]
-simp_rw [Bool.cond_true]
-```
-:::
-:::solution
-```
-cases f true
-rw [Bool.cond_false, Bool.cond_false, Bool.cond_false, zero_add]
-rw [Bool.cond_true, Bool.cond_true, Bool.cond_true]
-```
-:::
-:::solution
-```
-cases f true
-simp_rw [Bool.cond_false, zero_add]
-simp_rw [Bool.cond_true]
 ```
 :::
 ::::

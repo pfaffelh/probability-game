@@ -17,16 +17,16 @@ For each world: its goal, the tactics, how the levels get there, and what is ope
 proposals of the first version of this file are carried out, and after them the thin tactics got
 their levels (see the end); "open" is what is left. 15 worlds, 183 levels.
 
-## 1. Bool (27 levels)
+## 1. Bool (30 levels)
 
 **Goal.** A circuit is a function, and a function on `Bool` is its truth table: two circuits are
 equal when all rows agree.
 
-**Tactics.** `rfl`, `rw`, `cases`, `<;>`.
+**Tactics.** `rfl`, `rw`, `cases`, `<;>`, `revert` and `decide`.
 
 **Path.** One input, read off (`rfl`). Rewriting with what is already proved (`rw`). One input,
 both cases (`cases`). The `bif` rules. The truth tables of `&&` and `||` as rules (`Bool.true_and`,
-`Bool.false_and`, `Bool.true_or`, `Bool.false_or`). Tests (`==`): `beq_self_eq_true`, `beq_true`, `Bool.true_beq`, `Bool.false_beq`, for the point tests of `map_apply` in DiscreteMeasure and Maps. Sums over `Bool`: `Fintype.sum_bool`, `tsum_bool` (on ℕ), for the masses later. Composition with a constant map: `(fun _ => true) ∘ f`, `f ∘ (fun _ => true)` (`rfl`). A quiz on `cases x <;> rfl`. Two inputs, four
+`Bool.false_and`, `Bool.true_or`, `Bool.false_or`). Tests (`==`): `beq_self_eq_true`, `beq_true`, `Bool.true_beq`, `Bool.false_beq`, for the point tests of `map_apply` in DiscreteMeasure and Maps. Sums over `Bool`: `Fintype.sum_bool`, `tsum_bool` (on ℕ), for the masses later. Composition with a constant map: `(fun _ => true) ∘ f`, `f ∘ (fun _ => true)` (`rfl`); three times `f` (`Bool.apply_apply_apply`, with `revert` and `decide`); a test `f true` is `true` or `false` (`cases f true`), and `cond_add_cond` (on ℕ; in Rules for every type with `+` and `0`). A quiz on `cases x <;> rfl`. Two inputs, four
 cases: De Morgan (`Bool.not_and`), then `or` from `and` (`or_eq`, also from De Morgan). Boss: xor
 from `and`, `or`, `not`, with its table. Lemma levels whose lemma goes into simp later show
 `@[simp] theorem`; Bool 2 says what it means.
@@ -76,16 +76,15 @@ coin is the coin `σ p`.
 coin, `coin_one : coin 1 = pure true`. Surely `false` on the board.
 Boss: `coin_not`, on the board (a `not` after the coin), by `eq_coin` and the boss of DiscreteMeasure.
 
-## 5. Maps (7 levels)
+## 5. Maps (4 levels)
 
 **Goal.** Two moves are one move (`map_map`). A statement about an unknown `f : Bool → Bool` is
 settled by the four maps, or by `f true` and `f false`.
 
-**Tactics.** `revert` and `decide`, `simp_rw` (rewriting under `fun`), `cases f true`.
+**Tactics.** `revert` and `decide`, `cases f true` (from Bool), `simp_rw` (rewriting under `fun`).
 
-**Path.** Three times `f`. A quiz: which statements hold for every `f` (`revert f b; decide`).
-A quiz: where does `rw` fail (under `fun`)? Flipped twice with `simp_rw`. A test is `true` or `false`
-(`cases f true`, on its own). Two masses behind one test. Boss: `map_map`, used at once on the
+**Path.** A quiz: which statements hold for every `f` (`revert f b; decide`).
+A quiz: where does `rw` fail (under `fun`)? After the answer it says why (`:::hint (anchor := "solved")`). Flipped twice with `simp_rw`. Boss: `map_map`, used at once on the
 first board of *Laws of `do`*.
 
 **Open.** No board in the world itself. `cond_add_cond` and `Bool.apply_apply_apply` are not used

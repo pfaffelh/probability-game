@@ -200,8 +200,8 @@ theorem bind_true (μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool
 theorem coin_unused {β : Type} (p : I) (ν : DiscreteMeasure β) : (do let _ ← coin p; ν) = ν :=
   MeasureTheory.DiscreteMeasure.bind_const_of_hasSum (MeasureTheory.DiscreteMeasure.hasSum_coin p) ν
 
-/-- Two masses behind one test are one mass behind it (Maps). -/
-theorem cond_add_cond (c : Bool) (x y : ENNReal) :
+/-- Two numbers behind one test are one number behind it (Bool, proved there on `ℕ`; for masses too). -/
+theorem cond_add_cond {α : Type} [AddZeroClass α] (c : Bool) (x y : α) :
     (bif c then x else 0) + (bif c then y else 0) = bif c then x + y else 0 := by
   cases c
   · simp only [Bool.cond_false, add_zero]

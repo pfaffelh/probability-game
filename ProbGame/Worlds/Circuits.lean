@@ -901,6 +901,117 @@ rfl
 :::
 ::::
 
+::::leanonly (proof := "(f : Bool → Bool) (b : Bool) : f (f (f b)) = ⟦f b ‖ b, f b, f (f b)⟧") (lemma := "Bool.apply_apply_apply") (new := "revert, decide") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "<;>, cases, decide, revert")
+:::en
+*Three times.* Whatever map `f : Bool → Bool` is: what does it do, applied three times? Check it for
+`not` and for always `true`. In Lean the new tactics `revert` and `decide` check it, in every case at once.
+:::
+
+:::de
+*Dreimal.* Welche Abbildung `f : Bool → Bool` auch immer: Was tut sie, dreimal angewandt? Prüf es
+für `not` und für immer `true`. In Lean prüfen es die neuen Taktiken `revert` und `decide`, in allen Fällen auf einmal.
+:::
+
+:::proofen
+No rule says what `f` does, so there is nothing to rewrite. But there are only four maps
+`Bool → Bool`, and with the two values of `b` these are eight cases. Two new tactics: `revert f b`
+takes the variables back into the statement, here `∀ f b, f (f (f b)) = f b`; `decide` reduces a
+statement about finitely many cases until it is `true` or `false`, and so checks every case. (For
+one unknown `f` there is nothing to compute: `decide` alone does not work.) Your result is unlocked
+as `Bool.apply_apply_apply`.
+:::
+
+:::proofde
+Keine Regel sagt, was `f` tut; es gibt also nichts umzuschreiben. Aber es gibt nur vier Abbildungen
+`Bool → Bool`, und mit den zwei Werten von `b` sind das acht Fälle. Zwei neue Taktiken: `revert f b`
+nimmt die Variablen zurück in die Aussage, hier `∀ f b, f (f (f b)) = f b`; `decide` reduziert eine
+Aussage über endlich viele Fälle, bis sie `true` oder `false` ist, und prüft so jeden Fall. (Für ein
+unbekanntes `f` gibt es nichts auszurechnen: `decide` allein geht nicht.) Dein Ergebnis wird als
+`Bool.apply_apply_apply` freigeschaltet.
+:::
+:::solution
+```
+revert f b
+decide
+```
+:::
+:::solution
+```
+revert f
+cases b <;> decide
+```
+:::
+::::
+
+::::leanonly (proof := "(f : Bool → Bool) (x : Bool) : ((bif f true then x else false) || (bif f true then false else x)) = ⟦x ‖ x, f true, !x⟧") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "Bool.cond_false, Bool.false_or, Bool.cond_true, <;>, cases, rfl, rw")
+:::en
+*A test is `true` or `false`.* `x` behind the test `f true`, once in the `then` branch and once in
+the `else` branch. What `f` does is unknown.
+:::
+
+:::de
+*Ein Test ist `true` oder `false`.* `x` hinter dem Test `f true`, einmal im `then`-Zweig und einmal im
+`else`-Zweig. Was `f` tut, ist unbekannt.
+:::
+
+:::proofen
+`f true` is not a variable, but it is a `Bool`, so it is `true` or `false`: `cases f true` goes
+through both values, as `cases x` does for a variable.
+:::
+
+:::proofde
+`f true` ist keine Variable, aber ein `Bool`, also `true` oder `false`: `cases f true` geht beide
+Werte durch, wie `cases x` für eine Variable.
+:::
+:::solution
+```
+cases f true <;> cases x <;> rfl
+```
+:::
+:::solution
+```
+cases f true
+rw [Bool.cond_false, Bool.cond_false, Bool.false_or]
+rw [Bool.cond_true, Bool.cond_true]
+cases x <;> rfl
+```
+:::
+::::
+
+::::leanonly (proof := "(f : Bool → Bool) (x y : ℕ) : (bif f true then x else 0) + (bif f true then y else 0) = bif f true then ⟦x + y ‖ x + y, x, y, x * y⟧ else 0") (lemma := "cond_add_cond") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "Bool.cond_false, Bool.cond_true, <;>, cases, rfl, rw")
+:::en
+*Two numbers behind one test.* Twice the same test `f true`: once with `x`, once with `y`.
+:::
+
+:::de
+*Zwei Zahlen hinter einem Test.* Zweimal derselbe Test `f true`: einmal mit `x`, einmal mit `y`.
+:::
+
+:::proofen
+As in the level before, `cases f true`. You prove it for the test `f true` and numbers in `ℕ`; it
+holds for every test `c : Bool`, and for masses too, and it is unlocked as
+`cond_add_cond : (bif c then x else 0) + (bif c then y else 0) = bif c then x + y else 0`.
+:::
+
+:::proofde
+Wie im Level davor, `cases f true`. Du beweist es für den Test `f true` und Zahlen in `ℕ`; es gilt
+für jeden Test `c : Bool`, auch für Massen, und wird freigeschaltet als
+`cond_add_cond : (bif c then x else 0) + (bif c then y else 0) = bif c then x + y else 0`.
+:::
+:::solution
+```
+cases f true <;> rfl
+```
+:::
+:::solution
+```
+cases f true
+rw [Bool.cond_false, Bool.cond_false, Bool.cond_false]
+rw [Bool.cond_true, Bool.cond_true, Bool.cond_true]
+```
+:::
+::::
+
 ::::quiz (tactic := "cases x <;> rfl") (statements := "(x : Bool) : (x && x) = x ;; (x : Bool) : x = true ;; (x : Bool) : (x || !x) = true ;; (x y : Bool) : (x && y) = (y && x) ;; (x : Bool) : (!x) = x ;; (x : Bool) : (true && x) = x") (answer := "1, 3, 6")
 :::en
 *Which ones?* Which of these statements does `cases x <;> rfl` prove?

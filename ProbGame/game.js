@@ -282,6 +282,42 @@
       localStorage.setItem('pg:moved:2026-11-29l', '1')
     }
   } catch {}
+  // (since 2026-11-29: Maps 1, `Bool.apply_apply_apply` with `revert` and `decide`, is in Bool after the two
+  // levels of composition)
+  try {
+    if (!localStorage.getItem('pg:moved:2026-11-29m')) {
+      const re = /^pg:(\/[^/]+\/)(Circuits|Maps)\/:(\d+)((?::.*)?)$/
+      const moved = []
+      for (const k of Object.keys(localStorage)) {
+        const m = re.exec(k)
+        if (!m) continue
+        const i = Number(m[3])
+        if (m[2] === 'Circuits' && i >= 23) moved.push([k, `pg:${m[1]}Circuits/:${i + 1}${m[4]}`, localStorage.getItem(k)])
+        if (m[2] === 'Maps') moved.push([k, i === 0 ? `pg:${m[1]}Circuits/:23${m[4]}` : `pg:${m[1]}Maps/:${i - 1}${m[4]}`, localStorage.getItem(k)])
+      }
+      for (const [k] of moved) localStorage.removeItem(k)
+      for (const [, k, v] of moved) localStorage.setItem(k, v)
+      localStorage.setItem('pg:moved:2026-11-29m', '1')
+    }
+  } catch {}
+  // (since 2026-11-29: Maps 4 and 5, a test `f true` with `cases f true` and `cond_add_cond`, are in Bool
+  // (on Bool and on ℕ) after `Bool.apply_apply_apply`)
+  try {
+    if (!localStorage.getItem('pg:moved:2026-11-29n')) {
+      const re = /^pg:(\/[^/]+\/)(Circuits|Maps)\/:(\d+)((?::.*)?)$/
+      const moved = []
+      for (const k of Object.keys(localStorage)) {
+        const m = re.exec(k)
+        if (!m) continue
+        const i = Number(m[3])
+        if (m[2] === 'Circuits' && i >= 24) moved.push([k, `pg:${m[1]}Circuits/:${i + 2}${m[4]}`, localStorage.getItem(k)])
+        if (m[2] === 'Maps' && i >= 3) moved.push([k, i <= 4 ? `pg:${m[1]}Circuits/:${i + 21}${m[4]}` : `pg:${m[1]}Maps/:${i - 2}${m[4]}`, localStorage.getItem(k)])
+      }
+      for (const [k] of moved) localStorage.removeItem(k)
+      for (const [, k, v] of moved) localStorage.setItem(k, v)
+      localStorage.setItem('pg:moved:2026-11-29n', '1')
+    }
+  } catch {}
   const DE = {
     Moves: 'Züge', Undo: 'Zurück', 'Add a gate': 'Baustein hinzufügen', Gate: 'Baustein', 'Start over': 'Neu anfangen', 'Next level ›': 'Nächstes Level ›',
     Target: 'Ziel', 'In Lean, for every p:': 'In Lean, für jedes p:', 'proved': 'bewiesen',
@@ -2060,7 +2096,7 @@
       this.statements.forEach((s, i) => {
         const b = el('button', 'pg-quiz-item' + (this.picked.has(i) ? ' pg-quiz-on' : ''))
         b.type = 'button'; b.disabled = this.busy || shown; b.setAttribute('aria-pressed', String(this.picked.has(i)))
-        const k = s.indexOf(') : '), binders = k < 0 ? '' : s.slice(0, k + 1), stmt = k < 0 ? s : s.slice(k + 4)
+        const k = s.indexOf(') : '), binders = k < 0 ? '' : s.slice(0, k + 1), stmt = (k < 0 ? s : s.slice(k + 4)).replace(/^:\s*/, '')
         b.title = binders
         b.append(el('span', 'pg-quiz-mark', this.picked.has(i) ? '☑' : '☐'), el('code', 'pg-quiz-stmt', stmt))
         b.addEventListener('click', () => { if (this.picked.has(i)) this.picked.delete(i); else this.picked.add(i); this.msg = ''; this.wrong = false; this.save(); this.render() })
@@ -2077,6 +2113,10 @@
       const go = el('button', 'pg-quiz-check', tr('Check')); go.type = 'button'; go.disabled = this.busy || shown
       go.addEventListener('click', () => this.check())
       box.append(q, list, go)
+      // (once answered: why, `::::hint (anchor := "solved")` in the level)
+      if (shown) for (const h of this.root.querySelectorAll(':scope > .pg-text > .pg-hint[data-at="solved"]')) {
+        const why = el('div', 'pg-quiz-why'); why.append(...[...h.children].map(c => c.cloneNode(true))); box.append(why)
+      }
       // (a wrong choice: a red warning right at the button, until the choice changes)
       if (this.wrong && !shown) box.append(el('div', 'pg-quiz-warn', '✗ ' + tr('Not quite: at least one choice is wrong.')))
       this.board.replaceChildren(box)
@@ -3296,6 +3336,7 @@
     "tsub_zero": "theorem tsub_zero {α : Type u_1} [PartialOrder α] [AddCommMonoid α] [Sub α] [OrderedSub α] (a : α) : a - 0 = a",
     "tsub_self": "theorem tsub_self {α : Type u_1} [AddCommMonoid α] [PartialOrder α] [CanonicallyOrderedAdd α] [Sub α] [OrderedSub α] (a : α) : a - a = 0",
     "tsub_add_eq_max": "theorem tsub_add_eq_max {α : Type u_1} [AddCommMonoid α] [LinearOrder α] [CanonicallyOrderedAdd α] [Sub α] [OrderedSub α] {a b : α} : a - b + b = max a b",
+    "top_add": "theorem top_add {α : Type u_2} [LinearOrderedAddCommMonoidWithTop α] (a : α) : ⊤ + a = ⊤",
     "ENNReal.add_sub_cancel_left": "theorem ENNReal.add_sub_cancel_left {a b : ℝ≥0∞} (ha : a ≠ ∞) : a + b - a = b",
     "bind_apply": "theorem bind_apply {α β : Type} [Fintype α] (μ : DiscreteMeasure α) (f : α → DiscreteMeasure β) (b : β) : (do let a ← μ; f a) b = ∑ a, μ a * (f a) b",
     "bind_true": "theorem bind_true (μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (do let x ← μ; f x) true = μ true * (f true) true + μ false * (f false) true",
@@ -3325,7 +3366,6 @@
     "Bool.cond_self": "theorem Bool.cond_self {α : Sort u_1} (c : Bool) (t : α) : (bif c then t else t) = t",
     "Bool.cond_false": "theorem Bool.cond_false {α : Sort u} {a b : α} : (bif false then a else b) = b",
     "zero_add": "theorem zero_add {M : Type u_2} [AddZeroClass M] (a : M) : 0 + a = a",
-    "coin_not_true": "theorem coin_not_true (p : I) : ((coin p).map not) true = ↑(σ p)",
     "coin_not": "theorem coin_not (p : I) : (coin p).map not = coin (σ p)",
     "coin_total": "theorem coin_total (p : I) : (coin p) true + (coin p) false = 1",
     "pure_apply": "theorem pure_apply {α : Type} [DecidableEq α] (a b : α) : (pure a) b = bif a == b then 1 else 0",
@@ -3339,7 +3379,7 @@
     "map_id": "theorem map_id {α : Type} (μ : DiscreteMeasure α) : (μ.map fun x => x) = μ",
     "Bool.false_beq": "theorem Bool.false_beq (b : Bool) : (false == b) = !b",
     "map_map": "theorem map_map {α β γ : Type} (μ : DiscreteMeasure α) (f : α → β) (g : β → γ) : (μ.map f).map g = μ.map fun x => g (f x)",
-    "cond_add_cond": "theorem cond_add_cond (c : Bool) (x y : ℝ≥0∞) : ((bif c then x else 0) + bif c then y else 0) = bif c then x + y else 0",
+    "cond_add_cond": "theorem cond_add_cond {α : Type} [AddZeroClass α] (c : Bool) (x y : α) : ((bif c then x else 0) + bif c then y else 0) = bif c then x + y else 0",
     "coin_and": "theorem coin_and (p q : I) : (do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)",
     "bind_map_left": "theorem bind_map_left {α β γ : Type} (μ : DiscreteMeasure α) (f : α → β) (g : β → DiscreteMeasure γ) : (do let x ← μ.map f; g x) = do let x ← μ; g (f x)",
     "add_add_add_comm": "theorem add_add_add_comm {G : Type u_3} [AddCommSemigroup G] (a b c d : G) : a + b + (c + d) = a + c + (b + d)",
@@ -3549,7 +3589,7 @@
     { name: 'map_id', kind: 'lemma', sig: 'μ.map (fun x => x) = μ', en: 'Proved by you in DiscreteMeasure, for Bool; it holds for every type: a move that does nothing.', de: 'Von dir bewiesen in „DiscreteMeasure“, für Bool; es gilt für jeden Typ: ein Zug, der nichts tut.' },
     { name: 'Bool.false_beq', kind: 'lemma', sig: '(false == b) = !b', en: 'Proved by you in Bool: testing false against b gives !b.', de: 'Von dir bewiesen in „Bool“: Der Test von false gegen b gibt !b.' },
     { name: 'map_map', kind: 'lemma', sig: '(μ.map f).map g = μ.map (fun x => g (f x))', sig0: 'g <$> (f <$> s) = (fun x => g (f x)) <$> s', en: 'Proved by you in Maps, for Bool; it holds for every type: two moves are one move.', de: 'Von dir bewiesen in „Abbildungen“, für Bool; es gilt für jeden Typ: Zwei Züge sind ein Zug.' },
-    { name: 'cond_add_cond', kind: 'lemma', sig: '(bif c then x else 0) + (bif c then y else 0) = bif c then x + y else 0', en: 'Proved by you in Maps: two masses behind one test.', de: 'Von dir bewiesen in „Abbildungen“: zwei Massen hinter einem Test.' },
+    { name: 'cond_add_cond', kind: 'lemma', sig: '(bif c then x else 0) + (bif c then y else 0) = bif c then x + y else 0', en: 'Proved by you in Bool: two numbers behind one test (masses too).', de: 'Von dir bewiesen in „Bool“: zwei Zahlen hinter einem Test (auch Massen).' },
     { name: 'coin_and', kind: 'lemma', sig: '(do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)', en: 'Proved by you in Two Coins: independence, both true with probability p · q.', de: 'Von dir bewiesen in „Zwei Münzen“: Unabhängigkeit, beide true mit Wahrscheinlichkeit p · q.' },
     { name: 'bind_map_left', kind: 'lemma', sig: '(do let x ← μ.map f; g x) = (do let x ← μ; g (f x))', en: 'Proved by you in Laws of do, for Bool; it holds for every type: a move on a throw goes into the result.', de: 'Von dir bewiesen in „Gesetze von do“, für Bool; es gilt für jeden Typ: Ein Zug auf einem Wurf wandert ins Ergebnis.' },
     { name: 'add_add_add_comm', kind: 'rule', sig: 'a + b + (c + d) = a + c + (b + d)', en: 'Two sums of two, regrouped.', de: 'Zwei Summen aus zwei, umgruppiert.' },
@@ -3572,7 +3612,7 @@
     // the first world only
     { name: 'Bool.and_self', kind: 'lemma', sig: '(x && x) = x', en: 'Proved by you in Bool: x and x is x.', de: 'Von dir bewiesen in „Bool“: x und x ist x.' },
     { name: 'Bool.not_not', kind: 'lemma', sig: '(!(!b)) = b', en: 'Proved by you in Bool: flipped twice is not flipped.', de: 'Von dir bewiesen in „Bool“: Zweimal umgedreht ist nicht umgedreht.' },
-    { name: 'Bool.apply_apply_apply', kind: 'lemma', sig: 'f (f (f b)) = f b', en: 'Proved by you in Maps: for a map Bool → Bool, three times is once.', de: 'Von dir bewiesen in „Abbildungen“: Für eine Abbildung Bool → Bool ist dreimal dasselbe wie einmal.' },
+    { name: 'Bool.apply_apply_apply', kind: 'lemma', sig: 'f (f (f b)) = f b', en: 'Proved by you in Bool: for a map Bool → Bool, three times is once.', de: 'Von dir bewiesen in „Bool“: Für eine Abbildung Bool → Bool ist dreimal dasselbe wie einmal.' },
     { name: 'Function.comp_apply', kind: 'rule', sig: '(g ∘ f) x = g (f x)', en: 'First f, then g.', de: 'Erst f, dann g.' },
     { name: 'id_eq', kind: 'rule', sig: 'id a = a', en: 'id does nothing.', de: 'id tut nichts.' },
     // world 0 only
@@ -4845,7 +4885,7 @@
     const PROOF_AT = { gap: '.pg-gap-now', keys: '.pg-keys', back: '.pg-key-back', statement: '.pg-proof-statement', lean: null }
     // (`word:DiscreteMeasure`: at this word of the statement)
     const proofHint = h => h.dataset.at.startsWith('item:') || h.dataset.at.startsWith('word:') || h.dataset.at in PROOF_AT
-    const boardHints = k => [...roots[k].querySelectorAll(':scope > .pg-text > .pg-hint:not([data-at="none"])')].filter(h => !proofHint(h) && !/^(after|old|wrong):/.test(h.dataset.at))
+    const boardHints = k => [...roots[k].querySelectorAll(':scope > .pg-text > .pg-hint:not([data-at="none"])')].filter(h => !proofHint(h) && !/^(after|old|wrong):/.test(h.dataset.at) && h.dataset.at !== 'solved')
     // (a hint in between: `after:cases`, once a line of the proof with the tactic cases is taken, at the
     // goals; the button Tips shows it again when the proof has such a line)
     const tacOf = line => line.trim().split(/[\s\[]/)[0]
