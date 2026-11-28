@@ -1,5 +1,6 @@
 import VersoManual
 import ProbGame.Level
+import ProbGame.Worlds.ENNReal
 import ProbGame.Worlds.Masses
 import ProbGame.Worlds.OneCoin
 import ProbGame.Worlds.Maps
@@ -76,6 +77,8 @@ notation, monad, Mathlib.
 :::
 
 {include 1 ProbGame.Worlds.Circuits}
+
+{include 1 ProbGame.Worlds.ENNReal}
 
 {include 1 ProbGame.Worlds.Masses}
 

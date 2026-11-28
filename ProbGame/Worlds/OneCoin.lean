@@ -237,12 +237,12 @@ So the coins are all there is on `Bool`.
 
 :::proofen
 Your lemma `bool_ext` says: `μ = ν`, if `μ true = ν true`. The goal here is `μ = coin p`, an
-equation of two distributions on `Bool`: `apply` (from *DiscreteMeasure*) uses the lemma from its end.
+equation of two distributions on `Bool`: `apply` (from *ENNReal*) uses the lemma from its end.
 :::
 
 :::proofde
 Dein Lemma `bool_ext` sagt: `μ = ν`, wenn `μ true = ν true`. Das Ziel hier ist `μ = coin p`, eine
-Gleichung zweier Verteilungen auf `Bool`: `apply` (aus *DiscreteMeasure*) benutzt das Lemma von seinem Ende
+Gleichung zweier Verteilungen auf `Bool`: `apply` (aus *ENNReal*) benutzt das Lemma von seinem Ende
 her.
 :::
 :::solution

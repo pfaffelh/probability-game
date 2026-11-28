@@ -49,6 +49,7 @@ Die Schaltung, von oben nach unten gelesen, ist ein `do`-Block in Lean: jede Mü
 Ergebnis, mit dem, was die Bausteine rechnen. Die Beweise lernen die Regeln der `do`-Blöcke eine nach
 der anderen, wenn ein Level sie braucht; zuerst, was ein `do`-Block ist.
 :::
+
 :::::circuit (height := "440") (inputs := "x y") (gates := "") (coins := "p p") (target := "bool true:p false:1-p") (start := "a=and; a>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; pure (x && x)) = coin p") (new := "bind_pure") (play := "x>a.0; x>a.1") (uses := "Bool.and_self, bind_pure, pure_bind, exact, rw, simp_rw")
 ::::hint (anchor := "statement")
 :::en
@@ -195,67 +196,6 @@ simp_rw [bind_apply, Fintype.sum_bool]
 ```
 rw [bind_apply]
 exact Fintype.sum_bool _
-```
-:::
-::::
-
-::::leanonly (proof := "(a : ℝ≥0∞) : 1 * a = ⟦a ‖ a, 1, 0⟧") (lemma := "one_mul") (new := "mul_one, mul_comm") (uses := "mul_comm, mul_one, one_mul, rw")
-:::en
-*One times.* In `bind_true` masses are multiplied, and a point mass brings factors `1` and `0`. You get
-`mul_one : a * 1 = a` and `mul_comm : a * b = b * a`; the one on the left is yours to prove.
-:::
-
-:::de
-*Eins mal.* In `bind_true` werden Massen multipliziert, und eine Punktmasse bringt Faktoren `1` und
-`0`. Du bekommst `mul_one : a * 1 = a` und `mul_comm : a * b = b * a`; die Eins links beweist du
-selbst.
-:::
-
-:::proofen
-Your result becomes the lemma `one_mul`.
-:::
-
-:::proofde
-Dein Ergebnis wird das Lemma `one_mul`.
-:::
-:::solution
-```
-rw [mul_comm, mul_one]
-```
-:::
-:::solution
-```
-rw [mul_comm]
-rw [mul_one]
-```
-:::
-::::
-
-::::leanonly (proof := "(a : ℝ≥0∞) : 0 * a = ⟦0 ‖ a, 1, 0⟧") (lemma := "zero_mul") (new := "mul_zero") (uses := "mul_comm, mul_zero, zero_add, rw")
-:::en
-*Zero times.* The same with `0`: you get `mul_zero : a * 0 = 0`.
-:::
-
-:::de
-*Null mal.* Dasselbe mit `0`: Du bekommst `mul_zero : a * 0 = 0`.
-:::
-
-:::proofen
-Your result becomes the lemma `zero_mul`.
-:::
-
-:::proofde
-Dein Ergebnis wird das Lemma `zero_mul`.
-:::
-:::solution
-```
-rw [mul_comm, mul_zero]
-```
-:::
-:::solution
-```
-rw [mul_comm]
-rw [mul_zero]
 ```
 :::
 ::::

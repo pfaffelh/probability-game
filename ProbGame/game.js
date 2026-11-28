@@ -169,6 +169,27 @@
       localStorage.setItem('pg:moved:2026-11-29e', '1')
     }
   } catch {}
+  // (since 2026-11-29: a world ENNReal, between Bool and DiscreteMeasure, for computing with masses; it
+  // takes `tsub_self`/`tsub_zero` and `add_zero` from DiscreteMeasure, `one_mul` and `zero_mul` from Two Coins)
+  try {
+    if (!localStorage.getItem('pg:moved:2026-11-29f')) {
+      const E = 'ENNReal', M = 'DiscreteMeasure', T = 'Two-Coins'
+      const TO = {
+        DiscreteMeasure: [[M, 0], [M, 1], [M, 2], [M, 3], [E, 6], [E, 1], [M, 4], [M, 5], [M, 6], [M, 7], [M, 8], [M, 9], [M, 10], [M, 11]],
+        'Two-Coins': [[T, 0], [T, 1], [T, 2], [E, 3], [E, 4], [T, 3], [T, 4], [T, 5], [T, 6], [T, 7]] }
+      const re = /^pg:(\/[^/]+\/)([^/]+)\/:(\d+)((?::.*)?)$/
+      const moved = []
+      for (const k of Object.keys(localStorage)) {
+        const m = re.exec(k), to = m && TO[m[2]]
+        if (!to) continue
+        const t = to[Number(m[3])]
+        moved.push([k, t ? `pg:${m[1]}${t[0]}/:${t[1]}${m[4]}` : null, localStorage.getItem(k)])
+      }
+      for (const [k] of moved) localStorage.removeItem(k)
+      for (const [, k, v] of moved) if (k) localStorage.setItem(k, v)
+      localStorage.setItem('pg:moved:2026-11-29f', '1')
+    }
+  } catch {}
   const DE = {
     Moves: 'Züge', Undo: 'Zurück', 'Add a gate': 'Baustein hinzufügen', Gate: 'Baustein', 'Start over': 'Neu anfangen', 'Next level ›': 'Nächstes Level ›',
     Target: 'Ziel', 'In Lean, for every p:': 'In Lean, für jedes p:', 'proved': 'bewiesen',
@@ -3393,6 +3414,7 @@
     { name: 'tsub_zero', kind: 'rule', sig: 'a - 0 = a', en: 'Taking 0 away changes nothing.', de: '0 abziehen ändert nichts.' },
     { name: 'tsub_self', kind: 'rule', sig: 'tsub_self a : a - a = 0', en: 'Taking a away from itself leaves 0, for every a in [0, ∞], also ∞.', de: 'a von sich selbst abgezogen lässt 0, für jedes a in [0, ∞], auch ∞.' },
     { name: 'tsub_add_eq_max', kind: 'rule', sig: 'tsub_add_eq_max : b - a + a = max b a', en: 'Taking a away and putting it back gives the larger of the two (a - b is 0 when b > a).', de: 'a wegnehmen und wieder dazu gibt das größere der beiden (a - b ist 0, wenn b > a).' },
+    { name: 'top_add', kind: 'rule', sig: '∞ + a = ∞', en: '∞ swallows what is added to it.', de: '∞ verschluckt, was dazukommt.' },
     { name: 'ENNReal.add_sub_cancel_left', kind: 'rule', sig: 'ENNReal.add_sub_cancel_left (h : a ≠ ∞) : a + b - a = b', en: 'Adding a and taking it away again: for a finite a.', de: 'a dazu und wieder weg: für ein endliches a.' },
     { name: 'bind_apply', kind: 'rule', sig: '(do let a ← μ; f a) b = ∑ a, μ a * f a b', en: 'The definition of a bind: the mass at b is the sum over the first steps a of the mass of a times the mass of f a at b.', de: 'Die Definition eines bind: Die Masse bei b ist die Summe über die ersten Schritte a von der Masse von a mal der Masse von f a bei b.' },
     { name: 'bind_true', kind: 'lemma', sig: '(do let x ← μ; f x) true = μ true * f true true + μ false * f false true', en: 'Proved by you in Two Coins: the mass of a bind at true, the way through true (mass μ true, then f true) and the way through false.', de: 'Von dir bewiesen in „Zwei Münzen“: die Masse eines bind bei true, der Weg über true (Masse μ true, dann f true) und der Weg über false.' },
@@ -4959,7 +4981,7 @@
     return { a, num: tr.querySelector('.num')?.textContent.trim().replace(/\.$/, '') ?? '', path: new URL(a.href).pathname }
   }).filter(w => w && !/\/Lexicon\/$/.test(w.path))
   // (the version: when levels move between worlds, the cached shapes are read anew)
-  const levelsKey = path => `pg:levels4:${path}`
+  const levelsKey = path => `pg:levels5:${path}`
   // the worlds on a side way: which world they come after (not the one above them on the map)
   // The map as a graph, as in verso-nng: each world with the worlds it needs (else the one before it),
   // a branch in a column of its own, the names to the right of the tree.

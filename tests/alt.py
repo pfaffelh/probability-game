@@ -13,7 +13,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from levels import worlds, here
 
-SLUG = {'Circuits': 'Circuits', 'Masses': 'DiscreteMeasure', 'OneCoin': 'One-Coin', 'Maps': 'Maps', 'TwoCoins': 'Two-Coins',
+SLUG = {'Circuits': 'Circuits', 'ENNReal': 'ENNReal', 'Masses': 'DiscreteMeasure', 'OneCoin': 'One-Coin', 'Maps': 'Maps', 'TwoCoins': 'Two-Coins',
         'DoLaws': 'Laws-of--do', 'Counting': 'Counting', 'Bind': 'Multi-Stage-Experiments', 'RealNumbers': 'Balance',
         'Sequences': 'Sequences', 'Binomial': 'Binomial', 'Geometric': 'Geometric', 'Thinning': 'Thinning', 'Hypergeometric': 'Hypergeometric'}
 js = (here / 'ProbGame/game.js').read_text()

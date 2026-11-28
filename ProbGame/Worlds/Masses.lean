@@ -25,7 +25,7 @@ Massen zusammen eins ergeben. Diese Welt beweist, was für jedes solche `μ` gil
 die sichere Verteilung `pure b`. Die Münzen kommen in der nächsten Welt.
 :::
 
-:::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ true + μ false = 1") (lemma := "mass_total") (new := "Prob.total, add_comm") (uses := "Prob.total, tsum_bool, add_comm, add_assoc, rw")
+:::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ true + μ false = 1") (lemma := "mass_total") (new := "Prob.total") (uses := "Prob.total, tsum_bool, add_comm, add_assoc, rw")
 :::en
 *The whole mass.* `[Prob μ]` says: `μ` is a distribution, its masses add up to one. On `Bool` there
 are two of them.
@@ -55,18 +55,6 @@ Punkt, `μ true` und `μ false`.
 
 :::de
 `[Prob μ]` ist eine Annahme über `μ`: Seine Massen ergeben zusammen eins, `Prob.total μ : ∑' a, μ a = 1`.
-:::
-::::
-
-::::hint (anchor := "back")
-:::en
-New: `←`. `rw [← h]` rewrites from right to left: it puts the left side of `h` where its right side
-stands. Tap `←`, or type `\l`.
-:::
-
-:::de
-Neu: `←`. `rw [← h]` schreibt von rechts nach links um: Es setzt die linke Seite von `h` dorthin, wo
-ihre rechte steht. Tippe `←` an, oder tippe `\l`.
 :::
 ::::
 
@@ -120,7 +108,7 @@ rw [add_comm, ← tsum_bool, Prob.total]
 :::
 :::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (h : μ true = 0) : μ false = ⟦1 ‖ 0, 1⟧") (new := "zero_add") (uses := "mass_total, zero_add, coin_total, add_zero, mul_zero, rw")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (h : μ true = 0) : μ false = ⟦1 ‖ 0, 1⟧") (uses := "mass_total, zero_add, coin_total, add_zero, mul_zero, rw")
 :::hint (anchor := "none")
 :::
 
@@ -155,16 +143,7 @@ rw [← zero_add (μ false), ← h, mass_total]
 :::
 ::::
 
-:::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b ≤ 1") (lemma := "mass_le_one") (new := "le_self_add, exact") (uses := "mass_total, add_comm, le_self_add, coin_total, add_assoc, <;>, cases, exact, rw")
-::::hint (anchor := "item:exact")
-:::en
-`exact h`: closes a goal that is exactly `h`.
-:::
-
-:::de
-`exact h`: schließt ein Ziel, das genau `h` ist.
-:::
-::::
+:::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b ≤ 1") (lemma := "mass_le_one") (uses := "mass_total, add_comm, le_self_add, coin_total, add_assoc, <;>, cases, exact, rw")
 :::en
 *At most one.* Each mass is a part of the whole mass, so at most one.
 :::
@@ -177,15 +156,14 @@ rw [← zero_add (μ false), ← h, mass_total]
 The `1` is the whole mass, `mass_total μ`, and each mass is one of its summands:
 `le_self_add : a ≤ a + c`. Where the summands stand the wrong way round, `add_comm : a + b = b + a`
 turns the sum round. `mass_total μ` is your theorem for this `μ`: a rule with a blank, and what goes
-into the blank is written behind it. The new tactic `exact h` closes a goal that is exactly `h`.
+into the blank is written behind it.
 :::
 
 :::proofde
 Die `1` ist die ganze Masse, `mass_total μ`, und jede Masse ist einer ihrer Summanden:
 `le_self_add : a ≤ a + c`. Wo die Summanden falsch herum stehen, dreht `add_comm : a + b = b + a`
 die Summe um. `mass_total μ` ist dein Satz für dieses `μ`: eine Regel mit einer Leerstelle, und was
-in die Leerstelle kommt, schreibt man dahinter. Die neue Taktik `exact h` schließt ein Ziel, das
-genau `h` ist.
+in die Leerstelle kommt, schreibt man dahinter.
 :::
 :::solution
 ```
@@ -215,7 +193,7 @@ exact le_self_add
 :::
 :::::
 
-:::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b ≠ ⟦∞ ‖ 0, 1, ∞⟧") (lemma := "mass_ne_top") (new := "apply, ne_top_of_le_ne_top, ENNReal.one_ne_top") (uses := "ne_top_of_le_ne_top, ENNReal.one_ne_top, mass_le_one, apply, exact")
+:::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b ≠ ⟦∞ ‖ 0, 1, ∞⟧") (lemma := "mass_ne_top") (uses := "ne_top_of_le_ne_top, ENNReal.one_ne_top, mass_le_one, apply, exact")
 :::en
 *Finite.* Masses are numbers in $`[0, \infty]`; a mass of a distribution is finite, `≠ ∞`:
 it is at most one, and one is finite.
@@ -227,15 +205,11 @@ Sie ist höchstens eins, und eins ist endlich.
 :::
 
 :::proofen
-`ne_top_of_le_ne_top : b ≠ ∞ → a ≤ b → a ≠ ∞`. The new tactic `apply h` works backwards: the goal is
-the conclusion of `h`, and what `h` still needs becomes the new goal. What `h` needs can also be
-given along, `apply h h₁`: here `ENNReal.one_ne_top : 1 ≠ ∞`.
+As in *ENNReal*: `apply ne_top_of_le_ne_top ENNReal.one_ne_top`, and what is left is `μ b ≤ 1`.
 :::
 
 :::proofde
-`ne_top_of_le_ne_top : b ≠ ∞ → a ≤ b → a ≠ ∞`. Die neue Taktik `apply h` arbeitet rückwärts: Das
-Ziel ist die Folgerung von `h`, und was `h` noch braucht, wird das neue Ziel. Was `h` braucht, kann
-man auch gleich mitgeben, `apply h h₁`: hier `ENNReal.one_ne_top : 1 ≠ ∞`.
+Wie in *ENNReal*: `apply ne_top_of_le_ne_top ENNReal.one_ne_top`, und übrig bleibt `μ b ≤ 1`.
 :::
 :::solution
 ```
@@ -256,108 +230,7 @@ apply mass_le_one
 :::
 :::::
 
-:::::leanonly (proof := "(a b : ℝ≥0∞) : ⟦a - a + b ‖ a + b - a, b - a + a, a - a + b⟧ = b") (new := "tsub_self, tsub_zero") (uses := "tsub_self, zero_add, add_zero, mul_zero, exact, rw")
-:::en
-*Subtracting masses.* In Lean, masses are numbers in `ℝ≥0∞ = [0, ∞]` (`ENNReal`). Adding is as
-usual, with `a + ∞ = ∞`. But `a - b : ℝ≥0∞` cannot be negative: `a - b = 0` when `b > a`. And with
-`∞`: `∞ - b = ∞` for a finite `b`, `a - ∞ = 0`, in particular `∞ - ∞ = 0`.
-:::
-
-:::de
-*Massen abziehen.* In Lean sind Massen Zahlen in `ℝ≥0∞ = [0, ∞]` (`ENNReal`). Addieren geht wie
-gewohnt, mit `a + ∞ = ∞`. Aber `a - b : ℝ≥0∞` kann nicht negativ sein: `a - b = 0`, wenn `b > a`. Und
-mit `∞`: `∞ - b = ∞` für ein endliches `b`, `a - ∞ = 0`, insbesondere `∞ - ∞ = 0`.
-:::
-
-::::hint (anchor := "gap")
-:::en
-Which of the three holds for all `a b : ℝ≥0∞`? Try `b < a`, and try `a = ∞`.
-:::
-
-:::de
-Welche der drei gilt für alle `a b : ℝ≥0∞`? Probier `b < a`, und probier `a = ∞`.
-:::
-::::
-
-::::hint (anchor := "wrong:a + b - a")
-:::en
-This does not hold for all `a b`: try `a = ∞`.
-:::
-
-:::de
-Das gilt nicht für alle `a b`: Probier `a = ∞`.
-:::
-::::
-
-::::hint (anchor := "wrong:b - a + a")
-:::en
-This does not hold for all `a b`: try `b < a`.
-:::
-
-:::de
-Das gilt nicht für alle `a b`: Probier `b < a`.
-:::
-::::
-
-:::proofen
-`tsub_self : a - a = 0` holds for every `a`, also for `a = ∞`. (For a finite `a` also
-`a + b - a = b`: the rule `ENNReal.add_sub_cancel_left`, in *The rest of the mass*.)
-:::
-
-:::proofde
-`tsub_self : a - a = 0` gilt für jedes `a`, auch für `a = ∞`. (Für ein endliches `a` gilt auch
-`a + b - a = b`: die Regel `ENNReal.add_sub_cancel_left`, in *Der Rest der Masse*.)
-:::
-:::solution
-```
-rw [tsub_self, zero_add]
-```
-:::
-:::solution
-```
-rw [tsub_self]
-exact zero_add b
-```
-:::
-:::::
-
-::::leanonly (proof := "(a : ℝ≥0∞) : a + 0 = ⟦a ‖ a, 0⟧") (lemma := "add_zero") (uses := "add_comm, zero_add, add_assoc, add_zero, mul_zero, exact, rw")
-:::en
-*Zero on the right.* You have `zero_add : 0 + a = a`, with the zero on the left. Here it stands on
-the right.
-:::
-
-:::de
-*Null rechts.* Du hast `zero_add : 0 + a = a`, mit der Null links. Hier steht sie rechts.
-:::
-
-:::proofen
-Your result becomes the lemma `add_zero`.
-:::
-
-:::proofde
-Dein Ergebnis wird das Lemma `add_zero`.
-:::
-:::solution
-```
-rw [add_comm, zero_add]
-```
-:::
-:::solution
-```
-rw [add_comm]
-rw [zero_add]
-```
-:::
-:::solution
-```
-rw [add_comm]
-exact zero_add a
-```
-:::
-::::
-
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b = ⟦1 - μ (!b) ‖ 1 - μ (!b), μ (!b) - 1, 1 - μ b⟧") (lemma := "mass_not") (new := "ENNReal.add_sub_cancel_left") (uses := "Bool.not_false, mass_total, ENNReal.add_sub_cancel_left, mass_ne_top, Bool.not_true, add_comm, coin_total, add_assoc, cases, exact, rw")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b = ⟦1 - μ (!b) ‖ 1 - μ (!b), μ (!b) - 1, 1 - μ b⟧") (lemma := "mass_not") (uses := "Bool.not_false, mass_total, ENNReal.add_sub_cancel_left, mass_ne_top, Bool.not_true, add_comm, coin_total, add_assoc, cases, exact, rw")
 :::en
 *The rest of the mass.* Now in Lean only: a statement about *every* distribution on `Bool`, which no
 board can show. What is not at `b` lies at `!b`.

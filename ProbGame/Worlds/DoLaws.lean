@@ -471,7 +471,7 @@ simp_rw [map_bind, map_pure]
 :::
 :::::
 
-:::::leanonly (proof := "(p : I) (ν : DiscreteMeasure Bool) : (do let _ ← coin p; ν) = ⟦ν ‖ ν, coin p, pure true⟧") (lemma := "coin_unused") (new := "add_mul, mul_add, add_assoc") (uses := "bind_apply, Fintype.sum_bool, add_mul, coin_total, one_mul, mass_total, coin_true, coin_false, mul_one, ext, rw, simp")
+:::::leanonly (proof := "(p : I) (ν : DiscreteMeasure Bool) : (do let _ ← coin p; ν) = ⟦ν ‖ ν, coin p, pure true⟧") (lemma := "coin_unused") (uses := "bind_apply, Fintype.sum_bool, add_mul, coin_total, one_mul, mass_total, coin_true, coin_false, mul_one, ext, rw, simp")
 ::::hint (anchor := "gap")
 :::en
 The outcome of the coin is not used (`_`): what is left?
@@ -492,13 +492,13 @@ Das Ergebnis der Münze wird nicht benutzt (`_`): Was bleibt?
 
 :::proofen
 At every `b`, both ways go on with the same `ν b`. `ring` cannot use that $`p` and $`1 - p` add up
-to one; so take `ν b` out yourself, with the new rule `add_mul : (a + b) * c = a * c + b * c`,
+to one; so take `ν b` out yourself, with `add_mul : (a + b) * c = a * c + b * c`,
 backwards. It is unlocked as `coin_unused`.
 :::
 
 :::proofde
 Bei jedem `b` machen beide Wege mit demselben `ν b` weiter. `ring` kann nicht benutzen, dass sich
-$`p` und $`1 - p` zu eins addieren; zieh `ν b` also selbst heraus, mit der neuen Regel
+$`p` und $`1 - p` zu eins addieren; zieh `ν b` also selbst heraus, mit der Regel
 `add_mul : (a + b) * c = a * c + b * c`, rückwärts. Es wird als `coin_unused` freigeschaltet.
 :::
 :::solution
