@@ -318,6 +318,23 @@
       localStorage.setItem('pg:moved:2026-11-29n', '1')
     }
   } catch {}
+  // (since 2026-11-29: Maps 1, the quiz for every map with `revert f b; decide`, is in Bool after `Bool.apply_apply_apply`)
+  try {
+    if (!localStorage.getItem('pg:moved:2026-11-29o')) {
+      const re = /^pg:(\/[^/]+\/)(Circuits|Maps)\/:(\d+)((?::.*)?)$/
+      const moved = []
+      for (const k of Object.keys(localStorage)) {
+        const m = re.exec(k)
+        if (!m) continue
+        const i = Number(m[3])
+        if (m[2] === 'Circuits' && i >= 24) moved.push([k, `pg:${m[1]}Circuits/:${i + 1}${m[4]}`, localStorage.getItem(k)])
+        if (m[2] === 'Maps') moved.push([k, i === 0 ? `pg:${m[1]}Circuits/:24${m[4]}` : `pg:${m[1]}Maps/:${i - 1}${m[4]}`, localStorage.getItem(k)])
+      }
+      for (const [k] of moved) localStorage.removeItem(k)
+      for (const [, k, v] of moved) localStorage.setItem(k, v)
+      localStorage.setItem('pg:moved:2026-11-29o', '1')
+    }
+  } catch {}
   const DE = {
     Moves: 'Züge', Undo: 'Zurück', 'Add a gate': 'Baustein hinzufügen', Gate: 'Baustein', 'Start over': 'Neu anfangen', 'Next level ›': 'Nächstes Level ›',
     Target: 'Ziel', 'In Lean, for every p:': 'In Lean, für jedes p:', 'proved': 'bewiesen',

@@ -22,16 +22,6 @@ Abbildungen auf `Bool`, und Züge mit ihnen. Es gibt genau vier Abbildungen `Boo
 unbekannte Abbildung `f : Bool → Bool` gilt für jede Abbildung, wenn sie für jede der vier gilt.
 :::
 
-::::quiz (tactic := "revert f b; decide") (statements := "(f : Bool → Bool) (b : Bool) : f (f b) = b ;; (f : Bool → Bool) (b : Bool) : f (f (f (f b))) = f (f b) ;; (f : Bool → Bool) (b : Bool) : f (f b) = f b ;; (f : Bool → Bool) (b : Bool) : (f b && !f b) = false ;; (f : Bool → Bool) (b : Bool) : (f b || f (!b)) = true") (answer := "2, 4")
-:::en
-*For every map?* Which of these statements hold for every map `f : Bool → Bool` and every `b`? Go through the four maps. Lean checks your choice with `revert f b` and `decide`.
-:::
-
-:::de
-*Für jede Abbildung?* Welche dieser Aussagen gelten für jede Abbildung `f : Bool → Bool` und jedes `b`? Geh die vier Abbildungen durch. Lean prüft deine Wahl mit `revert f b` und `decide`.
-:::
-::::
-
 :::::quiz (tactic := "rw [Bool.not_not]") (context := "Lean/Rules.lean") (statements := "(b : Bool) : (!(!b)) = b ;; (μ : DiscreteMeasure Bool) : μ.map (fun b => !(!b)) = μ.map (fun b => b) ;; (f : Bool → Bool) (b : Bool) : f (!(!b)) = f b ;; : (fun b : Bool => !(!b)) = (fun b => b) ;; (a : Bool) : (a && !(!a)) = (a && a)") (answer := "1, 3, 5")
 ::::hint (anchor := "solved")
 :::en

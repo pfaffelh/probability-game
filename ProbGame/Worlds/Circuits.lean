@@ -943,6 +943,16 @@ cases b <;> decide
 :::
 ::::
 
+::::quiz (tactic := "revert f b; decide") (statements := "(f : Bool → Bool) (b : Bool) : f (f b) = b ;; (f : Bool → Bool) (b : Bool) : f (f (f (f b))) = f (f b) ;; (f : Bool → Bool) (b : Bool) : f (f b) = f b ;; (f : Bool → Bool) (b : Bool) : (f b && !f b) = false ;; (f : Bool → Bool) (b : Bool) : (f b || f (!b)) = true") (answer := "2, 4") (context := "Lean/WorldBool.lean") (group := "bool")
+:::en
+*For every map?* Which of these statements hold for every map `f : Bool → Bool` and every `b`? Go through the four maps. Lean checks your choice with `revert f b` and `decide`.
+:::
+
+:::de
+*Für jede Abbildung?* Welche dieser Aussagen gelten für jede Abbildung `f : Bool → Bool` und jedes `b`? Geh die vier Abbildungen durch. Lean prüft deine Wahl mit `revert f b` und `decide`.
+:::
+::::
+
 ::::leanonly (proof := "(f : Bool → Bool) (x : Bool) : ((bif f true then x else false) || (bif f true then false else x)) = ⟦x ‖ x, f true, !x⟧") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "Bool.cond_false, Bool.false_or, Bool.cond_true, <;>, cases, rfl, rw")
 :::en
 *A test is `true` or `false`.* `x` behind the test `f true`, once in the `then` branch and once in
