@@ -106,6 +106,25 @@
       localStorage.setItem('pg:moved:2026-11-29b', '1')
     }
   } catch {}
+  // (since 2026-11-29: Masses 9 (`map_true` for always true) and 11 (`mass_total` after a move) are gone,
+  // special cases of the level before; `exact` comes in `mass_le_one`)
+  try {
+    if (!localStorage.getItem('pg:moved:2026-11-29c')) {
+      const MOVES = { Masses: [[8, null], [9, -1], [10, null], [11, -1]] }
+      const re = /^pg:(\/[^/]+\/)([^/]+)\/:(\d+)((?::.*)?)$/
+      const moved = []
+      for (const k of Object.keys(localStorage)) {
+        const m = re.exec(k), mv = m && MOVES[m[2]]
+        if (!mv) continue
+        const i = Number(m[3]); let j = i, drop = false
+        for (const [from, by] of mv) if (by === null ? i === from : i >= from) { if (by === null) drop = true; else j += by }
+        moved.push([k, drop ? null : `pg:${m[1]}${m[2]}/:${j}${m[4]}`, localStorage.getItem(k)])
+      }
+      for (const [k] of moved) localStorage.removeItem(k)
+      for (const [, k, v] of moved) if (k) localStorage.setItem(k, v)
+      localStorage.setItem('pg:moved:2026-11-29c', '1')
+    }
+  } catch {}
   const DE = {
     Moves: 'Züge', Undo: 'Zurück', 'Add a gate': 'Baustein hinzufügen', Gate: 'Baustein', 'Start over': 'Neu anfangen', 'Next level ›': 'Nächstes Level ›',
     Target: 'Ziel', 'In Lean, for every p:': 'In Lean, für jedes p:', 'proved': 'bewiesen',

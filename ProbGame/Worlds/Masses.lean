@@ -369,50 +369,6 @@ cases f true <;> cases f false <;> rfl
 :::
 ::::
 
-:::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (μ.map (fun _ => true)) true = ⟦μ true + μ false ‖ μ true, μ false, μ true + μ false, 0⟧") (uses := "map_true, Bool.cond_true, map_bool, beq_self_eq_true, beq_true, Bool.cond_false, rw, -rfl")
-::::hint (anchor := "gap")
-:::en
-Which masses of `μ` come to `true`?
-:::
-
-:::de
-Welche Massen von `μ` kommen bei `true` an?
-:::
-::::
-
-:::en
-*All to true.* The move *always `true`*, `fun _ => true`, sends both points to `true`.
-:::
-
-:::de
-*Alles nach true.* Der Zug *immer `true`*, `fun _ => true`, schickt beide Punkte nach `true`.
-:::
-
-:::proofen
-Your rule `map_true`, for the move *always `true`*.
-:::
-
-:::proofde
-Deine Regel `map_true`, für den Zug *immer `true`*.
-:::
-:::solution
-```
-rw [map_true]
-rw [Bool.cond_true, Bool.cond_true]
-```
-:::
-:::solution
-```
-rw [map_bool, beq_self_eq_true, Bool.cond_true, Bool.cond_true]
-```
-:::
-:::solution
-```
-rw [map_bool, beq_true, Bool.cond_true, Bool.cond_true]
-```
-:::
-:::::
-
 :::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ true + μ false = 1") (lemma := "mass_total") (new := "Prob.total, tsum_bool, add_comm") (uses := "Prob.total, tsum_bool, add_comm, add_assoc, rw")
 :::en
 *The whole mass.* `[Prob μ]` says: `μ` is a distribution, its masses add up to one. On `Bool` there
@@ -476,7 +432,7 @@ rw [add_comm, ← tsum_bool, Prob.total]
 :::
 :::::
 
-:::::leanonly (proof := "(p : I) : ((coin p).map not) true + ((coin p).map not) false = ⟦1 ‖ 0, 1, p⟧") (new := "exact") (uses := "mass_total, Prob.total, tsum_bool, add_comm, coin_total, add_assoc, exact, rw")
+:::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b ≤ 1") (lemma := "mass_le_one") (new := "le_self_add, exact") (uses := "mass_total, add_comm, le_self_add, coin_total, add_assoc, <;>, cases, exact, rw")
 ::::hint (anchor := "item:exact")
 :::en
 `exact h`: closes a goal that is exactly `h`.
@@ -486,44 +442,7 @@ rw [add_comm, ← tsum_bool, Prob.total]
 `exact h`: schließt ein Ziel, das genau `h` ist.
 :::
 ::::
-
-:::en
-*The whole mass after a move.* What you proved for every distribution holds after a move too.
-:::
-
-:::de
-*Die ganze Masse nach einem Zug.* Was du für jede Verteilung bewiesen hast, gilt auch nach einem Zug.
-:::
-
-:::proofen
-Your theorem `mass_total μ : μ true + μ false = 1` holds for every distribution `μ`: a rule with a
-blank. What goes into the blank is written behind the rule, in brackets when it is more than a name.
-The new tactic `exact h` closes a goal that is exactly `h`.
-:::
-
-:::proofde
-Dein Satz `mass_total μ : μ true + μ false = 1` gilt für jede Verteilung `μ`: eine Regel mit einer
-Leerstelle. Was in die Leerstelle kommt, schreibt man hinter die Regel, in Klammern, wenn es mehr
-als ein Name ist. Die neue Taktik `exact h` schließt ein Ziel, das genau `h` ist.
-:::
-:::solution
-```
-exact mass_total ((coin p).map not)
-```
-:::
-:::solution
-```
-rw [mass_total]
-```
-:::
-:::solution
-```
-rw [← Prob.total ((coin p).map not), tsum_bool, add_comm]
-```
-:::
-:::::
-
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b ≤ 1") (lemma := "mass_le_one") (new := "le_self_add") (uses := "mass_total, add_comm, le_self_add, coin_total, add_assoc, <;>, cases, exact, rw")
+ (uses := "mass_total, add_comm, le_self_add, coin_total, add_assoc, <;>, cases, exact, rw")
 :::en
 *At most one.* Each mass is a part of the whole mass, so at most one.
 :::
@@ -535,13 +454,16 @@ rw [← Prob.total ((coin p).map not), tsum_bool, add_comm]
 :::proofen
 The `1` is the whole mass, `mass_total μ`, and each mass is one of its summands:
 `le_self_add : a ≤ a + c`. Where the summands stand the wrong way round, `add_comm : a + b = b + a`
-turns the sum round.
+turns the sum round. `mass_total μ` is your theorem for this `μ`: a rule with a blank, and what goes
+into the blank is written behind it. The new tactic `exact h` closes a goal that is exactly `h`.
 :::
 
 :::proofde
 Die `1` ist die ganze Masse, `mass_total μ`, und jede Masse ist einer ihrer Summanden:
 `le_self_add : a ≤ a + c`. Wo die Summanden falsch herum stehen, dreht `add_comm : a + b = b + a`
-die Summe um.
+die Summe um. `mass_total μ` ist dein Satz für dieses `μ`: eine Regel mit einer Leerstelle, und was
+in die Leerstelle kommt, schreibt man dahinter. Die neue Taktik `exact h` schließt ein Ziel, das
+genau `h` ist.
 :::
 :::solution
 ```
@@ -569,7 +491,7 @@ exact le_self_add
 exact le_self_add
 ```
 :::
-::::
+:::::
 
 :::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b ≠ ⟦⊤ ‖ 0, 1, ⊤⟧") (lemma := "mass_ne_top") (new := "apply, ne_top_of_le_ne_top, ENNReal.one_ne_top") (uses := "ne_top_of_le_ne_top, ENNReal.one_ne_top, mass_le_one, apply, exact")
 :::en
