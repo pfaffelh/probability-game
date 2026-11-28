@@ -215,27 +215,27 @@ exact le_self_add
 :::
 :::::
 
-:::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b ≠ ⟦⊤ ‖ 0, 1, ⊤⟧") (lemma := "mass_ne_top") (new := "apply, ne_top_of_le_ne_top, ENNReal.one_ne_top") (uses := "ne_top_of_le_ne_top, ENNReal.one_ne_top, mass_le_one, apply, exact")
+:::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b ≠ ⟦∞ ‖ 0, 1, ∞⟧") (lemma := "mass_ne_top") (new := "apply, ne_top_of_le_ne_top, ENNReal.one_ne_top") (uses := "ne_top_of_le_ne_top, ENNReal.one_ne_top, mass_le_one, apply, exact")
 :::en
-*Finite.* Masses are numbers in $`[0, \infty]`; a mass of a distribution is finite, `≠ ⊤`
-(`⊤` is $`\infty`): it is at most one, and one is finite.
+*Finite.* Masses are numbers in $`[0, \infty]`; a mass of a distribution is finite, `≠ ∞`:
+it is at most one, and one is finite.
 :::
 
 :::de
-*Endlich.* Massen sind Zahlen in $`[0, \infty]`; eine Masse einer Verteilung ist endlich, `≠ ⊤`
-(`⊤` ist $`\infty`): Sie ist höchstens eins, und eins ist endlich.
+*Endlich.* Massen sind Zahlen in $`[0, \infty]`; eine Masse einer Verteilung ist endlich, `≠ ∞`:
+Sie ist höchstens eins, und eins ist endlich.
 :::
 
 :::proofen
-`ne_top_of_le_ne_top : b ≠ ⊤ → a ≤ b → a ≠ ⊤`. The new tactic `apply h` works backwards: the goal is
+`ne_top_of_le_ne_top : b ≠ ∞ → a ≤ b → a ≠ ∞`. The new tactic `apply h` works backwards: the goal is
 the conclusion of `h`, and what `h` still needs becomes the new goal. What `h` needs can also be
-given along, `apply h h₁`: here `ENNReal.one_ne_top : 1 ≠ ⊤`.
+given along, `apply h h₁`: here `ENNReal.one_ne_top : 1 ≠ ∞`.
 :::
 
 :::proofde
-`ne_top_of_le_ne_top : b ≠ ⊤ → a ≤ b → a ≠ ⊤`. Die neue Taktik `apply h` arbeitet rückwärts: Das
+`ne_top_of_le_ne_top : b ≠ ∞ → a ≤ b → a ≠ ∞`. Die neue Taktik `apply h` arbeitet rückwärts: Das
 Ziel ist die Folgerung von `h`, und was `h` noch braucht, wird das neue Ziel. Was `h` braucht, kann
-man auch gleich mitgeben, `apply h h₁`: hier `ENNReal.one_ne_top : 1 ≠ ⊤`.
+man auch gleich mitgeben, `apply h h₁`: hier `ENNReal.one_ne_top : 1 ≠ ∞`.
 :::
 :::solution
 ```
@@ -373,7 +373,7 @@ Spielfeld zeigen kann. Was nicht bei `b` liegt, liegt bei `!b`.
 The point `b` is `false` or `true`.
 
 Masses are numbers in $`[0, \infty]` (`ℝ≥0∞`); taking away is allowed when what is taken away is
-finite: `ENNReal.add_sub_cancel_left (h : a ≠ ⊤) : a + b - a = b`, and `mass_ne_top : μ b ≠ ⊤` says
+finite: `ENNReal.add_sub_cancel_left (h : a ≠ ∞) : a + b - a = b`, and `mass_ne_top : μ b ≠ ∞` says
 that a mass is finite. The hypothesis is written behind the rule; without it, `rw` leaves it as a
 second goal.
 :::
@@ -383,7 +383,7 @@ second goal.
 eins fehlt. Der Punkt `b` ist `false` oder `true`.
 
 Massen sind Zahlen in $`[0, \infty]` (`ℝ≥0∞`); wegnehmen darf man, wenn das Weggenommene endlich
-ist: `ENNReal.add_sub_cancel_left (h : a ≠ ⊤) : a + b - a = b`, und `mass_ne_top : μ b ≠ ⊤` sagt,
+ist: `ENNReal.add_sub_cancel_left (h : a ≠ ∞) : a + b - a = b`, und `mass_ne_top : μ b ≠ ∞` sagt,
 dass eine Masse endlich ist. Die Annahme schreibt man hinter die Regel; ohne sie lässt `rw` sie als
 zweites Ziel übrig.
 :::

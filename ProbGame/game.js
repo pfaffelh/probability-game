@@ -1859,7 +1859,7 @@
   // A level in Lean only (`::::leanonly`): no board; the stage shows its proof at once.
   // The abbreviations of Lean's editors, for the input of a proof: `\l` for ←, `\to` for →, …
   const ABBREV = { l: '←', leftarrow: '←', '<-': '←', r: '→', to: '→', '->': '→', rightarrow: '→', and: '∧', or: '∨', not: '¬', neg: '¬',
-    ne: '≠', '=n': '≠', le: '≤', ge: '≥', top: '⊤', bot: '⊥', mu: 'μ', nu: 'ν', sigma: 'σ', all: '∀', forall: '∀', ex: '∃', exists: '∃',
+    ne: '≠', '=n': '≠', le: '≤', ge: '≥', top: '⊤', bot: '⊥', infty: '∞', inf: '∞', mu: 'μ', nu: 'ν', sigma: 'σ', all: '∀', forall: '∀', ex: '∃', exists: '∃',
     in: '∈', notin: '∉', circ: '∘', o: '∘', x: '×', times: '×', up: '↑', '_0': '₀', '_1': '₁', '_2': '₂', '_3': '₃', '_4': '₄' }
   // (`final`: the line is sent, an abbreviation at its end counts too; else only one followed by a space, bracket or comma)
   const unabbrev = (text, final) => text.replace(final ? /\\([A-Za-z_0-9<>=-]+)(?=[\s\[\](),]|$)/g : /\\([A-Za-z_0-9<>=-]+)(?=[\s\[\](),])/g, (m, k) => ABBREV[k] ?? m)
@@ -3387,13 +3387,13 @@
     { name: 'le_self_add', kind: 'rule', sig: 'le_self_add : a ≤ a + c', en: 'A sum of masses is at least its first summand.', de: 'Eine Summe von Massen ist mindestens ihr erster Summand.' },
     { name: 'le_add_self', kind: 'rule', sig: 'le_add_self : a ≤ c + a', en: 'A sum of masses is at least its second summand.', de: 'Eine Summe von Massen ist mindestens ihr zweiter Summand.' },
     { name: 'mass_le_one', kind: 'lemma', measure: true, sig: 'mass_le_one μ [Prob μ] b : μ b ≤ 1', en: 'Proved by you in DiscreteMeasure: a mass of a distribution is at most one.', de: 'Von dir bewiesen in „DiscreteMeasure“: Eine Masse einer Verteilung ist höchstens eins.' },
-    { name: 'ne_top_of_le_ne_top', kind: 'rule', sig: 'ne_top_of_le_ne_top : b ≠ ⊤ → a ≤ b → a ≠ ⊤', en: 'Below something finite is finite.', de: 'Unter etwas Endlichem ist endlich.' },
-    { name: 'ENNReal.one_ne_top', kind: 'rule', sig: 'ENNReal.one_ne_top : 1 ≠ ⊤', en: 'One is finite (⊤ is ∞).', de: 'Eins ist endlich (⊤ ist ∞).' },
-    { name: 'mass_ne_top', kind: 'lemma', sig: 'mass_ne_top [Prob μ] : μ b ≠ ⊤', en: 'Proved by you in DiscreteMeasure: a mass of a distribution is finite (masses are numbers in [0, ∞], and ⊤ is ∞).', de: 'Von dir bewiesen in „DiscreteMeasure“: Eine Masse einer Verteilung ist endlich (Massen sind Zahlen in [0, ∞], und ⊤ ist ∞).' },
+    { name: 'ne_top_of_le_ne_top', kind: 'rule', sig: 'ne_top_of_le_ne_top : b ≠ ∞ → a ≤ b → a ≠ ∞', en: 'Below something finite is finite.', de: 'Unter etwas Endlichem ist endlich.' },
+    { name: 'ENNReal.one_ne_top', kind: 'rule', sig: 'ENNReal.one_ne_top : 1 ≠ ∞', en: 'One is finite.', de: 'Eins ist endlich.' },
+    { name: 'mass_ne_top', kind: 'lemma', sig: 'mass_ne_top [Prob μ] : μ b ≠ ∞', en: 'Proved by you in DiscreteMeasure: a mass of a distribution is finite (masses are numbers in [0, ∞], and ⊤ is ∞).', de: 'Von dir bewiesen in „DiscreteMeasure“: Eine Masse einer Verteilung ist endlich (Massen sind Zahlen in [0, ∞], und ⊤ ist ∞).' },
     { name: 'tsub_zero', kind: 'rule', sig: 'a - 0 = a', en: 'Taking 0 away changes nothing.', de: '0 abziehen ändert nichts.' },
     { name: 'tsub_self', kind: 'rule', sig: 'tsub_self a : a - a = 0', en: 'Taking a away from itself leaves 0, for every a in [0, ∞], also ∞.', de: 'a von sich selbst abgezogen lässt 0, für jedes a in [0, ∞], auch ∞.' },
     { name: 'tsub_add_eq_max', kind: 'rule', sig: 'tsub_add_eq_max : b - a + a = max b a', en: 'Taking a away and putting it back gives the larger of the two (a - b is 0 when b > a).', de: 'a wegnehmen und wieder dazu gibt das größere der beiden (a - b ist 0, wenn b > a).' },
-    { name: 'ENNReal.add_sub_cancel_left', kind: 'rule', sig: 'ENNReal.add_sub_cancel_left (h : a ≠ ⊤) : a + b - a = b', en: 'Adding a and taking it away again: for a finite a.', de: 'a dazu und wieder weg: für ein endliches a.' },
+    { name: 'ENNReal.add_sub_cancel_left', kind: 'rule', sig: 'ENNReal.add_sub_cancel_left (h : a ≠ ∞) : a + b - a = b', en: 'Adding a and taking it away again: for a finite a.', de: 'a dazu und wieder weg: für ein endliches a.' },
     { name: 'bind_apply', kind: 'rule', sig: '(do let a ← μ; f a) b = ∑ a, μ a * f a b', en: 'The definition of a bind: the mass at b is the sum over the first steps a of the mass of a times the mass of f a at b.', de: 'Die Definition eines bind: Die Masse bei b ist die Summe über die ersten Schritte a von der Masse von a mal der Masse von f a bei b.' },
     { name: 'bind_true', kind: 'lemma', sig: '(do let x ← μ; f x) true = μ true * f true true + μ false * f false true', en: 'Proved by you in Two Coins: the mass of a bind at true, the way through true (mass μ true, then f true) and the way through false.', de: 'Von dir bewiesen in „Zwei Münzen“: die Masse eines bind bei true, der Weg über true (Masse μ true, dann f true) und der Weg über false.' },
     { name: 'mul_one', kind: 'rule', sig: 'a * 1 = a', en: 'Times one.', de: 'Mal eins.' },
@@ -3554,9 +3554,9 @@
     { name: 'ENNReal.tsum_geometric', kind: 'rule', sig: "∑' k, r ^ k = (1 - r)⁻¹", en: 'The geometric series.', de: 'Die geometrische Reihe.' },
     { name: 'one_sub_symm', kind: 'rule', sig: '1 - ↑(σ p) = ↑p', en: '1 - (1 - p) = p, as masses.', de: '1 - (1 - p) = p, als Massen.' },
     { name: 'ENNReal.tsum_mul_right', kind: 'rule', sig: "∑' k, f k * a = (∑' k, f k) * a", en: 'Factoring out of a sum.', de: 'Aus einer Summe ausklammern.' },
-    { name: 'ENNReal.inv_mul_cancel', kind: 'rule', sig: 'a ≠ 0 → a ≠ ⊤ → a⁻¹ * a = 1', en: 'One over a, times a.', de: 'Eins durch a, mal a.' },
+    { name: 'ENNReal.inv_mul_cancel', kind: 'rule', sig: 'a ≠ 0 → a ≠ ∞ → a⁻¹ * a = 1', en: 'One over a, times a.', de: 'Eins durch a, mal a.' },
     { name: 'mass_ne_zero', kind: 'rule', sig: 'p ≠ 0 → ↑p ≠ 0', en: 'A number ≠ 0 is a mass ≠ 0.', de: 'Eine Zahl ≠ 0 ist eine Masse ≠ 0.' },
-    { name: 'mass_finite', kind: 'rule', sig: '↑p ≠ ⊤', en: 'A number in [0, 1] is a finite mass.', de: 'Eine Zahl in [0, 1] ist eine endliche Masse.' },
+    { name: 'mass_finite', kind: 'rule', sig: '↑p ≠ ∞', en: 'A number in [0, 1] is a finite mass.', de: 'Eine Zahl in [0, 1] ist eine endliche Masse.' },
     { name: 'linear_combination', kind: 'tactic', insert: 'linear_combination h', sig: 'linear_combination h', en: 'Proves the goal from the equation h by computing (with ring): goal and h differ only by computing.', de: 'Beweist das Ziel aus der Gleichung h durch Rechnen (mit ring): Ziel und h unterscheiden sich nur durch Rechnen.' },
     { name: 'linarith', kind: 'tactic', insert: 'linarith', sig: 'linarith', en: 'Proves an equation or inequality that follows from the hypotheses by adding them up with factors (linear arithmetic, over ℝ).', de: 'Beweist eine Gleichung oder Ungleichung, die aus den Annahmen folgt, indem es sie mit Faktoren addiert (lineare Arithmetik, über ℝ).' },
     { name: 'subst', kind: 'tactic', insert: 'subst ', sig: 'subst h', en: 'For h : x = e (or e = x) with a variable x: puts e for x everywhere, and x is gone.', de: 'Für h : x = e (oder e = x) mit einer Variablen x: setzt überall e für x ein, und x ist weg.' },
@@ -5017,7 +5017,7 @@
         g.append(svg('path', { d: `M${x},${y - r} A${r},${r} 0 ${frac > 0.5 ? 1 : 0} 1 ${ex},${ey}`, class: 'pg-map-ring' }))
       }
       // (the worlds before chance have no number: a sign of their own)
-      const sign = /True-and-False\/$/.test(w.path) ? '⊤' : /Walking-on-the-Grid\/$/.test(w.path) ? '⌗' : /Circuits\/$/.test(w.path) ? '∧' : /Masses\/$/.test(w.path) ? 'μ' : '•'
+      const sign = /True-and-False\/$/.test(w.path) ? '⊤' : /Walking-on-the-Grid\/$/.test(w.path) ? '⌗' : /Circuits\/$/.test(w.path) ? '∧' : /(Masses|DiscreteMeasure)\/$/.test(w.path) ? 'μ' : '•'
       g.append(svg('text', { x, y: y + 5.5, 'text-anchor': 'middle', class: 'pg-map-n' }, w.num || sign))
       // (a long name in two lines: *Mehrstufige Experimente* does not fit beside the tree)
       const two = name.length > 18 && name.includes(' ') ? [name.slice(0, name.indexOf(' ')), name.slice(name.indexOf(' ') + 1)] : null
