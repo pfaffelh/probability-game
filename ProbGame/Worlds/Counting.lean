@@ -80,7 +80,7 @@ decide
 :::
 ::::
 
-::::circuit (height := "540") (route := "count") (inputs := "x") (gates := "not, alwaysT, alwaysF, toNat") (coins := "p") (target := "pure 0") (context := "Lean/Rules.lean") (proof := "(p : I) : ((coin p).map (fun _ => false)).map Bool.toNat = pure 0") (play := "a=alwaysF; b=toNat; x>a.0; a>b.0; b>out") (uses := "coin_const, map_pure, map_map, map_eq_pure_bind, coin_unused, rfl, rw")
+::::circuit (height := "540") (route := "count") (inputs := "x") (gates := "not, alwaysT, alwaysF, toNat") (coins := "p") (target := "pure 0") (context := "Lean/Rules.lean") (proof := "(p : I) : ((coin p).map (fun _ => false)).map Bool.toNat = pure 0") (play := "a=alwaysF; b=toNat; x>a.0; a>b.0; b>out") (uses := "map_map, map_eq_pure_bind, coin_unused, rfl, rw")
 :::en
 *Surely zero.* A point mass on the numbers, however you get there.
 :::
@@ -95,12 +95,6 @@ As in *Surely `false`* (of *One Coin*) and *From sides to numbers*, now with a n
 
 :::proofde
 Wie in *Sicher `false`* (aus *Eine Münze*) und *Von Seiten zu Zahlen*, jetzt mit einer Zahl.
-:::
-:::solution
-```
-rw [coin_const, map_pure]
-rfl
-```
 :::
 :::solution
 ```

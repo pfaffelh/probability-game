@@ -2,7 +2,7 @@
 meant) in the context of its rules, the proof with the game's simp (simp only with the simp rules of
 the level's inventory), and which tactics and theorems of the proof are not in the level's inventory.
 
-    python3 -I tests/alt.py batch.json [bridge]     batch.json: [["Masses", 4, "rw [zero_add]\\nrw [coin_true]"], …]
+    python3 -I tests/alt.py batch.json [bridge]     batch.json: [["Masses", 5, "rw [← mass_total μ, h, zero_add]"], …]
 
 World names as the modules (Circuits, Masses, OneCoin, Maps, TwoCoins, DoLaws, Counting, Bind,
 RealNumbers, Sequences, Binomial, Geometric, Thinning, Hypergeometric); levels counted from 1 as on the
@@ -13,7 +13,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from levels import worlds, here
 
-SLUG = {'Circuits': 'Circuits', 'Masses': 'Masses', 'OneCoin': 'One-Coin', 'Maps': 'Maps', 'TwoCoins': 'Two-Coins',
+SLUG = {'Circuits': 'Circuits', 'Masses': 'DiscreteMeasure', 'OneCoin': 'One-Coin', 'Maps': 'Maps', 'TwoCoins': 'Two-Coins',
         'DoLaws': 'Laws-of--do', 'Counting': 'Counting', 'Bind': 'Multi-Stage-Experiments', 'RealNumbers': 'Balance',
         'Sequences': 'Sequences', 'Binomial': 'Binomial', 'Geometric': 'Geometric', 'Thinning': 'Thinning', 'Hypergeometric': 'Hypergeometric'}
 js = (here / 'ProbGame/game.js').read_text()

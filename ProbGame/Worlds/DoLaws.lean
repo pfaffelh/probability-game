@@ -636,14 +636,14 @@ was sie damit tun.
 
 :::proofen
 A new tactic: `congr` reduces the goal to the parts in which the two sides differ, here what comes
-after the throw, as a function of `x`. For two functions, `ext x` (from *One Coin*) says: equal for
+after the throw, as a function of `x`. For two functions, `ext x` (from *DiscreteMeasure*) says: equal for
 every `x`.
 :::
 
 :::proofde
 Eine neue Taktik: `congr` führt das Ziel auf die Teile zurück, in denen sich die beiden Seiten
 unterscheiden, hier das, was nach dem Wurf kommt, als Funktion von `x`. Für zwei Funktionen sagt
-`ext x` (aus *Eine Münze*): gleich für jedes `x`.
+`ext x` (aus *DiscreteMeasure*): gleich für jedes `x`.
 :::
 :::solution
 ```
@@ -726,13 +726,13 @@ simp
 :::
 
 :::proofen
-`σ p` is the mass of `coin p` at `false`, and `mass_not` (from *One Coin*) writes it as `1 - …`. Then
+`σ p` is the mass of `coin p` at `false`, and `mass_not` (from *DiscreteMeasure*) writes it as `1 - …`. Then
 `h`, and take away what was added: `ENNReal.add_sub_cancel_left`. Your result becomes the lemma
 `eq_symm_of_add`.
 :::
 
 :::proofde
-`σ p` ist die Masse von `coin p` bei `false`, und `mass_not` (aus *Eine Münze*) schreibt sie als
+`σ p` ist die Masse von `coin p` bei `false`, und `mass_not` (aus *DiscreteMeasure*) schreibt sie als
 `1 - …`. Dann `h`, und nimm weg, was dazukam: `ENNReal.add_sub_cancel_left`. Dein Ergebnis wird das
 Lemma `eq_symm_of_add`.
 :::

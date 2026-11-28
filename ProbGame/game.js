@@ -125,6 +125,27 @@
       localStorage.setItem('pg:moved:2026-11-29c', '1')
     }
   } catch {}
+  // (since 2026-11-29: Masses is DiscreteMeasure, about any μ with [Prob μ], with pure; everything about
+  // coins is in One Coin. Each old level [world, index] goes to its new place; null: the level is gone.)
+  try {
+    if (!localStorage.getItem('pg:moved:2026-11-29d')) {
+      const M = 'DiscreteMeasure', C = 'One-Coin'
+      const TO = {
+        Masses: [[C, 0], [C, 1], [C, 2], [C, 3], null, [M, 2], [M, 11], [M, 12], [M, 3], [M, 5], [M, 6], [C, 7]],
+        'One-Coin': [[M, 4], [M, 7], null, [M, 8], [M, 9], [M, 10], [C, 4], [M, 0], null, [M, 1], null, [M, 13], [C, 6], [C, 8]] }
+      const re = /^pg:(\/[^/]+\/)([^/]+)\/:(\d+)((?::.*)?)$/
+      const moved = []
+      for (const k of Object.keys(localStorage)) {
+        const m = re.exec(k), to = m && TO[m[2]]
+        if (!to) continue
+        const t = to[Number(m[3])]
+        moved.push([k, t ? `pg:${m[1]}${t[0]}/:${t[1]}${m[4]}` : null, localStorage.getItem(k)])
+      }
+      for (const [k] of moved) localStorage.removeItem(k)
+      for (const [, k, v] of moved) if (k) localStorage.setItem(k, v)
+      localStorage.setItem('pg:moved:2026-11-29d', '1')
+    }
+  } catch {}
   const DE = {
     Moves: 'Züge', Undo: 'Zurück', 'Add a gate': 'Baustein hinzufügen', Gate: 'Baustein', 'Start over': 'Neu anfangen', 'Next level ›': 'Nächstes Level ›',
     Target: 'Ziel', 'In Lean, for every p:': 'In Lean, für jedes p:', 'proved': 'bewiesen',
@@ -158,7 +179,7 @@
   // Headings of the site, which come from Verso.
   const DE_TITLES = {
     'The Probability Game': 'Das Wahrscheinlichkeits\u00ADspiel',  // (a soft hyphen, for phones)
-    'Thinning': 'Ausdünnen', 'Balance': 'Gleichgewicht', 'Hypergeometric': 'Hypergeometrisch', 'Sequences': 'Folgen', 'Binomial': 'Binomial', 'Geometric': 'Geometrisch', 'Masses': 'Massen', 'Rows and masses': 'Zeilen und Massen', 'One Coin': 'Eine Münze', 'Maps': 'Abbildungen', 'Draw, then Compute': 'Erst ziehen, dann rechnen', 'Two Coins': 'Zwei Münzen', 'Laws of ': 'Gesetze von ',
+    'Thinning': 'Ausdünnen', 'Balance': 'Gleichgewicht', 'Hypergeometric': 'Hypergeometrisch', 'Sequences': 'Folgen', 'Binomial': 'Binomial', 'Geometric': 'Geometrisch', 'Rows and masses': 'Zeilen und Massen', 'One Coin': 'Eine Münze', 'Maps': 'Abbildungen', 'Draw, then Compute': 'Erst ziehen, dann rechnen', 'Two Coins': 'Zwei Münzen', 'Laws of ': 'Gesetze von ',
     'Counting': 'Zählen', 'Walking on the Grid': 'Gehen auf dem Gitter', 'True and False': 'Wahr und falsch', 'Circuits with Coins': 'Schaltungen mit Münzen', 'Multi-Stage Experiments': 'Mehrstufige Experimente', 'Circuits': 'Schaltungen', 'Lexicon': 'Lexikon', 'Table of Contents': 'Inhalt', 'Contents': 'Inhalt',
   }
   function translatePage() {
@@ -1940,7 +1961,8 @@
   const FILL_VALUES = ['p', '1-p', '1', '0']
   const fillText = v => (v === '1-p' ? '1 − p' : v)
   const FILL_BOARDS = {
-    maps: { kind: 'map', coin: 'p', cols: [{ map: 'id', answer: ['p'] }, { map: 'not', answer: ['1-p'] }, { map: 'true', answer: ['1'] }, { map: 'false', answer: ['0'] }] },
+    // (in DiscreteMeasure, before the coins: the distribution is any μ, its masses μ true and μ false)
+    maps: { kind: 'map', coin: 'p', mu: true, cols: [{ map: 'id', answer: ['p'] }, { map: 'not', answer: ['1-p'] }, { map: 'true', answer: ['1'] }, { map: 'false', answer: ['0'] }] },
     // (the coin thrown second: at T when the first draw is true, at F else; its mass at true is what is filled in)
     bind: { kind: 'bind', coin: 'p', cols: [['1', '0'], ['p', '0'], ['1', 'p'], ['1-p', '1-p']].map(k => ({ kern: k, answer: k })) },
   }
@@ -1965,6 +1987,8 @@
       this.render()
     }
     empty() { return this.spec.cols.map(c => c.answer.map(() => null)) }
+    // a value as shown: p, 1 − p, 1, 0, or for a board on any μ its masses μ true, μ false
+    txt(v) { return this.spec.mu ? ({ p: 'μ true', '1-p': 'μ false', '1 − p': 'μ false' }[v] ?? v) : fillText(v) }
     get solved() { try { return localStorage.getItem(this.key) === '1' } catch { return false } }
     // (what is on the board now: as for a circuit, it can be played again after it was solved)
     get right() { return this.spec.cols.every((col, k) => col.answer.every((a, j) => this.picks[k][j] === a)) }
@@ -1997,7 +2021,7 @@
     field(k, j, x, y, w, h) {
       const v = this.picks[k][j], f = svg('g', { class: 'pg-fill-field' + (this.open?.[0] === k && this.open?.[1] === j ? ' pg-fill-open' : ''), 'data-col': k, 'data-i': j, 'data-answer': this.spec.cols[k].answer[j], 'data-value': v ?? '' })
       f.append(svg('rect', { class: 'pg-cslot' + (v ? ' pg-cslot-full' : ''), x, y, width: w, height: h, rx: 6 }))
-      f.append(svg('text', { class: v ? 'pg-tmass pg-fill-v' + (this.right ? ' pg-tmass-ok' : '') : 'pg-cfield pg-cfield-empty', x: x + w / 2, y: y + h / 2 + 5, 'text-anchor': 'middle' }, v ? fillText(v) : '?'))
+      f.append(svg('text', { class: v ? 'pg-tmass pg-fill-v' + (this.spec.mu ? ' pg-fill-mu' : '') + (this.right ? ' pg-tmass-ok' : '') : 'pg-cfield pg-cfield-empty', x: x + w / 2, y: y + h / 2 + 5, 'text-anchor': 'middle' }, v ? this.txt(v) : '?'))
       f.addEventListener('click', ev => { ev.stopPropagation(); this.open = this.open?.[0] === k && this.open?.[1] === j ? null : [k, j]; this.render() })
       return f
     }
@@ -2032,7 +2056,10 @@
         s.append(svg('path', { class: 'pg-cwire', d: wirePath({ x, y: gy + gh / 2 }, { x, y: oy }) }))
       })
       const coinG = svg('g', { class: 'pg-cinput' })
-      coinG.append(svg('rect', { class: 'pg-cslot pg-cslot-full pg-cinput-block', x: top.x - 34, y: top.y - 23, width: 68, height: 46, rx: 6 }), distGlyph(this.spec.coin, top.x - 34, top.y - 23, 68, 46))
+      const glyph = distGlyph(this.spec.coin, top.x - 34, top.y - 23, 68, 46)
+      // (any μ: its bars, drawn for an example, and its name)
+      if (this.spec.mu) { glyph.querySelector('text')?.remove(); glyph.append(svg('text', { class: 'pg-cfield', x: top.x, y: top.y + 20, 'text-anchor': 'middle' }, 'μ')) }
+      coinG.append(svg('rect', { class: 'pg-cslot pg-cslot-full pg-cinput-block', x: top.x - 34, y: top.y - 23, width: 68, height: 46, rx: 6 }), glyph)
       coinG.append(svg('line', { class: 'pg-cinput-stem', x1: top.x, y1: top.y + 23, x2: top.x, y2: out0.y }))
       coinG.append(svg('circle', { class: 'pg-cport', cx: out0.x, cy: out0.y, r: 7 }))
       s.append(coinG)
@@ -2060,7 +2087,7 @@
         })
         const fy = base + rh + 2
         // (the mass at false follows from the one at true; after bind, the one at true is computed too)
-        og.append(svg('text', { class: 'pg-tmass pg-fill-auto' + (this.right ? ' pg-tmass-ok' : ''), x: cx(0), y: fy + rh / 2 + 7, 'text-anchor': 'middle' }, ms[0] ? showPoly(ms[0]) : '·'))
+        og.append(svg('text', { class: 'pg-tmass pg-fill-auto' + (this.spec.mu ? ' pg-fill-mu' : '') + (this.right ? ' pg-tmass-ok' : ''), x: cx(0), y: fy + rh / 2 + 7, 'text-anchor': 'middle' }, ms[0] ? this.txt(showPoly(ms[0])) : '·'))
         if (!bind) og.append(this.field(k, 0, cx(1) - cw / 2 + 2, fy, cw - 4, rh + 4))
         else {
           og.append(svg('text', { class: 'pg-tmass pg-fill-auto' + (this.right ? ' pg-tmass-ok' : ''), x: cx(1), y: fy + rh / 2 + 7, 'text-anchor': 'middle' }, ms[1] ? showPoly(ms[1]) : '·'))
@@ -2085,7 +2112,7 @@
       if (this.open) {
         const [k, j] = this.open, pop = el('span', 'pg-chip-pop pg-fill-pop')
         for (const v of FILL_VALUES) {
-          const c = el('button', 'pg-chip pg-chip-choice', fillText(v)); c.type = 'button'; c.dataset.value = v
+          const c = el('button', 'pg-chip pg-chip-choice', this.txt(v)); c.type = 'button'; c.dataset.value = v
           c.addEventListener('click', ev => { ev.stopPropagation(); this.put(k, j, v) })
           pop.append(c)
         }
@@ -3121,6 +3148,7 @@
   // LEAN_SIGS begin (written by tests/sigs.py)
   const LEAN_SIGS = {
     "Prob.total": "theorem Prob.total {α : Type} (μ : DiscreteMeasure α) [h : Prob μ] : ∑' (a : α), μ a = 1",
+    "tsum_bool": "theorem tsum_bool {α : Type u_1} [AddCommMonoid α] [TopologicalSpace α] (f : Bool → α) : ∑' (i : Bool), f i = f false + f true",
     "tsum_fintype": "theorem tsum_fintype {α : Type u_1} {β : Type u_2} [AddCommMonoid α] [TopologicalSpace α] {L : SummationFilter β} [L.LeAtTop] [Fintype β] (f : β → α) : ∑'[L] (b : β), f b = ∑ b, f b",
     "mass_total": "theorem mass_total (μ : DiscreteMeasure Bool) [hμ : Prob μ] : μ true + μ false = 1",
     "le_self_add": "theorem le_self_add {α : Type u} [Add α] [LE α] [CanonicallyOrderedAdd α] {a b : α} : a ≤ a + b",
@@ -3129,6 +3157,7 @@
     "ne_top_of_le_ne_top": "theorem ne_top_of_le_ne_top {α : Type u} [PartialOrder α] [OrderTop α] {a b : α} (hb : b ≠ ⊤) (hab : a ≤ b) : a ≠ ⊤",
     "ENNReal.one_ne_top": "theorem ENNReal.one_ne_top : 1 ≠ ∞",
     "mass_ne_top": "theorem mass_ne_top {μ : DiscreteMeasure Bool} [Prob μ] {b : Bool} : μ b ≠ ∞",
+    "tsub_zero": "theorem tsub_zero {α : Type u_1} [PartialOrder α] [AddCommMonoid α] [Sub α] [OrderedSub α] (a : α) : a - 0 = a",
     "tsub_self": "theorem tsub_self {α : Type u_1} [AddCommMonoid α] [PartialOrder α] [CanonicallyOrderedAdd α] [Sub α] [OrderedSub α] (a : α) : a - a = 0",
     "tsub_add_eq_max": "theorem tsub_add_eq_max {α : Type u_1} [AddCommMonoid α] [LinearOrder α] [CanonicallyOrderedAdd α] [Sub α] [OrderedSub α] {a b : α} : a - b + b = max a b",
     "ENNReal.add_sub_cancel_left": "theorem ENNReal.add_sub_cancel_left {a b : ℝ≥0∞} (ha : a ≠ ∞) : a + b - a = b",
@@ -3142,6 +3171,7 @@
     "coin_true": "theorem coin_true (p : I) : (coin p) true = ↑p",
     "coin_false": "theorem coin_false (p : I) : (coin p) false = ↑(σ p)",
     "map_true": "theorem map_true (f : Bool → Bool) (μ : DiscreteMeasure Bool) : (μ.map f) true = (bif f true then μ true else 0) + bif f false then μ false else 0",
+    "map_not_true": "theorem map_not_true (μ : DiscreteMeasure Bool) : (μ.map not) true = μ false",
     "map_apply": "theorem map_apply (f : Bool → Bool) (μ : DiscreteMeasure Bool) (b : Bool) : (μ.map f) b = ∑ a with f a = b, μ a",
     "sum_with": "theorem sum_with {α : Type} [Fintype α] (f : α → Bool) (b : Bool) (g : α → ℝ≥0∞) : ∑ a with f a = b, g a = ∑ a, bif f a == b then g a else 0",
     "map_bool": "theorem map_bool (f : Bool → Bool) (μ : DiscreteMeasure Bool) (b : Bool) : (μ.map f) b = (bif f true == b then μ true else 0) + bif f false == b then μ false else 0",
@@ -3151,6 +3181,11 @@
     "Bool.not_true": "theorem Bool.not_true : (!true) = false",
     "Bool.not_false": "theorem Bool.not_false : (!false) = true",
     "Bool.cond_true": "theorem Bool.cond_true {α : Sort u} {a b : α} : (bif true then a else b) = a",
+    "Bool.true_and": "theorem Bool.true_and (b : Bool) : (true && b) = b",
+    "Bool.false_and": "theorem Bool.false_and (b : Bool) : (false && b) = false",
+    "Bool.true_or": "theorem Bool.true_or (b : Bool) : (true || b) = true",
+    "Bool.false_or": "theorem Bool.false_or (b : Bool) : (false || b) = b",
+    "Bool.not_and": "theorem Bool.not_and (x y : Bool) : (!(x && y)) = (!x || !y)",
     "Bool.cond_self": "theorem Bool.cond_self {α : Sort u_1} (c : Bool) (t : α) : (bif c then t else t) = t",
     "Bool.cond_false": "theorem Bool.cond_false {α : Sort u} {a b : α} : (bif false then a else b) = b",
     "zero_add": "theorem zero_add {M : Type u_2} [AddZeroClass M] (a : M) : 0 + a = a",
@@ -3160,9 +3195,10 @@
     "pure_apply": "theorem pure_apply {α : Type} [DecidableEq α] (a b : α) : (pure a) b = bif a == b then 1 else 0",
     "add_symm_eq_one": "theorem add_symm_eq_one (p : I) : ↑p + ↑(σ p) = 1",
     "eq_coin": "theorem eq_coin (μ : DiscreteMeasure Bool) [Prob μ] (p : I) (h : μ true = ↑p) : μ = coin p",
+    "mass_one": "theorem mass_one : ↑1 = 1",
+    "coin_one": "theorem coin_one : coin 1 = pure true",
     "pure_true": "theorem pure_true (b : Bool) : (pure b) true = bif b then 1 else 0",
     "pure_false": "theorem pure_false (b : Bool) : (pure b) false = bif b then 0 else 1",
-    "coin_const": "theorem coin_const (p : I) (b : Bool) : ((coin p).map fun x => b) = pure b",
     "map_pure": "theorem map_pure {α β : Type} (a : α) (f : α → β) : (pure a).map f = pure (f a)",
     "map_id": "theorem map_id {α : Type} (μ : DiscreteMeasure α) : (μ.map fun x => x) = μ",
     "Bool.false_beq": "theorem Bool.false_beq (b : Bool) : (false == b) = !b",
@@ -3170,9 +3206,10 @@
     "cond_add_cond": "theorem cond_add_cond (c : Bool) (x y : ℝ≥0∞) : ((bif c then x else 0) + bif c then y else 0) = bif c then x + y else 0",
     "coin_and": "theorem coin_and (p q : I) : (do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)",
     "bind_map_left": "theorem bind_map_left {α β γ : Type} (μ : DiscreteMeasure α) (f : α → β) (g : β → DiscreteMeasure γ) : (do let x ← μ.map f; g x) = do let x ← μ; g (f x)",
-    "mul_add": "theorem mul_add {R : Type v} [Mul R] [Add R] [LeftDistribClass R] (a b c : R) : a * (b + c) = a * b + a * c",
     "add_add_add_comm": "theorem add_add_add_comm {G : Type u_3} [AddCommSemigroup G] (a b c d : G) : a + b + (c + d) = a + c + (b + d)",
     "add_mul": "theorem add_mul {R : Type v} [Mul R] [Add R] [RightDistribClass R] (a b c : R) : (a + b) * c = a * c + b * c",
+    "mul_add": "theorem mul_add {R : Type v} [Mul R] [Add R] [LeftDistribClass R] (a b c : R) : a * (b + c) = a * b + a * c",
+    "eq_symm_of_add": "theorem eq_symm_of_add (a : ℝ≥0∞) (p : I) (h : a + ↑p = 1) : a = ↑(σ p)",
     "map_bind": "theorem map_bind {α β γ : Type} (μ : DiscreteMeasure α) (g : α → DiscreteMeasure β) (f : β → γ) : (do let x ← μ; g x).map f = do let x ← μ; (g x).map f",
     "coin_unused": "theorem coin_unused {β : Type} (p : I) (ν : DiscreteMeasure β) : (do let _ ← coin p; ν) = ν",
     "binom_zero": "theorem binom_zero (p : I) : binom p 0 = pure 0",
@@ -3189,6 +3226,7 @@
     "Function.comp_apply": "theorem Function.comp_apply {β : Sort u_1} {δ : Sort u_2} {α : Sort u_3} {f : β → δ} {g : α → β} {x : α} : (f ∘ g) x = f (g x)",
     "id_eq": "theorem id_eq {α : Sort u_1} (a : α) : id a = a",
     "Nat.bodd_succ": "theorem Nat.bodd_succ (n : ℕ) : n.succ.bodd = !n.bodd",
+    "mass_zero": "theorem mass_zero : ↑0 = 0",
     "mass_mul": "theorem mass_mul (p q : I) : ↑(p * q) = ↑p * ↑q",
     "coin_bind_apply": "theorem coin_bind_apply {β : Type} (p : I) (f : Bool → DiscreteMeasure β) (x : β) : (do let b ← coin p; f b) x = ↑p * (f true) x + ↑(σ p) * (f false) x",
     "beq_self_eq_true": "theorem beq_self_eq_true {α : Type u_1} [BEq α] [ReflBEq α] (a : α) : (a == a) = true",
@@ -3202,6 +3240,7 @@
     "pow_succ": "theorem pow_succ {M : Type u_2} [Monoid M] (a : M) (n : ℕ) : a ^ (n + 1) = a ^ n * a",
     "mul_comm": "theorem mul_comm {G : Type u_1} [CommMagma G] (a b : G) : a * b = b * a",
     "one_mul": "theorem one_mul {M : Type u_2} [MulOneClass M] (a : M) : 1 * a = a",
+    "zero_mul": "theorem zero_mul {M₀ : Type u} [self : MulZeroClass M₀] (a : M₀) : 0 * a = 0",
     "add_right_comm": "theorem add_right_comm {G : Type u_3} [AddCommSemigroup G] (a b c : G) : a + b + c = a + c + b",
     "Nat.choose_self": "theorem Nat.choose_self (n : ℕ) : n.choose n = 1",
     "Nat.choose_zero_right": "theorem Nat.choose_zero_right (n : ℕ) : n.choose 0 = 1",
@@ -3223,8 +3262,6 @@
     "frac_white": "theorem frac_white (w : ℕ) : frac (w + 1) 0 = 1",
     "coin_zero": "theorem coin_zero : coin 0 = pure false",
     "binom_never": "theorem binom_never (n : ℕ) : binom 0 n = pure 0",
-    "coin_one": "theorem coin_one : coin 1 = pure true",
-    "cond_same": "theorem cond_same {α : Type} (c : Bool) (a : α) : (bif c then a else a) = a",
     "Nat.add_sub_cancel": "theorem Nat.add_sub_cancel (n m : ℕ) : n + m - m = n",
     "hyper_zero": "theorem hyper_zero (w b : ℕ) : hyper w b 0 = pure 0",
     "hyper_succ": "theorem hyper_succ (w b n : ℕ) : hyper w b (n + 1) = do let X ← coin (frac w b); bif X then do let Y ← hyper (w - 1) b n; pure (1 + Y) else hyper w (b - 1) n",
@@ -3254,8 +3291,6 @@
     "ENNReal.inv_mul_cancel": "theorem ENNReal.inv_mul_cancel {a : ℝ≥0∞} (h0 : a ≠ 0) (ht : a ≠ ∞) : a⁻¹ * a = 1",
     "mass_ne_zero": "theorem mass_ne_zero {p : ↑I} (h : p ≠ 0) : ↑p ≠ 0",
     "mass_finite": "theorem mass_finite (p : I) : ↑p ≠ ∞",
-    "bind_false": "theorem bind_false (μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (do let x ← μ; f x) false = μ true * (f true) false + μ false * (f false) false",
-    "prob_unused": "theorem prob_unused {β : Type} (μ : DiscreteMeasure Bool) [h : Prob μ] (ν : DiscreteMeasure β) : (do let _ ← μ; ν) = ν",
     "mass_eq_ofReal": "theorem mass_eq_ofReal (p : I) : ↑p = ENNReal.ofReal ↑p",
     "mass_mul_real": "theorem mass_mul_real (p q : I) : ↑p * ↑q = ENNReal.ofReal (↑p * ↑q)",
     "ENNReal.ofReal_add": "theorem ENNReal.ofReal_add {p q : ℝ} (hp : 0 ≤ p) (hq : 0 ≤ q) : ENNReal.ofReal (p + q) = ENNReal.ofReal p + ENNReal.ofReal q",
@@ -3325,13 +3360,13 @@
     { name: 'Prob.total', kind: 'rule', sig: 'Prob.total μ : ∑\' a, μ a = 1', en: 'What [Prob μ] says: the masses of μ, summed over all points (∑\'), give one.', de: 'Was [Prob μ] sagt: Die Massen von μ, über alle Punkte summiert (∑\'), ergeben eins.' },
     { name: 'tsum_bool', kind: 'rule', sig: '∑\' b, f b = f false + f true', en: 'A sum over Bool: its two terms (false first).', de: 'Eine Summe über Bool: ihre zwei Summanden (false zuerst).' },
     { name: 'tsum_fintype', kind: 'rule', sig: '∑\' a, f a = ∑ a, f a', en: 'Over a finite type (as Bool), the sum over all points is a finite sum.', de: 'Über einem endlichen Typ (wie Bool) ist die Summe über alle Punkte eine endliche Summe.' },
-    { name: 'mass_total', kind: 'lemma', sig: 'mass_total μ [Prob μ] : μ true + μ false = 1', en: 'Proved by you in Masses: a distribution on Bool has total mass one.', de: 'Von dir bewiesen in „Massen“: Eine Verteilung auf Bool hat die Gesamtmasse eins.' },
+    { name: 'mass_total', kind: 'lemma', sig: 'mass_total μ [Prob μ] : μ true + μ false = 1', en: 'Proved by you in DiscreteMeasure: a distribution on Bool has total mass one.', de: 'Von dir bewiesen in „DiscreteMeasure“: Eine Verteilung auf Bool hat die Gesamtmasse eins.' },
     { name: 'le_self_add', kind: 'rule', sig: 'le_self_add : a ≤ a + c', en: 'A sum of masses is at least its first summand.', de: 'Eine Summe von Massen ist mindestens ihr erster Summand.' },
     { name: 'le_add_self', kind: 'rule', sig: 'le_add_self : a ≤ c + a', en: 'A sum of masses is at least its second summand.', de: 'Eine Summe von Massen ist mindestens ihr zweiter Summand.' },
-    { name: 'mass_le_one', kind: 'lemma', sig: 'mass_le_one μ [Prob μ] b : μ b ≤ 1', en: 'Proved by you in Masses: a mass of a distribution is at most one.', de: 'Von dir bewiesen in „Massen“: Eine Masse einer Verteilung ist höchstens eins.' },
+    { name: 'mass_le_one', kind: 'lemma', sig: 'mass_le_one μ [Prob μ] b : μ b ≤ 1', en: 'Proved by you in DiscreteMeasure: a mass of a distribution is at most one.', de: 'Von dir bewiesen in „DiscreteMeasure“: Eine Masse einer Verteilung ist höchstens eins.' },
     { name: 'ne_top_of_le_ne_top', kind: 'rule', sig: 'ne_top_of_le_ne_top : b ≠ ⊤ → a ≤ b → a ≠ ⊤', en: 'Below something finite is finite.', de: 'Unter etwas Endlichem ist endlich.' },
     { name: 'ENNReal.one_ne_top', kind: 'rule', sig: 'ENNReal.one_ne_top : 1 ≠ ⊤', en: 'One is finite (⊤ is ∞).', de: 'Eins ist endlich (⊤ ist ∞).' },
-    { name: 'mass_ne_top', kind: 'lemma', sig: 'mass_ne_top [Prob μ] : μ b ≠ ⊤', en: 'Proved by you in Masses: a mass of a distribution is finite (masses are numbers in [0, ∞], and ⊤ is ∞).', de: 'Von dir bewiesen in „Massen“: Eine Masse einer Verteilung ist endlich (Massen sind Zahlen in [0, ∞], und ⊤ ist ∞).' },
+    { name: 'mass_ne_top', kind: 'lemma', sig: 'mass_ne_top [Prob μ] : μ b ≠ ⊤', en: 'Proved by you in DiscreteMeasure: a mass of a distribution is finite (masses are numbers in [0, ∞], and ⊤ is ∞).', de: 'Von dir bewiesen in „DiscreteMeasure“: Eine Masse einer Verteilung ist endlich (Massen sind Zahlen in [0, ∞], und ⊤ ist ∞).' },
     { name: 'tsub_zero', kind: 'rule', sig: 'a - 0 = a', en: 'Taking 0 away changes nothing.', de: '0 abziehen ändert nichts.' },
     { name: 'tsub_self', kind: 'rule', sig: 'tsub_self a : a - a = 0', en: 'Taking a away from itself leaves 0, for every a in [0, ∞], also ∞.', de: 'a von sich selbst abgezogen lässt 0, für jedes a in [0, ∞], auch ∞.' },
     { name: 'tsub_add_eq_max', kind: 'rule', sig: 'tsub_add_eq_max : b - a + a = max b a', en: 'Taking a away and putting it back gives the larger of the two (a - b is 0 when b > a).', de: 'a wegnehmen und wieder dazu gibt das größere der beiden (a - b ist 0, wenn b > a).' },
@@ -3341,14 +3376,15 @@
     { name: 'mul_one', kind: 'rule', sig: 'a * 1 = a', en: 'Times one.', de: 'Mal eins.' },
     { name: 'mul_zero', kind: 'rule', sig: 'a * 0 = 0', en: 'Times zero.', de: 'Mal null.' },
     { name: 'add_comm', kind: 'rule', sig: 'a + b = b + a', en: 'The order of a sum does not matter.', de: 'Die Reihenfolge einer Summe ist egal.' },
-    { name: 'mass_not', kind: 'lemma', sig: 'mass_not μ [Prob μ] b : μ b = 1 - μ (!b)', en: 'Proved by you in One Coin: what is not at b lies at !b.', de: 'Von dir bewiesen in „Eine Münze“: Was nicht bei b liegt, liegt bei !b.' },
-    { name: 'bool_ext', kind: 'lemma', sig: 'bool_ext μ ν [Prob μ] [Prob ν] (h : μ true = ν true) : μ = ν', en: 'Proved by you in One Coin: two distributions on Bool (total mass one, [Prob μ]) are the same when they have the same mass at true. Not for any measure on Bool: there the mass at false is free.', de: 'Von dir bewiesen in „Eine Münze“: Zwei Verteilungen auf Bool (Gesamtmasse eins, [Prob μ]) sind gleich, wenn sie bei true dieselbe Masse haben. Nicht für irgendein Maß auf Bool: Dort ist die Masse bei false frei.' },
-    { name: 'coin_true', kind: 'lemma', sig: '(coin p) true = ↑p', en: 'Proved by you in Masses: the mass of the coin at true.', de: 'Von dir bewiesen in „Massen“: die Masse der Münze bei true.' },
-    { name: 'coin_false', kind: 'lemma', sig: '(coin p) false = ↑(σ p)', en: 'Proved by you in Masses: the mass of the coin at false.', de: 'Von dir bewiesen in „Massen“: die Masse der Münze bei false.' },
-    { name: 'map_true', kind: 'lemma', sig: '(μ.map f) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)', en: 'Proved by you in Masses: where the mass of a move goes; to true comes the mass of the points that f sends to true.', de: 'Von dir bewiesen in „Massen“: wohin die Masse eines Zuges geht; nach true kommt die Masse der Punkte, die f nach true schickt.' },
+    { name: 'mass_not', kind: 'lemma', sig: 'mass_not μ [Prob μ] b : μ b = 1 - μ (!b)', en: 'Proved by you in DiscreteMeasure: what is not at b lies at !b.', de: 'Von dir bewiesen in „DiscreteMeasure“: Was nicht bei b liegt, liegt bei !b.' },
+    { name: 'bool_ext', kind: 'lemma', sig: 'bool_ext μ ν [Prob μ] [Prob ν] (h : μ true = ν true) : μ = ν', en: 'Proved by you in DiscreteMeasure: two distributions on Bool (total mass one, [Prob μ]) are the same when they have the same mass at true. Not for any measure on Bool: there the mass at false is free.', de: 'Von dir bewiesen in „DiscreteMeasure“: Zwei Verteilungen auf Bool (Gesamtmasse eins, [Prob μ]) sind gleich, wenn sie bei true dieselbe Masse haben. Nicht für irgendein Maß auf Bool: Dort ist die Masse bei false frei.' },
+    { name: 'coin_true', kind: 'lemma', sig: '(coin p) true = ↑p', en: 'Proved by you in One Coin: the mass of the coin at true.', de: 'Von dir bewiesen in „Eine Münze“: die Masse der Münze bei true.' },
+    { name: 'coin_false', kind: 'lemma', sig: '(coin p) false = ↑(σ p)', en: 'Proved by you in One Coin: the mass of the coin at false.', de: 'Von dir bewiesen in „Eine Münze“: die Masse der Münze bei false.' },
+    { name: 'map_true', kind: 'lemma', sig: '(μ.map f) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)', en: 'Proved by you in DiscreteMeasure: where the mass of a move goes; to true comes the mass of the points that f sends to true.', de: 'Von dir bewiesen in „DiscreteMeasure“: wohin die Masse eines Zuges geht; nach true kommt die Masse der Punkte, die f nach true schickt.' },
+    { name: 'map_not_true', kind: 'lemma', sig: '(μ.map not) true = μ false', en: 'Proved by you in DiscreteMeasure: not brings the mass at false to true.', de: 'Von dir bewiesen in „DiscreteMeasure“: not bringt die Masse bei false nach true.' },
     { name: 'map_apply', kind: 'rule', sig: '(μ.map f) b = ∑ a with f a = b, μ a', en: 'The definition of a move: the mass at b is the sum of the masses of the points a with f a = b.', de: 'Die Definition eines Zuges: Die Masse bei b ist die Summe der Massen der Punkte a mit f a = b.' },
     { name: 'sum_with', kind: 'rule', sig: '(∑ a with f a = b, g a) = ∑ a, (bif f a == b then g a else 0)', en: 'A sum over the points with f a = b, as a sum over all points with a test.', de: 'Eine Summe über die Punkte mit f a = b, als Summe über alle Punkte mit einem Test.' },
-    { name: 'map_bool', kind: 'lemma', sig: '(μ.map f) b = (bif f true == b then μ true else 0) + (bif f false == b then μ false else 0)', en: 'Proved by you in Masses: a move on Bool, written out.', de: 'Von dir bewiesen in „Massen“: ein Zug auf Bool, ausgeschrieben.' },
+    { name: 'map_bool', kind: 'lemma', sig: '(μ.map f) b = (bif f true == b then μ true else 0) + (bif f false == b then μ false else 0)', en: 'Proved by you in DiscreteMeasure: a move on Bool, written out.', de: 'Von dir bewiesen in „DiscreteMeasure“: ein Zug auf Bool, ausgeschrieben.' },
     { name: 'Fintype.sum_bool', kind: 'rule', sig: '∑ a, g a = g true + g false', en: 'A sum over Bool: its two summands.', de: 'Eine Summe über Bool: ihre zwei Summanden.' },
     { name: 'Bool.true_beq', kind: 'lemma', sig: '(true == b) = b', en: 'Proved by you in Bool: testing true against b gives b itself.', de: 'Von dir bewiesen in „Bool“: Der Test von true gegen b gibt b selbst.' },
     { name: 'beq_true', kind: 'lemma', sig: '(c == true) = c', en: 'Proved by you in Bool: testing for true gives c itself.', de: 'Von dir bewiesen in „Bool“: Der Test auf true gibt c selbst.' },
@@ -3363,16 +3399,17 @@
     { name: 'Bool.cond_self', kind: 'lemma', sig: '(bif c then a else a) = a', en: 'Proved by you in Bool: twice the same, whatever the condition.', de: 'Von dir bewiesen in „Bool“: zweimal dasselbe, egal welche Bedingung.' },
     { name: 'Bool.cond_false', kind: 'lemma', sig: '(bif false then a else b) = b', en: 'Proved by you in Bool: bif with false is the second.', de: 'Von dir bewiesen in „Bool“: bif mit false ist das Zweite.' },
     { name: 'zero_add', kind: 'rule', sig: '0 + a = a', en: 'Adding to zero.', de: 'Zu null addieren.' },
-    { name: 'coin_not_true', kind: 'lemma', sig: '((coin p).map not) true = ↑(σ p)', en: 'Proved by you in Masses.', de: 'Von dir bewiesen in „Massen“.' },
+    { name: 'coin_not_true', kind: 'lemma', sig: '((coin p).map not) true = ↑(σ p)', en: 'Proved by you in One Coin.', de: 'Von dir bewiesen in „Eine Münze“.' },
     { name: 'coin_not', kind: 'lemma', sig: '(coin p).map not = coin (σ p)', en: 'Proved by you: the boss of One Coin. Flipping a coin swaps the masses.', de: 'Von dir bewiesen: der Endgegner von „Eine Münze“. Umdrehen tauscht die Massen.' },
-    { name: 'coin_total', kind: 'lemma', sig: '(coin p) true + (coin p) false = 1', en: 'Proved by you in Masses: the total mass of a coin is one.', de: 'Von dir bewiesen in „Massen“: Die Gesamtmasse einer Münze ist eins.' },
+    { name: 'coin_total', kind: 'lemma', sig: '(coin p) true + (coin p) false = 1', en: 'Proved by you in One Coin: the total mass of a coin is one.', de: 'Von dir bewiesen in „Eine Münze“: Die Gesamtmasse einer Münze ist eins.' },
     { name: 'pure_apply', kind: 'rule', sig: '(pure a) b = bif a == b then 1 else 0', en: 'The definition of a point mass: one at its point, zero elsewhere.', de: 'Die Definition einer Punktmasse: eins an ihrem Punkt, null sonst.' },
     { name: 'add_symm_eq_one', kind: 'rule', sig: 'add_symm_eq_one p : ↑p + ↑(σ p) = 1', en: 'A rule of the game: σ p is the rest of p to one, so the two masses of the coin add up to one.', de: 'Eine Spielregel: σ p ist der Rest von p bis eins; die beiden Massen der Münze ergeben zusammen eins.' },
     { name: 'eq_coin', kind: 'lemma', sig: 'eq_coin μ [Prob μ] p (h : μ true = p) : μ = coin p', en: 'Proved by you in One Coin: a distribution on Bool with mass p at true is the coin p.', de: 'Von dir bewiesen in „Eine Münze“: Eine Verteilung auf Bool mit Masse p bei true ist die Münze p.' },
-    { name: 'pure_true', kind: 'lemma', sig: '(pure b) true = bif b then 1 else 0', en: 'Proved by you in One Coin: the mass of a point mass at true.', de: 'Von dir bewiesen in „Eine Münze“: die Masse einer Punktmasse bei true.' },
-    { name: 'pure_false', kind: 'lemma', sig: '(pure b) false = bif b then 0 else 1', en: 'Proved by you in One Coin: the mass of a point mass at false.', de: 'Von dir bewiesen in „Eine Münze“: die Masse einer Punktmasse bei false.' },
-    { name: 'coin_const', kind: 'lemma', sig: '(coin p).map (fun _ => b) = pure b', en: 'Proved by you in One Coin: a constant move sends all the mass to one point.', de: 'Von dir bewiesen in „Eine Münze“: Ein konstanter Zug schickt die ganze Masse an einen Punkt.' },
-    { name: 'map_pure', kind: 'lemma', sig: '(pure a).map f = pure (f a)', en0: 'A move on a sure point moves the point.', de0: 'Ein Zug auf einem sicheren Punkt verschiebt den Punkt.', en: 'Proved by you in One Coin, for Bool; it holds for every type: a move on a point mass moves the point.', de: 'Von dir bewiesen in „Eine Münze“, für Bool; es gilt für jeden Typ: Ein Zug auf einer Punktmasse verschiebt den Punkt.' },
+    { name: 'mass_one', kind: 'rule', sig: '↑(1 : I) = 1', en: 'The number 1, as a mass.', de: 'Die Zahl 1, als Masse.' },
+    { name: 'coin_one', kind: 'lemma', sig: 'coin 1 = pure true', en: 'Proved by you in One Coin: a coin with chance 1 is surely true.', de: 'Von dir bewiesen in „Eine Münze“: Eine Münze mit Chance 1 ist sicher true.' },
+    { name: 'pure_true', kind: 'lemma', sig: '(pure b) true = bif b then 1 else 0', en: 'Proved by you in DiscreteMeasure: the mass of a point mass at true.', de: 'Von dir bewiesen in „DiscreteMeasure“: die Masse einer Punktmasse bei true.' },
+    { name: 'pure_false', kind: 'lemma', sig: '(pure b) false = bif b then 0 else 1', en: 'Proved by you in DiscreteMeasure: the mass of a point mass at false.', de: 'Von dir bewiesen in „DiscreteMeasure“: die Masse einer Punktmasse bei false.' },
+    { name: 'map_pure', kind: 'lemma', sig: '(pure a).map f = pure (f a)', en0: 'A move on a sure point moves the point.', de0: 'Ein Zug auf einem sicheren Punkt verschiebt den Punkt.', en: 'Proved by you in DiscreteMeasure, for Bool; it holds for every type: a move on a point mass moves the point.', de: 'Von dir bewiesen in „DiscreteMeasure“, für Bool; es gilt für jeden Typ: Ein Zug auf einer Punktmasse verschiebt den Punkt.' },
     { name: 'map_id', kind: 'lemma', sig: 'μ.map (fun x => x) = μ', en: 'Proved by you in Maps, for Bool; it holds for every type: a move that does nothing.', de: 'Von dir bewiesen in „Abbildungen“, für Bool; es gilt für jeden Typ: ein Zug, der nichts tut.' },
     { name: 'Bool.false_beq', kind: 'lemma', sig: '(false == b) = !b', en: 'Proved by you in Bool: testing false against b gives !b.', de: 'Von dir bewiesen in „Bool“: Der Test von false gegen b gibt !b.' },
     { name: 'map_map', kind: 'lemma', sig: '(μ.map f).map g = μ.map (fun x => g (f x))', sig0: 'g <$> (f <$> s) = (fun x => g (f x)) <$> s', en: 'Proved by you in Maps, for Bool; it holds for every type: two moves are one move.', de: 'Von dir bewiesen in „Abbildungen“, für Bool; es gilt für jeden Typ: Zwei Züge sind ein Zug.' },
@@ -3390,7 +3427,7 @@
     { name: 'bind_assoc', kind: 'lemma', sig: '(do let y ← (do let x ← μ; f x); g y) = (do let x ← μ; let y ← f x; g y)', en: 'Proved by you in Laws of do, for Bool; it holds for every type: a do block in a do block is one do block.', de: 'Von dir bewiesen in „Gesetze von do“, für Bool; es gilt für jeden Typ: Ein do-Block in einem do-Block ist ein do-Block.' },
     { name: 'pure_bind', kind: 'lemma', sig: '(do let x ← pure a; f x) = f a', sig0: 'pure a >>= f = f a',
       en0: 'Starting at a, then f: that is f at a.', de0: 'In a anfangen, dann f: Das ist f bei a.', en: 'Proved by you in Laws of do, for Bool; it holds for every type: throwing a point mass is no throw.', de: 'Von dir bewiesen in „Gesetze von do“, für Bool; es gilt für jeden Typ: Eine Punktmasse zu werfen ist kein Wurf.' },
-    { name: 'add_zero', kind: 'lemma', sig: 'a + 0 = a', en: 'Proved by you in One Coin: adding zero.', de: 'Von dir bewiesen in „Eine Münze“: Null addieren.' },
+    { name: 'add_zero', kind: 'lemma', sig: 'a + 0 = a', en: 'Proved by you in DiscreteMeasure: adding zero.', de: 'Von dir bewiesen in „DiscreteMeasure“: Null addieren.' },
     { name: 'add_assoc', kind: 'rule', sig: 'a + b + c = a + (b + c)', en: 'Brackets in sums.', de: 'Klammern in Summen.' },
     { name: 'map_eq_pure_bind', kind: 'lemma', sig: 'μ.map f = do let x ← μ; pure (f x)', sig0: 'f <$> s = s >>= fun x => pure (f x)',
       en0: 'Applying f to every point, as a walk.', de0: 'f auf jeden Punkt anwenden, als Weg.', en: 'Proved by you in Laws of do, for Bool; it holds for every type: a move as a do block.', de: 'Von dir bewiesen in „Gesetze von do“, für Bool; es gilt für jeden Typ: ein Zug als do-Block.' },
@@ -3466,7 +3503,6 @@
     { name: 'frac_white', kind: 'rule', sig: 'frac (w + 1) 0 = 1', en: 'Only white balls: chance 1.', de: 'Nur weiße Kugeln: Chance 1.' },
     { name: 'coin_zero', kind: 'rule', sig: 'coin 0 = pure false', en: 'A coin with chance 0 is surely false.', de: 'Eine Münze mit Chance 0 ist sicher false.' },
     { name: 'binom_never', kind: 'lemma', sig: 'binom 0 n = pure 0', en: 'Proved by you in Counting: a coin that never shows true is never counted.', de: 'Von dir bewiesen in „Zählen“: Eine Münze, die nie true zeigt, wird nie gezählt.' },
-    { name: 'coin_one', kind: 'rule', sig: 'coin 1 = pure true', en: 'A coin with chance 1 is surely true.', de: 'Eine Münze mit Chance 1 ist sicher true.' },
     { name: 'Nat.add_sub_cancel', kind: 'rule', sig: 'n + m - m = n', en: 'Adding and taking away.', de: 'Dazu und wieder weg.' },
     { name: 'hyper_zero', kind: 'lemma', sig: 'hyper w b 0 = pure 0', en: 'Proved by you in Hypergeometric: no draw.', de: 'Von dir bewiesen in „Hypergeometrisch“: kein Zug.' },
     { name: 'hyper_succ', kind: 'lemma', sig: 'hyper w b (n + 1) = do let X ← coin (frac w b); bif X then (1 + hyper (w - 1) b n) else hyper w (b - 1) n', en: 'Proved by you in Hypergeometric: one ball after the other.', de: 'Von dir bewiesen in „Hypergeometrisch“: eine Kugel nach der anderen.' },

@@ -84,14 +84,14 @@ cases b <;> decide
 :::
 
 :::proofen
-Compare the masses at every point (`ext`, from *One Coin*), with `map_bool`. The
+Compare the masses at every point (`ext`, from *DiscreteMeasure*), with `map_bool`. The
 tests `true == b` and `false == b` are `b` and `!b`: `Bool.true_beq` and
 `Bool.false_beq` from *Bool*. You prove it on `Bool`; it holds for every type, and it is unlocked as `map_id` in
 this general form.
 :::
 
 :::proofde
-Vergleiche die Massen an jedem Punkt (`ext`, aus *Eine Münze*), mit `map_bool`. Die
+Vergleiche die Massen an jedem Punkt (`ext`, aus *DiscreteMeasure*), mit `map_bool`. Die
 Tests `true == b` und `false == b` sind `b` und `!b`: `Bool.true_beq` und
 `Bool.false_beq` aus *Bool*. Du beweist es auf `Bool`; es gilt für jeden Typ und wird in dieser
 allgemeinen Form als `map_id` freigeschaltet.

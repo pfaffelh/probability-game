@@ -181,6 +181,10 @@ theorem map_true (f : Bool → Bool) (μ : DiscreteMeasure Bool) :
     tsum_fintype, Fintype.sum_bool]
   cases f true <;> cases f false <;> simp [Set.indicator]
 
+/-- The boss of *DiscreteMeasure*: `not` brings the mass at `false` to `true`. -/
+theorem map_not_true (μ : DiscreteMeasure Bool) : (μ.map not) true = μ false := by
+  rw [map_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add]
+
 /-- The definition of a bind, as the game writes it for a finite first step: the mass of `do let a ← μ; f a` at
 `b` is the sum over the first steps `a` of the mass `μ a` times the mass of `f a` at `b`. -/
 theorem bind_apply {α β : Type} [Fintype α] (μ : DiscreteMeasure α) (f : α → DiscreteMeasure β) (b : β) :
@@ -489,6 +493,11 @@ theorem mass_ne_zero {p : I} (h : p ≠ 0) : (↑p : ENNReal) ≠ 0 := by
 
 /-- A number in `[0, 1]` is a finite mass. -/
 theorem mass_finite (p : I) : (↑p : ENNReal) ≠ ⊤ := ENNReal.ofReal_ne_top
+
+/-- The mass of `1` is `1` (a rule of the game, in *One Coin*). -/
+theorem mass_one : ((1 : I) : ENNReal) = 1 := by
+  show ENNReal.ofReal 1 = 1
+  simp
 
 /-- The mass of `0` is `0`. -/
 theorem mass_zero : ((0 : I) : ENNReal) = 0 := by

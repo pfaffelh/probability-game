@@ -806,5 +806,6 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 .pg-fill-pop { position: absolute; z-index: 6; margin-left: 0; white-space: nowrap; visibility: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18); }
 .pg-fill-svg.pg-done .pg-cbox { stroke: #2e8b37; }
 .pg-fill-v { font-size: 12px; }
+.pg-fill-mu, .pg-fill-auto.pg-fill-mu { font-size: 10.5px; }
 .pg-fill-auto { font-size: 12px; opacity: .75; }
 .pg-fill-eq { font: 11px var(--verso-code-font-family, monospace); fill: #5c3d0e; pointer-events: none; }

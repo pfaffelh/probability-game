@@ -4,7 +4,7 @@ import ProbGame.Level
 open Verso.Genre Manual
 open ProbGame
 
-#doc (Manual) "Masses" =>
+#doc (Manual) "DiscreteMeasure" =>
 
 %%%
 htmlSplit := .never
@@ -12,252 +12,150 @@ number := false
 %%%
 
 :::en
-A coin shows `true` (heads) or `false` (tails); `coin p` is the coin that shows `true` with
-probability $`p` and `false` with probability $`1 - p`. A distribution on `Bool` is, in Lean,
-`μ : DiscreteMeasure Bool`: it gives each of the two points its *mass*, `μ true` and `μ false`, the
-heights of its two bars. The coin with probability $`p` is `(coin p : DiscreteMeasure Bool)`.
+A distribution on `Bool` is, in Lean, `μ : DiscreteMeasure Bool`: it gives each of the two points its
+*mass*, `μ true` and `μ false`, the heights of its two bars. `[Prob μ]` says that the two masses add
+up to one. This world proves what holds for every such `μ`; the first example is the sure
+distribution `pure b`. The coins come in the next world.
 :::
 
 :::de
-Eine Münze zeigt `true` (Kopf) oder `false` (Zahl); `coin p` ist die Münze, die mit
-Wahrscheinlichkeit $`p` `true` zeigt und mit Wahrscheinlichkeit $`1 - p` `false`. Eine Verteilung auf
-`Bool` ist in Lean `μ : DiscreteMeasure Bool`: Sie gibt jedem der beiden Punkte seine *Masse*,
-`μ true` und `μ false`, die Höhen ihrer beiden Säulen. Die Münze mit Wahrscheinlichkeit $`p` ist
-`(coin p : DiscreteMeasure Bool)`.
+Eine Verteilung auf `Bool` ist in Lean `μ : DiscreteMeasure Bool`: Sie gibt jedem der beiden Punkte
+seine *Masse*, `μ true` und `μ false`, die Höhen ihrer beiden Säulen. `[Prob μ]` sagt, dass die beiden
+Massen zusammen eins ergeben. Diese Welt beweist, was für jedes solche `μ` gilt; das erste Beispiel
+ist die sichere Verteilung `pure b`. Die Münzen kommen in der nächsten Welt.
 :::
 
-:::::circuit (height := "400") (inputs := "x") (gates := "") (coins := "p") (target := "bool true:p false:1-p") (context := "Lean/Rules.lean") (proof := "(p : I) : coin p true = p") (lemma := "coin_true") (play := "x>out") (uses := "rfl")
+:::::leanonly (proof := "(b : Bool) : (pure b : DiscreteMeasure Bool) true = bif b then ⟦1 ‖ 0, 1⟧ else ⟦0 ‖ 0, 1⟧") (new := "pure_apply") (lemma := "pure_true") (uses := "pure_apply, beq_true, <;>, cases, rfl, rw")
 :::en
-*The mass at true.* Wire the coin `x` to the output.
+*Surely true.* `pure b` is the distribution that is surely `b`: all its mass lies at `b`. Its mass at
+`true` is one if `b` is `true`, else zero.
 :::
 
 :::de
-*Die Masse bei true.* Verbinde die Münze `x` mit dem Ausgang.
+*Sicher true.* `pure b` ist die Verteilung, die sicher `b` ist: Ihre ganze Masse liegt bei `b`. Ihre
+Masse bei `true` ist eins, wenn `b` gleich `true` ist, sonst null.
 :::
 
-::::hint (anchor := "input")
-:::en
-A coin shows `true` (heads) or `false` (tails); `coin p` is the coin that shows `true` with
-probability $`p` and `false` with probability $`1 - p`. As a distribution on `Bool` it has two
-masses: $`p` at `true` and $`1 - p` at `false`.
-:::
-
-:::de
-Eine Münze zeigt `true` (Kopf) oder `false` (Zahl); `coin p` ist die Münze, die mit
-Wahrscheinlichkeit $`p` `true` zeigt und mit Wahrscheinlichkeit $`1 - p` `false`. Als Verteilung
-auf `Bool` hat sie zwei Massen: $`p` bei `true` und $`1 - p` bei `false`.
-:::
-::::
-
-:::proofen
-`(coin p) true` is the mass of the coin at `true`. A distribution is, in Lean, its masses (its *weight* function):
-
-```
-structure DiscreteMeasure (α : Type) where
-  weight : α → ℝ≥0∞
-```
-
-`ℝ≥0∞` (in Lean `ENNReal`) are the numbers from 0 to ∞, ∞ included: a mass is never negative. And the coin is defined by its two masses:
-
-```
-def coin (p : I) : DiscreteMeasure Bool where
-  weight := fun
-    | true => ↑p
-    | false => ↑(σ p)
-```
-
-`I` is the unit interval $`[0, 1]`, where the probability `p` lies; `σ p` is $`1 - p`, again in
-`I`. The arrow `↑` makes a number of `I` a mass in `ℝ≥0∞`. (`μ x` is `μ.weight x`.) So the statement holds by definition. The
-statement is the rule `coin_true`; once proved, it is in your inventory.
-:::
-
-:::proofde
-`(coin p) true` ist die Masse der Münze bei `true`. Eine Verteilung ist in Lean ihre Massen (ihre *Gewichtsfunktion*):
-
-```
-structure DiscreteMeasure (α : Type) where
-  weight : α → ℝ≥0∞
-```
-
-`ℝ≥0∞` (in Lean `ENNReal`) sind die Zahlen von 0 bis ∞, ∞ eingeschlossen: Eine Masse ist nie negativ. Und die Münze ist durch ihre zwei Massen definiert:
-
-```
-def coin (p : I) : DiscreteMeasure Bool where
-  weight := fun
-    | true => ↑p
-    | false => ↑(σ p)
-```
-
-`I` ist das Einheitsintervall $`[0, 1]`, in dem die Wahrscheinlichkeit `p` liegt; `σ p` ist $`1 - p`,
-wieder in `I`. Der Pfeil `↑` macht aus einer Zahl aus `I` eine Masse in `ℝ≥0∞`. (`μ x` ist
-`μ.weight x`.) Also gilt die Aussage nach Definition.
-Die Aussage ist die Regel `coin_true`; bewiesen, ist sie in deinem Inventar.
-:::
-:::solution
-```
-rfl
-```
-:::
-:::::
-
-:::::leanonly (proof := "(p : I) : coin p false = ⟦σ p ‖ p, σ p, 1, 0⟧") (lemma := "coin_false") (uses := "rfl")
 ::::hint (anchor := "statement")
 :::en
-`σ p` is $`1 - p`.
-
-Only the type differs: `σ p : I`, but `1 - ↑p : ℝ≥0∞`.
+`pure b : DiscreteMeasure Bool` is the distribution that puts mass `1` on `b`.
 :::
 
 :::de
-`σ p` ist $`1 - p`.
-
-Nur der Typ ist ein anderer: `σ p : I`, aber `1 - ↑p : ℝ≥0∞`.
+`pure b : DiscreteMeasure Bool` ist die Verteilung, die Masse `1` auf `b` legt.
 :::
 ::::
 
+::::hint (anchor := "item:pure_apply")
 :::en
-*The mass at false.* At `false` the coin has the rest, $`1 - p`.
+`rw [pure_apply]` writes the mass of `pure b` at `true` as `bif b == true then 1 else 0`.
 :::
 
 :::de
-*Die Masse bei false.* Bei `false` hat die Münze den Rest, $`1 - p`.
+`rw [pure_apply]` schreibt die Masse von `pure b` bei `true` als `bif b == true then 1 else 0`.
 :::
+::::
 
 :::proofen
-`σ p` is $`1 - p`, again in $`I`, and `↑(σ p)` is it as a mass. Again by the definition of `coin` (the line `| false => ↑(σ p)`).
+A distribution is, in Lean, its masses (its *weight* function):
+
+```
+structure DiscreteMeasure (α : Type) where
+  weight : α → ℝ≥0∞
+```
+
+`ℝ≥0∞` (in Lean `ENNReal`) are the numbers from 0 to ∞, ∞ included: a mass is never negative.
+(`μ x` is `μ.weight x`.) By the definition of `pure`,
+
+```
+def pure (a : α) : DiscreteMeasure α := ⟨({a} : Set α).indicator 1⟩
+```
+
+the mass is `1` on the set `{a}` and `0` outside it. The game writes this as the new rule
+`pure_apply : (pure a) b = bif a == b then 1 else 0`.  What you prove is unlocked as `pure_true`.
 :::
 
 :::proofde
-`σ p` ist $`1 - p`, wieder in $`I`, und `↑(σ p)` ist das als Masse. Wieder nach der Definition von `coin` (die Zeile `| false => ↑(σ p)`).
+Eine Verteilung ist in Lean ihre Massen (ihre *Gewichtsfunktion*):
+
+```
+structure DiscreteMeasure (α : Type) where
+  weight : α → ℝ≥0∞
+```
+
+`ℝ≥0∞` (in Lean `ENNReal`) sind die Zahlen von 0 bis ∞, ∞ eingeschlossen: Eine Masse ist nie negativ.
+(`μ x` ist `μ.weight x`.) Nach der Definition von `pure`,
+
+```
+def pure (a : α) : DiscreteMeasure α := ⟨({a} : Set α).indicator 1⟩
+```
+
+ist die Masse `1` auf der Menge `{a}` und `0` außerhalb. Das Spiel schreibt das als die neue Regel
+`pure_apply : (pure a) b = bif a == b then 1 else 0`.  Was du beweist, wird als `pure_true` freigeschaltet.
 :::
 :::solution
 ```
-rfl
+rw [pure_apply, beq_true]
+```
+:::
+:::solution
+```
+rw [pure_apply]
+cases b <;> rfl
 ```
 :::
 :::::
 
-::::leanonly (proof := "(p : I) : coin p true + coin p false = ⟦1 ‖ 0, 1, p⟧") (lemma := "coin_total") (new := "add_symm_eq_one") (uses := "coin_true, coin_false, add_symm_eq_one, coin_total, rw")
+:::::leanonly (proof := "(b : Bool) : (pure b : DiscreteMeasure Bool) false = bif b then ⟦0 ‖ 0, 1⟧ else ⟦1 ‖ 0, 1⟧") (lemma := "pure_false") (uses := "pure_apply, beq_self_eq_true, Bool.cond_true, Bool.cond_false, Bool.true_beq, <;>, cases, rfl, rw")
+::::hint (anchor := "gap")
 :::en
-*The coin is whole.* $`p + (1 - p) = 1`: the two masses of the coin add up to one.
+All the mass of `pure b` lies at `b`: how much of it lies at `false`?
 :::
 
 :::de
-*Die Münze ist ganz.* $`p + (1 - p) = 1`: Die beiden Massen der Münze ergeben zusammen eins.
+Die ganze Masse von `pure b` liegt bei `b`: Wie viel davon liegt bei `false`?
+:::
+::::
+
+:::en
+*Surely not false.* The mass of `pure b` at `false`: the counterpart of `pure_true`.
+:::
+
+:::de
+*Sicher nicht false.* Die Masse von `pure b` bei `false`: das Gegenstück zu `pure_true`.
 :::
 
 :::proofen
-New, a rule of the game: `add_symm_eq_one p : ↑p + ↑(σ p) = 1`. It says what `σ p` is: the rest of
-$`p` to one. (In Lean it is a computation with real numbers; they come in *Balance*.) First write the
-masses of the coin as `↑p` and `↑(σ p)`. What you prove is unlocked as `coin_total`.
+The counterpart of `pure_true`, from the same rule. What you prove is unlocked as `pure_false`.
 :::
 
 :::proofde
-Neu, eine Spielregel: `add_symm_eq_one p : ↑p + ↑(σ p) = 1`. Sie sagt, was `σ p` ist: der Rest von
-$`p` bis eins. (In Lean ist das eine Rechnung mit reellen Zahlen; die kommen in *Gleichgewicht*.)
-Schreib zuerst die Massen der Münze als `↑p` und `↑(σ p)`. Was du beweist, wird als `coin_total`
+Das Gegenstück zu `pure_true`, aus derselben Regel. Was du beweist, wird als `pure_false`
 freigeschaltet.
 :::
 :::solution
 ```
-rw [coin_true, coin_false, add_symm_eq_one]
+rw [pure_apply]
+cases b <;> rfl
 ```
 :::
 :::solution
 ```
-rw [coin_true, coin_false]
-rw [add_symm_eq_one p]
-```
-:::
-:::solution
-```
-rw [← add_symm_eq_one p, coin_true, coin_false]
-```
-:::
-::::
-
-:::::leanonly (proof := "(p : I) : coin p true = p ∧ coin p false = σ p") (new := "constructor") (uses := "coin_true, coin_false, coin_total, <;>, constructor, rfl, rw")
-::::hint (anchor := "item:constructor")
-:::en
-`constructor`: a goal `A ∧ B` becomes two goals, `A` and `B`.
-:::
-
-:::de
-`constructor`: Aus einem Ziel `A ∧ B` werden zwei Ziele, `A` und `B`.
-:::
-::::
-
-:::en
-*Both masses.* Two statements in one, joined by `∧` (and): the mass at `true`, and the mass at `false`.
-:::
-
-:::de
-*Beide Massen.* Zwei Aussagen in einer, verbunden mit `∧` (und): die Masse bei `true` und die Masse bei `false`.
-:::
-
-:::proofen
-The new tactic `constructor` makes two goals of `A ∧ B`: first `A`, then `B`. Each of them holds by definition, as before.
-:::
-
-:::proofde
-Die neue Taktik `constructor` macht aus `A ∧ B` zwei Ziele: erst `A`, dann `B`. Jedes gilt nach Definition, wie zuvor.
-:::
-:::solution
-```
-constructor
+rw [pure_apply]
+cases b
 rfl
 rfl
 ```
 :::
 :::solution
 ```
-constructor <;> rfl
-```
-:::
-:::solution
-```
-constructor
-rw [coin_true]
-rw [coin_false]
+rw [pure_apply]
+cases b
+rw [beq_self_eq_true, Bool.cond_true, Bool.cond_false]
+rw [Bool.true_beq, Bool.cond_false, Bool.cond_true]
 ```
 :::
 :::::
-
-::::leanonly (proof := "(p : I) : 0 + coin p true = p") (new := "zero_add") (uses := "zero_add, coin_true, add_zero, mul_zero, coin_false, coin_total, rw, -rfl")
-:::en
-*Zero plus.* Not every rule is a definition: `zero_add : 0 + a = a` is a rule of arithmetic, given
-here (it is proved in Mathlib, not by `rfl`). A rule is used by rewriting with it, with `rw`.
-:::
-
-:::de
-*Null plus.* Nicht jede Regel ist eine Definition: `zero_add : 0 + a = a` ist eine Rechenregel, hier
-gegeben (sie ist in Mathlib bewiesen, nicht mit `rfl`). Eine Regel benutzt man, indem man mit ihr
-umschreibt.
-:::
-
-:::proofen
-A rule `h : a = b` is used with `rw [h]`: it rewrites `a` into `b` in the goal (from right to left
-with `←`, later), several at once with `rw [h, k]`. When the goal then reads `x = x`, it is closed.
-:::
-
-:::proofde
-Eine Regel `h : a = b` benutzt man mit `rw [h]`: Sie schreibt `a` im Ziel zu `b` um (von rechts nach
-links mit `←`, später), mehrere auf einmal mit `rw [h, k]`. Lautet das Ziel danach `x = x`, ist es
-geschlossen.
-:::
-:::solution
-```
-rw [zero_add]
-rw [coin_true]
-```
-:::
-:::solution
-```
-rw [coin_true]
-rw [zero_add]
-```
-:::
-::::
 
 ::::leanonly (proof := "(x y : ℝ≥0∞) : ∑ a, (bif a then x else y) = x + y") (new := "Fintype.sum_bool") (uses := "Fintype.sum_bool, Bool.cond_true, Bool.cond_false, rw, -rfl")
 :::en
@@ -291,80 +189,6 @@ rw [Fintype.sum_bool, Bool.cond_true, Bool.cond_false]
 :::solution
 ```
 rw [Fintype.sum_bool, Bool.cond_false, Bool.cond_true]
-```
-:::
-::::
-
-::::leanonly (proof := "(f : Bool → Bool) (μ : DiscreteMeasure Bool) (b : Bool) : (μ.map f) b = (bif f true == b then μ true else 0) + (bif f false == b then μ false else 0)") (new := "map_apply, sum_with") (lemma := "map_bool") (board := "maps") (uses := "map_apply, sum_with, Fintype.sum_bool, rw")
-:::en
-*Where the mass goes.* A gate after a distribution `μ` is a move, `μ.map f`: it takes each point `a`
-with its mass `μ a` to `f a`. On the board, `coin p` goes through each of the four maps
-`Bool → Bool`. Fill in the mass at `true` after each; the one at `false` is the rest.
-:::
-
-:::de
-*Wohin die Masse geht.* Ein Baustein nach einer Verteilung `μ` ist ein Zug, `μ.map f`: Er bringt
-jeden Punkt `a` mit seiner Masse `μ a` nach `f a`. Auf dem Spielfeld geht `coin p` durch jede der
-vier Abbildungen `Bool → Bool`. Trag nach jeder die Masse bei `true` ein; die bei `false` ist der
-Rest.
-:::
-
-:::proofen
-The mass at `b` is the sum of the masses of the points with `f a = b`:
-`map_apply : (μ.map f) b = ∑ a with f a = b, μ a`. `sum_with` writes this sum as a sum over all
-points, with a test. Your result becomes the lemma `map_bool`.
-:::
-
-:::proofde
-Die Masse bei `b` ist die Summe der Massen der Punkte mit `f a = b`:
-`map_apply : (μ.map f) b = ∑ a with f a = b, μ a`. `sum_with` schreibt diese Summe als Summe über
-alle Punkte, mit einem Test. Dein Ergebnis wird das Lemma `map_bool`.
-:::
-:::solution
-```
-rw [map_apply, sum_with, Fintype.sum_bool]
-```
-:::
-:::solution
-```
-rw [map_apply]
-rw [sum_with]
-rw [Fintype.sum_bool]
-```
-:::
-::::
-
-::::leanonly (proof := "(f : Bool → Bool) (μ : DiscreteMeasure Bool) : (μ.map f) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)") (lemma := "map_true") (uses := "map_bool, beq_true, map_apply, sum_with, Fintype.sum_bool, <;>, cases, rfl, rw")
-:::en
-*The rule of the gates.* `map_bool` at `b = true`.
-:::
-
-:::de
-*Die Regel der Bausteine.* `map_bool` bei `b = true`.
-:::
-
-:::proofen
-What is left after `map_bool` are tests against `true`.
-:::
-
-:::proofde
-Nach `map_bool` bleiben Tests gegen `true`.
-:::
-:::solution
-```
-rw [map_bool]
-rw [beq_true, beq_true]
-```
-:::
-:::solution
-```
-rw [map_apply, sum_with, Fintype.sum_bool, beq_true, beq_true]
-```
-:::
-:::solution
-```
-rw [map_bool]
-cases f true <;> cases f false <;> rfl
 ```
 :::
 ::::
@@ -432,6 +256,41 @@ rw [add_comm, ← tsum_bool, Prob.total]
 :::
 :::::
 
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (h : μ true = 0) : μ false = ⟦1 ‖ 0, 1⟧") (new := "zero_add") (uses := "mass_total, zero_add, coin_total, add_zero, mul_zero, rw")
+:::hint (anchor := "none")
+:::
+
+:::en
+*The whole mass.* A distribution has the total mass one. If nothing lies at `true`, everything lies at `false`.
+:::
+
+:::de
+*Die ganze Masse.* Eine Verteilung hat die Gesamtmasse eins. Liegt bei `true` nichts, liegt alles bei `false`.
+:::
+
+:::proofen
+`μ : DiscreteMeasure Bool` is any distribution on `Bool`, and `[Prob μ]` says that its total mass is
+one: your theorem `mass_total μ : μ true + μ false = 1`. `h : μ true = 0` is a hypothesis: a rule of
+this level only, used like every rule.
+:::
+
+:::proofde
+`μ : DiscreteMeasure Bool` ist irgendeine Verteilung auf `Bool`, und `[Prob μ]` sagt, dass ihre
+Gesamtmasse eins ist: dein Satz `mass_total μ : μ true + μ false = 1`. `h : μ true = 0` ist eine
+Annahme: eine Regel nur dieses Levels, benutzt wie jede Regel.
+:::
+:::solution
+```
+rw [← mass_total μ, h, zero_add]
+```
+:::
+:::solution
+```
+rw [← zero_add (μ false), ← h, mass_total]
+```
+:::
+::::
+
 :::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b ≤ 1") (lemma := "mass_le_one") (new := "le_self_add, exact") (uses := "mass_total, add_comm, le_self_add, coin_total, add_assoc, <;>, cases, exact, rw")
 ::::hint (anchor := "item:exact")
 :::en
@@ -442,7 +301,6 @@ rw [add_comm, ← tsum_bool, Prob.total]
 `exact h`: schließt ein Ziel, das genau `h` ist.
 :::
 ::::
- (uses := "mass_total, add_comm, le_self_add, coin_total, add_assoc, <;>, cases, exact, rw")
 :::en
 *At most one.* Each mass is a part of the whole mass, so at most one.
 :::
@@ -534,51 +392,377 @@ apply mass_le_one
 :::
 :::::
 
-:::::circuit (height := "440") (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : ((coin p).map not) true = σ p") (lemma := "coin_not_true") (play := "a=not; x>a.0; a>out") (uses := "map_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, coin_false, map_bool, beq_true, add_zero, mul_zero, coin_true, coin_total, exact, rw, -rfl")
-:::hint (anchor := "none")
-:::
-
-:::hint (anchor := "none")
-:::
-
+:::::leanonly (proof := "(a b : ℝ≥0∞) : ⟦a - a + b ‖ a + b - a, b - a + a, a - a + b⟧ = b") (new := "tsub_self, tsub_zero") (uses := "tsub_self, zero_add, add_zero, mul_zero, exact, rw")
 :::en
-*Boss: where does the mass go?* The coin `x` is thrown at the top; below, the output with the target:
-`false` with mass $`p`, `true` with $`1 - p`. Put a `not` between them. Then look at `true`: its mass
-came from `false`.
+*Subtracting masses.* In Lean, masses are numbers in `ℝ≥0∞ = [0, ∞]` (`ENNReal`). Adding is as
+usual, with `a + ∞ = ∞`. But `a - b : ℝ≥0∞` cannot be negative: `a - b = 0` when `b > a`. And with
+`∞`: `∞ - b = ∞` for a finite `b`, `a - ∞ = 0`, in particular `∞ - ∞ = 0`.
 :::
 
 :::de
-*Endgegner: Wohin geht die Masse?* Oben wird die Münze `x` geworfen; unten der Ausgang mit dem Ziel: `false`
-mit Masse $`p`, `true` mit $`1 - p`. Setz ein `nicht` dazwischen. Dann sieh dir `true` an: Seine
-Masse kam von `false`.
+*Massen abziehen.* In Lean sind Massen Zahlen in `ℝ≥0∞ = [0, ∞]` (`ENNReal`). Addieren geht wie
+gewohnt, mit `a + ∞ = ∞`. Aber `a - b : ℝ≥0∞` kann nicht negativ sein: `a - b = 0`, wenn `b > a`. Und
+mit `∞`: `∞ - b = ∞` für ein endliches `b`, `a - ∞ = 0`, insbesondere `∞ - ∞ = 0`.
 :::
 
+::::hint (anchor := "gap")
+:::en
+Which of the three holds for all `a b : ℝ≥0∞`? Try `b < a`, and try `a = ∞`.
+:::
+
+:::de
+Welche der drei gilt für alle `a b : ℝ≥0∞`? Probier `b < a`, und probier `a = ∞`.
+:::
+::::
+
+::::hint (anchor := "wrong:a + b - a")
+:::en
+This does not hold for all `a b`: try `a = ∞`.
+:::
+
+:::de
+Das gilt nicht für alle `a b`: Probier `a = ∞`.
+:::
+::::
+
+::::hint (anchor := "wrong:b - a + a")
+:::en
+This does not hold for all `a b`: try `b < a`.
+:::
+
+:::de
+Das gilt nicht für alle `a b`: Probier `b < a`.
+:::
+::::
+
 :::proofen
-*Now the proof.* Everything it needs you know from *Bool* and this world.
+`tsub_self : a - a = 0` holds for every `a`, also for `a = ∞`. (For a finite `a` also
+`a + b - a = b`: the rule `ENNReal.add_sub_cancel_left`, in *The rest of the mass*.)
 :::
 
 :::proofde
-*Jetzt der Beweis.* Alles, was er braucht, kennst du aus *Bool* und dieser Welt.
+`tsub_self : a - a = 0` gilt für jedes `a`, auch für `a = ∞`. (Für ein endliches `a` gilt auch
+`a + b - a = b`: die Regel `ENNReal.add_sub_cancel_left`, in *Der Rest der Masse*.)
 :::
 :::solution
 ```
-rw [map_true]
-rw [Bool.not_true, Bool.not_false]
-rw [Bool.cond_false, Bool.cond_true, zero_add]
-rw [coin_false]
-```
-:::
-:::solution
-```
-rw [map_bool, beq_true, beq_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, coin_false]
+rw [tsub_self, zero_add]
 ```
 :::
 :::solution
 ```
-rw [map_true]
-rw [Bool.not_true, Bool.not_false]
-rw [Bool.cond_false, Bool.cond_true, zero_add]
-exact coin_false p
+rw [tsub_self]
+exact zero_add b
 ```
 :::
 :::::
+
+::::leanonly (proof := "(a : ℝ≥0∞) : a + 0 = ⟦a ‖ a, 0⟧") (lemma := "add_zero") (uses := "add_comm, zero_add, add_assoc, add_zero, mul_zero, exact, rw")
+:::en
+*Zero on the right.* You have `zero_add : 0 + a = a`, with the zero on the left. Here it stands on
+the right.
+:::
+
+:::de
+*Null rechts.* Du hast `zero_add : 0 + a = a`, mit der Null links. Hier steht sie rechts.
+:::
+
+:::proofen
+Your result becomes the lemma `add_zero`.
+:::
+
+:::proofde
+Dein Ergebnis wird das Lemma `add_zero`.
+:::
+:::solution
+```
+rw [add_comm, zero_add]
+```
+:::
+:::solution
+```
+rw [add_comm]
+rw [zero_add]
+```
+:::
+:::solution
+```
+rw [add_comm]
+exact zero_add a
+```
+:::
+::::
+
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b = ⟦1 - μ (!b) ‖ 1 - μ (!b), μ (!b) - 1, 1 - μ b⟧") (lemma := "mass_not") (new := "ENNReal.add_sub_cancel_left") (uses := "Bool.not_false, mass_total, ENNReal.add_sub_cancel_left, mass_ne_top, Bool.not_true, add_comm, coin_total, add_assoc, cases, exact, rw")
+:::en
+*The rest of the mass.* Now in Lean only: a statement about *every* distribution on `Bool`, which no
+board can show. What is not at `b` lies at `!b`.
+:::
+
+:::de
+*Der Rest der Masse.* Jetzt nur in Lean: eine Aussage über *jede* Verteilung auf `Bool`, die kein
+Spielfeld zeigen kann. Was nicht bei `b` liegt, liegt bei `!b`.
+:::
+
+:::proofen
+`mass_total μ : μ true + μ false = 1`: the mass at one side is what the other side misses to one.
+The point `b` is `false` or `true`.
+
+Masses are numbers in $`[0, \infty]` (`ℝ≥0∞`); taking away is allowed when what is taken away is
+finite: `ENNReal.add_sub_cancel_left (h : a ≠ ⊤) : a + b - a = b`, and `mass_ne_top : μ b ≠ ⊤` says
+that a mass is finite. The hypothesis is written behind the rule; without it, `rw` leaves it as a
+second goal.
+:::
+
+:::proofde
+`mass_total μ : μ true + μ false = 1`: Die Masse auf der einen Seite ist das, was der anderen zu
+eins fehlt. Der Punkt `b` ist `false` oder `true`.
+
+Massen sind Zahlen in $`[0, \infty]` (`ℝ≥0∞`); wegnehmen darf man, wenn das Weggenommene endlich
+ist: `ENNReal.add_sub_cancel_left (h : a ≠ ⊤) : a + b - a = b`, und `mass_ne_top : μ b ≠ ⊤` sagt,
+dass eine Masse endlich ist. Die Annahme schreibt man hinter die Regel; ohne sie lässt `rw` sie als
+zweites Ziel übrig.
+:::
+:::solution
+```
+cases b
+rw [Bool.not_false, ← mass_total μ]
+rw [ENNReal.add_sub_cancel_left mass_ne_top]
+rw [Bool.not_true, ← mass_total μ]
+rw [add_comm]
+rw [ENNReal.add_sub_cancel_left mass_ne_top]
+```
+:::
+:::solution
+```
+rw [← mass_total μ]
+cases b
+rw [Bool.not_false, ENNReal.add_sub_cancel_left mass_ne_top]
+rw [Bool.not_true, add_comm, ENNReal.add_sub_cancel_left mass_ne_top]
+```
+:::
+:::solution
+```
+cases b
+rw [Bool.not_false]
+rw [← mass_total μ]
+rw [ENNReal.add_sub_cancel_left]
+exact mass_ne_top
+rw [Bool.not_true]
+rw [← mass_total μ]
+rw [add_comm]
+rw [ENNReal.add_sub_cancel_left]
+exact mass_ne_top
+```
+:::
+::::
+
+::::leanonly (proof := "(μ ν : DiscreteMeasure Bool) [Prob μ] [Prob ν] (h : μ true = ν ⟦true ‖ true, false⟧) : μ = ν") (lemma := "bool_ext") (new := "ext") (uses := "mass_not, Bool.not_false, Bool.not_true, cases, exact, ext, rw")
+:::en
+*One bar is enough.* Two distributions on `Bool` with the same mass at `true` are the same. That is
+why the board only had to look at one bar.
+:::
+
+:::de
+*Eine Säule reicht.* Zwei Verteilungen auf `Bool` mit derselben Masse bei `true` sind gleich. Darum
+musste das Spielfeld nur auf eine Säule schauen.
+:::
+
+:::proofen
+Now there is a hypothesis: `h : μ true = ν true`. A new tactic: `ext x`: two distributions are equal
+when they have the same mass at every point `x`. At `false`, your lemma `mass_not` helps, once for
+`μ` and once for `ν`: `mass_not μ false`.
+:::
+
+:::proofde
+Jetzt gibt es eine Annahme: `h : μ true = ν true`. Eine neue Taktik: `ext x`: Zwei Verteilungen sind
+gleich, wenn sie an jedem Punkt `x` dieselbe Masse haben. Bei `false` hilft dein Lemma `mass_not`,
+einmal für `μ` und einmal für `ν`: `mass_not μ false`.
+:::
+:::solution
+```
+ext x
+cases x
+rw [mass_not μ false, mass_not ν false, Bool.not_false, h]
+exact h
+```
+:::
+:::solution
+```
+ext x
+cases x
+rw [mass_not μ false, mass_not ν false, Bool.not_false, h]
+rw [h]
+```
+:::
+::::
+
+::::leanonly (proof := "(f : Bool → Bool) (μ : DiscreteMeasure Bool) (b : Bool) : (μ.map f) b = (bif f true == b then μ true else 0) + (bif f false == b then μ false else 0)") (new := "map_apply, sum_with") (lemma := "map_bool") (board := "maps") (uses := "map_apply, sum_with, Fintype.sum_bool, rw")
+:::en
+*Where the mass goes.* A gate after a distribution `μ` is a move, `μ.map f`: it takes each point `a`
+with its mass `μ a` to `f a`. On the board, `μ` goes through each of the four maps
+`Bool → Bool`. Fill in the mass at `true` after each; the one at `false` is the rest.
+:::
+
+:::de
+*Wohin die Masse geht.* Ein Baustein nach einer Verteilung `μ` ist ein Zug, `μ.map f`: Er bringt
+jeden Punkt `a` mit seiner Masse `μ a` nach `f a`. Auf dem Spielfeld geht `μ` durch jede der
+vier Abbildungen `Bool → Bool`. Trag nach jeder die Masse bei `true` ein; die bei `false` ist der
+Rest.
+:::
+
+:::proofen
+The mass at `b` is the sum of the masses of the points with `f a = b`:
+`map_apply : (μ.map f) b = ∑ a with f a = b, μ a`. `sum_with` writes this sum as a sum over all
+points, with a test. Your result becomes the lemma `map_bool`.
+:::
+
+:::proofde
+Die Masse bei `b` ist die Summe der Massen der Punkte mit `f a = b`:
+`map_apply : (μ.map f) b = ∑ a with f a = b, μ a`. `sum_with` schreibt diese Summe als Summe über
+alle Punkte, mit einem Test. Dein Ergebnis wird das Lemma `map_bool`.
+:::
+:::solution
+```
+rw [map_apply, sum_with, Fintype.sum_bool]
+```
+:::
+:::solution
+```
+rw [map_apply]
+rw [sum_with]
+rw [Fintype.sum_bool]
+```
+:::
+::::
+
+::::leanonly (proof := "(f : Bool → Bool) (μ : DiscreteMeasure Bool) : (μ.map f) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)") (lemma := "map_true") (uses := "map_bool, beq_true, map_apply, sum_with, Fintype.sum_bool, <;>, cases, rfl, rw")
+:::en
+*The rule of the gates.* `map_bool` at `b = true`.
+:::
+
+:::de
+*Die Regel der Bausteine.* `map_bool` bei `b = true`.
+:::
+
+:::proofen
+What is left after `map_bool` are tests against `true`.
+:::
+
+:::proofde
+Nach `map_bool` bleiben Tests gegen `true`.
+:::
+:::solution
+```
+rw [map_bool]
+rw [beq_true, beq_true]
+```
+:::
+:::solution
+```
+rw [map_apply, sum_with, Fintype.sum_bool, beq_true, beq_true]
+```
+:::
+:::solution
+```
+rw [map_bool]
+cases f true <;> cases f false <;> rfl
+```
+:::
+::::
+
+:::::leanonly (proof := "(f : Bool → Bool) (b : Bool) : (pure b : DiscreteMeasure Bool).map f = ⟦pure (f b) ‖ pure b, pure (f b), pure (f (f b))⟧") (lemma := "map_pure") (uses := "bool_ext, map_true, pure_true, pure_false, Bool.cond_false, Bool.cond_self, zero_add, Bool.cond_true, add_comm, add_zero, mul_zero, add_assoc, apply, cases, rw")
+::::hint (anchor := "gap")
+:::en
+The sure `b`, moved by `f`: where does all the mass lie then?
+:::
+
+:::de
+Das sichere `b`, von `f` bewegt: Wo liegt dann die ganze Masse?
+:::
+::::
+
+:::en
+*A sure thing, moved.* A move applied to a sure value.
+:::
+
+:::de
+*Eine sichere Sache, bewegt.* Ein Zug, angewandt auf einen sicheren Wert.
+:::
+
+:::proofen
+Compare the bars at `true`. What `f` does stays unknown, but where both branches of a `bif` are
+equal, `Bool.cond_self` (from *Bool*) helps. You prove it on `Bool`; it holds for every type, and it
+is unlocked as `map_pure` in this general form.
+:::
+
+:::proofde
+Vergleiche die Säulen bei `true`. Was `f` tut, bleibt unbekannt, aber wo beide Zweige eines `bif`
+gleich sind, hilft `Bool.cond_self` (aus *Bool*). Du beweist es auf `Bool`; es gilt für jeden Typ
+und wird in dieser allgemeinen Form als `map_pure` freigeschaltet.
+:::
+:::solution
+```
+apply bool_ext
+rw [map_true, pure_true, pure_true, pure_false]
+cases b
+rw [Bool.cond_false, Bool.cond_false, Bool.cond_self, zero_add]
+rw [Bool.cond_true, Bool.cond_true, Bool.cond_self, add_comm, zero_add]
+```
+:::
+:::solution
+```
+cases b
+apply bool_ext
+rw [map_true, pure_true, pure_false, pure_true, Bool.cond_false, Bool.cond_false, Bool.cond_self, zero_add]
+apply bool_ext
+rw [map_true, pure_true, pure_false, pure_true, Bool.cond_true, Bool.cond_true, Bool.cond_self, add_comm, zero_add]
+```
+:::
+:::solution
+```
+apply bool_ext
+rw [map_true, pure_true, pure_true, pure_false]
+cases b
+rw [Bool.cond_false, Bool.cond_false, Bool.cond_self, zero_add]
+rw [Bool.cond_true, Bool.cond_true, Bool.cond_self, add_zero]
+```
+:::
+:::::
+
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (μ.map not) true = ⟦μ false ‖ μ true, μ false⟧") (lemma := "map_not_true") (uses := "map_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, map_bool, beq_true, add_zero, mul_zero, rw")
+:::en
+*Boss: where does the mass go?* `not` swaps the two points. The mass at `true` after the move: where
+did it come from?
+:::
+
+:::de
+*Endgegner: Wohin geht die Masse?* `not` vertauscht die beiden Punkte. Die Masse bei `true` nach dem
+Zug: Woher kam sie?
+:::
+
+:::proofen
+Your rule `map_true`, for the move `not`. What you prove is unlocked as `map_not_true`.
+:::
+
+:::proofde
+Deine Regel `map_true`, für den Zug `not`. Was du beweist, wird als `map_not_true` freigeschaltet.
+:::
+:::solution
+```
+rw [map_true]
+rw [Bool.not_true, Bool.not_false]
+rw [Bool.cond_false, Bool.cond_true, zero_add]
+```
+:::
+:::solution
+```
+rw [map_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add]
+```
+:::
+:::solution
+```
+rw [map_bool, beq_true, beq_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add]
+```
+:::
+::::

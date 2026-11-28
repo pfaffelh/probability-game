@@ -15,7 +15,7 @@ A world is measured against four questions.
 
 For each world: its goal, the tactics, how the levels get there, and what is open. The six
 proposals of the first version of this file are carried out, and after them the thin tactics got
-their levels (see the end); "open" is what is left. 14 worlds, 175 levels.
+their levels (see the end); "open" is what is left. 14 worlds, 173 levels.
 
 ## 1. Bool (23 levels)
 
@@ -26,38 +26,45 @@ equal when all rows agree.
 
 **Path.** One input, read off (`rfl`). Rewriting with what is already proved (`rw`). One input,
 both cases (`cases`). The `bif` rules. The truth tables of `&&` and `||` as rules (`Bool.true_and`,
-`Bool.false_and`, `Bool.true_or`, `Bool.false_or`). Tests (`==`): `beq_self_eq_true`, `beq_true`, `Bool.true_beq`, `Bool.false_beq`, for the point tests of `map_apply` in Masses and Maps. A quiz on `cases x <;> rfl`. Two inputs, four
+`Bool.false_and`, `Bool.true_or`, `Bool.false_or`). Tests (`==`): `beq_self_eq_true`, `beq_true`, `Bool.true_beq`, `Bool.false_beq`, for the point tests of `map_apply` in DiscreteMeasure and Maps. A quiz on `cases x <;> rfl`. Two inputs, four
 cases: De Morgan (`Bool.not_and`), then `or` from `and` (`or_eq`, also from De Morgan). Boss: xor
 from `and`, `or`, `not`, with its table. Lemma levels whose lemma goes into simp later show
 `@[simp] theorem`; Bool 2 says what it means.
 
 **Open.** The boss has the same proof line as De Morgan before it; it is harder on the board only.
 
-## 2. Masses (12 levels)
+## 2. DiscreteMeasure (15 levels)
 
-**Goal.** A distribution on `Bool` is two masses that add up to 1, and a map moves each mass to its
-image (`map_true`).
+**Goal.** A distribution on `Bool`, any `μ : DiscreteMeasure Bool` with `[Prob μ]`, is two masses that
+add up to 1; one of them fixes it (`bool_ext`); a map moves each mass to its image (`map_true`). No
+coin in this world: the only concrete distribution is the sure one, `pure b`.
 
-**Tactics.** `rw` in chains (practised here), `constructor`, `exact`, `apply` (first contact).
+**Tactics.** `rw` in chains (practised here), `exact`, `apply` (first contact), `ext` (once).
 
-**Path.** The masses of the coin; the rule `add_symm_eq_one : ↑p + ↑(σ p) = 1` (what σ is; proving it needs real numbers), with it `coin_total`; both masses in one statement (`∧`, `constructor`). Sums over `Bool`
-(the point tests `==` come from Bool). Where the mass goes: on a board of its own (`board := "maps"`, game.js `Fill`, drawn as a circuit), `coin p` wired into the four maps `Bool → Bool` (their pictures, as in bind), the player fills in the mass at true of each output by the choice p, 1 − p, 1, 0 (the one at false follows); in Lean `map_apply`, then `map_true`. The whole mass (`mass_total`). At most one, with `exact` and a theorem with its argument
-(`rw [← mass_total μ]`), finite. Boss:
-`((coin p).map not) true = σ p`, on the board.
+**Path.** What a distribution is, on `pure b` (`pure_true`, `pure_false`). Sums over `Bool`. The whole
+mass (`mass_total`); nothing at `true`, all at `false` (`zero_add`). At most one, with `exact` and a
+theorem with its argument (`rw [← mass_total μ]`); finite. Taking away in `ℝ≥0∞` (`tsub_self`,
+`tsub_zero`), `add_zero`; the rest of the mass (`mass_not`). One bar is enough (`bool_ext`). Where
+the mass goes: on a board of its own (`board := "maps"`, game.js `Fill`, drawn as a circuit), `μ`
+wired into the four maps `Bool → Bool` (their pictures, as in bind), the player fills in the mass at
+true of each output by the choice μ true, μ false, 1, 0 (the one at false follows); in Lean
+`map_apply`, then `map_true`, `map_pure`. Boss: `map_not_true : (μ.map not) true = μ false`, right
+after `map_true`.
 
 **Open.** `apply` meets the player first on `≠ ⊤`: a new tactic and a new kind of statement at once.
-*At most one* and *Finite* serve the subtraction in *One Coin*.
 
-## 3. One Coin (14 levels)
+## 3. One Coin (9 levels)
 
-**Goal.** One number fixes a distribution on `Bool` (`bool_ext`): every distribution on `Bool` is a
-coin, and a flipped coin is the coin `σ p`.
+**Goal.** The coin: its two masses, and every distribution on `Bool` is a coin (`eq_coin`); a flipped
+coin is the coin `σ p`.
 
-**Tactics.** `apply bool_ext`, `exact h`; `ext` (once).
+**Tactics.** `apply bool_ext`, `constructor`.
 
-**Path.** The rest of the mass. One bar is enough (`bool_ext`), and at once its shortest use
-(`eq_coin`). Sure outcomes (`pure`, `coin_const`, `map_pure`), both masses of `pure true` with
-`constructor`. Boss: `coin_not`.
+**Path.** The masses of the coin (the first board with a coin); the rule
+`add_symm_eq_one : ↑p + ↑(σ p) = 1` (what σ is; proving it needs real numbers), with it `coin_total`;
+both masses in one statement (`∧`, `constructor`). Every distribution is a coin (`eq_coin`). The sure
+coin, `coin_one : coin 1 = pure true` (the rule `mass_one`). Surely `false` on the board.
+`coin_not_true` on the board, by the boss of DiscreteMeasure. Boss: `coin_not`.
 
 ## 4. Maps (8 levels)
 
@@ -224,7 +231,7 @@ convenience is better shown as what it means, with the handy form proved by the 
 yours). Where `rfl` would skip the rewriting to be learnt, the level takes it away (`-rfl` in `uses`).
 
 **Proved before used.** As far as possible, a rule is proved by the player before it is in the
-inventory: the truth tables of `&&` and `||` and De Morgan in Bool, `add_zero` in One Coin (from
+inventory: the truth tables of `&&` and `||` and De Morgan in Bool, `add_zero` in DiscreteMeasure (from
 `add_comm` and `zero_add`), `one_mul` and `zero_mul` in Two Coins, the laws `pure_bind` and
 `bind_assoc` in Laws of `do` (on `Bool`, then for every type). Given are only the basic rules of
 computing (`zero_add`, `mul_one`, `mul_zero`, `mul_comm`, `add_mul`, …) and Mathlib's tools.
@@ -241,7 +248,7 @@ stay in every world once earned. So `linear_combination` and `field_simp` are th
 and Hypergeometric, `revert` and `decide` only in Maps and Multi-Stage Experiments.
 
 **Questions.** Levels with a gap in the statement, only in Lean levels (on a board the answer can be read
-off the board): Bool 6, Masses 4, One Coin 10, Maps 6, Two Coins 1, Laws of `do` 5, Counting 1, Balance 3, Sequences 1, Binomial 2, Geometric 6, Thinning 2, Hypergeometric 6. Five quizzes.
+off the board): Bool 6, DiscreteMeasure 7, One Coin 6, Maps 6, Two Coins 1, Laws of `do` 5, Counting 1, Balance 3, Sequences 1, Binomial 2, Geometric 6, Thinning 2, Hypergeometric 6. Five quizzes.
 
 **Tactics: three meetings.** A tactic is introduced (its text says what it does), practised in its world,
 and used again in a later world. `python3 tests/tactics.py` counts, from the solutions, the levels
@@ -251,10 +258,10 @@ Its table now:
 | tactic | introduced | levels, by world | weak point |
 |---|---|---|---|
 | `rfl`, `rw`, `cases`, `<;>` | Bool | everywhere | none |
-| `constructor` | Masses | Masses 1, One Coin 1, Binomial 2 | four levels |
-| `exact` | Masses | Masses 3, One Coin 1, Multi-Stage Experiments 1, Balance 1, Thinning 1 | none; a theorem with its argument only twice |
-| `apply` | Masses | One Coin 4, Hypergeometric 2, five worlds 1 each | mostly `bool_ext`; now also `balance`, `coin_stays` twice |
-| `ext` | One Coin | Laws of `do` 6, Maps 2, Counting 2, three worlds 1 | none |
+| `constructor` | One Coin | Binomial 2 | three levels |
+| `exact` | DiscreteMeasure | DiscreteMeasure 3, Multi-Stage Experiments 1, Balance 1, Thinning 1 | none; a theorem with its argument only twice |
+| `apply` | DiscreteMeasure | One Coin 4, Hypergeometric 2, five worlds 1 each | mostly `bool_ext`; now also `balance`, `coin_stays` twice |
+| `ext` | DiscreteMeasure | Laws of `do` 6, Maps 2, Counting 2, three worlds 1 | none |
 | `revert`, `decide` | Maps | Maps 2, Multi-Stage Experiments 3 | two worlds |
 | `simp_rw` | Maps | Laws of `do` 4, Maps 3, Two Coins 1 | used on to the end; `simp only` is not given (it would do the same) |
 | `simp` | Two Coins | 31 levels in 9 worlds | none |
@@ -270,7 +277,7 @@ When which of the three that rewrite: the inventory says it at each (`rw`: not u
 ## What was done (2026-11-22)
 
 1. Fading tips, and no tip in a boss.
-2. Bosses: *Masses* 12 marked; `eq_coin` before the boss in *One Coin*; `binom_add` the boss of
+2. Bosses: *DiscreteMeasure* `map_not_true`; `eq_coin` before the boss in *One Coin*; `binom_add` the boss of
    *Counting*; *Building with Coins* split into *Two Coins* (boss: exactly one `true`) and
    *Laws of `do`* (boss: at least one `true`).
 3. Gaps for the masses in *Multi-Stage Experiments*, *Geometric*, *Hypergeometric*.
@@ -286,6 +293,6 @@ Then, for the tactics that occurred too seldom:
 7. *Balance*: two hypotheses for `linear_combination`; `field_simp` introduced here, on shares, and
    used for "which coin is in balance?"; the lemma `balance`, used by `apply` in the boss.
 8. *Hypergeometric*: put back (`apply coin_stays`), two colours (`linear_combination`).
-9. `constructor` introduced in *Masses* (both masses), practised in *One Coin*; `exact` introduced on
+9. `constructor` introduced in *One Coin* (both masses of the coin); `exact` introduced on
    `mass_le_one` (`exact le_self_add`).
 10. *Maps*: a quiz, where `rw` fails. `tests/tactics.py`: three meetings.

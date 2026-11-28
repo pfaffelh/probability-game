@@ -73,12 +73,12 @@ rfl
 :::
 
 :::proofen
-`pure_apply : (pure a) b = bif a == b then 1 else 0`, from *One Coin*. What you prove is unlocked as
+`pure_apply : (pure a) b = bif a == b then 1 else 0`, from *DiscreteMeasure*. What you prove is unlocked as
 `pure_self`, with the mark *simp*.
 :::
 
 :::proofde
-`pure_apply : (pure a) b = bif a == b then 1 else 0`, aus *Eine Münze*. Was du beweist, wird als
+`pure_apply : (pure a) b = bif a == b then 1 else 0`, aus *DiscreteMeasure*. Was du beweist, wird als
 `pure_self` freigeschaltet, mit der Marke *simp*.
 :::
 :::solution
@@ -125,12 +125,12 @@ Ohne Wurf: wie oft `true`?
 :::
 
 :::proofen
-Two statements joined by `∧`, as in *Masses*. For the second,
+Two statements joined by `∧`, as in *One Coin*. For the second,
 `pure_zero_succ : (pure 0) (k + 1) = 0`.
 :::
 
 :::proofde
-Zwei Aussagen, verbunden mit `∧`, wie in *Massen*. Für die zweite
+Zwei Aussagen, verbunden mit `∧`, wie in *Eine Münze*. Für die zweite
 `pure_zero_succ : (pure 0) (k + 1) = 0`.
 :::
 :::solution

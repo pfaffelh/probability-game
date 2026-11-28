@@ -335,7 +335,7 @@ rw [hyper_succ, frac_zero, coin_zero, pure_bind, Bool.cond_false, ih]
 :::
 :::::
 
-::::leanonly (proof := "(w : ℕ) : coin (frac (w + 1) 0) = pure true") (new := "frac_white, coin_one") (group := "chance.count") (uses := "frac_white, coin_one, frac_zero, coin_zero, rw, simp")
+::::leanonly (proof := "(w : ℕ) : coin (frac (w + 1) 0) = pure true") (new := "frac_white") (group := "chance.count") (uses := "frac_white, coin_one, frac_zero, coin_zero, rw, simp")
 :::en
 *No black ball.* Without black balls (and with at least one white one), the ball drawn is surely white.
 :::
