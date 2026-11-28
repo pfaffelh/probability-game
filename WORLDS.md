@@ -41,7 +41,7 @@ image (`map_true`).
 **Tactics.** `rw` in chains (practised here), `constructor`, `exact`, `apply` (first contact).
 
 **Path.** The masses of the coin, and both in one statement (`∧`, `constructor`). Sums over `Bool`
-and point tests (`==`). Where the mass goes: on a board of its own (`board := "maps"`, game.js `Fill`, drawn as a circuit), `coin p` wired into the four maps `Bool → Bool` (their pictures, as in bind), the player fills in the masses of each output by the choice p, 1 − p, 1, 0; in Lean `map_apply`, then `map_true`. The whole mass; for the
+and point tests (`==`). Where the mass goes: on a board of its own (`board := "maps"`, game.js `Fill`, drawn as a circuit), `coin p` wired into the four maps `Bool → Bool` (their pictures, as in bind), the player fills in the mass at true of each output by the choice p, 1 − p, 1, 0 (the one at false follows); in Lean `map_apply`, then `map_true`. The whole mass; for the
 coin, by `exact mass_total (coin p)`: a theorem with its argument. At most one, finite. Boss:
 `((coin p).map not) true = σ p`, on the board.
 
@@ -81,7 +81,7 @@ multiply, over the rows they add (`bind_true`): both `true` is `coin (p * q)`.
 
 **Tactics.** `simp` (the game's), `ring`.
 
-**Path.** A board first: one draw, used twice (`bind_pure`). `do` is `bind`; `bind_true`. The
+**Path.** A board first: one draw, used twice (`bind_pure`). `do` is `bind`; `bind_true`, with a board of its own (`board := "bind"`): `coin p`, then four second coins (T: a, F: b, fixed), the player fills in a and b in `p · a + (1 − p) · b`, the mass at true. The
 simplifier on a board (at least one `true`, two ways) and its quiz. `coin_and`. The same product
 twice (`ring`). Boss: exactly one `true`, its mass computed.
 

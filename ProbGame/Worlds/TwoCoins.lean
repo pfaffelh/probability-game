@@ -140,15 +140,21 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (do let x ← μ; f x) true = μ true * f true true + μ false * f false true") (new := "bind_apply") (lemma := "bind_true") (uses := "bind_apply, Fintype.sum_bool, exact, rw, simp_rw")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (do let x ← μ; f x) true = μ true * f true true + μ false * f false true") (new := "bind_apply") (lemma := "bind_true") (board := "bind") (uses := "bind_apply, Fintype.sum_bool, exact, rw, simp_rw")
 :::en
 *Two ways to true.* The mass of `do let x ← μ; f x` at `true` comes two ways: the first draw is
-`true`, or it is `false`.
+`true`, or it is `false`. On the board, `coin p` is thrown first; then a second coin, at `T` when
+the first showed `true`, at `F` else. The way through `T` has weight $`p`, the way through `F`
+$`1 - p`; each times the mass at `true` of the coin thrown then. Fill in these masses for each of the
+four second coins.
 :::
 
 :::de
 *Zwei Wege zu true.* Die Masse von `do let x ← μ; f x` bei `true` kommt auf zwei Wegen: Der erste
-Zug ist `true`, oder er ist `false`.
+Zug ist `true`, oder er ist `false`. Auf dem Spielfeld wird zuerst `coin p` geworfen, dann eine
+zweite Münze: die bei `T`, wenn die erste `true` zeigte, sonst die bei `F`. Der Weg über `T` hat das
+Gewicht $`p`, der über `F` $`1 - p`; jeweils mal die Masse bei `true` der Münze, die dann geworfen
+wird. Trag diese Massen für jede der vier zweiten Münzen ein.
 :::
 
 :::proofen

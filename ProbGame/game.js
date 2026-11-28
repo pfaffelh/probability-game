@@ -1874,16 +1874,24 @@
     '✓ Lean: proved by {t}': '✓ Lean: bewiesen mit {t}', '✗ Lean: not proved': '✗ Lean: nicht bewiesen',
     'Tap every statement that ': 'Tippe jede Aussage an, die ', ' proves.': ' beweist.', Check: 'Prüfen' })
 
-  // A board where the player fills in masses (`::::leanonly (board := "maps")`), drawn as a circuit:
-  // `coin p` at the top, wires to the four maps `Bool → Bool` (as in the fields of bind), and under
-  // each map an output with its distribution at `false` and `true`. A tap on a field offers p, 1 − p,
-  // 1 and 0, as a theorem offers rw, apply, …; right when every field is.
+  // A board where the player fills in masses (`::::leanonly (board := "maps")` or `"bind"`), drawn as a
+  // circuit: `coin p` at the top, wires to four fixed blocks, and under each block an output with its
+  // distribution. Only the mass at `true` is filled in, the one at `false` follows. After a map
+  // (`maps`), the mass at true is one of p, 1 − p, 1, 0; after a coin chosen by the first draw
+  // (`bind`, `T: coin a | F: coin b`), it is `p · a + (1 − p) · b`, the two ways to true, and the
+  // player fills in a and b. A tap on a field offers p, 1 − p, 1 and 0, as a theorem offers rw, apply, …
   const FILL_VALUES = ['p', '1-p', '1', '0']
   const fillText = v => (v === '1-p' ? '1 − p' : v)
-  const FILL_BOARDS = { maps: { coin: 'p', cols: [{ map: 'id', answer: ['1-p', 'p'] }, { map: 'not', answer: ['p', '1-p'] }, { map: 'true', answer: ['0', '1'] }, { map: 'false', answer: ['1', '0'] }] } }
-  Object.assign(DE, { 'Tap a field of an output to fill in its mass.': 'Tippe ein Feld eines Ausgangs an, um seine Masse einzutragen.',
-    'Task: fill in the distribution after each map.': 'Aufgabe: Trag die Verteilung nach jeder Abbildung ein.',
+  const FILL_BOARDS = {
+    maps: { kind: 'map', coin: 'p', cols: [{ map: 'id', answer: ['p'] }, { map: 'not', answer: ['1-p'] }, { map: 'true', answer: ['1'] }, { map: 'false', answer: ['0'] }] },
+    // (the coin thrown second: at T when the first draw is true, at F else; its mass at true is what is filled in)
+    bind: { kind: 'bind', coin: 'p', cols: [['1', '0'], ['p', '0'], ['1', 'p'], ['1-p', '1-p']].map(k => ({ kern: k, answer: k })) },
+  }
+  Object.assign(DE, { 'Tap a field of an output to fill in its mass at true.': 'Tippe ein Feld eines Ausgangs an, um seine Masse bei true einzutragen.',
+    'Task: fill in the mass at true after each map.': 'Aufgabe: Trag nach jeder Abbildung die Masse bei true ein.',
+    'Task: fill in the mass at true after each second coin.': 'Aufgabe: Trag nach jeder zweiten Münze die Masse bei true ein.',
     'Right: every mass is where the map sends it.': 'Richtig: Jede Masse ist dort, wohin die Abbildung sie schickt.',
+    'Right: two ways to true, each weighted with the first draw.': 'Richtig: Zwei Wege zu true, jeder gewichtet mit dem ersten Zug.',
     'Not quite: at least one mass is wrong.': 'Noch nicht: Mindestens eine Masse stimmt nicht.' })
   class Fill {
     constructor(root, index, onSolved) {
@@ -1891,24 +1899,32 @@
       this.spec = FILL_BOARDS[root.dataset.board] ?? FILL_BOARDS.maps
       this.board = root.querySelector('.pg-board'); this.picture = null
       this.key = `pg:${location.pathname}:${index}`
-      // (the masses chosen: per output, at false and at true)
-      this.picks = this.spec.cols.map(() => [null, null])
-      try { const p = JSON.parse(localStorage.getItem(this.key + ':fill') ?? 'null'); if (Array.isArray(p) && p.length === this.picks.length && p.every(c => c.every(v => v === null || FILL_VALUES.includes(v)))) this.picks = p } catch {}
+      // (the values chosen: per output, one per field)
+      this.picks = this.empty()
+      try { const p = JSON.parse(localStorage.getItem(this.key + ':fill') ?? 'null'); if (Array.isArray(p) && p.length === this.picks.length && p.every((c, k) => Array.isArray(c) && c.length === this.picks[k].length && c.every(v => v === null || FILL_VALUES.includes(v)))) this.picks = p } catch {}
       // (solved before, but nothing to show, as after a change of the board: its solution)
       if (this.solved && !this.picks.some(c => c.some(Boolean))) this.picks = this.spec.cols.map(c => [...c.answer])
       this.wrong = false; this.open = null
       this.render()
     }
+    empty() { return this.spec.cols.map(c => c.answer.map(() => null)) }
     get solved() { try { return localStorage.getItem(this.key) === '1' } catch { return false } }
     // (what is on the board now: as for a circuit, it can be played again after it was solved)
     get right() { return this.spec.cols.every((col, k) => col.answer.every((a, j) => this.picks[k][j] === a)) }
     get done() { return this.right }
     get canUndo() { return false }
     get canReset() { return this.picks.some(c => c.some(Boolean)) }
-    status() { return this.right ? tr('Right: every mass is where the map sends it.') : this.wrong ? tr('Not quite: at least one mass is wrong.') : tr('Tap a field of an output to fill in its mass.') }
+    status() { return this.right ? this.rightText() : this.wrong ? tr('Not quite: at least one mass is wrong.') : tr('Tap a field of an output to fill in its mass at true.') }
+    rightText() { return this.spec.kind === 'bind' ? tr('Right: two ways to true, each weighted with the first draw.') : tr('Right: every mass is where the map sends it.') }
     undo() {}
-    reset() { this.picks = this.spec.cols.map(() => [null, null]); this.wrong = false; this.open = null; this.save(); this.render() }
+    reset() { this.picks = this.empty(); this.wrong = false; this.open = null; this.save(); this.render() }
     save() { try { localStorage.setItem(this.key + ':fill', JSON.stringify(this.picks)) } catch {} }
+    // the mass at true of output k (null while a field is empty): the value, or p · a + (1 − p) · b
+    mass(k) {
+      const v = this.picks[k]
+      if (v.some(x => x === null)) return null
+      return parsePoly1(this.spec.kind === 'bind' ? `p*(${v[0]})+(1-p)*(${v[1]})` : v[0])
+    }
     put(c, i, v) {
       this.picks[c][i] = v; this.open = null; this.wrong = false; this.save()
       if (this.picks.every(p => p.every(Boolean))) {
@@ -1920,14 +1936,40 @@
       }
       this.render()
     }
+    // a field to fill in: dashed while empty; a tap opens the choice
+    field(k, j, x, y, w, h) {
+      const v = this.picks[k][j], f = svg('g', { class: 'pg-fill-field' + (this.open?.[0] === k && this.open?.[1] === j ? ' pg-fill-open' : ''), 'data-col': k, 'data-i': j, 'data-answer': this.spec.cols[k].answer[j], 'data-value': v ?? '' })
+      f.append(svg('rect', { class: 'pg-cslot' + (v ? ' pg-cslot-full' : ''), x, y, width: w, height: h, rx: 6 }))
+      f.append(svg('text', { class: v ? 'pg-tmass pg-fill-v' + (this.right ? ' pg-tmass-ok' : '') : 'pg-cfield pg-cfield-empty', x: x + w / 2, y: y + h / 2 + 5, 'text-anchor': 'middle' }, v ? fillText(v) : '?'))
+      f.addEventListener('click', ev => { ev.stopPropagation(); this.open = this.open?.[0] === k && this.open?.[1] === j ? null : [k, j]; this.render() })
+      return f
+    }
+    // the second coin: T and F, each with its coin, as the coin of a later stage in a circuit
+    kernBlock(kern, x, y, w, h) {
+      const g = svg('g', { class: 'pg-cinput pg-cwait pg-fill-kern' }), top = y - h / 2
+      const cx = i => x + (i ? w / 4 : -w / 4), yf = top + 24, fw = w / 2 - 8, fh = h - 30
+      g.append(svg('rect', { class: 'pg-cbody', x: x - w / 2, y: top, width: w, height: h, rx: 10 }))
+      g.append(svg('path', { class: 'pg-cbr pg-cbr-c', d: `M ${x} ${top} V ${top + 9}` }))
+      ;[0, 1].forEach(i => {
+        g.append(svg('path', { class: 'pg-cbr pg-cbr-c', d: `M ${x} ${top + 9} H ${cx(i)} V ${yf} M ${cx(i) - 4} ${yf - 5} L ${cx(i)} ${yf} L ${cx(i) + 4} ${yf - 5}` }))
+        g.append(svg('text', { class: 'pg-cbr-label', x: cx(i) + (i ? 9 : -9), y: top + 20, 'text-anchor': 'middle' }, i ? 'F' : 'T'))
+        // (the coin with its bars; below, not its Lean name, which is too long here, but its mass at true)
+        const d = distGlyph(kern[i], cx(i) - fw / 2, yf, fw, fh); d.querySelector('text')?.remove()
+        g.append(svg('rect', { class: 'pg-cslot pg-cslot-full', x: cx(i) - fw / 2, y: yf, width: fw, height: fh, rx: 6 }), d)
+        g.append(svg('text', { class: 'pg-cfield', x: cx(i), y: yf + fh - 3, 'text-anchor': 'middle' }, fillText(kern[i])))
+      })
+      g.append(svg('circle', { class: 'pg-cport', cx: x, cy: top, r: 9 }), svg('circle', { class: 'pg-cport', cx: x, cy: top + h, r: 7 }))
+      return g
+    }
     render() {
-      const W = CW, H = 450, n = this.spec.cols.length, xs = this.spec.cols.map((_, k) => W * (2 * k + 1) / (2 * n))
+      const bind = this.spec.kind === 'bind', n = this.spec.cols.length, W = CW, xs = this.spec.cols.map((_, k) => W * (2 * k + 1) / (2 * n))
+      const gy = 196, gw = bind ? 108 : 100, gh = bind ? 88 : 76, oy = 292, ow = 114, rh = 24, hist = 64
+      const oh = bind ? 206 : 132, H = oy + oh + 18
       const s = svg('svg', { viewBox: `0 0 ${W} ${H}`, class: 'pg-svg pg-csvg pg-fill-svg' + (this.right ? ' pg-done' : '') })
       s.append(svg('rect', { class: 'pg-cbg', x: 0, y: 0, width: W, height: H }))
       // the coin on top: its block with the two bars, as an input of a circuit
       const top = { x: W / 2, y: 48 }, out0 = { x: top.x, y: top.y + 30 }
-      const gy = 196, gw = 100, gh = 76, oy = 292, ow = 114, oh = 140, rh = 24, hist = 64
-      // the wires: from the coin to each map, from each map to its output
+      // the wires: from the coin to each block, from each block to its output
       xs.forEach(x => {
         s.append(svg('path', { class: 'pg-cwire', d: wirePath(out0, { x, y: gy - gh / 2 }) }))
         s.append(svg('path', { class: 'pg-cwire', d: wirePath({ x, y: gy + gh / 2 }, { x, y: oy }) }))
@@ -1939,34 +1981,46 @@
       s.append(coinG)
       this.spec.cols.forEach((col, k) => {
         const x = xs[k]
-        // the map: a block with its picture, as in the fields of bind, and its name
-        const g = svg('g', { class: 'pg-cblock pg-cblock-fixed pg-fill-map' })
-        g.append(svg('rect', { x: x - gw / 2, y: gy - gh / 2, width: gw, height: gh, rx: 12 }))
-        g.append(svg('rect', { class: 'pg-cslot pg-cslot-full', x: x - 25, y: gy - gh / 2 + 8, width: 50, height: 34, rx: 6 }), mapGlyph(col.map, x - 25, gy - gh / 2 + 8, 50, 34))
-        g.append(svg('text', { class: 'pg-clabel', x, y: gy + gh / 2 - 10, 'text-anchor': 'middle' }, tr(MAPS[col.map].label)))
-        g.append(svg('circle', { class: 'pg-cport', cx: x, cy: gy - gh / 2, r: 9 }), svg('circle', { class: 'pg-cport', cx: x, cy: gy + gh / 2, r: 7 }))
-        s.append(g)
-        // its output: the histogram of the masses filled in (for the p of the picture), the values, the fields
+        if (bind) s.append(this.kernBlock(col.kern, x, gy, gw, gh))
+        else {
+          // the map: a block with its picture, as in the fields of bind, and its name
+          const g = svg('g', { class: 'pg-cblock pg-cblock-fixed pg-fill-map' })
+          g.append(svg('rect', { x: x - gw / 2, y: gy - gh / 2, width: gw, height: gh, rx: 12 }))
+          g.append(svg('rect', { class: 'pg-cslot pg-cslot-full', x: x - 25, y: gy - gh / 2 + 8, width: 50, height: 34, rx: 6 }), mapGlyph(col.map, x - 25, gy - gh / 2 + 8, 50, 34))
+          g.append(svg('text', { class: 'pg-clabel', x, y: gy + gh / 2 - 10, 'text-anchor': 'middle' }, tr(MAPS[col.map].label)))
+          g.append(svg('circle', { class: 'pg-cport', cx: x, cy: gy - gh / 2, r: 9 }), svg('circle', { class: 'pg-cport', cx: x, cy: gy + gh / 2, r: 7 }))
+          s.append(g)
+        }
+        // its output: the histogram of the masses (for the p of the picture), the masses, the fields
         const og = svg('g', { class: 'pg-coutput' }), x0 = x - ow / 2, cw = (ow - 8) / 2, cx = j => x0 + 4 + cw / 2 + j * cw
         og.append(svg('rect', { class: 'pg-cbox', x: x0, y: oy, width: ow, height: oh, rx: 14 }))
-        const base = oy + 8 + hist, hh = hist - 6, bw = Math.min(26, cw - 14)
+        const base = oy + 8 + hist, hh = hist - 6, bw = Math.min(26, cw - 14), m = this.mass(k)
         og.append(svg('line', { class: 'pg-chist-axis', x1: x0 + 6, y1: base, x2: x0 + ow - 6, y2: base }))
+        const ms = m ? [ONE.sub(m), m] : [null, null]
         ;['false', 'true'].forEach((b, j) => {
-          const v = this.picks[k][j]
-          if (v) { let m = 0; try { m = Math.max(0, Math.min(1, parsePoly(v).value(P))) } catch {} ; og.append(svg('rect', { class: 'pg-chist-out pg-chist-' + b, x: cx(j) - bw / 2, y: base - m * hh, width: bw, height: Math.max(0.5, m * hh) })) }
+          if (ms[j]) { const v = Math.max(0, Math.min(1, ms[j].value(P))); og.append(svg('rect', { class: 'pg-chist-out pg-chist-' + b, x: cx(j) - bw / 2, y: base - v * hh, width: bw, height: Math.max(0.5, v * hh) })) }
           og.append(svg('text', { class: 'pg-tmass', x: cx(j), y: base + rh / 2 + 4, 'text-anchor': 'middle' }, b))
-          // (the field: dashed while empty; a tap opens the choice)
-          const fy = base + rh + 2, f = svg('g', { class: 'pg-fill-field' + (this.open?.[0] === k && this.open?.[1] === j ? ' pg-fill-open' : ''), 'data-col': k, 'data-i': j, 'data-answer': col.answer[j], 'data-value': v ?? '' })
-          f.append(svg('rect', { class: 'pg-cslot' + (v ? ' pg-cslot-full' : ''), x: cx(j) - cw / 2 + 2, y: fy, width: cw - 4, height: rh + 4, rx: 6 }))
-          f.append(svg('text', { class: v ? 'pg-tmass pg-fill-v' + (this.right ? ' pg-tmass-ok' : '') : 'pg-cfield pg-cfield-empty', x: cx(j), y: fy + rh / 2 + 6, 'text-anchor': 'middle' }, v ? fillText(v) : '?'))
-          f.addEventListener('click', ev => { ev.stopPropagation(); this.open = this.open?.[0] === k && this.open?.[1] === j ? null : [k, j]; this.render() })
-          og.append(f)
         })
+        const fy = base + rh + 2
+        // (the mass at false follows from the one at true; after bind, the one at true is computed too)
+        og.append(svg('text', { class: 'pg-tmass pg-fill-auto' + (this.right ? ' pg-tmass-ok' : ''), x: cx(0), y: fy + rh / 2 + 7, 'text-anchor': 'middle' }, ms[0] ? showPoly(ms[0]) : '·'))
+        if (!bind) og.append(this.field(k, 0, cx(1) - cw / 2 + 2, fy, cw - 4, rh + 4))
+        else {
+          og.append(svg('text', { class: 'pg-tmass pg-fill-auto' + (this.right ? ' pg-tmass-ok' : ''), x: cx(1), y: fy + rh / 2 + 7, 'text-anchor': 'middle' }, ms[1] ? showPoly(ms[1]) : '·'))
+          // true: the two ways, first draw true (p) and false (1 − p), times the mass at true of the coin then
+          const ly = fy + rh + 8, fw = 40, fx = x0 + ow - fw - 6
+          og.append(svg('line', { class: 'pg-chist-axis', x1: x0 + 6, y1: ly, x2: x0 + ow - 6, y2: ly }))
+          ;[['p ·', 0], ['+ (1−p) ·', 1]].forEach(([t, j]) => {
+            const yy = ly + 6 + j * (rh + 8)
+            og.append(svg('text', { class: 'pg-fill-eq', x: fx - 5, y: yy + rh / 2 + 6, 'text-anchor': 'end' }, t))
+            og.append(this.field(k, j, fx, yy, fw, rh + 4))
+          })
+        }
         og.append(svg('circle', { class: 'pg-cport', cx: x, cy: oy, r: 9 }))
         s.append(og)
       })
       s.addEventListener('click', () => { if (this.open) { this.open = null; this.render() } })
-      const task = el('div', 'pg-task'); task.append(el('b', '', tr('Task: fill in the distribution after each map.')))
+      const task = el('div', 'pg-task'); task.append(el('b', '', tr(bind ? 'Task: fill in the mass at true after each second coin.' : 'Task: fill in the mass at true after each map.')))
       const wrap = el('div', 'pg-fill-wrap'); wrap.append(s)
       this.picture = wrap
       showBoard(this, [task, wrap, ...(this.wrong ? [el('div', 'pg-quiz-warn', '✗ ' + tr('Not quite: at least one mass is wrong.'))] : [])])

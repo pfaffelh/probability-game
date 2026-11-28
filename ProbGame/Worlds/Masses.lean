@@ -331,17 +331,18 @@ rw [beq_true]
 :::
 :::::
 
-::::leanonly (proof := "(f : Bool → Bool) (μ : DiscreteMeasure Bool) (b : Bool) : (μ.map f) b = (bif f true == b then μ true else 0) + (bif f false == b then μ false else 0)") (new := "map_apply, sum_with") (lemma := "map_bool") (uses := "map_apply, sum_with, Fintype.sum_bool, rw") (board := "maps")
+::::leanonly (proof := "(f : Bool → Bool) (μ : DiscreteMeasure Bool) (b : Bool) : (μ.map f) b = (bif f true == b then μ true else 0) + (bif f false == b then μ false else 0)") (new := "map_apply, sum_with") (lemma := "map_bool") (board := "maps") (uses := "map_apply, sum_with, Fintype.sum_bool, rw")
 :::en
 *Where the mass goes.* A gate after a distribution `μ` is a move, `μ.map f`: it takes each point `a`
 with its mass `μ a` to `f a`. On the board, `coin p` goes through each of the four maps
-`Bool → Bool`. Fill in the distribution after each.
+`Bool → Bool`. Fill in the mass at `true` after each; the one at `false` is the rest.
 :::
 
 :::de
 *Wohin die Masse geht.* Ein Baustein nach einer Verteilung `μ` ist ein Zug, `μ.map f`: Er bringt
 jeden Punkt `a` mit seiner Masse `μ a` nach `f a`. Auf dem Spielfeld geht `coin p` durch jede der
-vier Abbildungen `Bool → Bool`. Trag die Verteilung nach jeder ein.
+vier Abbildungen `Bool → Bool`. Trag nach jeder die Masse bei `true` ein; die bei `false` ist der
+Rest.
 :::
 
 :::proofen
