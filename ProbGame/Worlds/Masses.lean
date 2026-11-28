@@ -14,188 +14,18 @@ number := false
 :::en
 A distribution on `Bool` is, in Lean, `μ : DiscreteMeasure Bool`: it gives each of the two points its
 *mass*, `μ true` and `μ false`, the heights of its two bars. `[Prob μ]` says that the two masses add
-up to one. This world proves what holds for every such `μ`; the first example is the sure
+up to one. This world proves what holds for every such `μ`, and has one example: the sure
 distribution `pure b`. The coins come in the next world.
 :::
 
 :::de
 Eine Verteilung auf `Bool` ist in Lean `μ : DiscreteMeasure Bool`: Sie gibt jedem der beiden Punkte
 seine *Masse*, `μ true` und `μ false`, die Höhen ihrer beiden Säulen. `[Prob μ]` sagt, dass die beiden
-Massen zusammen eins ergeben. Diese Welt beweist, was für jedes solche `μ` gilt; das erste Beispiel
-ist die sichere Verteilung `pure b`. Die Münzen kommen in der nächsten Welt.
+Massen zusammen eins ergeben. Diese Welt beweist, was für jedes solche `μ` gilt, und hat ein Beispiel:
+die sichere Verteilung `pure b`. Die Münzen kommen in der nächsten Welt.
 :::
 
-:::::leanonly (proof := "(b : Bool) : (pure b : DiscreteMeasure Bool) true = bif b then ⟦1 ‖ 0, 1⟧ else ⟦0 ‖ 0, 1⟧") (new := "pure_apply") (lemma := "pure_true") (uses := "pure_apply, beq_true, <;>, cases, rfl, rw")
-:::en
-*Surely true.* `pure b` is the distribution that is surely `b`: all its mass lies at `b`. Its mass at
-`true` is one if `b` is `true`, else zero.
-:::
-
-:::de
-*Sicher true.* `pure b` ist die Verteilung, die sicher `b` ist: Ihre ganze Masse liegt bei `b`. Ihre
-Masse bei `true` ist eins, wenn `b` gleich `true` ist, sonst null.
-:::
-
-::::hint (anchor := "statement")
-:::en
-A `DiscreteMeasure Bool` is a distribution on `Bool`: a mass in $`[0, \infty]` at each point, at
-`true` and at `false`. `pure b` puts mass `1` on `b`.
-:::
-
-:::de
-Ein `DiscreteMeasure Bool` ist eine Verteilung auf `Bool`: eine Masse in $`[0, \infty]` an jedem
-Punkt, bei `true` und bei `false`. `pure b` legt Masse `1` auf `b`.
-:::
-::::
-
-::::hint (anchor := "item:pure_apply")
-:::en
-`rw [pure_apply]` writes the mass of `pure b` at `true` as `bif b == true then 1 else 0`.
-:::
-
-:::de
-`rw [pure_apply]` schreibt die Masse von `pure b` bei `true` als `bif b == true then 1 else 0`.
-:::
-::::
-
-:::proofen
-A distribution is, in Lean, its masses (its *weight* function):
-
-```
-structure DiscreteMeasure (α : Type) where
-  weight : α → ℝ≥0∞
-```
-
-`ℝ≥0∞` (in Lean `ENNReal`) are the numbers from 0 to ∞, ∞ included: a mass is never negative.
-(`μ x` is `μ.weight x`.) By the definition of `pure`,
-
-```
-def pure (a : α) : DiscreteMeasure α := ⟨({a} : Set α).indicator 1⟩
-```
-
-the mass is `1` on the set `{a}` and `0` outside it. The game writes this as the new rule
-`pure_apply : (pure a) b = bif a == b then 1 else 0`.  What you prove is unlocked as `pure_true`.
-:::
-
-:::proofde
-Eine Verteilung ist in Lean ihre Massen (ihre *Gewichtsfunktion*):
-
-```
-structure DiscreteMeasure (α : Type) where
-  weight : α → ℝ≥0∞
-```
-
-`ℝ≥0∞` (in Lean `ENNReal`) sind die Zahlen von 0 bis ∞, ∞ eingeschlossen: Eine Masse ist nie negativ.
-(`μ x` ist `μ.weight x`.) Nach der Definition von `pure`,
-
-```
-def pure (a : α) : DiscreteMeasure α := ⟨({a} : Set α).indicator 1⟩
-```
-
-ist die Masse `1` auf der Menge `{a}` und `0` außerhalb. Das Spiel schreibt das als die neue Regel
-`pure_apply : (pure a) b = bif a == b then 1 else 0`.  Was du beweist, wird als `pure_true` freigeschaltet.
-:::
-:::solution
-```
-rw [pure_apply, beq_true]
-```
-:::
-:::solution
-```
-rw [pure_apply]
-cases b <;> rfl
-```
-:::
-:::::
-
-:::::leanonly (proof := "(b : Bool) : (pure b : DiscreteMeasure Bool) false = bif b then ⟦0 ‖ 0, 1⟧ else ⟦1 ‖ 0, 1⟧") (lemma := "pure_false") (uses := "pure_apply, beq_self_eq_true, Bool.cond_true, Bool.cond_false, Bool.true_beq, <;>, cases, rfl, rw")
-::::hint (anchor := "gap")
-:::en
-All the mass of `pure b` lies at `b`: how much of it lies at `false`?
-:::
-
-:::de
-Die ganze Masse von `pure b` liegt bei `b`: Wie viel davon liegt bei `false`?
-:::
-::::
-
-:::en
-*Surely not false.* The mass of `pure b` at `false`: the counterpart of `pure_true`.
-:::
-
-:::de
-*Sicher nicht false.* Die Masse von `pure b` bei `false`: das Gegenstück zu `pure_true`.
-:::
-
-:::proofen
-The counterpart of `pure_true`, from the same rule. What you prove is unlocked as `pure_false`.
-:::
-
-:::proofde
-Das Gegenstück zu `pure_true`, aus derselben Regel. Was du beweist, wird als `pure_false`
-freigeschaltet.
-:::
-:::solution
-```
-rw [pure_apply]
-cases b <;> rfl
-```
-:::
-:::solution
-```
-rw [pure_apply]
-cases b
-rfl
-rfl
-```
-:::
-:::solution
-```
-rw [pure_apply]
-cases b
-rw [beq_self_eq_true, Bool.cond_true, Bool.cond_false]
-rw [Bool.true_beq, Bool.cond_false, Bool.cond_true]
-```
-:::
-:::::
-
-::::leanonly (proof := "(x y : ℝ≥0∞) : ∑ a, (bif a then x else y) = x + y") (new := "Fintype.sum_bool") (uses := "Fintype.sum_bool, Bool.cond_true, Bool.cond_false, rw, -rfl")
-:::en
-*A sum over Bool.* A move collects masses: it adds up the masses of all points that go to the same
-place. So we need sums. `∑ a, g a` is the sum of `g a` over all points `a` of a finite type; over `Bool`
-there are two, and the rule (from Mathlib) is
-
-`Fintype.sum_bool : ∑ a, g a = g true + g false`.
-:::
-
-:::de
-*Eine Summe über Bool.* Ein Zug sammelt Massen: Er addiert die Massen aller Punkte, die an dieselbe
-Stelle gehen. Wir brauchen also Summen. `∑ a, g a` ist die Summe der `g a` über alle Punkte `a` eines
-endlichen Typs; über `Bool` sind es zwei, und die Regel (aus Mathlib) ist
-
-`Fintype.sum_bool : ∑ a, g a = g true + g false`.
-:::
-
-:::proofen
-Here `g a` is `bif a then x else y`.
-:::
-
-:::proofde
-Hier ist `g a` gleich `bif a then x else y`.
-:::
-:::solution
-```
-rw [Fintype.sum_bool, Bool.cond_true, Bool.cond_false]
-```
-:::
-:::solution
-```
-rw [Fintype.sum_bool, Bool.cond_false, Bool.cond_true]
-```
-:::
-::::
-
-:::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ true + μ false = 1") (lemma := "mass_total") (new := "Prob.total, tsum_bool, add_comm") (uses := "Prob.total, tsum_bool, add_comm, add_assoc, rw")
+:::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ true + μ false = 1") (lemma := "mass_total") (new := "Prob.total, add_comm") (uses := "Prob.total, tsum_bool, add_comm, add_assoc, rw")
 :::en
 *The whole mass.* `[Prob μ]` says: `μ` is a distribution, its masses add up to one. On `Bool` there
 are two of them.
@@ -206,13 +36,25 @@ are two of them.
 `Bool` sind es zwei.
 :::
 
-::::hint (anchor := "statement")
+::::hint (anchor := "word:DiscreteMeasure")
 :::en
-`[Prob μ]` is an assumption about `μ`. The weights sum to 1.
+`μ : DiscreteMeasure Bool` is a distribution on `Bool`: a mass in $`[0, \infty]` at each point,
+`μ true` and `μ false`.
 :::
 
 :::de
-`[Prob μ]` ist eine Annahme über `μ`. Die Gewichte summieren sich zu 1.
+`μ : DiscreteMeasure Bool` ist eine Verteilung auf `Bool`: eine Masse in $`[0, \infty]` an jedem
+Punkt, `μ true` und `μ false`.
+:::
+::::
+
+::::hint (anchor := "word:[Prob μ]")
+:::en
+`[Prob μ]` is an assumption about `μ`: its masses add up to one, `Prob.total μ : ∑' a, μ a = 1`.
+:::
+
+:::de
+`[Prob μ]` ist eine Annahme über `μ`: Seine Massen ergeben zusammen eins, `Prob.total μ : ∑' a, μ a = 1`.
 :::
 ::::
 
@@ -229,15 +71,35 @@ ihre rechte steht. Tippe `←` an, oder tippe `\l`.
 ::::
 
 :::proofen
+A distribution is, in Lean, its masses (its *weight* function):
+
+```
+structure DiscreteMeasure (α : Type) where
+  weight : α → ℝ≥0∞
+```
+
+`ℝ≥0∞` (in Lean `ENNReal`) are the numbers from 0 to ∞, ∞ included: a mass is never negative.
+(`μ x` is `μ.weight x`.)
+
 `Prob.total μ : ∑' a, μ a = 1` is a sum over all points, `∑'`; read from right to left, it makes the
-`1` of the goal this sum. `tsum_bool` writes a sum over `Bool` as its two terms, `false` first;
+`1` of the goal this sum. `tsum_bool` (from *Bool*) writes a sum over `Bool` as its two terms, `false` first;
 `add_comm : a + b = b + a` turns them round.
 :::
 
 :::proofde
+Eine Verteilung ist in Lean ihre Massen (ihre *Gewichtsfunktion*):
+
+```
+structure DiscreteMeasure (α : Type) where
+  weight : α → ℝ≥0∞
+```
+
+`ℝ≥0∞` (in Lean `ENNReal`) sind die Zahlen von 0 bis ∞, ∞ eingeschlossen: Eine Masse ist nie negativ.
+(`μ x` ist `μ.weight x`.)
+
 `Prob.total μ : ∑' a, μ a = 1` ist eine Summe über alle Punkte, `∑'`; von rechts nach links gelesen
-macht sie die `1` des Ziels zu dieser Summe. `tsum_bool` schreibt eine Summe über `Bool` als ihre
-zwei Summanden, `false` zuerst; `add_comm : a + b = b + a` dreht sie um.
+macht sie die `1` des Ziels zu dieser Summe. `tsum_bool` (aus *Bool*) schreibt eine Summe über
+`Bool` als ihre zwei Summanden, `false` zuerst; `add_comm : a + b = b + a` dreht sie um.
 :::
 :::solution
 ```
@@ -598,6 +460,122 @@ rw [h]
 ```
 :::
 ::::
+
+:::::leanonly (proof := "(b : Bool) : (pure b : DiscreteMeasure Bool) true = bif b then ⟦1 ‖ 0, 1⟧ else ⟦0 ‖ 0, 1⟧") (new := "pure_apply") (lemma := "pure_true") (uses := "pure_apply, beq_true, <;>, cases, rfl, rw")
+:::en
+*Surely true.* `pure b` is the distribution that is surely `b`: all its mass lies at `b`. Its mass at
+`true` is one if `b` is `true`, else zero.
+:::
+
+:::de
+*Sicher true.* `pure b` ist die Verteilung, die sicher `b` ist: Ihre ganze Masse liegt bei `b`. Ihre
+Masse bei `true` ist eins, wenn `b` gleich `true` ist, sonst null.
+:::
+
+::::hint (anchor := "statement")
+:::en
+`pure b : DiscreteMeasure Bool` is the distribution that puts mass `1` on `b`.
+:::
+
+:::de
+`pure b : DiscreteMeasure Bool` ist die Verteilung, die Masse `1` auf `b` legt.
+:::
+::::
+
+::::hint (anchor := "item:pure_apply")
+:::en
+`rw [pure_apply]` writes the mass of `pure b` at `true` as `bif b == true then 1 else 0`.
+:::
+
+:::de
+`rw [pure_apply]` schreibt die Masse von `pure b` bei `true` als `bif b == true then 1 else 0`.
+:::
+::::
+
+:::proofen
+By the definition of `pure`,
+
+```
+def pure (a : α) : DiscreteMeasure α := ⟨({a} : Set α).indicator 1⟩
+```
+
+the mass is `1` on the set `{a}` and `0` outside it. The game writes this as the new rule
+`pure_apply : (pure a) b = bif a == b then 1 else 0`.  What you prove is unlocked as `pure_true`.
+:::
+
+:::proofde
+Nach der Definition von `pure`,
+
+```
+def pure (a : α) : DiscreteMeasure α := ⟨({a} : Set α).indicator 1⟩
+```
+
+ist die Masse `1` auf der Menge `{a}` und `0` außerhalb. Das Spiel schreibt das als die neue Regel
+`pure_apply : (pure a) b = bif a == b then 1 else 0`.  Was du beweist, wird als `pure_true` freigeschaltet.
+:::
+:::solution
+```
+rw [pure_apply, beq_true]
+```
+:::
+:::solution
+```
+rw [pure_apply]
+cases b <;> rfl
+```
+:::
+:::::
+
+:::::leanonly (proof := "(b : Bool) : (pure b : DiscreteMeasure Bool) false = bif b then ⟦0 ‖ 0, 1⟧ else ⟦1 ‖ 0, 1⟧") (lemma := "pure_false") (uses := "pure_apply, beq_self_eq_true, Bool.cond_true, Bool.cond_false, Bool.true_beq, <;>, cases, rfl, rw")
+::::hint (anchor := "gap")
+:::en
+All the mass of `pure b` lies at `b`: how much of it lies at `false`?
+:::
+
+:::de
+Die ganze Masse von `pure b` liegt bei `b`: Wie viel davon liegt bei `false`?
+:::
+::::
+
+:::en
+*Surely not false.* The mass of `pure b` at `false`: the counterpart of `pure_true`.
+:::
+
+:::de
+*Sicher nicht false.* Die Masse von `pure b` bei `false`: das Gegenstück zu `pure_true`.
+:::
+
+:::proofen
+The counterpart of `pure_true`, from the same rule. What you prove is unlocked as `pure_false`.
+:::
+
+:::proofde
+Das Gegenstück zu `pure_true`, aus derselben Regel. Was du beweist, wird als `pure_false`
+freigeschaltet.
+:::
+:::solution
+```
+rw [pure_apply]
+cases b <;> rfl
+```
+:::
+:::solution
+```
+rw [pure_apply]
+cases b
+rfl
+rfl
+```
+:::
+:::solution
+```
+rw [pure_apply]
+cases b
+rw [beq_self_eq_true, Bool.cond_true, Bool.cond_false]
+rw [Bool.true_beq, Bool.cond_false, Bool.cond_true]
+```
+:::
+:::::
 
 ::::leanonly (proof := "(f : Bool → Bool) (μ : DiscreteMeasure Bool) (b : Bool) : (μ.map f) b = (bif f true == b then μ true else 0) + (bif f false == b then μ false else 0)") (new := "map_apply, sum_with") (lemma := "map_bool") (board := "maps") (uses := "map_apply, sum_with, Fintype.sum_bool, rw")
 :::en

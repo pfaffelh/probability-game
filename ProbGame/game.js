@@ -146,6 +146,29 @@
       localStorage.setItem('pg:moved:2026-11-29d', '1')
     }
   } catch {}
+  // (since 2026-11-29: the sums over Bool (`Fintype.sum_bool`, new: `tsum_bool`) are in Bool, after
+  // `Bool.false_beq`; DiscreteMeasure starts with `mass_total`, the levels of `pure` come after `bool_ext`)
+  try {
+    if (!localStorage.getItem('pg:moved:2026-11-29e')) {
+      const M = 'DiscreteMeasure', B = 'Circuits'
+      const TO = { DiscreteMeasure: [[M, 8], [M, 9], [B, 19], [M, 0], [M, 1], [M, 2], [M, 3], [M, 4], [M, 5], [M, 6], [M, 7], [M, 10], [M, 11], [M, 12], [M, 13]] }
+      const re = /^pg:(\/[^/]+\/)([^/]+)\/:(\d+)((?::.*)?)$/
+      const moved = []
+      for (const k of Object.keys(localStorage)) {
+        const m = re.exec(k)
+        if (!m) continue
+        const i = Number(m[3])
+        let t = null
+        if (m[2] === 'Circuits') { if (i < 19) continue; t = [B, i + 2] }
+        else if (TO[m[2]]) t = TO[m[2]][i] ?? null
+        else continue
+        moved.push([k, t ? `pg:${m[1]}${t[0]}/:${t[1]}${m[4]}` : null, localStorage.getItem(k)])
+      }
+      for (const [k] of moved) localStorage.removeItem(k)
+      for (const [, k, v] of moved) if (k) localStorage.setItem(k, v)
+      localStorage.setItem('pg:moved:2026-11-29e', '1')
+    }
+  } catch {}
   const DE = {
     Moves: 'Züge', Undo: 'Zurück', 'Add a gate': 'Baustein hinzufügen', Gate: 'Baustein', 'Start over': 'Neu anfangen', 'Next level ›': 'Nächstes Level ›',
     Target: 'Ziel', 'In Lean, for every p:': 'In Lean, für jedes p:', 'proved': 'bewiesen',
@@ -4090,8 +4113,18 @@
       const stmt = el('pre', 'pg-proof-statement', `${this.lemma ? theoremHead(this.lemma) : 'example'} `)
       // (the gaps: filled ones marked, the one to fill now ringed; a tap on a filled one opens it again)
       let gi = 0
+      // (the words of the statement that a tip points at, `:::hint (anchor := "word:DiscreteMeasure")`)
+      const words = [...(this.levelRoot?.querySelectorAll(':scope > .pg-text > .pg-hint') ?? [])].map(h => h.dataset.at).filter(a => a?.startsWith('word:')).map(a => a.slice(5))
+      const plain = part => {
+        if (!words.length) { stmt.append(part); return }
+        const re = new RegExp('(' + words.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')')
+        for (const t of part.split(re)) {
+          if (!words.includes(t)) { stmt.append(t); continue }
+          const w = el('span', 'pg-word', t); w.dataset.word = t; stmt.append(w)
+        }
+      }
       for (const part of this.template.split(/(⟦[^⟧]*⟧)/)) {
-        if (!part.startsWith('⟦')) { stmt.append(part); continue }
+        if (!part.startsWith('⟦')) { plain(part); continue }
         const k = gi++, f = this.fill[k]
         const g = el('span', 'pg-gap' + (f !== undefined ? ' pg-gap-filled' : k === this.fill.length ? ' pg-gap-now' : ''), f === undefined ? '▢' : /\s/.test(f) ? `(${f})` : f)
         if (f !== undefined) { g.title = tr('Fill the gaps anew'); g.addEventListener('click', () => this.reopen(k)) }
@@ -4675,7 +4708,8 @@
     // (and `lean`: a tip of the proof at nothing, in the middle)
     // (`back`: at the key ←)
     const PROOF_AT = { gap: '.pg-gap-now', keys: '.pg-keys', back: '.pg-key-back', statement: '.pg-proof-statement', lean: null }
-    const proofHint = h => h.dataset.at.startsWith('item:') || h.dataset.at in PROOF_AT
+    // (`word:DiscreteMeasure`: at this word of the statement)
+    const proofHint = h => h.dataset.at.startsWith('item:') || h.dataset.at.startsWith('word:') || h.dataset.at in PROOF_AT
     const boardHints = k => [...roots[k].querySelectorAll(':scope > .pg-text > .pg-hint:not([data-at="none"])')].filter(h => !proofHint(h) && !/^(after|old|wrong):/.test(h.dataset.at))
     // (a hint in between: `after:cases`, once a line of the proof with the tactic cases is taken, at the
     // goals; the button Tips shows it again when the proof has such a line)
@@ -4721,7 +4755,8 @@
     const proofTip = (k, auto = false) => {
       const all = [...roots[k].querySelectorAll(':scope > .pg-text > .pg-hint')].filter(proofHint)
       const hints = all.filter(h => h.dataset.at.startsWith('item:')), hinted = new Set(hints.map(h => h.dataset.at.slice(5)))
-      const at = h => () => (PROOF_AT[h.dataset.at] ? visible(roots[k].querySelector(PROOF_AT[h.dataset.at])) : null)
+      const at = h => () => (h.dataset.at.startsWith('word:') ? visible(roots[k].querySelector(`.pg-proof-statement .pg-word[data-word="${CSS.escape(h.dataset.at.slice(5))}"]`)) ?? visible(roots[k].querySelector('.pg-proof-statement'))
+        : PROOF_AT[h.dataset.at] ? visible(roots[k].querySelector(PROOF_AT[h.dataset.at])) : null)
       // (a new item with a hint of its own: the hint alone, without the card of the item)
       const steps = [...all.filter(h => !h.dataset.at.startsWith('item:')).map(h => ({ nodes: hintText(h), anchor: at(h) })), ...hints.map(h => { const it = INVENTORY.find(i => i.name === h.dataset.at.slice(5)); return { head: it && newItems(k).includes(it) ? tr('New in this proof') : undefined, nodes: hintText(h), anchor: atItem(k, h.dataset.at.slice(5)) } }),
         ...newItems(k).filter(it => !hinted.has(it.name)).map(it => ({ head: tr('New in this proof'), nodes: [itemCard(it)], anchor: atItem(k, it.name) }))]

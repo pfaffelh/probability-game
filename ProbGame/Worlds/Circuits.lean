@@ -786,6 +786,71 @@ rfl
 :::
 ::::
 
+::::leanonly (proof := "(x y : ℕ) : ∑ a, (bif a then x else y) = x + y") (new := "Fintype.sum_bool") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "Fintype.sum_bool, Bool.cond_true, Bool.cond_false, rw, -rfl")
+:::en
+*A sum over Bool.* `∑ a, g a` is the sum of `g a` over all points `a` of a finite type; over `Bool`
+there are two, and the rule (from Mathlib) is
+
+`Fintype.sum_bool : ∑ a, g a = g true + g false`.
+
+Later the masses of a distribution are added up this way.
+:::
+
+:::de
+*Eine Summe über Bool.* `∑ a, g a` ist die Summe der `g a` über alle Punkte `a` eines endlichen Typs;
+über `Bool` sind es zwei, und die Regel (aus Mathlib) ist
+
+`Fintype.sum_bool : ∑ a, g a = g true + g false`.
+
+Später werden so die Massen einer Verteilung addiert.
+:::
+
+:::proofen
+Here `g a` is `bif a then x else y`.
+:::
+
+:::proofde
+Hier ist `g a` gleich `bif a then x else y`.
+:::
+:::solution
+```
+rw [Fintype.sum_bool, Bool.cond_true, Bool.cond_false]
+```
+:::
+:::solution
+```
+rw [Fintype.sum_bool, Bool.cond_false, Bool.cond_true]
+```
+:::
+::::
+
+::::leanonly (proof := "(x y : ℕ) : ∑' a, (bif a then x else y) = y + x") (new := "tsum_bool") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "tsum_bool, Bool.cond_false, Bool.cond_true, rw, -rfl")
+:::en
+*A sum over all points.* `∑' a, g a`, with a prime, is the sum over all points of any type, also of
+infinitely many (in Mathlib `tsum`). Over `Bool` it is the sum of two terms, `false` first:
+
+`tsum_bool : ∑' a, g a = g false + g true`.
+:::
+
+:::de
+*Eine Summe über alle Punkte.* `∑' a, g a`, mit Strich, ist die Summe über alle Punkte eines
+beliebigen Typs, auch über unendlich viele (in Mathlib `tsum`). Über `Bool` ist es die Summe zweier
+Summanden, `false` zuerst:
+
+`tsum_bool : ∑' a, g a = g false + g true`.
+:::
+:::solution
+```
+rw [tsum_bool, Bool.cond_false, Bool.cond_true]
+```
+:::
+:::solution
+```
+rw [tsum_bool, Bool.cond_true, Bool.cond_false]
+```
+:::
+::::
+
 ::::quiz (tactic := "cases x <;> rfl") (statements := "(x : Bool) : (x && x) = x ;; (x : Bool) : x = true ;; (x : Bool) : (x || !x) = true ;; (x y : Bool) : (x && y) = (y && x) ;; (x : Bool) : (!x) = x ;; (x : Bool) : (true && x) = x") (answer := "1, 3, 6")
 :::en
 *Which ones?* Which of these statements does `cases x <;> rfl` prove?

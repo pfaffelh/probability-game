@@ -15,9 +15,9 @@ A world is measured against four questions.
 
 For each world: its goal, the tactics, how the levels get there, and what is open. The six
 proposals of the first version of this file are carried out, and after them the thin tactics got
-their levels (see the end); "open" is what is left. 14 worlds, 173 levels.
+their levels (see the end); "open" is what is left. 14 worlds, 174 levels.
 
-## 1. Bool (23 levels)
+## 1. Bool (25 levels)
 
 **Goal.** A circuit is a function, and a function on `Bool` is its truth table: two circuits are
 equal when all rows agree.
@@ -26,14 +26,14 @@ equal when all rows agree.
 
 **Path.** One input, read off (`rfl`). Rewriting with what is already proved (`rw`). One input,
 both cases (`cases`). The `bif` rules. The truth tables of `&&` and `||` as rules (`Bool.true_and`,
-`Bool.false_and`, `Bool.true_or`, `Bool.false_or`). Tests (`==`): `beq_self_eq_true`, `beq_true`, `Bool.true_beq`, `Bool.false_beq`, for the point tests of `map_apply` in DiscreteMeasure and Maps. A quiz on `cases x <;> rfl`. Two inputs, four
+`Bool.false_and`, `Bool.true_or`, `Bool.false_or`). Tests (`==`): `beq_self_eq_true`, `beq_true`, `Bool.true_beq`, `Bool.false_beq`, for the point tests of `map_apply` in DiscreteMeasure and Maps. Sums over `Bool`: `Fintype.sum_bool`, `tsum_bool` (on ℕ), for the masses later. A quiz on `cases x <;> rfl`. Two inputs, four
 cases: De Morgan (`Bool.not_and`), then `or` from `and` (`or_eq`, also from De Morgan). Boss: xor
 from `and`, `or`, `not`, with its table. Lemma levels whose lemma goes into simp later show
 `@[simp] theorem`; Bool 2 says what it means.
 
 **Open.** The boss has the same proof line as De Morgan before it; it is harder on the board only.
 
-## 2. DiscreteMeasure (15 levels)
+## 2. DiscreteMeasure (14 levels)
 
 **Goal.** A distribution on `Bool`, any `μ : DiscreteMeasure Bool` with `[Prob μ]`, is two masses that
 add up to 1; one of them fixes it (`bool_ext`); a map moves each mass to its image (`map_true`). No
@@ -41,10 +41,10 @@ coin in this world: the only concrete distribution is the sure one, `pure b`.
 
 **Tactics.** `rw` in chains (practised here), `exact`, `apply` (first contact), `ext` (once).
 
-**Path.** What a distribution is, on `pure b` (`pure_true`, `pure_false`). Sums over `Bool`. The whole
-mass (`mass_total`); nothing at `true`, all at `false` (`zero_add`). At most one, with `exact` and a
+**Path.** The whole mass (`mass_total`), first level: tips at `DiscreteMeasure` and `[Prob μ]`
+(`:::hint (anchor := "word:…")`, at that word of the statement); nothing at `true`, all at `false` (`zero_add`). At most one, with `exact` and a
 theorem with its argument (`rw [← mass_total μ]`); finite. Taking away in `ℝ≥0∞` (`tsub_self`,
-`tsub_zero`), `add_zero`; the rest of the mass (`mass_not`). One bar is enough (`bool_ext`). Where
+`tsub_zero`), `add_zero`; the rest of the mass (`mass_not`). One bar is enough (`bool_ext`). The sure distribution `pure b` (`pure_true`, `pure_false`). Where
 the mass goes: on a board of its own (`board := "maps"`, game.js `Fill`, drawn as a circuit), `μ`
 wired into the four maps `Bool → Bool` (their pictures, as in bind), the player fills in the mass at
 true of each output by the choice μ true, μ false, 1, 0 (the one at false follows); in Lean
