@@ -851,6 +851,56 @@ rw [tsum_bool, Bool.cond_true, Bool.cond_false]
 :::
 ::::
 
+::::leanonly (proof := "(f : Bool → Bool) : (fun _ : Bool => true) ∘ f = fun _ => ⟦true ‖ true, false, f true⟧") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "rfl")
+:::en
+*Always true, after anything.* `g ∘ f` is `g` after `f`: `(g ∘ f) x = g (f x)`. After *always true*
+it does not matter what `f` did before.
+:::
+
+:::de
+*Immer true, nach allem.* `g ∘ f` ist `g` nach `f`: `(g ∘ f) x = g (f x)`. Nach *immer true* ist
+egal, was `f` vorher getan hat.
+:::
+
+:::proofen
+Both sides are the same map: Lean sees it by computing, `rfl`.
+:::
+
+:::proofde
+Beide Seiten sind dieselbe Abbildung: Lean sieht es durch Rechnen, `rfl`.
+:::
+:::solution
+```
+rfl
+```
+:::
+::::
+
+::::leanonly (proof := "(f : Bool → Bool) : f ∘ (fun _ : Bool => true) = fun _ => ⟦f true ‖ true, f true, f false⟧") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "rfl")
+:::en
+*The other way round: anything after always true.* First *always true*, then `f`: the result is
+always the same, `f true`.
+:::
+
+:::de
+*Andersherum: alles nach immer true.* Erst *immer true*, dann `f`: Das Ergebnis ist immer dasselbe,
+`f true`.
+:::
+
+:::proofen
+Again by computing, `rfl`.
+:::
+
+:::proofde
+Wieder durch Rechnen, `rfl`.
+:::
+:::solution
+```
+rfl
+```
+:::
+::::
+
 ::::quiz (tactic := "cases x <;> rfl") (statements := "(x : Bool) : (x && x) = x ;; (x : Bool) : x = true ;; (x : Bool) : (x || !x) = true ;; (x y : Bool) : (x && y) = (y && x) ;; (x : Bool) : (!x) = x ;; (x : Bool) : (true && x) = x") (answer := "1, 3, 6")
 :::en
 *Which ones?* Which of these statements does `cases x <;> rfl` prove?

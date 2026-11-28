@@ -268,6 +268,20 @@
       localStorage.setItem('pg:moved:2026-11-29k', '1')
     }
   } catch {}
+  // (since 2026-11-29: Bool has two levels of composition after the sums: always true after f, f after always true)
+  try {
+    if (!localStorage.getItem('pg:moved:2026-11-29l')) {
+      const re = /^pg:(\/[^/]+\/)Circuits\/:(\d+)((?::.*)?)$/
+      const moved = []
+      for (const k of Object.keys(localStorage)) {
+        const m = re.exec(k)
+        if (m && Number(m[2]) >= 21) moved.push([k, `pg:${m[1]}Circuits/:${Number(m[2]) + 2}${m[3]}`, localStorage.getItem(k)])
+      }
+      for (const [k] of moved) localStorage.removeItem(k)
+      for (const [, k, v] of moved) localStorage.setItem(k, v)
+      localStorage.setItem('pg:moved:2026-11-29l', '1')
+    }
+  } catch {}
   const DE = {
     Moves: 'Züge', Undo: 'Zurück', 'Add a gate': 'Baustein hinzufügen', Gate: 'Baustein', 'Start over': 'Neu anfangen', 'Next level ›': 'Nächstes Level ›',
     Target: 'Ziel', 'In Lean, for every p:': 'In Lean, für jedes p:', 'proved': 'bewiesen',
