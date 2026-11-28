@@ -109,6 +109,32 @@ rw [add_comm, ← tsum_bool, Prob.total]
 :::
 :::::
 
+:::::quiz (tactic := "exact mass_total _") (statements := "(μ : DiscreteMeasure Bool) [Prob μ] : μ true + μ false = 1 ;; (μ : DiscreteMeasure Bool) [Prob μ] : μ false + μ true = 1 ;; (μ : DiscreteMeasure Bool) [Prob μ] : 1 = μ true + μ false ;; (b : Bool) : (pure b : DiscreteMeasure Bool) true + (pure b : DiscreteMeasure Bool) false = 1 ;; (μ : DiscreteMeasure Bool) [Prob μ] : (μ.map not) true + (μ.map not) false = 1") (answer := "1, 4, 5") (context := "Lean/Rules.lean")
+:::en
+*Exactly.* `exact mass_total _` closes a goal that is exactly `mass_total` for some distribution; the
+blank `_` Lean fills in itself. Which of these does it prove?
+:::
+
+:::de
+*Genau.* `exact mass_total _` schließt ein Ziel, das genau `mass_total` für eine Verteilung ist; die
+Leerstelle `_` füllt Lean selbst. Welche davon beweist es?
+:::
+
+::::hint (anchor := "solved")
+:::en
+`exact` does not turn round: `μ false + μ true` and `1 = …` are not the form of `mass_total`, and
+Lean finds no distribution for the blank. The sure `pure b` and a move `μ.map not` are distributions
+too, `[Prob …]` holds for them.
+:::
+
+:::de
+`exact` dreht nichts um: `μ false + μ true` und `1 = …` haben nicht die Form von `mass_total`, und
+Lean findet keine Verteilung für die Leerstelle. Das sichere `pure b` und ein Zug `μ.map not` sind auch
+Verteilungen, `[Prob …]` gilt für sie.
+:::
+::::
+:::::
+
 ::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (h : μ true = 0) : μ false = ⟦1 ‖ 0, 1⟧") (uses := "mass_total, zero_add, coin_total, add_zero, mul_zero, rw")
 :::hint (anchor := "none")
 :::
@@ -728,26 +754,72 @@ rw [Bool.cond_true, Bool.cond_true, Bool.cond_self, add_zero]
 :::
 :::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f g : Bool → Bool) : (μ.map f).map g = μ.map ⟦fun x => g (f x) ‖ fun x => g (f x), fun x => f (g x), g⟧") (lemma := "map_map") (uses := "map_bool, Bool.false_beq, Bool.not_true, beq_self_eq_true, Bool.cond_false, Bool.cond_true, zero_add, Bool.cond_self, cond_add_cond, Bool.true_beq, Bool.not_false, add_comm, beq_true, add_zero, mul_zero, add_assoc, cases, ext, rw, simp_rw")
+::::leanonly (proof := "(f : Bool → Bool) (x y : ℝ≥0∞) : (bif f true then x else 0) + (bif f true then y else 0) = bif f true then ⟦x + y ‖ x + y, x, y, x * y⟧ else 0") (lemma := "cond_add_cond") (uses := "Bool.cond_false, zero_add, Bool.cond_true, add_zero, mul_zero, cases, rw, simp_rw")
 :::en
-*Two moves are one.* First the move `f`, then the move `g`: which one move is that?
+*Two masses behind one test.* Twice the same test `f true`: once with the mass `x`, once with the
+mass `y`.
 :::
 
 :::de
-*Zwei Züge sind einer.* Erst der Zug `f`, dann der Zug `g`: Welcher eine Zug ist das?
+*Zwei Massen hinter einem Test.* Zweimal derselbe Test `f true`: einmal mit der Masse `x`, einmal
+mit der Masse `y`.
+:::
+
+:::proofen
+With `cases f true` (from *Bool*); with `simp_rw` every `bif false then … else …` goes at once. You prove it
+for the test `f true`; it holds for every test `c : Bool`, and it is unlocked as
+`cond_add_cond : (bif c then x else 0) + (bif c then y else 0) = bif c then x + y else 0`.
+:::
+
+:::proofde
+Mit `cases f true` (aus *Bool*); mit `simp_rw` geht jedes `bif false then … else …` auf einmal. Du beweist es für
+den Test `f true`; es gilt für jeden Test `c : Bool` und wird freigeschaltet als
+`cond_add_cond : (bif c then x else 0) + (bif c then y else 0) = bif c then x + y else 0`.
+:::
+:::solution
+```
+cases f true
+simp_rw [Bool.cond_false]
+rw [zero_add]
+simp_rw [Bool.cond_true]
+```
+:::
+:::solution
+```
+cases f true
+rw [Bool.cond_false, Bool.cond_false, Bool.cond_false, zero_add]
+rw [Bool.cond_true, Bool.cond_true, Bool.cond_true]
+```
+:::
+:::solution
+```
+cases f true
+simp_rw [Bool.cond_false, zero_add]
+simp_rw [Bool.cond_true]
+```
+:::
+::::
+
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f g : Bool → Bool) : (μ.map f).map g = μ.map ⟦fun x => g (f x) ‖ fun x => g (f x), fun x => f (g x), g⟧") (lemma := "map_map") (uses := "map_bool, Bool.false_beq, Bool.not_true, beq_self_eq_true, Bool.cond_false, Bool.cond_true, zero_add, Bool.cond_self, cond_add_cond, Bool.true_beq, Bool.not_false, add_comm, beq_true, add_zero, mul_zero, add_assoc, cases, ext, rw, simp_rw")
+:::en
+*Boss: two moves are one.* First the move `f`, then the move `g`: which one move is that?
+:::
+
+:::de
+*Endgegner: Zwei Züge sind einer.* Erst der Zug `f`, dann der Zug `g`: Welcher eine Zug ist das?
 :::
 
 :::proofen
 Compare the masses at every point (`ext b`), with `map_bool`. Then the cases `f true` and `f false`
-(`cases f true`, from *Bool*); where two masses stand behind the same test, `cond_add_cond` (from
-*Bool*) makes them one. You prove it on `Bool`; it holds for every type, and it is unlocked as
+(`cases f true`, from *Bool*); where two masses stand behind the same test, `cond_add_cond` (the
+level before) makes them one. You prove it on `Bool`; it holds for every type, and it is unlocked as
 `map_map` in this general form.
 :::
 
 :::proofde
 Vergleiche die Massen an jedem Punkt (`ext b`), mit `map_bool`. Dann die Fälle `f true` und `f false`
-(`cases f true`, aus *Bool*); wo zwei Massen hinter demselben Test stehen, macht `cond_add_cond` (aus
-*Bool*) eine daraus. Du beweist es auf `Bool`; es gilt für jeden Typ und wird in dieser allgemeinen
+(`cases f true`, aus *Bool*); wo zwei Massen hinter demselben Test stehen, macht `cond_add_cond` (das
+Level davor) eine daraus. Du beweist es auf `Bool`; es gilt für jeden Typ und wird in dieser allgemeinen
 Form als `map_map` freigeschaltet.
 :::
 :::solution
@@ -811,37 +883,6 @@ rw [add_zero, zero_add]
 simp_rw [Bool.true_beq]
 simp_rw [Bool.cond_false, Bool.cond_true]
 rw [zero_add, Bool.cond_self, add_zero, cond_add_cond]
-```
-:::
-::::
-
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → Bool) : ((μ.map f).map f).map f = μ.map ⟦f ‖ f, fun x => f (f x), not⟧") (uses := "map_map, Bool.apply_apply_apply, rw, simp_rw")
-:::en
-*Boss: three times the same move.* The move `f`, three times: which one move is that?
-:::
-
-:::de
-*Endgegner: dreimal derselbe Zug.* Der Zug `f`, dreimal: Welcher eine Zug ist das?
-:::
-
-:::proofen
-Two moves are one (`map_map`), and three times `f` is `f` (`Bool.apply_apply_apply`, from *Bool*),
-here under `fun`.
-:::
-
-:::proofde
-Zwei Züge sind einer (`map_map`), und dreimal `f` ist `f` (`Bool.apply_apply_apply`, aus *Bool*),
-hier unter `fun`.
-:::
-:::solution
-```
-rw [map_map, map_map]
-simp_rw [Bool.apply_apply_apply]
-```
-:::
-:::solution
-```
-simp_rw [map_map, Bool.apply_apply_apply]
 ```
 :::
 ::::

@@ -11,72 +11,36 @@ htmlSplit := .never
 %%%
 
 :::en
-A coin shows `true` with probability $`p` and `false` with probability $`1 - p`, for any $`p`, as in
-Lean, where a coin is a random `Bool`. Its distribution gives each outcome its *mass*, here $`1 - p`
-and $`p`; the masses add up to $`1`. A distribution is the same as a probability measure.
+Every distribution on `Bool` is a coin: `μ = coin p` with `p = μ true` (`eq_coin`, early in this
+world). So from here on the game computes concretely, with the masses $`p` and $`1 - p` of coins.
 
-The board is played from top to bottom, as in *Bool*: at the top the coin `x ← coin p` is thrown,
-below it the gates, at the bottom the output box with the target. A gate applies a map $`f` to the
-outcome: the mass of each outcome goes to its image, and where several outcomes have the same image,
-their masses add up. What comes out is the distribution of $`f(X)`, the *image measure*
-$`P \circ f^{-1}`: $`P(f(X) = b) = P(X \in f^{-1}(\{b\}))`. The output box shows the target and your
-output, as masses and as a small histogram (the target dashed), drawn for an example $`p`; the slider
-in the bar at the bottom changes it.
+On the board the coins are thrown at the top, `x ← coin p`; below them the gates, at the bottom the
+output box with the target, drawn for an example $`p` (the slider at the bottom changes it). Several
+coins are thrown independently: along a row of the truth table the masses multiply, over the rows with
+the same output they add.
 :::
 
 :::de
-Eine Münze zeigt `true` mit Wahrscheinlichkeit $`p` und `false` mit Wahrscheinlichkeit $`1 - p`, für
-ein beliebiges $`p`, wie in Lean, wo eine Münze ein zufälliges `Bool` ist. Ihre Verteilung gibt jedem
-Ergebnis seine *Masse*, hier $`1 - p` und $`p`; die Massen ergeben zusammen $`1`. Eine Verteilung ist
-dasselbe wie ein Wahrscheinlichkeitsmaß.
+Jede Verteilung auf `Bool` ist eine Münze: `μ = coin p` mit `p = μ true` (`eq_coin`, früh in dieser
+Welt). Ab hier rechnet das Spiel also konkret, mit den Massen $`p` und $`1 - p` von Münzen.
 
-Das Spielfeld wird von oben nach unten gespielt, wie in *Bool*: Oben wird die Münze
-`x ← coin p` geworfen, darunter die Bausteine, unten der Ausgabekasten mit dem Ziel. Ein Baustein wendet
-eine Abbildung $`f` auf das Ergebnis an: Die Masse jedes Ergebnisses geht zu seinem Bild, und wo mehrere
-Ergebnisse dasselbe Bild haben, addieren sich ihre Massen. Was herauskommt, ist die Verteilung von
-$`f(X)`, das *Bildmaß* $`P \circ f^{-1}`: $`P(f(X) = b) = P(X \in f^{-1}(\{b\}))`. Der Ausgabekasten
-zeigt Ziel und Ausgang, als Massen und als kleines Histogramm (das Ziel gestrichelt), gezeichnet für ein
-Beispiel-$`p`; der Schieberegler in der Leiste unten ändert es.
-:::
-
-:::en
-Then the circuits of *Bool*, with a coin at each input: `x ← coin p`, `y ← coin p`, …,
-all with the same $`p` and thrown independently of each other. Then the output is random too: its
-distribution is the target. Each row of the truth table has a mass, the product of the masses of its
-inputs ($`p` for `true`, $`1 - p` for `false`): with two coins, `true`–`true` has mass $`p^2`,
-`true`–`false` $`p(1 - p)`, and so on. The mass of the output at a value is the sum over the rows
-where the output has that value. The output box below shows the target and your output, as masses and
-as a small histogram (the target dashed); beside the board the bars.
-
-A coin may go into several gates; then the results depend on each other, and the game takes that into
-account.
+Auf dem Spielfeld werden oben die Münzen geworfen, `x ← coin p`; darunter die Bausteine, unten der
+Ausgabekasten mit dem Ziel, gezeichnet für ein Beispiel-$`p` (der Schieberegler unten ändert es).
+Mehrere Münzen werden unabhängig geworfen: Entlang einer Zeile der Wahrheitstafel multiplizieren sich
+die Massen, über die Zeilen mit demselben Ausgang addieren sie sich.
 :::
 
 :::proofen
 The circuit, read from top to bottom, is a `do` block in Lean: each coin a line `let x ← coin p`,
 which *draws* `x` from the distribution `coin p`, and at the end `pure (…)`, a sure result, with what
-the gates compute. The proofs learn the rules of `do` blocks one at a time, when a level needs them;
-first, what a `do` block is.
-:::
-
-:::de
-Dann die Schaltungen aus *Bool*, mit einer Münze an jedem Eingang: `x ← coin p`,
-`y ← coin p`, …, alle mit demselben $`p` und unabhängig voneinander geworfen. Dann ist auch der Ausgang
-zufällig: Seine Verteilung ist das Ziel. Jede Zeile der Wahrheitstafel hat eine Masse, das Produkt der
-Massen ihrer Eingänge ($`p` für `true`, $`1 - p` für `false`): Bei zwei Münzen hat `true`–`true` die
-Masse $`p^2`, `true`–`false` $`p(1 - p)`, und so weiter. Die Masse des Ausgangs bei einem Wert ist die
-Summe über die Zeilen, in denen der Ausgang diesen Wert hat. Der Ausgabekasten unten zeigt Ziel und
-Ausgang, als Massen und als kleines Histogramm (das Ziel gestrichelt); neben dem Spielfeld die Säulen.
-
-Eine Münze darf in mehrere Bausteine gehen; dann hängen die Ergebnisse voneinander ab, und das Spiel
-berücksichtigt das.
+the gates compute. The proofs learn the rules of `do` blocks one at a time, when a level needs them.
 :::
 
 :::proofde
 Die Schaltung, von oben nach unten gelesen, ist ein `do`-Block in Lean: jede Münze eine Zeile
 `let x ← coin p`, die `x` aus der Verteilung `coin p` *zieht*, und am Ende `pure (…)`, ein sicheres
 Ergebnis, mit dem, was die Bausteine rechnen. Die Beweise lernen die Regeln der `do`-Blöcke eine nach
-der anderen, wenn ein Level sie braucht; zuerst, was ein `do`-Block ist.
+der anderen, wenn ein Level sie braucht.
 :::
 
 :::::circuit (height := "400") (inputs := "x") (gates := "") (coins := "p") (target := "bool true:p false:1-p") (context := "Lean/Rules.lean") (proof := "(p : I) : coin p true = p") (lemma := "coin_true") (play := "x>out") (uses := "rfl")

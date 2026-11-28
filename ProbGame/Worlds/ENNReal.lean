@@ -142,6 +142,30 @@ rw [add_comm c, add_assoc]
 :::
 :::::
 
+:::::quiz (tactic := "rw [add_comm]") (statements := "(a b : ℝ≥0∞) : a + b = b + a ;; (a b c : ℝ≥0∞) : a + b + c = c + (a + b) ;; (a b c : ℝ≥0∞) : a + (b + c) = a + (c + b) ;; (a : ℝ≥0∞) : 0 + a = a + 0 ;; (a b : ℝ≥0∞) : a * b = b * a") (answer := "1, 2, 4") (context := "Lean/Rules.lean")
+:::en
+*Where does `rw` rewrite?* Which of these does `rw [add_comm]` prove, alone?
+:::
+
+:::de
+*Wo schreibt `rw` um?* Welche davon beweist `rw [add_comm]` allein?
+:::
+
+::::hint (anchor := "solved")
+:::en
+`rw [add_comm]` turns round the *first* sum it finds, reading from the left, and then every copy of
+exactly that sum. In `a + (b + c)` that is the whole left side, not `b + c`; for the inner sum, give
+the rule its blanks: `rw [add_comm b c]`.
+:::
+
+:::de
+`rw [add_comm]` dreht die *erste* Summe um, die es von links gelesen findet, und dann jede Kopie genau
+dieser Summe. In `a + (b + c)` ist das die ganze linke Seite, nicht `b + c`; für die innere Summe gib
+der Regel ihre Leerstellen: `rw [add_comm b c]`.
+:::
+::::
+:::::
+
 ::::leanonly (proof := "(a : ℝ≥0∞) : 1 * a = ⟦a ‖ a, 1, 0⟧") (lemma := "one_mul") (new := "mul_one, mul_comm") (uses := "mul_comm, mul_one, one_mul, rw")
 :::en
 *One times.* Multiplying: you get `mul_one : a * 1 = a` and `mul_comm : a * b = b * a`; the one on the

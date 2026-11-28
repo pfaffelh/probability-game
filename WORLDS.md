@@ -15,9 +15,9 @@ A world is measured against four questions.
 
 For each world: its goal, the tactics, how the levels get there, and what is open. The six
 proposals of the first version of this file are carried out, and after them the thin tactics got
-their levels (see the end); "open" is what is left. 13 worlds, 187 levels.
+their levels (see the end); "open" is what is left. 13 worlds, 185 levels.
 
-## 1. Bool (31 levels)
+## 1. Bool (29 levels)
 
 **Goal.** A circuit is a function, and a function on `Bool` is its truth table: two circuits are
 equal when all rows agree.
@@ -26,28 +26,28 @@ equal when all rows agree.
 
 **Path.** One input, read off (`rfl`). Rewriting with what is already proved (`rw`). One input,
 both cases (`cases`). The `bif` rules. The truth tables of `&&` and `||` as rules (`Bool.true_and`,
-`Bool.false_and`, `Bool.true_or`, `Bool.false_or`). Tests (`==`): `beq_self_eq_true`, `beq_true`, `Bool.true_beq`, `Bool.false_beq`, for the point tests of `map_apply` in DiscreteMeasure and Maps. Sums over `Bool`: `Fintype.sum_bool`, `tsum_bool` (on ℕ), for the masses later. Composition with a constant map: `(fun _ => true) ∘ f`, `f ∘ (fun _ => true)` (`rfl`); three times `f` (`Bool.apply_apply_apply`, with `revert` and `decide`), and a quiz: which statements hold for every `f` (`revert f b; decide`); a test `f true` is `true` or `false` (`cases f true`), and `cond_add_cond` (on ℕ; in Rules for every type with `+` and `0`). A quiz on `cases x <;> rfl`. Two inputs, four
+`Bool.false_and`, `Bool.true_or`, `Bool.false_or`). Tests (`==`): `beq_self_eq_true`, `beq_true`, `Bool.true_beq`, `Bool.false_beq`, for the point tests of `map_apply` in DiscreteMeasure. Sums over `Bool`: `Fintype.sum_bool`, `tsum_bool` (on ℕ), for the masses later. Three times `f` (`Bool.apply_apply_apply`, with `revert` and `decide`), and a quiz: which statements hold for every `f` (`revert f b; decide`); a test `f true` is `true` or `false` (`cases f true`). A quiz after the truth tables: what does `rfl` see (`&&`, `||`, `bif` compute by the value on the left). A quiz on `cases x <;> rfl`. Two inputs, four
 cases: De Morgan (`Bool.not_and`), then `or` from `and` (`or_eq`, also from De Morgan). Boss: xor
 from `and`, `or`, `not`, with its table. Lemma levels whose lemma goes into simp later show
 `@[simp] theorem`; Bool 2 says what it means.
 
 **Open.** The boss has the same proof line as De Morgan before it; it is harder on the board only.
 
-## 2. ENNReal (15 levels)
+## 2. ENNReal (16 levels)
 
 **Goal.** Computing with masses: numbers in `[0, ∞]` (`ℝ≥0∞`), where taking away stops at 0 and `∞`
 swallows.
 
 **Tactics.** `rw` (with `←`), `exact`, `apply` (both introduced here, on easy statements).
 
-**Path.** `zero_add`, `add_comm`; `add_zero` (proved); `add_assoc` with `←`; `one_mul`, `zero_mul`
+**Path.** `zero_add`, `add_comm`; `add_zero` (proved); `add_assoc` with `←`; a quiz: where does `rw [add_comm]` rewrite; `one_mul`, `zero_mul`
 (proved, from `mul_one`, `mul_zero`, `mul_comm`); `add_mul`, `mul_add`; taking away (`tsub_self`,
 `tsub_zero`); `ENNReal.add_sub_cancel_left` with a hypothesis `a ≠ ∞` (and `top_add`, why);
 `a ≤ b + a` (`le_self_add`, `exact`); `a ≤ 1 → a ≠ ∞` (`apply ne_top_of_le_ne_top`). Probabilities as masses: `I`, `↑p`, `σ p`, the rules
 `add_symm_eq_one` and `mass_one`; `mass_mul`, `mass_zero`; `symm_twice`, `one_sub_symm`; `mass_finite`
 (as the hypothesis of `ENNReal.add_sub_cancel_left`). Boss: a computation with them, on a probability.
 
-## 3. DiscreteMeasure (17 levels)
+## 3. DiscreteMeasure (18 levels)
 
 **Goal.** A distribution on `Bool`, any `μ : DiscreteMeasure Bool` with `[Prob μ]`, is two masses that
 add up to 1; one of them fixes it (`bool_ext`); a map moves each mass to its image (`map_true`). No
@@ -55,7 +55,7 @@ coin in this world: the only concrete distribution is the sure one, `pure b`.
 
 **Tactics.** `rw` in chains (practised here), `exact` and `apply` (from ENNReal), `ext`, `simp_rw`.
 
-**Path.** The whole mass (`mass_total`), first level: tips at `DiscreteMeasure` and `[Prob μ]`
+**Path.** The whole mass (`mass_total`), first level, then a quiz on `exact mass_total _`: tips at `DiscreteMeasure` and `[Prob μ]`
 (`:::hint (anchor := "word:…")`, at that word of the statement); nothing at `true`, all at `false` (`zero_add`). At most one, with a theorem with its
 argument (`rw [← mass_total μ]`); finite. The rest of the mass (`mass_not`). One bar is enough (`bool_ext`). The sure distribution `pure b` (`pure_true`, `pure_false`). Where
 the mass goes: on a board of its own (`board := "maps"`, game.js `Fill`, drawn as a circuit), `μ`
@@ -63,9 +63,8 @@ wired into the four maps `Bool → Bool` (their pictures, as in bind), the playe
 true of each output by the choice μ true, μ false, 1, 0 (the one at false follows); in Lean
 `map_apply`, then `map_true`, `map_id` (by `bool_ext`, one line). A quiz: where does `rw` fail (under
 `fun`)? After the answer it says why (`:::hint (anchor := "solved")`). Flipped twice with `simp_rw`.
-`map_not_true : (μ.map not) true = μ false`, `map_pure`, `map_map` (two moves are one; long, by `ext`,
-`map_bool`, `cases f true`, `cond_add_cond`). Boss: `((μ.map f).map f).map f = μ.map f`, by `map_map`
-and `Bool.apply_apply_apply` under `fun`.
+`map_not_true : (μ.map not) true = μ false`, `map_pure`, `cond_add_cond` (two masses behind one test).
+Boss: `map_map` (two moves are one; by `ext`, `map_bool`, `cases f true`, `cond_add_cond`).
 
 ## 4. Coins (17 levels)
 

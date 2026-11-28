@@ -647,6 +647,32 @@ rfl
 :::
 ::::
 
+:::::quiz (tactic := "rfl") (statements := "(x : Bool) : (true && x) = x ;; (x : Bool) : (x && true) = x ;; (x : Bool) : (false || x) = x ;; (x : Bool) : (x || false) = x ;; (x : Bool) : (bif true then x else false) = x ;; (x : Bool) : (!(!x)) = x") (answer := "1, 3, 5") (context := "Lean/WorldBool.lean") (group := "bool")
+:::en
+*What does `rfl` see?* `rfl` closes a goal whose two sides are the same after computing. Which of
+these does it prove?
+:::
+
+:::de
+*Was sieht `rfl`?* `rfl` schließt ein Ziel, dessen Seiten nach dem Ausrechnen gleich sind. Welche
+davon beweist es?
+:::
+
+::::hint (anchor := "solved")
+:::en
+`&&`, `||` and `bif` are defined by cases of the value on the *left*: `true && x` computes to `x`. In
+`x && true` the left value `x` is unknown, so nothing computes; there `cases x` helps. The same for
+`!(!x)`.
+:::
+
+:::de
+`&&`, `||` und `bif` sind durch Fälle des Werts *links* definiert: `true && x` rechnet sich zu `x`. In
+`x && true` ist der linke Wert `x` unbekannt, also rechnet sich nichts; dort hilft `cases x`. Ebenso
+bei `!(!x)`.
+:::
+::::
+:::::
+
 ::::leanonly (proof := "(c a : Bool) : (bif c then a else a) = ⟦a ‖ a, c, true, false⟧") (lemma := "Bool.cond_self") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "Bool.cond_false, Bool.cond_true, cases, rw, -rfl")
 :::hint (anchor := "none")
 :::
@@ -851,56 +877,6 @@ rw [tsum_bool, Bool.cond_true, Bool.cond_false]
 :::
 ::::
 
-::::leanonly (proof := "(f : Bool → Bool) : (fun _ : Bool => true) ∘ f = fun _ => ⟦true ‖ true, false, f true⟧") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "rfl")
-:::en
-*Always true, after anything.* `g ∘ f` is `g` after `f`: `(g ∘ f) x = g (f x)`. After *always true*
-it does not matter what `f` did before.
-:::
-
-:::de
-*Immer true, nach allem.* `g ∘ f` ist `g` nach `f`: `(g ∘ f) x = g (f x)`. Nach *immer true* ist
-egal, was `f` vorher getan hat.
-:::
-
-:::proofen
-Both sides are the same map: Lean sees it by computing, `rfl`.
-:::
-
-:::proofde
-Beide Seiten sind dieselbe Abbildung: Lean sieht es durch Rechnen, `rfl`.
-:::
-:::solution
-```
-rfl
-```
-:::
-::::
-
-::::leanonly (proof := "(f : Bool → Bool) : f ∘ (fun _ : Bool => true) = fun _ => ⟦f true ‖ true, f true, f false⟧") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "rfl")
-:::en
-*The other way round: anything after always true.* First *always true*, then `f`: the result is
-always the same, `f true`.
-:::
-
-:::de
-*Andersherum: alles nach immer true.* Erst *immer true*, dann `f`: Das Ergebnis ist immer dasselbe,
-`f true`.
-:::
-
-:::proofen
-Again by computing, `rfl`.
-:::
-
-:::proofde
-Wieder durch Rechnen, `rfl`.
-:::
-:::solution
-```
-rfl
-```
-:::
-::::
-
 ::::leanonly (proof := "(f : Bool → Bool) (b : Bool) : f (f (f b)) = ⟦f b ‖ b, f b, f (f b)⟧") (lemma := "Bool.apply_apply_apply") (new := "revert, decide") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "<;>, cases, decide, revert")
 :::en
 *Three times.* Whatever map `f : Bool → Bool` is: what does it do, applied three times? Check it for
@@ -984,40 +960,6 @@ cases f true
 rw [Bool.cond_false, Bool.cond_false, Bool.false_or]
 rw [Bool.cond_true, Bool.cond_true]
 cases x <;> rfl
-```
-:::
-::::
-
-::::leanonly (proof := "(f : Bool → Bool) (x y : ℕ) : (bif f true then x else 0) + (bif f true then y else 0) = bif f true then ⟦x + y ‖ x + y, x, y, x * y⟧ else 0") (lemma := "cond_add_cond") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "Bool.cond_false, Bool.cond_true, <;>, cases, rfl, rw")
-:::en
-*Two numbers behind one test.* Twice the same test `f true`: once with `x`, once with `y`.
-:::
-
-:::de
-*Zwei Zahlen hinter einem Test.* Zweimal derselbe Test `f true`: einmal mit `x`, einmal mit `y`.
-:::
-
-:::proofen
-As in the level before, `cases f true`. You prove it for the test `f true` and numbers in `ℕ`; it
-holds for every test `c : Bool`, and for masses too, and it is unlocked as
-`cond_add_cond : (bif c then x else 0) + (bif c then y else 0) = bif c then x + y else 0`.
-:::
-
-:::proofde
-Wie im Level davor, `cases f true`. Du beweist es für den Test `f true` und Zahlen in `ℕ`; es gilt
-für jeden Test `c : Bool`, auch für Massen, und wird freigeschaltet als
-`cond_add_cond : (bif c then x else 0) + (bif c then y else 0) = bif c then x + y else 0`.
-:::
-:::solution
-```
-cases f true <;> rfl
-```
-:::
-:::solution
-```
-cases f true
-rw [Bool.cond_false, Bool.cond_false, Bool.cond_false]
-rw [Bool.cond_true, Bool.cond_true, Bool.cond_true]
 ```
 :::
 ::::
