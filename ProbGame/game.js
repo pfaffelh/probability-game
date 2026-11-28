@@ -1874,6 +1874,81 @@
     '✓ Lean: proved by {t}': '✓ Lean: bewiesen mit {t}', '✗ Lean: not proved': '✗ Lean: nicht bewiesen',
     'Tap every statement that ': 'Tippe jede Aussage an, die ', ' proves.': ' beweist.', Check: 'Prüfen' })
 
+  // A board where the player fills in masses (`::::leanonly (board := "maps")`): `coin p` at the top,
+  // the four maps `Bool → Bool` below it, and under each map the distribution after it, at `true` and
+  // at `false`; a tap on a field goes through p, 1 − p, 1, 0. Right when every field is.
+  const FILL_VALUES = ['p', '1 − p', '1', '0']
+  const FILL_BOARDS = {
+    maps: { top: 'coin p', dist: [['true', 'p'], ['false', '1 − p']],
+      cols: [{ code: 'fun x => x', say: 'do nothing', answer: ['p', '1 − p'] }, { code: 'not', say: 'swap the sides', answer: ['1 − p', 'p'] },
+        { code: 'fun _ => true', say: 'always true', answer: ['1', '0'] }, { code: 'fun _ => false', say: 'always false', answer: ['0', '1'] }] } }
+  Object.assign(DE, { 'swap the sides': 'Seiten tauschen', 'Tap a field to fill in the mass after each map.': 'Tippe ein Feld an, um die Masse nach jeder Abbildung einzutragen.',
+    'Right: every mass is where the map sends it.': 'Richtig: Jede Masse ist dort, wohin die Abbildung sie schickt.',
+    'Not quite: at least one mass is wrong.': 'Noch nicht: Mindestens eine Masse stimmt nicht.' })
+  class Fill {
+    constructor(root, index, onSolved) {
+      this.root = root; this.index = index; this.onSolved = onSolved
+      this.spec = FILL_BOARDS[root.dataset.board] ?? FILL_BOARDS.maps
+      this.board = root.querySelector('.pg-board'); this.picture = null
+      this.key = `pg:${location.pathname}:${index}`
+      this.picks = this.spec.cols.map(() => [null, null])
+      try { const p = JSON.parse(localStorage.getItem(this.key + ':fill') ?? 'null'); if (Array.isArray(p) && p.length === this.picks.length) this.picks = p } catch {}
+      this.wrong = false
+      this.render()
+    }
+    get solved() { try { return localStorage.getItem(this.key) === '1' } catch { return false } }
+    get done() { return this.solved }
+    get canUndo() { return false }
+    get canReset() { return !this.solved && this.picks.some(c => c.some(Boolean)) }
+    status() { return this.solved ? tr('Right: every mass is where the map sends it.') : this.wrong ? tr('Not quite: at least one mass is wrong.') : tr('Tap a field to fill in the mass after each map.') }
+    undo() {}
+    reset() { if (this.solved) return; this.picks = this.spec.cols.map(() => [null, null]); this.wrong = false; this.save(); this.render() }
+    save() { try { localStorage.setItem(this.key + ':fill', JSON.stringify(this.picks)) } catch {} }
+    tap(c, i) {
+      if (this.solved) return
+      const v = this.picks[c][i]
+      this.picks[c][i] = FILL_VALUES[(FILL_VALUES.indexOf(v) + 1) % FILL_VALUES.length]
+      this.save()
+      this.wrong = false
+      if (this.picks.every(p => p.every(Boolean))) {
+        if (this.spec.cols.every((col, k) => col.answer.every((a, j) => this.picks[k][j] === a))) {
+          try { localStorage.setItem(this.key, '1') } catch {}
+          this.render(); this.onSolved?.(); return
+        }
+        this.wrong = true
+      }
+      this.render()
+    }
+    render() {
+      const box = el('div', 'pg-fill-box' + (this.solved ? ' pg-fill-solved' : ''))
+      const top = el('div', 'pg-fill-top')
+      top.append(el('code', 'pg-fill-coin', this.spec.top))
+      const dist = el('div', 'pg-fill-dist')
+      for (const [b, m] of this.spec.dist) { const r = el('span', 'pg-fill-pair'); r.append(el('code', '', b), el('span', 'pg-fill-val pg-fill-given', m)); dist.append(r) }
+      top.append(dist)
+      const cols = el('div', 'pg-fill-cols')
+      this.spec.cols.forEach((col, k) => {
+        const c = el('div', 'pg-fill-col')
+        c.append(el('div', 'pg-fill-arrow', '↓'))
+        const g = el('div', 'pg-fill-gate'); g.append(el('code', '', col.code), el('div', 'pg-fill-say', tr(col.say)))
+        c.append(g, el('div', 'pg-fill-arrow', '↓'))
+        const out = el('div', 'pg-fill-out')
+        ;['true', 'false'].forEach((b, i) => {
+          const r = el('div', 'pg-fill-pair'); r.append(el('code', '', b))
+          const f = el('button', 'pg-fill-val pg-fill-field' + (this.picks[k][i] ? '' : ' pg-fill-empty'), this.picks[k][i] ?? '?')
+          f.type = 'button'; f.disabled = this.solved; f.dataset.col = k; f.dataset.i = i; f.dataset.answer = col.answer[i]  // (as the quiz: for the tests)
+          f.addEventListener('click', () => this.tap(k, i))
+          r.append(f); out.append(r)
+        })
+        c.append(out); cols.append(c)
+      })
+      box.append(top, cols)
+      if (this.wrong) box.append(el('div', 'pg-quiz-warn', '✗ ' + tr('Not quite: at least one mass is wrong.')))
+      this.board.replaceChildren(box)
+      this.onRendered?.()
+    }
+  }
+
   class Circuit {
     constructor(root, index, onSolved) {
       this.root = root; this.index = index; this.onSolved = onSolved
@@ -4349,7 +4424,7 @@
     if (!roots.length) return
     STAGE = true
     // (a level whose saved state no longer fits it, after the level changed: started afresh, its state forgotten)
-    const make = (r, i) => new (r.classList.contains('pg-build') ? Builder : r.classList.contains('pg-walk') ? Grid : r.classList.contains('pg-bool') ? Bools : r.classList.contains('pg-circuit') ? Circuit : r.classList.contains('pg-leanonly') ? LeanOnly : r.classList.contains('pg-quiz') ? Quiz : Level)(r, i, () => refresh())
+    const make = (r, i) => new (r.classList.contains('pg-build') ? Builder : r.classList.contains('pg-walk') ? Grid : r.classList.contains('pg-bool') ? Bools : r.classList.contains('pg-circuit') ? Circuit : r.classList.contains('pg-leanonly') ? LeanOnly : r.classList.contains('pg-quiz') ? Quiz : r.classList.contains('pg-fill') ? Fill : Level)(r, i, () => refresh())
     const levels = roots.map((r, i) => {
       try { return make(r, i) } catch (e) {
         console.warn('level', i + 1, 'started afresh:', e)

@@ -119,12 +119,23 @@ for (const path of paths) {
       const says = await page.locator(`${L}.pg-quiz-say`).count()
       board = green && says === lv.statements.length ? 'ok' : `NOT (${await status()})`
       if (board !== 'ok') fail(`${path} level ${i + 1}: choice ${board}`)
+    } else if (lv.kind === 'leanonly' && lv.board) {
+      // (a board to fill in: first every field once (wrong: red, not done), then each up to its answer)
+      const fields = page.locator(`${L}.pg-fill-field`), m = await fields.count()
+      for (let k = 0; k < m; k++) await fields.nth(k).click()
+      if (!(await page.locator(`${L}.pg-quiz-warn`).count())) fail(`${path} level ${i + 1}: a wrong filling is not told`)
+      for (let k = 0; k < m; k++) {
+        for (let t = 0; t < 4 && (await fields.nth(k).textContent()) !== (await fields.nth(k).getAttribute('data-answer')); t++) await fields.nth(k).click()
+      }
+      green = await page.locator(`${L}.pg-level-done, .pg-level-done:not([hidden])`).count() > 0
+      board = green ? 'ok' : `NOT (${await status()})`
+      if (board !== 'ok') fail(`${path} level ${i + 1}: fill ${board}`)
     } else if (lv.kind !== 'leanonly') {
       fail(`${path} level ${i + 1}: kind ${lv.kind} not played by this script`)
     }
     let proof = 'none'
     if (withProofs && lv.proof) {
-      if (lv.kind !== 'leanonly') { await page.locator('.pg-next-button').click(); await page.waitForTimeout(400) }
+      if (lv.kind !== 'leanonly' || lv.board) { await page.locator('.pg-next-button').click(); await page.waitForTimeout(400) }
       const r = await prove([...(lv.gaps ?? []), ...lv.solution], `${path} level ${i + 1}`)  // (the gaps of the statement first)
       proof = r ? `NOT: ${r}` : 'ok'
       if (r) fail(`${path} level ${i + 1}: proof ${r}`)

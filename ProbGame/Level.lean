@@ -363,14 +363,16 @@ def circuit : DirectiveExpanderOf CircuitConfig
 
 -- A level in Lean only, without a board: for a statement the board cannot show (every
 -- distribution, an implication, an existence, an inequality). `group` is whose inventory it shares.
-block_extension Block.leanOnly (new proof lemma context world group uses : String) where
-  data := Json.mkObj [("new", new), ("proof", proof), ("lemma", lemma), ("context", context), ("world", world), ("group", group), ("uses", uses)]
+-- With `board := "maps"`: a board where the player fills in masses (`Fill` in game.js) before the proof.
+block_extension Block.leanOnly (new proof lemma context world group uses board : String) where
+  data := Json.mkObj [("new", new), ("proof", proof), ("lemma", lemma), ("context", context), ("world", world), ("group", group), ("uses", uses), ("board", board)]
   traverse id data _ := do registerLevel id data; pure none
   extraJs := {JS.mk gameJs}
   extraCss := {CSS.mk gameCss}
   toHtml := some fun _ goB id data content => do
     let get (k : String) := (data.getObjValAs? String k).toOption.getD ""
-    pure <| .tag "div" (#[("class", "pg-level pg-leanonly")] ++ proofAttrs id (← Doc.Html.HtmlT.state) data (get "context")) <|
+    let cls := if (get "board").isEmpty then "pg-level pg-leanonly" else "pg-level pg-fill"
+    pure <| .tag "div" (#[("class", cls), ("data-board", get "board")] ++ proofAttrs id (← Doc.Html.HtmlT.state) data (get "context")) <|
       .seq #[.tag "div" #[("class", "pg-text")] (← content.mapM goB), .tag "div" #[("class", "pg-board")] .empty]
   toTeX := none
 
@@ -381,10 +383,12 @@ structure LeanOnlyConfig where
   context : String
   group : String
   uses : String
+  board : String
 
 instance : FromArgs LeanOnlyConfig DocElabM where
   fromArgs := LeanOnlyConfig.mk <$> .namedD `new .string "" <*> .named `proof .string false <*>
-    .namedD `lemma .string "" <*> .namedD `context .string "Lean/Rules.lean" <*> .namedD `group .string "chance" <*> .namedD `uses .string ""
+    .namedD `lemma .string "" <*> .namedD `context .string "Lean/Rules.lean" <*> .namedD `group .string "chance" <*> .namedD `uses .string "" <*>
+    .namedD `board .string ""
 
 /-- A level in Lean only: `::::leanonly (proof := "…") (lemma := "…") (new := "…")`. -/
 @[directive]
@@ -394,7 +398,7 @@ def leanonly : DirectiveExpanderOf LeanOnlyConfig
     let context ← readContext cfg.context
     let world ← worldOf
     ``(Verso.Doc.Block.other (Block.leanOnly $(quote cfg.new) $(quote cfg.proof) $(quote cfg.lemma) $(quote context)
-        $(quote world) $(quote cfg.group) $(quote cfg.uses)) #[$blocks,*])
+        $(quote world) $(quote cfg.group) $(quote cfg.uses) $(quote cfg.board)) #[$blocks,*])
 
 -- A choice: which of the statements does the tactic prove? The player taps those, and the game asks
 -- Lean (the bridge) about each statement, in the rules `context`. `answer`: the numbers (from 1) of the

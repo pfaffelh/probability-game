@@ -48,7 +48,7 @@ def levels_of(path):
                         # (⟦!x ‖ x, !x, false⟧: what is meant, before ‖)
                         'proof': re.sub(r'⟦([^⟧‖]*)(‖[^⟧]*)?⟧', lambda m: '(' + m.group(1).strip() + ')', attr(l, 'proof')) if attr(l, 'proof') else None,
                         'gaps': [g.strip() for g in re.findall(r'⟦([^⟧‖]*)(?:‖[^⟧]*)?⟧', attr(l, 'proof') or '')],
-                        'lemma': attr(l, 'lemma'), 'solution': solution, 'solutions': solutions,
+                        'lemma': attr(l, 'lemma'), 'board': attr(l, 'board') or '', 'solution': solution, 'solutions': solutions,
                         'new': [x.strip() for x in (attr(l, 'new') or '').split(',') if x.strip()],
                         # (a choice: the statements, the tactic, the numbers of those it proves)
                         'tactic': attr(l, 'tactic'), 'statements': [s.strip() for s in (attr(l, 'statements') or '').split(';;') if s.strip()],

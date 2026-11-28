@@ -331,29 +331,29 @@ rw [beq_true]
 :::
 :::::
 
-::::leanonly (proof := "(f : Bool → Bool) (μ : DiscreteMeasure Bool) (b : Bool) : (μ.map f) b = (bif f true == b then μ true else 0) + (bif f false == b then μ false else 0)") (new := "map_apply, sum_with") (lemma := "map_bool") (uses := "map_apply, sum_with, Fintype.sum_bool, rw")
+::::leanonly (proof := "(f : Bool → Bool) (μ : DiscreteMeasure Bool) (b : Bool) : (μ.map f) b = (bif f true == b then μ true else 0) + (bif f false == b then μ false else 0)") (new := "map_apply, sum_with") (lemma := "map_bool") (uses := "map_apply, sum_with, Fintype.sum_bool, rw") (board := "maps")
 :::en
-*Where the mass goes.* A move `μ.map f` takes each point `a` with its mass `μ a` to `f a`. So the
-mass at `b` is the sum of the masses of the points with `f a = b`:
-
-`map_apply : (μ.map f) b = ∑ a with f a = b, μ a`.
+*Where the mass goes.* A gate after a distribution `μ` is a move, `μ.map f`: it takes each point `a`
+with its mass `μ a` to `f a`. On the board, `coin p` goes through each of the four maps
+`Bool → Bool`. Fill in the distribution after each.
 :::
 
 :::de
-*Wohin die Masse geht.* Ein Zug `μ.map f` bringt jeden Punkt `a` mit seiner Masse `μ a` nach `f a`.
-Die Masse bei `b` ist also die Summe der Massen der Punkte mit `f a = b`:
-
-`map_apply : (μ.map f) b = ∑ a with f a = b, μ a`.
+*Wohin die Masse geht.* Ein Baustein nach einer Verteilung `μ` ist ein Zug, `μ.map f`: Er bringt
+jeden Punkt `a` mit seiner Masse `μ a` nach `f a`. Auf dem Spielfeld geht `coin p` durch jede der
+vier Abbildungen `Bool → Bool`. Trag die Verteilung nach jeder ein.
 :::
 
 :::proofen
-`sum_with` writes the sum over the points with `f a = b` as a sum over all points, with a test.
-Your result becomes the lemma `map_bool`.
+The mass at `b` is the sum of the masses of the points with `f a = b`:
+`map_apply : (μ.map f) b = ∑ a with f a = b, μ a`. `sum_with` writes this sum as a sum over all
+points, with a test. Your result becomes the lemma `map_bool`.
 :::
 
 :::proofde
-`sum_with` schreibt die Summe über die Punkte mit `f a = b` als Summe über alle Punkte, mit einem
-Test. Dein Ergebnis wird das Lemma `map_bool`.
+Die Masse bei `b` ist die Summe der Massen der Punkte mit `f a = b`:
+`map_apply : (μ.map f) b = ∑ a with f a = b, μ a`. `sum_with` schreibt diese Summe als Summe über
+alle Punkte, mit einem Test. Dein Ergebnis wird das Lemma `map_bool`.
 :::
 :::solution
 ```
