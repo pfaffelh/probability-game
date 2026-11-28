@@ -58,6 +58,11 @@ def check(world, n, proof):
     missing = sorted(t for t in toks if t in KIND and t not in inv)
     tactics = {re.match(r"\s*(?:·\s*)?([\w']+(?: only)?)", p).group(1) for line in proof.split('\n') for p in line.split('<;>') if re.match(r"\s*(?:·\s*)?[\w']", p)}
     unknown = sorted(t for t in tactics if t not in KIND and t not in ('at',))
+    # (as the game: a name with . or _ that is neither in the inventory nor a name of the statement or
+    # of the proof (induction' … with n ih) is refused)
+    local = set(re.findall(r"[A-Za-z_][\w']*", l['proof'] or '')) | {x for m in re.findall(r"with ([\w' ]+)", proof) for x in m.split()}
+    unknown += sorted(t for t in set(re.findall(r"(?<![\w.'])[A-Za-z_][\w.']*", proof))
+                      if re.search(r'[._]', t) and t != '_' and t not in KIND and t not in local and t.split('.')[0] not in local)
     context = (here / l['context']).read_text()
     s = post('/start', {'context': context, 'statement': 'example ' + l['proof']})
     if 'session' not in s:
@@ -72,5 +77,5 @@ if __name__ == '__main__':
     for world, n, proof in json.load(open(sys.argv[1])):
         ok, err, missing, unknown = check(world, n, proof)
         print(f"{'OK  ' if ok else 'FAIL'} {world} {n}: {proof.replace(chr(10), ' / ')}"
-              + (f"  | missing: {', '.join(missing)}" if missing else '') + (f"  | tactics not in the game: {', '.join(unknown)}" if unknown else '')
+              + (f"  | missing: {', '.join(missing)}" if missing else '') + (f"  | not in the game: {', '.join(unknown)}" if unknown else '')
               + ('' if ok else '  | ' + ' '.join(err.split())[:160]))

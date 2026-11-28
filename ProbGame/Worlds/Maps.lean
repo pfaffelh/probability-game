@@ -22,7 +22,7 @@ Abbildungen auf `Bool`, und Züge mit ihnen. Es gibt genau vier Abbildungen `Boo
 unbekannte Abbildung `f : Bool → Bool` gilt für jede Abbildung, wenn sie für jede der vier gilt.
 :::
 
-::::leanonly (proof := "(f : Bool → Bool) (b : Bool) : f (f (f b)) = ⟦f b ‖ b, f b, f (f b)⟧") (lemma := "Bool.apply_apply_apply") (new := "revert, decide") (group := "bool") (uses := "decide, revert")
+::::leanonly (proof := "(f : Bool → Bool) (b : Bool) : f (f (f b)) = ⟦f b ‖ b, f b, f (f b)⟧") (lemma := "Bool.apply_apply_apply") (new := "revert, decide") (group := "bool") (uses := "<;>, cases, decide, revert")
 :::en
 *Three times.* Whatever map `f : Bool → Bool` is: what does it do, applied three times? Check it for
 `not` and for always `true`. In Lean the new tactics `revert` and `decide` check it, in every case at once.
@@ -56,6 +56,12 @@ revert f b
 decide
 ```
 :::
+:::solution
+```
+revert f
+cases b <;> decide
+```
+:::
 ::::
 
 ::::quiz (tactic := "revert f b; decide") (statements := "(f : Bool → Bool) (b : Bool) : f (f b) = b ;; (f : Bool → Bool) (b : Bool) : f (f (f (f b))) = f (f b) ;; (f : Bool → Bool) (b : Bool) : f (f b) = f b ;; (f : Bool → Bool) (b : Bool) : (f b && !f b) = false ;; (f : Bool → Bool) (b : Bool) : (f b || f (!b)) = true") (answer := "2, 4")
@@ -68,7 +74,7 @@ decide
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) : μ.map (fun x => x) = ⟦μ ‖ μ, μ.map not⟧") (lemma := "map_id") (new := "Bool.false_beq") (uses := "map_bool, Bool.true_beq, Bool.false_beq, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, Bool.not_true, add_comm, add_zero, mul_zero, add_assoc, cases, ext, rw")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ.map (fun x => x) = ⟦μ ‖ μ, μ.map not⟧") (lemma := "map_id") (new := "Bool.false_beq") (uses := "map_bool, Bool.true_beq, Bool.false_beq, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, Bool.not_true, add_comm, bool_ext, map_true, add_zero, beq_self_eq_true, mul_zero, add_assoc, apply, cases, ext, rw")
 :::en
 *Doing nothing.* The move `fun x => x` leaves every point where it is.
 :::
@@ -99,6 +105,29 @@ rw [Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add]
 rw [Bool.not_true, Bool.cond_true, Bool.cond_false, add_comm, zero_add]
 ```
 :::
+:::solution
+```
+apply bool_ext
+rw [map_true, Bool.cond_true, Bool.cond_false, add_zero]
+```
+:::
+:::solution
+```
+ext b
+cases b
+rw [map_bool, Bool.true_beq, beq_self_eq_true, Bool.cond_false, Bool.cond_true, zero_add]
+rw [map_true, Bool.cond_true, Bool.cond_false, add_zero]
+```
+:::
+:::solution
+```
+ext b
+rw [map_bool, Bool.true_beq, Bool.false_beq]
+cases b
+rw [Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add]
+rw [Bool.not_true, Bool.cond_true, Bool.cond_false, add_zero]
+```
+:::
 ::::
 
 ::::quiz (tactic := "rw [Bool.not_not]") (context := "Lean/Rules.lean") (statements := "(b : Bool) : (!(!b)) = b ;; (μ : DiscreteMeasure Bool) : μ.map (fun b => !(!b)) = μ.map (fun b => b) ;; (f : Bool → Bool) (b : Bool) : f (!(!b)) = f b ;; : (fun b : Bool => !(!b)) = (fun b => b) ;; (a : Bool) : (a && !(!a)) = (a && a)") (answer := "1, 3, 5")
@@ -111,7 +140,7 @@ rw [Bool.not_true, Bool.cond_true, Bool.cond_false, add_comm, zero_add]
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) : μ.map (fun x => !(!x)) = ⟦μ ‖ μ, μ.map not⟧") (new := "simp_rw") (uses := "Bool.not_not, map_id, rw, simp_rw")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) : μ.map (fun x => !(!x)) = ⟦μ ‖ μ, μ.map not⟧") (new := "simp_rw") (uses := "Bool.not_not, map_id, exact, rw, simp_rw")
 :::en
 *Turned over twice, in one move.* The move `fun x => !(!x)`: turn over, and turn over again.
 :::
@@ -137,9 +166,20 @@ simp_rw [Bool.not_not]
 rw [map_id]
 ```
 :::
+:::solution
+```
+simp_rw [Bool.not_not, map_id]
+```
+:::
+:::solution
+```
+simp_rw [Bool.not_not]
+exact map_id μ
+```
+:::
 ::::
 
-::::leanonly (proof := "(f : Bool → Bool) (x : ℝ≥0∞) : (bif f true then x else 0) + (bif f true then 0 else x) = ⟦x ‖ x + x, x, 0⟧") (uses := "Bool.cond_false, zero_add, Bool.cond_true, add_comm, add_zero, mul_zero, add_assoc, cases, rw")
+::::leanonly (proof := "(f : Bool → Bool) (x : ℝ≥0∞) : (bif f true then x else 0) + (bif f true then 0 else x) = ⟦x ‖ x + x, x, 0⟧") (uses := "Bool.cond_false, zero_add, Bool.cond_true, add_comm, add_zero, mul_zero, add_assoc, cases, rw, simp_rw")
 :::en
 *A test is `true` or `false`.* The mass `x` behind the test `f true`, once in the `then` branch and once in the `else` branch. What `f` does is unknown.
 :::
@@ -162,6 +202,20 @@ Werte durch, wie `cases x` für eine Variable.
 cases f true
 rw [Bool.cond_false, Bool.cond_false, zero_add]
 rw [Bool.cond_true, Bool.cond_true, add_comm, zero_add]
+```
+:::
+:::solution
+```
+cases f true
+rw [Bool.cond_false, Bool.cond_false, zero_add]
+rw [Bool.cond_true, Bool.cond_true, add_zero]
+```
+:::
+:::solution
+```
+cases f true
+simp_rw [Bool.cond_false, zero_add]
+simp_rw [Bool.cond_true, add_zero]
 ```
 :::
 ::::
@@ -196,9 +250,23 @@ rw [zero_add]
 simp_rw [Bool.cond_true]
 ```
 :::
+:::solution
+```
+cases f true
+rw [Bool.cond_false, Bool.cond_false, Bool.cond_false, zero_add]
+rw [Bool.cond_true, Bool.cond_true, Bool.cond_true]
+```
+:::
+:::solution
+```
+cases f true
+simp_rw [Bool.cond_false, zero_add]
+simp_rw [Bool.cond_true]
+```
+:::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f g : Bool → Bool) : (μ.map f).map g = μ.map ⟦fun x => g (f x) ‖ fun x => g (f x), fun x => f (g x), g⟧") (lemma := "map_map") (uses := "map_bool, Bool.false_beq, Bool.not_true, beq_self_eq_true, Bool.cond_false, Bool.cond_true, zero_add, Bool.cond_self, cond_add_cond, Bool.true_beq, Bool.not_false, add_comm, add_zero, mul_zero, add_assoc, cases, ext, rw, simp_rw")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f g : Bool → Bool) : (μ.map f).map g = μ.map ⟦fun x => g (f x) ‖ fun x => g (f x), fun x => f (g x), g⟧") (lemma := "map_map") (uses := "map_bool, Bool.false_beq, Bool.not_true, beq_self_eq_true, Bool.cond_false, Bool.cond_true, zero_add, Bool.cond_self, cond_add_cond, Bool.true_beq, Bool.not_false, add_comm, beq_true, add_zero, mul_zero, add_assoc, cases, ext, rw, simp_rw")
 :::en
 *Boss: two moves are one.* First the move `f`, then the move `g`: which one move is that?
 :::
@@ -234,6 +302,48 @@ rw [add_comm (μ true), zero_add, zero_add]
 simp_rw [Bool.true_beq]
 simp_rw [Bool.cond_false, Bool.cond_true]
 rw [zero_add, Bool.cond_self, add_comm, zero_add, cond_add_cond]
+```
+:::
+:::solution
+```
+ext b
+rw [map_bool, map_bool, map_bool, map_bool]
+cases f true
+cases f false
+rw [beq_true, beq_self_eq_true]
+simp_rw [Bool.cond_false, Bool.cond_true]
+rw [zero_add, Bool.cond_self, zero_add, cond_add_cond]
+rw [beq_true, beq_true, beq_self_eq_true, Bool.true_beq]
+simp_rw [Bool.cond_false, Bool.cond_true]
+rw [zero_add, add_comm (μ true), zero_add, add_comm]
+cases f false
+rw [beq_true, beq_true, Bool.true_beq, beq_self_eq_true]
+simp_rw [Bool.cond_false, Bool.cond_true]
+rw [add_comm (μ true), zero_add, zero_add]
+rw [beq_true, Bool.true_beq]
+simp_rw [Bool.cond_false, Bool.cond_true]
+rw [zero_add, Bool.cond_self, add_comm, zero_add, cond_add_cond]
+```
+:::
+:::solution
+```
+ext b
+simp_rw [map_bool]
+cases f true
+cases f false
+rw [Bool.false_beq, Bool.not_true, beq_self_eq_true]
+simp_rw [Bool.cond_false, Bool.cond_true]
+rw [zero_add, Bool.cond_self, zero_add, cond_add_cond]
+simp_rw [Bool.false_beq, Bool.true_beq, Bool.not_true, Bool.not_false]
+simp_rw [Bool.cond_false, Bool.cond_true]
+rw [zero_add, add_zero, add_comm]
+cases f false
+simp_rw [Bool.false_beq, Bool.true_beq, Bool.not_true, Bool.not_false]
+simp_rw [Bool.cond_false, Bool.cond_true]
+rw [add_zero, zero_add]
+simp_rw [Bool.true_beq]
+simp_rw [Bool.cond_false, Bool.cond_true]
+rw [zero_add, Bool.cond_self, add_zero, cond_add_cond]
 ```
 :::
 ::::

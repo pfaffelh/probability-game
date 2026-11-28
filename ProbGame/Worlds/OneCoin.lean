@@ -67,9 +67,14 @@ Annahme: eine Regel nur dieses Levels, benutzt wie jede Regel.
 rw [← mass_total μ, h, zero_add]
 ```
 :::
+:::solution
+```
+rw [← zero_add (μ false), ← h, mass_total]
+```
+:::
 ::::
 
-:::::leanonly (proof := "(a b : ℝ≥0∞) : ⟦a - a + b ‖ a + b - a, b - a + a, a - a + b⟧ = b") (new := "tsub_self") (uses := "tsub_self, zero_add, add_zero, mul_zero, rw")
+:::::leanonly (proof := "(a b : ℝ≥0∞) : ⟦a - a + b ‖ a + b - a, b - a + a, a - a + b⟧ = b") (new := "tsub_self, tsub_zero") (uses := "tsub_self, zero_add, add_zero, mul_zero, exact, rw")
 :::en
 *Subtracting masses.* In Lean, masses are numbers in `ℝ≥0∞ = [0, ∞]` (`ENNReal`). Adding is as
 usual, with `a + ∞ = ∞`. But `a - b : ℝ≥0∞` cannot be negative: `a - b = 0` when `b > a`. And with
@@ -126,9 +131,15 @@ Das gilt nicht für alle `a b`: Probier `b < a`.
 rw [tsub_self, zero_add]
 ```
 :::
+:::solution
+```
+rw [tsub_self]
+exact zero_add b
+```
+:::
 :::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ false + μ true = 1") (uses := "add_comm, mass_total, add_assoc, coin_total, rw")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ false + μ true = 1") (uses := "add_comm, mass_total, Prob.total, tsum_bool, add_assoc, coin_total, exact, rw")
 :::en
 *The other way round.* The total mass, with the summands swapped.
 :::
@@ -149,9 +160,61 @@ Eine Summe dreht `add_comm : a + b = b + a` um (aus *Massen*).
 rw [add_comm, mass_total μ]
 ```
 :::
+:::solution
+```
+rw [add_comm]
+exact mass_total μ
+```
+:::
+:::solution
+```
+rw [← mass_total μ, add_comm]
+```
+:::
+:::solution
+```
+rw [← Prob.total μ, tsum_bool]
+```
+:::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b = ⟦1 - μ (!b) ‖ 1 - μ (!b), μ (!b) - 1, 1 - μ b⟧") (lemma := "mass_not") (new := "ENNReal.add_sub_cancel_left") (uses := "Bool.not_false, mass_total, ENNReal.add_sub_cancel_left, mass_ne_top, Bool.not_true, add_comm, coin_total, add_assoc, cases, rw")
+::::leanonly (proof := "(a : ℝ≥0∞) : a + 0 = ⟦a ‖ a, 0⟧") (lemma := "add_zero") (uses := "add_comm, zero_add, add_assoc, add_zero, mul_zero, exact, rw")
+:::en
+*Zero on the right.* You have `zero_add : 0 + a = a`, with the zero on the left. Here it stands on
+the right.
+:::
+
+:::de
+*Null rechts.* Du hast `zero_add : 0 + a = a`, mit der Null links. Hier steht sie rechts.
+:::
+
+:::proofen
+Your result becomes the lemma `add_zero`.
+:::
+
+:::proofde
+Dein Ergebnis wird das Lemma `add_zero`.
+:::
+:::solution
+```
+rw [add_comm, zero_add]
+```
+:::
+:::solution
+```
+rw [add_comm]
+rw [zero_add]
+```
+:::
+:::solution
+```
+rw [add_comm]
+exact zero_add a
+```
+:::
+::::
+
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b = ⟦1 - μ (!b) ‖ 1 - μ (!b), μ (!b) - 1, 1 - μ b⟧") (lemma := "mass_not") (new := "ENNReal.add_sub_cancel_left") (uses := "Bool.not_false, mass_total, ENNReal.add_sub_cancel_left, mass_ne_top, Bool.not_true, add_comm, coin_total, add_assoc, cases, exact, rw")
 :::en
 *The rest of the mass.* Now in Lean only: a statement about *every* distribution on `Bool`, which no
 board can show. What is not at `b` lies at `!b`.
@@ -191,6 +254,28 @@ rw [add_comm]
 rw [ENNReal.add_sub_cancel_left mass_ne_top]
 ```
 :::
+:::solution
+```
+rw [← mass_total μ]
+cases b
+rw [Bool.not_false, ENNReal.add_sub_cancel_left mass_ne_top]
+rw [Bool.not_true, add_comm, ENNReal.add_sub_cancel_left mass_ne_top]
+```
+:::
+:::solution
+```
+cases b
+rw [Bool.not_false]
+rw [← mass_total μ]
+rw [ENNReal.add_sub_cancel_left]
+exact mass_ne_top
+rw [Bool.not_true]
+rw [← mass_total μ]
+rw [add_comm]
+rw [ENNReal.add_sub_cancel_left]
+exact mass_ne_top
+```
+:::
 ::::
 
 ::::leanonly (proof := "(μ ν : DiscreteMeasure Bool) [Prob μ] [Prob ν] (h : μ true = ν ⟦true ‖ true, false⟧) : μ = ν") (lemma := "bool_ext") (new := "ext") (uses := "mass_not, Bool.not_false, Bool.not_true, cases, exact, ext, rw")
@@ -223,9 +308,17 @@ rw [mass_not μ false, mass_not ν false, Bool.not_false, h]
 exact h
 ```
 :::
+:::solution
+```
+ext x
+cases x
+rw [mass_not μ false, mass_not ν false, Bool.not_false, h]
+rw [h]
+```
+:::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (p : I) (h : μ true = p) : μ = coin ⟦p ‖ p, σ p⟧") (lemma := "eq_coin") (uses := "bool_ext, coin_true, coin_false, coin_total, apply, rw")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (p : I) (h : μ true = p) : μ = coin ⟦p ‖ p, σ p⟧") (lemma := "eq_coin") (uses := "bool_ext, coin_true, coin_false, coin_total, apply, exact, rfl, rw")
 :::hint (anchor := "none")
 :::
 
@@ -255,6 +348,25 @@ apply bool_ext
 rw [coin_true, h]
 ```
 :::
+:::solution
+```
+apply bool_ext
+rw [coin_true]
+exact h
+```
+:::
+:::solution
+```
+apply bool_ext
+rw [h]
+rfl
+```
+:::
+:::solution
+```
+exact bool_ext μ (coin p) h
+```
+:::
 ::::
 
 ::::leanonly (proof := "(p : I) : ↑p + ↑(σ p) = (1 : ℝ≥0∞)") (lemma := "add_symm_eq_one") (uses := "coin_true, coin_false, coin_total, mass_total, rw")
@@ -281,9 +393,19 @@ freigeschaltet.
 rw [← coin_true, ← coin_false, coin_total]
 ```
 :::
+:::solution
+```
+rw [← coin_total p, coin_true, coin_false]
+```
+:::
+:::solution
+```
+rw [← coin_true, ← coin_false, mass_total]
+```
+:::
 ::::
 
-:::::leanonly (proof := "(b : Bool) : (pure b : DiscreteMeasure Bool) true = bif b then ⟦1 ‖ 0, 1⟧ else ⟦0 ‖ 0, 1⟧") (new := "pure_apply") (lemma := "pure_true") (uses := "pure_apply, beq_true, rw")
+:::::leanonly (proof := "(b : Bool) : (pure b : DiscreteMeasure Bool) true = bif b then ⟦1 ‖ 0, 1⟧ else ⟦0 ‖ 0, 1⟧") (new := "pure_apply") (lemma := "pure_true") (uses := "pure_apply, beq_true, <;>, cases, rfl, rw")
 :::en
 *Surely true.* `pure b` is the distribution that is surely `b`: all its mass lies at `b`. Its mass at
 `true` is one if `b` is `true`, else zero.
@@ -340,9 +462,15 @@ ist die Masse `1` auf der Menge `{a}` und `0` außerhalb. Das Spiel schreibt das
 rw [pure_apply, beq_true]
 ```
 :::
+:::solution
+```
+rw [pure_apply]
+cases b <;> rfl
+```
+:::
 :::::
 
-::::circuit (height := "440") (inputs := "x") (gates := "not, alwaysT") (coins := "p") (target := "pure true") (context := "Lean/Rules.lean") (proof := "(p : I) (b : Bool) : (coin p).map (fun _ => b) = pure b") (lemma := "coin_const") (play := "a=alwaysT; x>a.0; a>out") (uses := "bool_ext, map_true, pure_true, Bool.cond_false, zero_add, Bool.cond_true, coin_total, add_zero, mul_zero, mass_total, coin_true, coin_false, apply, cases, rw")
+::::circuit (height := "440") (inputs := "x") (gates := "not, alwaysT") (coins := "p") (target := "pure true") (context := "Lean/Rules.lean") (proof := "(p : I) (b : Bool) : (coin p).map (fun _ => b) = pure b") (lemma := "coin_const") (play := "a=alwaysT; x>a.0; a>out") (uses := "bool_ext, map_true, pure_true, Bool.cond_false, zero_add, Bool.cond_true, coin_total, mass_total, add_zero, mul_zero, coin_true, coin_false, apply, cases, rw")
 :::hint (anchor := "old:not")
 :::
 
@@ -381,9 +509,27 @@ rw [Bool.cond_false, Bool.cond_false, Bool.cond_false, zero_add]
 rw [Bool.cond_true, Bool.cond_true, Bool.cond_true, coin_total]
 ```
 :::
+:::solution
+```
+cases b
+apply bool_ext
+rw [map_true, pure_true, Bool.cond_false, Bool.cond_false, Bool.cond_false, zero_add]
+apply bool_ext
+rw [map_true, pure_true, Bool.cond_true, Bool.cond_true, Bool.cond_true, coin_total]
+```
+:::
+:::solution
+```
+apply bool_ext
+rw [map_true, pure_true]
+cases b
+rw [Bool.cond_false, Bool.cond_false, Bool.cond_false, zero_add]
+rw [Bool.cond_true, Bool.cond_true, Bool.cond_true, mass_total]
+```
+:::
 ::::
 
-:::::leanonly (proof := "(b : Bool) : (pure b : DiscreteMeasure Bool) false = bif b then ⟦0 ‖ 0, 1⟧ else ⟦1 ‖ 0, 1⟧") (lemma := "pure_false") (uses := "pure_apply, <;>, cases, rfl, rw")
+:::::leanonly (proof := "(b : Bool) : (pure b : DiscreteMeasure Bool) false = bif b then ⟦0 ‖ 0, 1⟧ else ⟦1 ‖ 0, 1⟧") (lemma := "pure_false") (uses := "pure_apply, beq_self_eq_true, Bool.cond_true, Bool.cond_false, Bool.true_beq, mass_not, Bool.not_false, pure_true, tsub_zero, tsub_self, Bool.not_true, <;>, cases, rfl, rw")
 ::::hint (anchor := "gap")
 :::en
 All the mass of `pure b` lies at `b`: how much of it lies at `false`?
@@ -416,9 +562,33 @@ rw [pure_apply]
 cases b <;> rfl
 ```
 :::
+:::solution
+```
+rw [pure_apply]
+cases b
+rfl
+rfl
+```
+:::
+:::solution
+```
+rw [pure_apply]
+cases b
+rw [beq_self_eq_true, Bool.cond_true, Bool.cond_false]
+rw [Bool.true_beq, Bool.cond_false, Bool.cond_true]
+```
+:::
+:::solution
+```
+rw [mass_not (pure b) false, Bool.not_false, pure_true]
+cases b
+rw [Bool.cond_false, Bool.cond_false, tsub_zero]
+rw [Bool.cond_true, Bool.cond_true, tsub_self]
+```
+:::
 :::::
 
-::::leanonly (proof := ": (pure true : DiscreteMeasure Bool) true = ⟦1 ‖ 0, 1⟧ ∧ (pure true : DiscreteMeasure Bool) false = ⟦0 ‖ 0, 1⟧") (uses := "pure_true, Bool.cond_true, pure_false, Bool.cond_false, constructor, rw")
+::::leanonly (proof := ": (pure true : DiscreteMeasure Bool) true = ⟦1 ‖ 0, 1⟧ ∧ (pure true : DiscreteMeasure Bool) false = ⟦0 ‖ 0, 1⟧") (uses := "pure_true, Bool.cond_true, pure_false, pure_apply, Bool.cond_false, constructor, rfl, rw")
 :::en
 *Surely `true`.* Both masses of `pure true`, in one statement.
 :::
@@ -439,6 +609,24 @@ Zwei Aussagen mit `∧`, wie in *Massen*; für jede hast du ein Lemma.
 constructor
 rw [pure_true, Bool.cond_true]
 rw [pure_false, Bool.cond_true]
+```
+:::
+:::solution
+```
+constructor
+rw [pure_true]
+rfl
+rw [pure_false]
+rfl
+```
+:::
+:::solution
+```
+constructor
+rw [pure_apply]
+rfl
+rw [pure_apply]
+rfl
 ```
 :::
 ::::
@@ -482,9 +670,27 @@ rw [Bool.cond_false, Bool.cond_false, Bool.cond_self, zero_add]
 rw [Bool.cond_true, Bool.cond_true, Bool.cond_self, add_comm, zero_add]
 ```
 :::
+:::solution
+```
+cases b
+apply bool_ext
+rw [map_true, pure_true, pure_false, pure_true, Bool.cond_false, Bool.cond_false, Bool.cond_self, zero_add]
+apply bool_ext
+rw [map_true, pure_true, pure_false, pure_true, Bool.cond_true, Bool.cond_true, Bool.cond_self, add_comm, zero_add]
+```
+:::
+:::solution
+```
+apply bool_ext
+rw [map_true, pure_true, pure_true, pure_false]
+cases b
+rw [Bool.cond_false, Bool.cond_false, Bool.cond_self, zero_add]
+rw [Bool.cond_true, Bool.cond_true, Bool.cond_self, add_zero]
+```
+:::
 :::::
 
-::::circuit (height := "540") (inputs := "x") (gates := "not, alwaysT") (coins := "p") (target := "pure false") (context := "Lean/Rules.lean") (proof := "(p : I) : ((coin p).map (fun _ => true)).map not = pure false") (play := "a=alwaysT; b=not; x>a.0; a>b.0; b>out") (uses := "coin_const, map_pure, rfl, rw")
+::::circuit (height := "540") (inputs := "x") (gates := "not, alwaysT") (coins := "p") (target := "pure false") (context := "Lean/Rules.lean") (proof := "(p : I) : ((coin p).map (fun _ => true)).map not = pure false") (play := "a=alwaysT; b=not; x>a.0; a>b.0; b>out") (uses := "coin_const, map_pure, Bool.not_true, bool_ext, pure_true, Bool.not_false, apply, rfl, rw")
 :::hint (anchor := "none")
 :::
 
@@ -513,9 +719,20 @@ rw [map_pure]
 rfl
 ```
 :::
+:::solution
+```
+rw [coin_const, map_pure, Bool.not_true]
+```
+:::
+:::solution
+```
+apply bool_ext
+rw [coin_const, map_pure, pure_true, pure_true, Bool.not_true]
+```
+:::
 ::::
 
-:::::leanonly (proof := "(p : I) : (coin p).map not = coin ⟦σ p ‖ p, σ p⟧") (lemma := "coin_not") (uses := "bool_ext, map_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, coin_false, coin_true, add_zero, mul_zero, coin_total, apply, rw")
+:::::leanonly (proof := "(p : I) : (coin p).map not = coin ⟦σ p ‖ p, σ p⟧") (lemma := "coin_not") (uses := "bool_ext, map_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, coin_false, coin_true, eq_coin, coin_not_true, add_zero, mul_zero, coin_total, apply, exact, rw")
 ::::hint (anchor := "gap")
 :::en
 Flip the coin `p`: what is its mass at `true` now?
@@ -550,6 +767,24 @@ rw [map_true]
 rw [Bool.not_true, Bool.not_false]
 rw [Bool.cond_false, Bool.cond_true, zero_add]
 rw [coin_false, coin_true]
+```
+:::
+:::solution
+```
+apply eq_coin
+rw [map_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, coin_false]
+```
+:::
+:::solution
+```
+apply eq_coin
+exact coin_not_true p
+```
+:::
+:::solution
+```
+apply bool_ext
+rw [coin_not_true, coin_true]
 ```
 :::
 :::::

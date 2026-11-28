@@ -18,7 +18,7 @@ htmlSplit := .never
 `binom p n` ist die Anzahl der `true` in $`n` Würfen einer Münze `p`, durch Rekursion über $`n` definiert (in *Zählen*). Hier ihre Massen: durch Induktion, das Pascalsche Dreieck mit Massen, bis zur Binomialformel.
 :::
 
-::::leanonly (proof := "{β : Type} (p : I) (f : Bool → DiscreteMeasure β) (x : β) : (do let b ← coin p; f b) x = ↑p * f true x + ↑(σ p) * f false x") (lemma := "coin_bind_apply") (group := "chance.count") (uses := "bind_apply, Fintype.sum_bool, coin_true, coin_false, coin_total, rw")
+::::leanonly (proof := "{β : Type} (p : I) (f : Bool → DiscreteMeasure β) (x : β) : (do let b ← coin p; f b) x = ↑p * f true x + ↑(σ p) * f false x") (lemma := "coin_bind_apply") (group := "chance.count") (uses := "bind_apply, Fintype.sum_bool, coin_true, coin_false, coin_total, rfl, rw, simp")
 :::en
 *A coin first.* A draw that starts with a coin `p`: the mass at any point `x` comes through `true`
 (mass $`p`) and through `false` (mass $`1 - p`). That is `bind_true` again, now at any point.
@@ -44,9 +44,26 @@ Wie bei `bind_true`, jetzt an jedem Punkt `b` und für eine Münze. Was du bewei
 rw [bind_apply, Fintype.sum_bool, coin_true, coin_false]
 ```
 :::
+:::solution
+```
+rw [bind_apply, Fintype.sum_bool]
+simp
+```
+:::
+:::solution
+```
+simp [bind_apply, Fintype.sum_bool]
+```
+:::
+:::solution
+```
+rw [bind_apply, Fintype.sum_bool]
+rfl
+```
+:::
 ::::
 
-::::leanonly (proof := "{α : Type} [DecidableEq α] (a : α) : (pure a : DiscreteMeasure α) a = 1") (lemma := "pure_self") (group := "chance.count") (uses := "pure_apply, beq_self_eq_true, Bool.cond_true, Bool.cond_false, rw")
+::::leanonly (proof := "{α : Type} [DecidableEq α] (a : α) : (pure a : DiscreteMeasure α) a = 1") (lemma := "pure_self") (group := "chance.count") (uses := "pure_apply, beq_self_eq_true, Bool.cond_true, Bool.cond_false, rfl, rw, simp")
 :::en
 *At its point.* A point mass has mass one at its point, now on any type.
 :::
@@ -69,9 +86,26 @@ rw [bind_apply, Fintype.sum_bool, coin_true, coin_false]
 rw [pure_apply, beq_self_eq_true, Bool.cond_true]
 ```
 :::
+:::solution
+```
+rw [pure_apply]
+simp
+```
+:::
+:::solution
+```
+simp [pure_apply]
+```
+:::
+:::solution
+```
+rw [pure_apply, beq_self_eq_true]
+rfl
+```
+:::
 ::::
 
-:::::leanonly (proof := "(p : I) (k : ℕ) : binom p 0 0 = ⟦1 ‖ 1, 0, ↑p⟧ ∧ binom p 0 (k + 1) = ⟦0 ‖ 0, 1, ↑p⟧") (new := "pure_zero_succ") (group := "chance.count") (uses := "binom_zero, pure_self, pure_zero_succ, binom_succ, constructor, rw")
+:::::leanonly (proof := "(p : I) (k : ℕ) : binom p 0 0 = ⟦1 ‖ 1, 0, ↑p⟧ ∧ binom p 0 (k + 1) = ⟦0 ‖ 0, 1, ↑p⟧") (new := "pure_zero_succ") (group := "chance.count") (uses := "binom_zero, pure_self, pure_zero_succ, binom_succ, constructor, rfl, rw, simp")
 ::::hint (anchor := "gap")
 :::en
 With no throw: how often `true`?
@@ -106,9 +140,32 @@ rw [binom_zero, pure_self]
 rw [binom_zero, pure_zero_succ]
 ```
 :::
+:::solution
+```
+rw [binom_zero]
+constructor
+rw [pure_self]
+rw [pure_zero_succ]
+```
+:::
+:::solution
+```
+constructor
+simp [binom_zero]
+simp [binom_zero, pure_zero_succ]
+```
+:::
+:::solution
+```
+rw [binom_zero, pure_self, pure_zero_succ]
+constructor
+rfl
+rfl
+```
+:::
 :::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure ℕ) (k : ℕ) : (do let Y ← μ; pure (1 + Y)) (k + 1) + (do let Y ← μ; pure (1 + Y)) 0 = μ k") (new := "shift_succ, shift_zero") (group := "chance.count") (uses := "shift_succ, shift_zero, add_zero, zero_add, rw")
+::::leanonly (proof := "(μ : DiscreteMeasure ℕ) (k : ℕ) : (do let Y ← μ; pure (1 + Y)) (k + 1) + (do let Y ← μ; pure (1 + Y)) 0 = μ k") (new := "shift_succ, shift_zero") (group := "chance.count") (uses := "shift_succ, shift_zero, add_zero, zero_add, rw, simp")
 :::en
 *One more.* Adding one to every outcome shifts the bars one place to the right: the mass at `k + 1` is the old mass at `k`, and at `0` there is nothing.
 :::
@@ -129,9 +186,25 @@ rw [binom_zero, pure_zero_succ]
 rw [shift_succ, shift_zero, add_zero]
 ```
 :::
+:::solution
+```
+rw [shift_succ, shift_zero]
+simp
+```
+:::
+:::solution
+```
+simp [shift_succ, shift_zero]
+```
+:::
+:::solution
+```
+rw [shift_zero, add_zero, shift_succ]
+```
+:::
 ::::
 
-::::leanonly (proof := "(p : I) (n : ℕ) : binom p (n + 1) 0 = ↑(σ p) * binom p n 0") (lemma := "binom_succ_zero") (new := "mul_zero") (group := "chance.count") (uses := "binom_succ, mul_zero, binom_zero, zero_add, rw, simp")
+::::leanonly (proof := "(p : I) (n : ℕ) : binom p (n + 1) 0 = ↑(σ p) * binom p n 0") (lemma := "binom_succ_zero") (group := "chance.count") (uses := "binom_succ, mul_zero, coin_bind_apply, Bool.toNat_true, Bool.toNat_false, zero_add, bind_pure, shift_zero, binom_zero, add_zero, pure_bind, shift_succ, rw, simp, simp_rw")
 :::en
 *No true in one throw more.* No `true` in $`n + 1` throws: the first is `false`, and none in the other $`n`.
 :::
@@ -157,9 +230,27 @@ rw [binom_succ]
 simp [mul_zero]
 ```
 :::
+:::solution
+```
+simp [binom_succ, mul_zero]
+```
+:::
+:::solution
+```
+rw [binom_succ, coin_bind_apply]
+simp [mul_zero]
+```
+:::
+:::solution
+```
+rw [binom_succ, coin_bind_apply, Bool.toNat_true, Bool.toNat_false]
+simp_rw [zero_add]
+rw [bind_pure, shift_zero, mul_zero, zero_add]
+```
+:::
 ::::
 
-::::leanonly (proof := "(p : I) (n k : ℕ) : binom p (n + 1) (k + 1) = ↑p * binom p n k + ↑(σ p) * binom p n (k + 1)") (lemma := "binom_succ_succ") (group := "chance.count") (uses := "binom_succ, binom_zero, rw, simp")
+::::leanonly (proof := "(p : I) (n k : ℕ) : binom p (n + 1) (k + 1) = ↑p * binom p n k + ↑(σ p) * binom p n (k + 1)") (lemma := "binom_succ_succ") (group := "chance.count") (uses := "binom_succ, coin_bind_apply, Bool.toNat_true, Bool.toNat_false, shift_succ, zero_add, bind_pure, binom_zero, shift_zero, add_zero, mul_zero, pure_bind, rw, simp, simp_rw")
 :::en
 *Pascal for masses.* $`k + 1` times `true` in $`n + 1` throws: the first is `true` and $`k` of the others are, or the first is `false` and $`k + 1` of the others are. Pascal's triangle, with masses.
 :::
@@ -183,9 +274,27 @@ rw [binom_succ]
 simp
 ```
 :::
+:::solution
+```
+simp [binom_succ]
+```
+:::
+:::solution
+```
+rw [binom_succ, coin_bind_apply]
+simp
+```
+:::
+:::solution
+```
+rw [binom_succ, coin_bind_apply, Bool.toNat_true, Bool.toNat_false, shift_succ]
+simp_rw [zero_add]
+rw [bind_pure]
+```
+:::
 ::::
 
-::::circuit (height := "600") (route := "count") (inputs := "x y z") (gates := "and, or, not") (coins := "p p p") (target := "bool true:(1-p)^3 false:1-(1-p)^3") (context := "Lean/Rules.lean") (proof := "(p : I) (n : ℕ) : binom p n 0 = ↑(σ p) ^ n") (lemma := "binom_all_false") (new := "pow_zero, pow_succ, mul_comm") (play := "a=or; b=or; c=not; x>a.0; y>a.1; a>b.0; z>b.1; b>c.0; c>out") (uses := "binom_zero, pure_self, pow_zero, binom_succ_zero, pow_succ, mul_comm, binom_succ, pure_zero_succ, binom_succ_succ, induction', rw")
+::::circuit (height := "600") (route := "count") (inputs := "x y z") (gates := "and, or, not") (coins := "p p p") (target := "bool true:(1-p)^3 false:1-(1-p)^3") (context := "Lean/Rules.lean") (proof := "(p : I) (n : ℕ) : binom p n 0 = ↑(σ p) ^ n") (lemma := "binom_all_false") (new := "pow_succ, pow_succ', mul_assoc") (play := "a=or; b=or; c=not; x>a.0; y>a.1; a>b.0; z>b.1; b>c.0; c>out") (uses := "binom_zero, pure_self, pow_zero, binom_succ_zero, pow_succ, mul_comm, pow_succ', binom_succ, pure_zero_succ, binom_succ_succ, induction', ring, rw, simp")
 :::en
 *All false.* $`n` throws, all `false`: mass $`(1 - p)^n`.
 
@@ -199,11 +308,13 @@ Auf dem Spielfeld drei Würfe: Bau `true` genau dann, wenn alle drei `false` sin
 :::
 
 :::proofen
-Induction on $`n` (from *Counting*): `pow_zero : a ^ 0 = 1`, `pow_succ : a ^ (n + 1) = a ^ n * a`.
+Induction on $`n` (from *Counting*): `pow_zero : a ^ 0 = 1`, `pow_succ : a ^ (n + 1) = a ^ n * a`, or
+`pow_succ' : a ^ (n + 1) = a * a ^ n`.
 :::
 
 :::proofde
-Induktion über $`n` (aus *Zählen*): `pow_zero : a ^ 0 = 1`, `pow_succ : a ^ (n + 1) = a ^ n * a`.
+Induktion über $`n` (aus *Zählen*): `pow_zero : a ^ 0 = 1`, `pow_succ : a ^ (n + 1) = a ^ n * a`, oder
+`pow_succ' : a ^ (n + 1) = a * a ^ n`.
 :::
 :::solution
 ```
@@ -212,9 +323,51 @@ rw [binom_zero, pure_self, pow_zero]
 rw [binom_succ_zero, ih, pow_succ, mul_comm]
 ```
 :::
+:::solution
+```
+induction' n with n ih
+rw [binom_zero, pure_self, pow_zero]
+rw [binom_succ_zero, ih, pow_succ']
+```
+:::
+:::solution
+```
+induction' n with n ih
+rw [binom_zero, pure_self, pow_zero]
+rw [binom_succ_zero, ih]
+ring
+```
+:::
+:::solution
+```
+induction' n with n ih
+simp [binom_zero]
+rw [binom_succ_zero, ih, pow_succ']
+```
+:::
 ::::
 
-::::leanonly (proof := "(p : I) (n k : ℕ) : binom p n (n + k + 1) = 0") (lemma := "binom_above") (new := "add_right_comm") (group := "chance.count") (uses := "zero_add, binom_zero, pure_zero_succ, binom_succ_succ, add_right_comm, add_assoc, mul_zero, add_zero, binom_succ, pure_self, binom_succ_zero, add_comm, induction', rw")
+:::::leanonly (proof := "(p : I) (n k : ℕ) : binom p n (n + k + 1) = 0") (lemma := "binom_above") (new := "add_right_comm") (group := "chance.count") (uses := "zero_add, binom_zero, pure_zero_succ, binom_succ_succ, add_right_comm, add_assoc, mul_zero, add_zero, add_comm, binom_succ, pure_self, binom_succ_zero, induction', rw, simp")
+::::hint (anchor := "item:add_right_comm")
+:::en
+To use `ih`, first bring the index into its form `n + k + 1`: `add_right_comm n 1 k` turns `n + 1 + k` into it.
+:::
+
+:::de
+Um `ih` zu benutzen, bring den Index zuerst in seine Form `n + k + 1`: `add_right_comm n 1 k` macht sie aus `n + 1 + k`.
+:::
+::::
+
+::::hint (anchor := "after:induction'")
+:::en
+Without `generalizing k`, `ih` holds only for this one `k`, and the step needs it for `k + 1` too.
+:::
+
+:::de
+Ohne `generalizing k` gilt `ih` nur für dieses eine `k`, und der Schritt braucht es auch für `k + 1`.
+:::
+::::
+
 :::en
 *Never more true than throws.* In $`n` throws there are at most $`n` times `true`.
 :::
@@ -237,9 +390,43 @@ rw [zero_add, binom_zero, pure_zero_succ]
 rw [binom_succ_succ, add_right_comm n 1 k, ih, add_assoc n k 1, ih, mul_zero, mul_zero, add_zero]
 ```
 :::
+:::solution
+```
+induction' n with n ih generalizing k
+rw [zero_add, binom_zero, pure_zero_succ]
+rw [binom_succ_succ, add_right_comm n 1 k, ih, add_assoc n k 1, ih]
+simp
+```
+:::
+:::solution
+```
+induction' n with n ih generalizing k
+simp [binom_zero, pure_zero_succ]
+rw [binom_succ_succ, add_right_comm n 1 k, ih, add_assoc n k 1, ih]
+simp
+```
+:::
+:::solution
+```
+induction' n with n ih generalizing k
+rw [zero_add, binom_zero, pure_zero_succ]
+rw [binom_succ_succ, add_assoc n 1 k, add_comm 1 k, ← add_assoc n k 1, ih, add_assoc n k 1, ih]
+simp
+```
+:::
+:::::
+
+:::::leanonly (proof := "(p : I) (n : ℕ) : binom p n n = ↑p ^ n") (lemma := "binom_diag") (group := "chance.count") (uses := "binom_zero, pure_self, pow_zero, binom_succ_succ, binom_above, mul_zero, add_zero, pow_succ, mul_comm, pow_succ', binom_succ, pure_zero_succ, binom_succ_zero, zero_add, induction', ring, rw, simp")
+::::hint (anchor := "item:binom_above")
+:::en
+`binom_above` needs the index in the form `n + k + 1`; here `n + 1` is `n + 0 + 1`, so write `binom_above p n 0`.
+:::
+
+:::de
+`binom_above` braucht den Index in der Form `n + k + 1`; hier ist `n + 1` gleich `n + 0 + 1`, also schreib `binom_above p n 0`.
+:::
 ::::
 
-::::leanonly (proof := "(p : I) (n : ℕ) : binom p n n = ↑p ^ n") (lemma := "binom_diag") (group := "chance.count") (uses := "binom_zero, pure_self, pow_zero, binom_succ_succ, binom_above, mul_zero, add_zero, pow_succ, mul_comm, binom_succ, pure_zero_succ, binom_succ_zero, zero_add, induction', rw")
 :::en
 *All true.* $`n` throws, all `true`: mass $`p^n`.
 :::
@@ -262,9 +449,33 @@ rw [binom_zero, pure_self, pow_zero]
 rw [binom_succ_succ, ih, binom_above p n 0, mul_zero, add_zero, pow_succ, mul_comm]
 ```
 :::
-::::
+:::solution
+```
+induction' n with n ih
+rw [binom_zero, pure_self, pow_zero]
+rw [binom_succ_succ, ih, binom_above p n 0, mul_zero, add_zero, pow_succ']
+```
+:::
+:::solution
+```
+induction' n with n ih
+rw [binom_zero, pure_self, pow_zero]
+rw [binom_succ_succ, ih, binom_above p n 0]
+ring
+```
+:::
+:::solution
+```
+induction' n with n ih
+simp [binom_zero]
+rw [binom_succ_succ, ih, binom_above p n 0]
+simp
+ring
+```
+:::
+:::::
 
-::::leanonly (proof := "(n : ℕ) : (n.choose 0 : ℝ≥0∞) = 1 ∧ 1 * (n.choose n : ℝ≥0∞) = 1") (new := "Nat.choose_zero_right, Nat.choose_self, Nat.cast_one, one_mul") (group := "chance.count") (uses := "Nat.choose_zero_right, Nat.cast_one, one_mul, Nat.choose_self, Nat.cast_add, mul_one, constructor, rw")
+::::leanonly (proof := "(n : ℕ) : (n.choose 0 : ℝ≥0∞) = 1 ∧ 1 * (n.choose n : ℝ≥0∞) = 1") (new := "Nat.choose_zero_right, Nat.choose_self, Nat.cast_one") (group := "chance.count") (uses := "Nat.choose_zero_right, Nat.cast_one, one_mul, Nat.choose_self, mul_one, Nat.cast_add, <;>, constructor, rfl, rw, simp")
 :::en
 *The edges of Pascal's triangle.* `n.choose k` is the number of ways to choose $`k` out of $`n`: $`\binom{n}{k}`. None of $`n`, or all of $`n`: one way each.
 :::
@@ -292,9 +503,39 @@ rw [Nat.choose_zero_right, Nat.cast_one]
 rw [one_mul, Nat.choose_self, Nat.cast_one]
 ```
 :::
+:::solution
+```
+rw [Nat.choose_zero_right, Nat.choose_self, Nat.cast_one, one_mul]
+constructor
+rfl
+rfl
+```
+:::
+:::solution
+```
+constructor <;> simp [Nat.choose_zero_right, Nat.choose_self, Nat.cast_one]
+```
+:::
+:::solution
+```
+constructor
+rw [Nat.choose_zero_right, Nat.cast_one]
+rw [Nat.choose_self, Nat.cast_one, mul_one]
+```
+:::
 ::::
 
-:::::leanonly (proof := "(n k : ℕ) : ((n + 1).choose (k + 1) : ℝ≥0∞) = (n.choose ⟦k ‖ k, k + 1, k + 2⟧ : ℝ≥0∞) + (n.choose (k + 1) : ℝ≥0∞)") (new := "Nat.choose_succ_succ', Nat.cast_add") (group := "chance.count") (uses := "Nat.choose_succ_succ', Nat.cast_add, Nat.cast_one, rw")
+:::::leanonly (proof := "(n k : ℕ) : ((n + 1).choose (k + 1) : ℝ≥0∞) = (n.choose ⟦k ‖ k, k + 1, k + 2⟧ : ℝ≥0∞) + (n.choose (k + 1) : ℝ≥0∞)") (new := "Nat.choose_succ_succ', Nat.cast_add, push_cast") (group := "chance.count") (uses := "Nat.choose_succ_succ', Nat.cast_add, Nat.cast_one, push_cast, rfl, rw, simp")
+::::hint (anchor := "item:push_cast")
+:::en
+`push_cast` moves the arrow `↑` inward, as `Nat.cast_add` does.
+:::
+
+:::de
+`push_cast` schiebt den Pfeil `↑` nach innen, wie `Nat.cast_add`.
+:::
+::::
+
 ::::hint (anchor := "gap")
 :::en
 One of the $`n + 1` is the first. It is chosen, or it is not: how many are then still to choose among the other $`n`?
@@ -325,9 +566,26 @@ Eines der $`n + 1` ist das erste. Es wird gewählt oder nicht: Wie viele sind da
 rw [Nat.choose_succ_succ', Nat.cast_add]
 ```
 :::
+:::solution
+```
+rw [Nat.choose_succ_succ']
+push_cast
+rfl
+```
+:::
+:::solution
+```
+rw [← Nat.cast_add, Nat.choose_succ_succ']
+```
+:::
+:::solution
+```
+simp [Nat.choose_succ_succ', Nat.cast_add]
+```
+:::
 :::::
 
-::::leanonly (proof := "(a b x y : ℝ≥0∞) (k m : ℕ) : a * (a ^ k * b ^ (m + 1) * x) + b * (a ^ (k + 1) * b ^ m * y) = a ^ (k + 1) * b ^ (m + 1) * (x + y)") (group := "chance.count") (uses := "ring")
+::::leanonly (proof := "(a b x y : ℝ≥0∞) (k m : ℕ) : a * (a ^ k * b ^ (m + 1) * x) + b * (a ^ (k + 1) * b ^ m * y) = a ^ (k + 1) * b ^ (m + 1) * (x + y)") (group := "chance.count") (uses := "pow_succ, mul_add, pow_zero, ring, rw")
 :::en
 *Computing with powers.* Both summands have the same powers of `a` and `b`. Seen at once, tedious rule by rule.
 :::
@@ -348,9 +606,21 @@ Eine Gleichung, die allein durch Rechnen mit `+`, `*` und Potenzen gilt: Die Tak
 ring
 ```
 :::
+:::solution
+```
+rw [pow_succ, pow_succ]
+ring
+```
+:::
+:::solution
+```
+rw [mul_add]
+ring
+```
+:::
 ::::
 
-::::leanonly (proof := "(p : I) (k m : ℕ) : binom p (k + m) k = ↑p ^ k * ↑(σ p) ^ m * ((k + m).choose k : ℝ≥0∞)") (lemma := "binom_formula") (group := "chance.count") (uses := "add_zero, binom_diag, pow_zero, mul_one, Nat.choose_self, Nat.cast_one, zero_add, binom_all_false, one_mul, Nat.choose_zero_right, add_assoc, binom_succ_succ, add_right_comm, Nat.choose_succ_succ', Nat.cast_add, pow_succ, mul_zero, add_comm, binom_succ_zero, induction', ring, rw")
+::::leanonly (proof := "(p : I) (k m : ℕ) : binom p (k + m) k = ↑p ^ k * ↑(σ p) ^ m * ((k + m).choose k : ℝ≥0∞)") (lemma := "binom_formula") (group := "chance.count") (uses := "add_zero, binom_diag, pow_zero, mul_one, Nat.choose_self, Nat.cast_one, zero_add, binom_all_false, one_mul, Nat.choose_zero_right, add_assoc, binom_succ_succ, add_right_comm, Nat.choose_succ_succ', Nat.cast_add, pow_succ, mul_zero, add_comm, binom_succ_zero, induction', push_cast, ring, rw, simp")
 :::en
 *Boss: the binomial formula.* $`k` times `true` and $`m` times `false` in $`k + m` throws has the mass $`p^k (1 - p)^m \binom{k + m}{k}`. (Written with $`k + m` throws, there is no $`n - k`.)
 :::
@@ -366,6 +636,45 @@ induction' k with k ih2
 rw [zero_add, binom_all_false, pow_zero, one_mul, Nat.choose_zero_right, Nat.cast_one, mul_one]
 rw [← add_assoc, binom_succ_succ, ih (k + 1), add_right_comm k 1 m, add_assoc k m 1, ih2]
 rw [Nat.choose_succ_succ', Nat.cast_add]
+ring
+```
+:::
+:::solution
+```
+induction' m with m ih generalizing k
+rw [add_zero, binom_diag]
+simp
+induction' k with k ih2
+rw [zero_add, binom_all_false]
+simp
+rw [← add_assoc, binom_succ_succ, ih (k + 1), add_right_comm k 1 m, add_assoc k m 1, ih2]
+rw [Nat.choose_succ_succ', Nat.cast_add]
+ring
+```
+:::
+:::solution
+```
+induction' m with m ih generalizing k
+rw [add_zero, binom_diag]
+simp
+induction' k with k ih2
+rw [zero_add, binom_all_false]
+simp
+rw [← add_assoc, binom_succ_succ, ih (k + 1), add_right_comm k 1 m, add_assoc k m 1, ih2]
+rw [Nat.choose_succ_succ']
+push_cast
+ring
+```
+:::
+:::solution
+```
+induction' k with k ih generalizing m
+rw [zero_add, binom_all_false]
+simp
+induction' m with m ih2
+rw [add_zero, binom_diag]
+simp
+rw [← add_assoc, binom_succ_succ, ih2, add_right_comm k 1 m, add_assoc k m 1, ih (m + 1), Nat.choose_succ_succ', Nat.cast_add]
 ring
 ```
 :::
@@ -396,6 +705,18 @@ Beide Seiten in der Form von `binom_formula`; dann `symm_twice : σ (σ p) = p` 
 :::solution
 ```
 rw [add_comm k m, binom_formula, add_comm m k, binom_formula, symm_twice, Nat.choose_symm_add]
+ring
+```
+:::
+:::solution
+```
+rw [binom_formula, add_comm k m, binom_formula, symm_twice, add_comm m k, Nat.choose_symm_add]
+ring
+```
+:::
+:::solution
+```
+rw [add_comm k m, binom_formula, symm_twice, add_comm m k, binom_formula, Nat.choose_symm_add]
 ring
 ```
 :::

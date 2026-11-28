@@ -18,7 +18,17 @@ Throwing $`n` coins one after the other gives a list of $`n` outcomes: `iidSeque
 $`n` Münzen nacheinander werfen ergibt eine Liste von $`n` Ergebnissen: `iidSequence n (coin p)`, eine Verteilung auf Listen (unabhängig, identisch verteilt). Die Masse einer Liste hängt nur davon ab, wie viele `true` und wie viele `false` sie hat. Der Endgegner: `binom p n` ist die Anzahl der `true` darin. Nur in Lean.
 :::
 
-::::leanonly (proof := "(p : I) : iidSequence 1 (coin p) = (do let y ← coin p; pure [y])") (new := "seq_zero, seq_succ") (group := "chance.count") (uses := "seq_succ, seq_zero, pure_bind, bind_pure, rw, simp_rw")
+:::::leanonly (proof := "(p : I) : iidSequence 1 (coin p) = (do let y ← coin p; pure [y])") (new := "seq_zero, seq_succ") (group := "chance.count") (uses := "seq_succ, seq_zero, pure_bind, bind_pure, rw, simp, simp_rw")
+::::hint (anchor := "item:simp_rw")
+:::en
+`pure_bind` stands under the bound name `y`, where `rw` does not reach; `simp_rw` does.
+:::
+
+:::de
+`pure_bind` steht unter dem gebundenen Namen `y`, wo `rw` nicht hinkommt; `simp_rw` schon.
+:::
+::::
+
 :::en
 *One throw, as a list.* `iidSequence n μ` draws $`n` times from `μ`, independently, and gives the list of the outcomes: a distribution on lists.
 :::
@@ -60,9 +70,26 @@ rw [seq_succ, seq_zero]
 simp_rw [pure_bind]
 ```
 :::
-::::
+:::solution
+```
+rw [seq_succ, seq_zero]
+simp
+```
+:::
+:::solution
+```
+rw [seq_succ]
+simp_rw [seq_zero, pure_bind]
+```
+:::
+:::solution
+```
+simp [seq_succ, seq_zero]
+```
+:::
+:::::
 
-::::leanonly (proof := "(p : I) : iidSequence 2 (coin p) [true, false] = ⟦↑p * ↑(σ p) ‖ ↑p * ↑p, ↑p + ↑(σ p), ↑p * ↑(σ p), ↑p⟧") (new := "seq_succ_apply, seq_zero_nil, mul_one") (group := "chance.count") (uses := "seq_succ_apply, seq_zero_nil, mul_one, coin_true, coin_false, one_mul, coin_total, rw")
+::::leanonly (proof := "(p : I) : iidSequence 2 (coin p) [true, false] = ⟦↑p * ↑(σ p) ‖ ↑p * ↑p, ↑p + ↑(σ p), ↑p * ↑(σ p), ↑p⟧") (new := "seq_succ_apply, seq_zero_nil") (group := "chance.count") (uses := "seq_succ_apply, seq_zero_nil, mul_one, coin_true, coin_false, one_mul, coin_total, rw, simp")
 :::en
 *The mass of a sequence.* Independent: the mass of a list is the product of the masses of its entries. First `true`, then `false`.
 :::
@@ -83,9 +110,26 @@ simp_rw [pure_bind]
 rw [seq_succ_apply, seq_succ_apply, seq_zero_nil, mul_one, coin_true, coin_false]
 ```
 :::
+:::solution
+```
+rw [seq_succ_apply, seq_succ_apply, seq_zero_nil]
+simp [mul_one]
+```
+:::
+:::solution
+```
+rw [seq_succ_apply, seq_succ_apply, seq_zero_nil, mul_one]
+simp
+```
+:::
+:::solution
+```
+simp [seq_succ_apply, seq_zero_nil, mul_one]
+```
+:::
 ::::
 
-::::leanonly (proof := "(l : List Bool) : (true :: l).count true = 1 + l.count true") (new := "count_true_cons, Bool.toNat_true") (group := "chance.count") (uses := "count_true_cons, Bool.toNat_true, rw")
+::::leanonly (proof := "(l : List Bool) : (true :: l).count true = 1 + l.count true") (new := "count_true_cons, Bool.toNat_true") (group := "chance.count") (uses := "count_true_cons, Bool.toNat_true, rfl, rw, simp")
 :::en
 *Counting true.* `l.count true` is the number of `true` in the list `l`. One in front counts as its number, `toNat`.
 :::
@@ -106,9 +150,20 @@ rw [seq_succ_apply, seq_succ_apply, seq_zero_nil, mul_one, coin_true, coin_false
 rw [count_true_cons, Bool.toNat_true]
 ```
 :::
+:::solution
+```
+rw [count_true_cons]
+rfl
+```
+:::
+:::solution
+```
+simp [count_true_cons, Bool.toNat_true]
+```
+:::
 ::::
 
-::::leanonly (proof := "(l : List Bool) : (true :: l).count false = l.count false") (new := "count_false_cons, Bool.toNat_false") (group := "chance.count") (uses := "count_false_cons, Bool.not_true, Bool.toNat_false, zero_add, Bool.not_false, add_zero, mul_zero, rw")
+::::leanonly (proof := "(l : List Bool) : (true :: l).count false = l.count false") (new := "count_false_cons, Bool.toNat_false") (group := "chance.count") (uses := "count_false_cons, Bool.not_true, Bool.toNat_false, zero_add, Bool.not_false, add_zero, mul_zero, rw, simp")
 :::en
 *Counting false.* A `true` in front is no `false` more.
 :::
@@ -129,9 +184,20 @@ rw [count_true_cons, Bool.toNat_true]
 rw [count_false_cons, Bool.not_true, Bool.toNat_false, zero_add]
 ```
 :::
+:::solution
+```
+rw [count_false_cons, Bool.not_true, Bool.toNat_false]
+simp
+```
+:::
+:::solution
+```
+simp [count_false_cons, Bool.toNat_false]
+```
+:::
 ::::
 
-::::leanonly (proof := "(p : I) : iidSequence ([] : List Bool).length (coin p) [] = ↑p ^ ([] : List Bool).count true * ↑(σ p) ^ ([] : List Bool).count false") (new := "List.length_nil, List.count_nil") (group := "chance.count") (uses := "List.length_nil, seq_zero_nil, List.count_nil, ring, rw")
+::::leanonly (proof := "(p : I) : iidSequence ([] : List Bool).length (coin p) [] = ↑p ^ ([] : List Bool).count true * ↑(σ p) ^ ([] : List Bool).count false") (new := "List.length_nil, List.count_nil, pow_zero") (group := "chance.count") (uses := "List.length_nil, seq_zero_nil, List.count_nil, pow_zero, mul_one, pow_succ, one_mul, ring, rw, simp")
 :::en
 *The empty list.* A list `l` of throws has a mass: a factor $`p` for every `true` in it, a factor $`1 - p` for every `false`. First for the empty list: no throw, no factor.
 :::
@@ -141,11 +207,16 @@ rw [count_false_cons, Bool.not_true, Bool.toNat_false, zero_add]
 :::
 
 :::proofen
-`List.length_nil : [].length = 0` and `List.count_nil : [].count a = 0`. A power with exponent $`0` is $`1`: `ring` knows.
+`List.length_nil : [].length = 0` and `List.count_nil : [].count a = 0`. A power with exponent $`0` is $`1`: `pow_zero : a ^ 0 = 1` (or `ring`).
 :::
 
 :::proofde
-`List.length_nil : [].length = 0` und `List.count_nil : [].count a = 0`. Eine Potenz mit Exponent $`0` ist $`1`: Das weiß `ring`.
+`List.length_nil : [].length = 0` und `List.count_nil : [].count a = 0`. Eine Potenz mit Exponent $`0` ist $`1`: `pow_zero : a ^ 0 = 1` (oder `ring`).
+:::
+:::solution
+```
+rw [List.length_nil, seq_zero_nil, List.count_nil, List.count_nil, pow_zero, pow_zero, mul_one]
+```
 :::
 :::solution
 ```
@@ -153,9 +224,20 @@ rw [List.length_nil, seq_zero_nil, List.count_nil, List.count_nil]
 ring
 ```
 :::
+:::solution
+```
+rw [List.length_nil, seq_zero_nil, List.count_nil, List.count_nil]
+simp [pow_zero]
+```
+:::
+:::solution
+```
+simp [List.length_nil, seq_zero_nil, List.count_nil, pow_zero]
+```
+:::
 ::::
 
-::::leanonly (proof := "(p : I) (y : Bool) (l : List Bool) : coin p y * (↑p ^ l.count true * ↑(σ p) ^ l.count false) = ↑p ^ (y :: l).count true * ↑(σ p) ^ (y :: l).count false") (lemma := "mass_cons") (group := "chance.count") (uses := "count_true_cons, count_false_cons, coin_false, Bool.toNat_false, Bool.not_false, Bool.toNat_true, coin_true, Bool.not_true, coin_total, cases, ring, rw")
+::::leanonly (proof := "(p : I) (y : Bool) (l : List Bool) : coin p y * (↑p ^ l.count true * ↑(σ p) ^ l.count false) = ↑p ^ (y :: l).count true * ↑(σ p) ^ (y :: l).count false") (lemma := "mass_cons") (group := "chance.count") (uses := "count_true_cons, count_false_cons, coin_false, Bool.toNat_false, Bool.not_false, Bool.toNat_true, coin_true, Bool.not_true, coin_total, <;>, cases, ring, rw, simp")
 :::en
 *One more in front.* One more throw `y` in front of the list `l`: its mass `coin p y` is one factor more, $`p` or $`1 - p`.
 :::
@@ -183,9 +265,34 @@ rw [coin_true, Bool.toNat_true, Bool.not_true, Bool.toNat_false]
 ring
 ```
 :::
+:::solution
+```
+rw [count_true_cons, count_false_cons]
+cases y
+simp
+ring
+simp
+ring
+```
+:::
+:::solution
+```
+rw [count_true_cons, count_false_cons]
+cases y <;> simp <;> ring
+```
+:::
+:::solution
+```
+cases y
+rw [count_true_cons, count_false_cons, coin_false, Bool.toNat_false, Bool.not_false, Bool.toNat_true]
+ring
+rw [count_true_cons, count_false_cons, coin_true, Bool.toNat_true, Bool.not_true, Bool.toNat_false]
+ring
+```
+:::
 ::::
 
-::::leanonly (proof := "(p : I) (l : List Bool) : iidSequence l.length (coin p) l = ↑p ^ l.count true * ↑(σ p) ^ l.count false") (lemma := "seq_mass") (new := "List.length_cons") (group := "chance.count") (uses := "List.length_nil, seq_zero_nil, List.count_nil, List.length_cons, seq_succ_apply, mass_cons, induction', ring, rw")
+::::leanonly (proof := "(p : I) (l : List Bool) : iidSequence l.length (coin p) l = ↑p ^ l.count true * ↑(σ p) ^ l.count false") (lemma := "seq_mass") (new := "List.length_cons") (group := "chance.count") (uses := "List.length_nil, seq_zero_nil, List.count_nil, List.length_cons, seq_succ_apply, mass_cons, pow_zero, mul_one, count_true_cons, count_false_cons, pow_succ, one_mul, <;>, cases, induction', ring, rw, simp")
 :::en
 *The mass of a list.* Whatever the order: a list with $`k` times `true` and $`m` times `false` has the mass $`p^k (1 - p)^m`. (How many such lists there are: *Binomial*.)
 :::
@@ -211,9 +318,33 @@ ring
 rw [List.length_cons, seq_succ_apply, ih, mass_cons]
 ```
 :::
+:::solution
+```
+induction' l with y l ih
+rw [List.length_nil, seq_zero_nil, List.count_nil, List.count_nil, pow_zero, pow_zero, mul_one]
+rw [List.length_cons, seq_succ_apply, ih, mass_cons]
+```
+:::
+:::solution
+```
+induction' l with y l ih
+rw [List.length_nil, seq_zero_nil, List.count_nil, List.count_nil]
+simp
+rw [List.length_cons, seq_succ_apply, ih, mass_cons]
+```
+:::
+:::solution
+```
+induction' l with y l ih
+rw [List.length_nil, seq_zero_nil, List.count_nil, List.count_nil]
+ring
+rw [List.length_cons, seq_succ_apply, ih, count_true_cons, count_false_cons]
+cases y <;> simp <;> ring
+```
+:::
 ::::
 
-::::leanonly (proof := "(p : I) (n : ℕ) : binom p n = (iidSequence n (coin p)).map (fun l => l.count true)") (lemma := "binom_eq_count") (group := "chance.count") (uses := "seq_zero, map_pure, binom_zero, binom_succ, seq_succ, map_bind, bind_map_left, count_true_cons, induction', rfl, rw, simp_rw")
+::::leanonly (proof := "(p : I) (n : ℕ) : binom p n = (iidSequence n (coin p)).map (fun l => l.count true)") (lemma := "binom_eq_count") (group := "chance.count") (uses := "seq_zero, map_pure, binom_zero, binom_succ, seq_succ, map_bind, bind_map_left, count_true_cons, List.count_nil, map_eq_pure_bind, bind_assoc, pure_bind, bind_pure, induction', rfl, rw, simp, simp_rw")
 :::en
 *Boss: binom counts.* `binom p n` was defined by recursion, one coin and then the rest. It is what one thinks: throw $`n` coins and count the `true`.
 :::
@@ -228,6 +359,32 @@ rw [seq_zero, map_pure, binom_zero]
 rfl
 rw [binom_succ, seq_succ, ih]
 simp_rw [map_bind, map_pure, bind_map_left, count_true_cons]
+```
+:::
+:::solution
+```
+induction' n with n ih
+rw [seq_zero, map_pure, binom_zero]
+rfl
+rw [binom_succ, seq_succ, ih]
+simp [map_bind, map_pure, bind_map_left, count_true_cons]
+```
+:::
+:::solution
+```
+induction' n with n ih
+rw [seq_zero, map_pure, binom_zero, List.count_nil]
+rw [binom_succ, seq_succ, ih]
+simp_rw [map_bind, map_pure, bind_map_left, count_true_cons]
+```
+:::
+:::solution
+```
+induction' n with n ih
+rw [seq_zero, map_pure, binom_zero]
+rfl
+rw [binom_succ, seq_succ, ih]
+simp_rw [map_eq_pure_bind, bind_assoc, pure_bind, count_true_cons]
 ```
 :::
 ::::

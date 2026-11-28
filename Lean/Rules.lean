@@ -490,6 +490,16 @@ theorem mass_ne_zero {p : I} (h : p ≠ 0) : (↑p : ENNReal) ≠ 0 := by
 /-- A number in `[0, 1]` is a finite mass. -/
 theorem mass_finite (p : I) : (↑p : ENNReal) ≠ ⊤ := ENNReal.ofReal_ne_top
 
+/-- The mass of `0` is `0`. -/
+theorem mass_zero : ((0 : I) : ENNReal) = 0 := by
+  show ENNReal.ofReal 0 = 0
+  simp
+
+/-- `a + p = 1` says that `a` is the mass `σ p`. -/
+theorem eq_symm_of_add (a : ENNReal) (p : I) (h : a + ↑p = 1) : a = ↑(σ p) := by
+  rw [← add_symm_eq_one p, add_comm (↑p : ENNReal)] at h
+  exact (ENNReal.add_left_inj (mass_finite p)).mp h
+
 /-- Geometric: the total mass is one (when `p ≠ 0`). -/
 theorem geom_total (p : I) (h : p ≠ 0) : ∑' k, geom p k = 1 := by
   simp only [geom_formula]

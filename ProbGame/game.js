@@ -45,6 +45,29 @@
       localStorage.setItem('pg:moved:bool-beq', '1')
     }
   } catch {}
+  // (since 2026-11-28: the rules that simp and the later worlds use are proved first. New levels in Bool
+  // (four truth tables after `cond_false`, De Morgan `Bool.not_and` before `or_eq`), One Coin (`add_zero`), Two Coins
+  // (`one_mul`, `zero_mul`), Laws of do (`pure_bind`, `bind_assoc`, and `eq_symm_of_add` before the boss);
+  // Counting loses its levels 5 to 7 and 10, which brought these rules. Per world: [from, by] moves the progress
+  // of the levels from `from` on (counted from 0) by `by`; by null drops it.)
+  try {
+    if (!localStorage.getItem('pg:moved:2026-11-28')) {
+      const MOVES = { Circuits: [[10, 4], [13, 1]], 'One-Coin': [[3, 1]], 'Two-Coins': [[3, 2]], 'Laws-of--do': [[3, 2], [12, 1]],
+        Counting: [[4, null], [5, null], [6, null], [7, -3], [9, null], [10, -1]] }
+      const re = /^pg:(\/[^/]+\/)([^/]+)\/:(\d+)((?::.*)?)$/
+      const moved = []
+      for (const k of Object.keys(localStorage)) {
+        const m = re.exec(k), mv = m && MOVES[m[2]]
+        if (!mv) continue
+        const i = Number(m[3]); let j = i, drop = false
+        for (const [from, by] of mv) if (by === null ? i === from : i >= from) { if (by === null) drop = true; else j += by }
+        moved.push([k, drop ? null : `pg:${m[1]}${m[2]}/:${j}${m[4]}`, localStorage.getItem(k)])
+      }
+      for (const [k] of moved) localStorage.removeItem(k)
+      for (const [, k, v] of moved) if (k) localStorage.setItem(k, v)
+      localStorage.setItem('pg:moved:2026-11-28', '1')
+    }
+  } catch {}
   const DE = {
     Moves: 'Züge', Undo: 'Zurück', 'Add a gate': 'Baustein hinzufügen', Gate: 'Baustein', 'Start over': 'Neu anfangen', 'Next level ›': 'Nächstes Level ›',
     Target: 'Ziel', 'In Lean, for every p:': 'In Lean, für jedes p:', 'proved': 'bewiesen',
@@ -2709,7 +2732,7 @@
         box.append(el('div', 'pg-solved-head', 'goals accomplished 🎉'))
         if (!SHOW) {
           box.append(el('div', 'pg-solved-lean-head', tr(this.random ? 'In Lean, for every p:' : 'In Lean:')))
-          box.append(el('pre', 'pg-lean', this.random ? `${this.leanState()}\n  -- ${tr('a coin: true with probability')} ${new Poly(this.target.mass.get('true')?.c ?? [])}` : `${this.proof?.lemma ? 'theorem ' + this.proof.lemma : 'example'} ${this.shape ? this.root.dataset.proof.replace(/⟦[^⟧]*⟧/g, '▢') : this.statement()}`))
+          box.append(el('pre', 'pg-lean', this.random ? `${this.leanState()}\n  -- ${tr('a coin: true with probability')} ${new Poly(this.target.mass.get('true')?.c ?? [])}` : `${this.proof?.lemma ? theoremHead(this.proof.lemma) : 'example'} ${this.shape ? this.root.dataset.proof.replace(/⟦[^⟧]*⟧/g, '▢') : this.statement()}`))
         }
         const next = el('button', 'pg-next', tr('Next ›'))
         next.type = 'button'
@@ -2833,15 +2856,24 @@
   // when there is no room below); gone when the mouse leaves the chip or the inventory is drawn anew.
   // The game's simp: `simp [h]` goes to Lean as `simp only [the game's simp rules, h]`, so that it uses
   // exactly the rules marked simp in the inventory (Lean's own simp set would prove the monad laws and
-  // more by itself). Its rules: those of the inventory (SIMP_ITEMS, once in it), and simple computing
-  // that is always there (SIMP_ALWAYS); never a rule new in the level, which is to be used by hand first.
+  // more by itself). Its rules: those of the inventory (SIMP_ITEMS, once in it: what the player proved
+  // or was given), and the unfolding of notation (SIMP_ALWAYS); never a rule new in the level, which is
+  // to be used by hand first.
   const SIMP_ITEMS = ['coin_true', 'coin_false', 'pure_true', 'pure_false', 'add_symm_eq_one', 'tsub_self', 'Bool.not_true', 'Bool.not_false', 'Bool.not_not', 'Bool.and_self',
     'Bool.true_beq', 'Bool.false_beq', 'beq_true', 'beq_self_eq_true', 'Bool.cond_true', 'Bool.cond_false', 'Bool.cond_self', 'bind_pure', 'pure_bind', 'Bool.and_not_self',
-    'Bool.or_not_self', 'tsum_fintype', 'ENNReal.one_ne_top', 'Bool.toNat_true', 'Bool.toNat_false', 'pow_zero', 'Nat.choose_self', 'Nat.choose_zero_right', 'Nat.cast_add',
-    'Nat.cast_one', 'Nat.add_sub_cancel', 'ENNReal.tsum_geometric', 'coin_bind_apply', 'pure_self', 'pure_zero_succ', 'shift_succ', 'shift_zero']
-  const SIMP_ALWAYS = ['zero_add', 'add_zero', 'mul_one', 'one_mul', 'mul_zero', 'zero_mul', 'Bool.true_and', 'Bool.false_and', 'Bool.and_true', 'Bool.and_false',
-    'Bool.true_or', 'Bool.false_or', 'Bool.or_true', 'Bool.or_false', 'Function.comp_apply', 'id_eq', 'Nat.bodd_succ']
+    'Bool.or_not_self', 'ENNReal.one_ne_top', 'Bool.toNat_true', 'Bool.toNat_false', 'pow_zero', 'Nat.choose_self', 'Nat.choose_zero_right', 'Nat.cast_add',
+    'Nat.cast_one', 'Nat.add_sub_cancel', 'ENNReal.tsum_geometric', 'coin_bind_apply', 'pure_self', 'pure_zero_succ', 'shift_succ', 'shift_zero',
+    'zero_add', 'add_zero', 'mul_one', 'one_mul', 'mul_zero', 'zero_mul', 'Bool.true_and', 'Bool.false_and', 'Bool.true_or', 'Bool.false_or',
+    'tsum_bool', 'tsub_zero', 'mass_zero']
+  const SIMP_ALWAYS = ['Function.comp_apply', 'id_eq', 'Nat.bodd_succ']
   const SIMP = new Set([...SIMP_ITEMS, ...SIMP_ALWAYS])
+  // the head of a level's lemma: `@[simp] theorem` for a lemma that later goes into the game's simp
+  // the tactic a part of a line starts with: one of the inventory's (`simp only` and `norm_num` are
+  // named only to be refused: they are not in it)
+  let TACTIC_RE = null
+  const TACTIC_HEAD = () => TACTIC_RE ??= new RegExp(`^(${['simp only', 'norm_num', ...INVENTORY.filter(i => i.kind === 'tactic' && i.name !== '<;>').map(i => i.name)]
+    .sort((x, y) => y.length - x.length).map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})(?=\\s|\\[|$)`)
+  const theoremHead = lemma => `${SIMP.has(lemma) ? '@[simp] ' : ''}theorem ${lemma}`
   // the rules of the game's simp with the inventory `inv`, without those new in the level (`newHere`)
   const simpRulesOf = (inv, newHere) => [...SIMP_ALWAYS, ...SIMP_ITEMS.filter(n => inv.has(n))].filter(n => !newHere.has(n))
   // a line as Lean gets it: the game's simp as simp only with its rules
@@ -3017,9 +3049,6 @@
   // LEAN_SIGS end
   // the tactics kept in every world, once earned (the others only in the worlds that use them)
   const TACTICS_KEPT = new Set(['rfl', 'exact', 'rw', 'cases', 'ring'])
-  // the worlds whose levels list their other natural solutions too (several `:::solution`): your lemmas
-  // of the world show only where a solution uses them
-  const WORLDS_ALL_SOLUTIONS = new Set(['ProbGame.Worlds.Circuits'])
   const INVENTORY = [
     { name: 'rw', kind: 'tactic', insert: 'rw []', sig: 'rw [h]   rw [← h]   rw [h₁, h₂]',
       en: 'Rewrites the goal with the equation h: its left side becomes its right side (with ←, the other way round). Closes the goal when it then reads a = a. It does not rewrite under bound names (fun x => …, a do block): there, simp_rw (the rules in the order given) or simp only (in any order).',
@@ -3066,6 +3095,7 @@
       en: 'Induction on the natural number n: first the goal for 0, then the goal for n + 1, with the hypothesis ih for n.',
       de: 'Induktion nach der natürlichen Zahl n: zuerst das Ziel für 0, dann das Ziel für n + 1, mit der Annahme ih für n.' },
     { name: 'Prob.total', kind: 'rule', sig: 'Prob.total μ : ∑\' a, μ a = 1', en: 'What [Prob μ] says: the masses of μ, summed over all points (∑\'), give one.', de: 'Was [Prob μ] sagt: Die Massen von μ, über alle Punkte summiert (∑\'), ergeben eins.' },
+    { name: 'tsum_bool', kind: 'rule', sig: '∑\' b, f b = f false + f true', en: 'A sum over Bool: its two terms (false first).', de: 'Eine Summe über Bool: ihre zwei Summanden (false zuerst).' },
     { name: 'tsum_fintype', kind: 'rule', sig: '∑\' a, f a = ∑ a, f a', en: 'Over a finite type (as Bool), the sum over all points is a finite sum.', de: 'Über einem endlichen Typ (wie Bool) ist die Summe über alle Punkte eine endliche Summe.' },
     { name: 'mass_total', kind: 'lemma', sig: 'mass_total μ [Prob μ] : μ true + μ false = 1', en: 'Proved by you in Masses: a distribution on Bool has total mass one.', de: 'Von dir bewiesen in „Massen“: Eine Verteilung auf Bool hat die Gesamtmasse eins.' },
     { name: 'le_self_add', kind: 'rule', sig: 'le_self_add : a ≤ a + c', en: 'A sum of masses is at least its first summand.', de: 'Eine Summe von Massen ist mindestens ihr erster Summand.' },
@@ -3074,6 +3104,7 @@
     { name: 'ne_top_of_le_ne_top', kind: 'rule', sig: 'ne_top_of_le_ne_top : b ≠ ⊤ → a ≤ b → a ≠ ⊤', en: 'Below something finite is finite.', de: 'Unter etwas Endlichem ist endlich.' },
     { name: 'ENNReal.one_ne_top', kind: 'rule', sig: 'ENNReal.one_ne_top : 1 ≠ ⊤', en: 'One is finite (⊤ is ∞).', de: 'Eins ist endlich (⊤ ist ∞).' },
     { name: 'mass_ne_top', kind: 'lemma', sig: 'mass_ne_top [Prob μ] : μ b ≠ ⊤', en: 'Proved by you in Masses: a mass of a distribution is finite (masses are numbers in [0, ∞], and ⊤ is ∞).', de: 'Von dir bewiesen in „Massen“: Eine Masse einer Verteilung ist endlich (Massen sind Zahlen in [0, ∞], und ⊤ ist ∞).' },
+    { name: 'tsub_zero', kind: 'rule', sig: 'a - 0 = a', en: 'Taking 0 away changes nothing.', de: '0 abziehen ändert nichts.' },
     { name: 'tsub_self', kind: 'rule', sig: 'tsub_self a : a - a = 0', en: 'Taking a away from itself leaves 0, for every a in [0, ∞], also ∞.', de: 'a von sich selbst abgezogen lässt 0, für jedes a in [0, ∞], auch ∞.' },
     { name: 'tsub_add_eq_max', kind: 'rule', sig: 'tsub_add_eq_max : b - a + a = max b a', en: 'Taking a away and putting it back gives the larger of the two (a - b is 0 when b > a).', de: 'a wegnehmen und wieder dazu gibt das größere der beiden (a - b ist 0, wenn b > a).' },
     { name: 'ENNReal.add_sub_cancel_left', kind: 'rule', sig: 'ENNReal.add_sub_cancel_left (h : a ≠ ⊤) : a + b - a = b', en: 'Adding a and taking it away again: for a finite a.', de: 'a dazu und wieder weg: für ein endliches a.' },
@@ -3096,6 +3127,11 @@
     { name: 'Bool.not_true', kind: 'lemma', sig: '(!true) = false', en: 'Proved by you in Bool: not true is false.', de: 'Von dir bewiesen in „Bool“: Nicht true ist false.' },
     { name: 'Bool.not_false', kind: 'lemma', sig: '(!false) = true', en: 'Proved by you in Bool: not false is true.', de: 'Von dir bewiesen in „Bool“: Nicht false ist true.' },
     { name: 'Bool.cond_true', kind: 'lemma', sig: '(bif true then a else b) = a', en: 'Proved by you in Bool: bif with true is the first.', de: 'Von dir bewiesen in „Bool“: bif mit true ist das Erste.' },
+    { name: 'Bool.true_and', kind: 'lemma', sig: '(true && x) = x', en: 'Proved by you in Bool: true and x is x.', de: 'Von dir bewiesen in „Bool“: true und x ist x.' },
+    { name: 'Bool.false_and', kind: 'lemma', sig: '(false && x) = false', en: 'Proved by you in Bool: false and x is false.', de: 'Von dir bewiesen in „Bool“: false und x ist false.' },
+    { name: 'Bool.true_or', kind: 'lemma', sig: '(true || x) = true', en: 'Proved by you in Bool: true or x is true.', de: 'Von dir bewiesen in „Bool“: true oder x ist true.' },
+    { name: 'Bool.false_or', kind: 'lemma', sig: '(false || x) = x', en: 'Proved by you in Bool: false or x is x.', de: 'Von dir bewiesen in „Bool“: false oder x ist x.' },
+    { name: 'Bool.not_and', kind: 'lemma', sig: '(!(x && y)) = (!x || !y)', en: 'Proved by you in Bool: De Morgan: not both is one of them not.', de: 'Von dir bewiesen in „Bool“: De Morgan: nicht beide heißt: eines von ihnen nicht.' },
     { name: 'Bool.cond_self', kind: 'lemma', sig: '(bif c then a else a) = a', en: 'Proved by you in Bool: twice the same, whatever the condition.', de: 'Von dir bewiesen in „Bool“: zweimal dasselbe, egal welche Bedingung.' },
     { name: 'Bool.cond_false', kind: 'lemma', sig: '(bif false then a else b) = b', en: 'Proved by you in Bool: bif with false is the second.', de: 'Von dir bewiesen in „Bool“: bif mit false ist das Zweite.' },
     { name: 'zero_add', kind: 'rule', sig: '0 + a = a', en: 'Adding to zero.', de: 'Zu null addieren.' },
@@ -3115,17 +3151,18 @@
     { name: 'cond_add_cond', kind: 'lemma', sig: '(bif c then x else 0) + (bif c then y else 0) = bif c then x + y else 0', en: 'Proved by you in Maps: two masses behind one test.', de: 'Von dir bewiesen in „Abbildungen“: zwei Massen hinter einem Test.' },
     { name: 'coin_and', kind: 'lemma', sig: '(do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)', en: 'Proved by you in Two Coins: independence, both true with probability p · q.', de: 'Von dir bewiesen in „Zwei Münzen“: Unabhängigkeit, beide true mit Wahrscheinlichkeit p · q.' },
     { name: 'bind_map_left', kind: 'lemma', sig: '(do let x ← μ.map f; g x) = (do let x ← μ; g (f x))', en: 'Proved by you in Laws of do, for Bool; it holds for every type: a move on a throw goes into the result.', de: 'Von dir bewiesen in „Gesetze von do“, für Bool; es gilt für jeden Typ: Ein Zug auf einem Wurf wandert ins Ergebnis.' },
-    { name: 'mul_add', kind: 'rule', sig: 'a * (b + c) = a * b + a * c', en: 'Multiplying out, from the left.', de: 'Ausmultiplizieren, von links.' },
     { name: 'add_add_add_comm', kind: 'rule', sig: 'a + b + (c + d) = a + c + (b + d)', en: 'Two sums of two, regrouped.', de: 'Zwei Summen aus zwei, umgruppiert.' },
     { name: 'add_mul', kind: 'rule', sig: '(a + b) * c = a * c + b * c', en: 'Multiplying out a sum.', de: 'Eine Summe ausmultiplizieren.' },
+    { name: 'mul_add', kind: 'rule', sig: 'a * (b + c) = a * b + a * c', en: 'Multiplying out, from the left.', de: 'Ausmultiplizieren, von links.' },
+    { name: 'eq_symm_of_add', kind: 'lemma', sig: '(h : a + ↑p = 1) : a = ↑(σ p)', en: 'Proved by you in Laws of do: what adds up with p to 1 is σ p.', de: 'Von dir bewiesen in „Gesetze von do“: Was sich mit p zu 1 ergänzt, ist σ p.' },
     { name: 'map_bind', kind: 'lemma', sig0: 'f <$> (s >>= g) = s >>= fun a => f <$> g a', en0: 'A move after a walk goes into it.', de0: 'Ein Zug nach einem Weg wandert in ihn hinein.', sig: '(do let x ← μ; g x).map f = (do let x ← μ; (g x).map f)', en: 'Proved by you in Laws of do, for Bool; it holds for every type: A move after a do block goes into it.', de: 'Von dir bewiesen in „Gesetze von do“, für Bool; es gilt für jeden Typ: Ein Zug nach einem do-Block wandert in ihn hinein.' },
     { name: 'coin_unused', kind: 'lemma', sig: '(do let _ ← coin p; ν) = ν', en: 'Proved by you in Laws of do: A coin whose result is not used changes nothing.', de: 'Von dir bewiesen in „Gesetze von do“: Eine Münze, deren Ergebnis nicht benutzt wird, ändert nichts.' },
     { name: 'binom_zero', kind: 'lemma', sig: 'binom p 0 = pure 0', en: 'Proved by you in Counting: no throw, surely 0.', de: 'Von dir bewiesen in „Zählen“: kein Wurf, sicher 0.' },
     { name: 'binom_succ', kind: 'lemma', sig: 'binom p (n + 1) = do let X ← coin p; let Y ← binom p n; pure (X.toNat + Y)', en: 'Proved by you in Counting: one throw more.', de: 'Von dir bewiesen in „Zählen“: ein Wurf mehr.' },
-    { name: 'bind_assoc', kind: 'rule', sig: '(do let y ← (do let x ← μ; f x); g y) = (do let x ← μ; let y ← f x; g y)', en: 'A do block in a do block is one do block.', de: 'Ein do-Block in einem do-Block ist ein do-Block.' },
-    { name: 'pure_bind', kind: 'rule', sig: '(do let x ← pure a; f x) = f a', sig0: 'pure a >>= f = f a',
-      en0: 'Starting at a, then f: that is f at a.', de0: 'In a anfangen, dann f: Das ist f bei a.', en: 'Throwing a point mass is no throw.', de: 'Eine Punktmasse zu werfen ist kein Wurf.' },
-    { name: 'add_zero', kind: 'rule', sig: 'n + 0 = n', en: 'Adding zero.', de: 'Null addieren.' },
+    { name: 'bind_assoc', kind: 'lemma', sig: '(do let y ← (do let x ← μ; f x); g y) = (do let x ← μ; let y ← f x; g y)', en: 'Proved by you in Laws of do, for Bool; it holds for every type: a do block in a do block is one do block.', de: 'Von dir bewiesen in „Gesetze von do“, für Bool; es gilt für jeden Typ: Ein do-Block in einem do-Block ist ein do-Block.' },
+    { name: 'pure_bind', kind: 'lemma', sig: '(do let x ← pure a; f x) = f a', sig0: 'pure a >>= f = f a',
+      en0: 'Starting at a, then f: that is f at a.', de0: 'In a anfangen, dann f: Das ist f bei a.', en: 'Proved by you in Laws of do, for Bool; it holds for every type: throwing a point mass is no throw.', de: 'Von dir bewiesen in „Gesetze von do“, für Bool; es gilt für jeden Typ: Eine Punktmasse zu werfen ist kein Wurf.' },
+    { name: 'add_zero', kind: 'lemma', sig: 'a + 0 = a', en: 'Proved by you in One Coin: adding zero.', de: 'Von dir bewiesen in „Eine Münze“: Null addieren.' },
     { name: 'add_assoc', kind: 'rule', sig: 'a + b + c = a + (b + c)', en: 'Brackets in sums.', de: 'Klammern in Summen.' },
     { name: 'map_eq_pure_bind', kind: 'lemma', sig: 'μ.map f = do let x ← μ; pure (f x)', sig0: 'f <$> s = s >>= fun x => pure (f x)',
       en0: 'Applying f to every point, as a walk.', de0: 'f auf jeden Punkt anwenden, als Weg.', en: 'Proved by you in Laws of do, for Bool; it holds for every type: a move as a do block.', de: 'Von dir bewiesen in „Gesetze von do“, für Bool; es gilt für jeden Typ: ein Zug als do-Block.' },
@@ -3164,6 +3201,7 @@
     { name: 'odd_bind_step', kind: 'lemma', sig: 'odd <$> (μ >>= step) = not <$> (odd <$> μ)', en: 'Proved by you in Walking on the Grid.', de: 'Von dir bewiesen in „Gehen auf dem Gitter“.' },
     { name: 'odd_walk', kind: 'lemma', sig: 'odd <$> walk n = pure n.bodd', en: 'Proved by you: the boss of Walking on the Grid.', de: 'Von dir bewiesen: der Endgegner von „Gehen auf dem Gitter“.' },
     { name: 'ring', kind: 'tactic', insert: 'ring', sig: 'ring', en: 'Proves an equation that holds by computing with + and * alone (commutative, associative, distributive, powers), whatever the letters are.', de: 'Beweist eine Gleichung, die allein durch Rechnen mit + und * gilt (kommutativ, assoziativ, distributiv, Potenzen), was auch immer die Buchstaben sind.' },
+    { name: 'mass_zero', kind: 'rule', sig: '↑(0 : I) = 0', en: 'The number 0, as a mass.', de: 'Die Zahl 0, als Masse.' },
     { name: 'mass_mul', kind: 'rule', sig: '↑(p * q) = ↑p * ↑q', en: 'A product of numbers in [0, 1], as a mass.', de: 'Ein Produkt von Zahlen in [0, 1], als Masse.' },
     { name: 'coin_bind_apply', kind: 'lemma', sig: '(do let b ← coin p; f b) x = ↑p * f true x + ↑(σ p) * f false x', en: 'Proved by you in Binomial: a draw that starts with a coin, at any point, through true and through false.', de: 'Von dir bewiesen in „Binomial“: ein Ziehen, das mit einer Münze beginnt, an jedem Punkt, über true und über false.' },
     { name: 'beq_self_eq_true', kind: 'lemma', sig: '(a == a) = true', en: 'Proved by you in Bool: a point tested against itself (on Bool; it holds for every type with ==).', de: 'Von dir bewiesen in „Bool“: ein Punkt, mit sich selbst verglichen (auf Bool; es gilt für jeden Typ mit ==).' },
@@ -3176,7 +3214,8 @@
     { name: 'pow_zero', kind: 'rule', sig: 'a ^ 0 = 1', en: 'The zeroth power.', de: 'Die nullte Potenz.' },
     { name: 'pow_succ', kind: 'rule', sig: 'a ^ (n + 1) = a ^ n * a', en: 'One factor more, at the end.', de: 'Ein Faktor mehr, am Ende.' },
     { name: 'mul_comm', kind: 'rule', sig: 'a * b = b * a', en: 'Turning a product round.', de: 'Ein Produkt umdrehen.' },
-    { name: 'one_mul', kind: 'rule', sig: '1 * a = a', en: 'One times.', de: 'Eins mal.' },
+    { name: 'one_mul', kind: 'lemma', sig: '1 * a = a', en: 'Proved by you in Two Coins: one times.', de: 'Von dir bewiesen in „Zwei Münzen“: Eins mal.' },
+    { name: 'zero_mul', kind: 'lemma', sig: '0 * a = 0', en: 'Proved by you in Two Coins: zero times.', de: 'Von dir bewiesen in „Zwei Münzen“: Null mal.' },
     { name: 'add_right_comm', kind: 'rule', sig: 'a + b + c = a + c + b', en: 'The last two summands swapped.', de: 'Die letzten beiden Summanden getauscht.' },
     { name: 'Nat.choose_self', kind: 'rule', sig: 'n.choose n = 1', en: 'All of n: one way.', de: 'Alle aus n: eine Möglichkeit.' },
     { name: 'Nat.choose_zero_right', kind: 'rule', sig: 'n.choose 0 = 1', en: 'None of n: one way.', de: 'Keins aus n: eine Möglichkeit.' },
@@ -3200,7 +3239,6 @@
     { name: 'coin_zero', kind: 'rule', sig: 'coin 0 = pure false', en: 'A coin with chance 0 is surely false.', de: 'Eine Münze mit Chance 0 ist sicher false.' },
     { name: 'binom_never', kind: 'lemma', sig: 'binom 0 n = pure 0', en: 'Proved by you in Counting: a coin that never shows true is never counted.', de: 'Von dir bewiesen in „Zählen“: Eine Münze, die nie true zeigt, wird nie gezählt.' },
     { name: 'coin_one', kind: 'rule', sig: 'coin 1 = pure true', en: 'A coin with chance 1 is surely true.', de: 'Eine Münze mit Chance 1 ist sicher true.' },
-    { name: 'cond_same', kind: 'rule', sig: '(bif c then a else a) = a', en: 'Both branches the same.', de: 'Beide Zweige gleich.' },
     { name: 'Nat.add_sub_cancel', kind: 'rule', sig: 'n + m - m = n', en: 'Adding and taking away.', de: 'Dazu und wieder weg.' },
     { name: 'hyper_zero', kind: 'lemma', sig: 'hyper w b 0 = pure 0', en: 'Proved by you in Hypergeometric: no draw.', de: 'Von dir bewiesen in „Hypergeometrisch“: kein Zug.' },
     { name: 'hyper_succ', kind: 'lemma', sig: 'hyper w b (n + 1) = do let X ← coin (frac w b); bif X then (1 + hyper (w - 1) b n) else hyper w (b - 1) n', en: 'Proved by you in Hypergeometric: one ball after the other.', de: 'Von dir bewiesen in „Hypergeometrisch“: eine Kugel nach der anderen.' },
@@ -3232,9 +3270,10 @@
     { name: 'ENNReal.inv_mul_cancel', kind: 'rule', sig: 'a ≠ 0 → a ≠ ⊤ → a⁻¹ * a = 1', en: 'One over a, times a.', de: 'Eins durch a, mal a.' },
     { name: 'mass_ne_zero', kind: 'rule', sig: 'p ≠ 0 → ↑p ≠ 0', en: 'A number ≠ 0 is a mass ≠ 0.', de: 'Eine Zahl ≠ 0 ist eine Masse ≠ 0.' },
     { name: 'mass_finite', kind: 'rule', sig: '↑p ≠ ⊤', en: 'A number in [0, 1] is a finite mass.', de: 'Eine Zahl in [0, 1] ist eine endliche Masse.' },
-    { name: 'bind_false', kind: 'rule', sig: '(do let x ← μ; f x) false = μ true * f true false + μ false * f false false', en: 'The mass of a bind at false: through true and through false.', de: 'Die Masse eines bind bei false: über true und über false.' },
-    { name: 'prob_unused', kind: 'rule', sig: '(do let _ ← μ; ν) = ν', en: 'A draw whose outcome is not used changes nothing.', de: 'Ein Ziehen, dessen Ergebnis nicht benutzt wird, ändert nichts.' },
     { name: 'linear_combination', kind: 'tactic', insert: 'linear_combination h', sig: 'linear_combination h', en: 'Proves the goal from the equation h by computing (with ring): goal and h differ only by computing.', de: 'Beweist das Ziel aus der Gleichung h durch Rechnen (mit ring): Ziel und h unterscheiden sich nur durch Rechnen.' },
+    { name: 'linarith', kind: 'tactic', insert: 'linarith', sig: 'linarith', en: 'Proves an equation or inequality that follows from the hypotheses by adding them up with factors (linear arithmetic, over ℝ).', de: 'Beweist eine Gleichung oder Ungleichung, die aus den Annahmen folgt, indem es sie mit Faktoren addiert (lineare Arithmetik, über ℝ).' },
+    { name: 'subst', kind: 'tactic', insert: 'subst ', sig: 'subst h', en: 'For h : x = e (or e = x) with a variable x: puts e for x everywhere, and x is gone.', de: 'Für h : x = e (oder e = x) mit einer Variablen x: setzt überall e für x ein, und x ist weg.' },
+    { name: 'push_cast', kind: 'tactic', insert: 'push_cast', sig: 'push_cast', en: 'Moves the arrows ↑ (a natural number as a real number) inward: ↑(n + 1) becomes ↑n + 1.', de: 'Schiebt die Pfeile ↑ (eine natürliche Zahl als reelle Zahl) nach innen: ↑(n + 1) wird zu ↑n + 1.' },
     { name: 'field_simp', kind: 'tactic', insert: 'field_simp', sig: 'field_simp', en: 'Multiplies an equation between fractions by its denominators (it sees by itself that they are not 0). What is left is for ring.', de: 'Multipliziert eine Gleichung zwischen Brüchen mit ihren Nennern (dass sie nicht 0 sind, sieht sie selbst). Was übrig bleibt, ist für ring.' },
     { name: 'mass_eq_ofReal', kind: 'lemma', sig: '↑p = ENNReal.ofReal p', en: 'Proved by you in Balance: a mass is a real number.', de: 'Von dir bewiesen in „Gleichgewicht“: Eine Masse ist eine reelle Zahl.' },
     { name: 'mass_mul_real', kind: 'rule', sig: '↑p * ↑q = ENNReal.ofReal (p * q)', en: 'A product of masses, as a real number.', de: 'Ein Produkt von Massen, als reelle Zahl.' },
@@ -3394,15 +3433,14 @@
       return n === 1 ? tr('One goal left.') : tr('{n} goals left.', { n })
     }
     // the inventory at this level: what was introduced up to here; the lemma of this level is not yet
-    // (tactics: those kept always, once earned, and those that the levels of this world use; your
-    // lemmas of this world always, once earned; other theorems where the level needs them)
+    // (tactics: those kept always, once earned, and those that the levels of this world use; theorems
+    // where the level needs them)
     available(item) {
       if (!item || !this.inventory.has(item.name)) return false
       if (item.kind === 'tactic' && this.without.has(item.name)) return false
       if (item.kind === 'tactic') return TACTICS_KEPT.has(item.name) || !this.worldTactics || this.worldTactics.has(item.name)
-      if (!this.uses || this.uses.has(item.name)) return true
-      // (in a world whose levels have their other solutions written down, not: there `uses` knows them)
-      return item.kind === 'lemma' && !WORLDS_ALL_SOLUTIONS.has(this.world) && [...document.querySelectorAll('[data-lemma]')].some(e => e.dataset.lemma === item.name)
+      // (theorems: those that a solution of the level uses; every level lists its natural solutions)
+      return !this.uses || this.uses.has(item.name)
     }
     isNew(item) { return this.newHere.has(item.name) }
     // the tactics that the levels of this world use (the page is the world): from the solutions
@@ -3503,7 +3541,7 @@
       if (parts.length > 1 && !this.available(INVENTORY.find(i => i.name === '<;>'))) return tr('This tactic is not in your inventory: {x}', { x: '<;>' })
       for (let t of parts) {
         t = t.trim()
-        const tac = /^(rw|simp_rw|simp only|simp|norm_num|ring|field_simp|linear_combination|rfl|decide|revert|congr|funext|ext|cases|induction'|exists|intro|have|apply|exact|constructor)(?=\s|\[|$)/.exec(t)?.[1]
+        const tac = TACTIC_HEAD().exec(t)?.[1]
         const item = INVENTORY.find(i => i.name === tac)
         if (!item || !this.available(item)) return tr('This tactic is not in your inventory: {x}', { x: t.split(/\s/)[0] || t })
         // the rules: in brackets, or the term of `have h := rule args`
@@ -3785,7 +3823,7 @@
       if (HOVER && this.box.contains(HOVER.chip)) hoverHide()
       if (this.box.hidden) return
       const head = el('h3', 'pg-proof-head', tr('Proof'))
-      const stmt = el('pre', 'pg-proof-statement', `${this.lemma ? `theorem ${this.lemma}` : 'example'} `)
+      const stmt = el('pre', 'pg-proof-statement', `${this.lemma ? theoremHead(this.lemma) : 'example'} `)
       // (the gaps: filled ones marked, the one to fill now ringed; a tap on a filled one opens it again)
       let gi = 0
       for (const part of this.template.split(/(⟦[^⟧]*⟧)/)) {

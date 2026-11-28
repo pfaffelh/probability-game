@@ -15,9 +15,9 @@ A world is measured against four questions.
 
 For each world: its goal, the tactics, how the levels get there, and what is open. The six
 proposals of the first version of this file are carried out, and after them the thin tactics got
-their levels (see the end); "open" is what is left. 14 worlds, 166 levels.
+their levels (see the end); "open" is what is left. 14 worlds, 176 levels.
 
-## 1. Bool (15 levels)
+## 1. Bool (20 levels)
 
 **Goal.** A circuit is a function, and a function on `Bool` is its truth table: two circuits are
 equal when all rows agree.
@@ -25,8 +25,11 @@ equal when all rows agree.
 **Tactics.** `rfl`, `rw`, `cases`, `<;>`.
 
 **Path.** One input, read off (`rfl`). Rewriting with what is already proved (`rw`). One input,
-both cases (`cases`). The `bif` rules. A quiz on `cases x <;> rfl`. Two inputs, four cases
-(De Morgan). Boss: xor from `and`, `or`, `not`, with its table.
+both cases (`cases`). The `bif` rules. The truth tables of `&&` and `||` as rules (`Bool.true_and`,
+`Bool.false_and`, `Bool.true_or`, `Bool.false_or`). A quiz on `cases x <;> rfl`. Two inputs, four
+cases: De Morgan (`Bool.not_and`), then `or` from `and` (`or_eq`, also from De Morgan). Boss: xor
+from `and`, `or`, `not`, with its table. Lemma levels whose lemma goes into simp later show
+`@[simp] theorem`; Bool 2 says what it means.
 
 **Open.** The boss has the same proof line as De Morgan before it; it is harder on the board only.
 
@@ -45,7 +48,7 @@ coin, by `exact mass_total (coin p)`: a theorem with its argument. At most one, 
 **Open.** `apply` meets the player first on `≠ ⊤`: a new tactic and a new kind of statement at once.
 *At most one* and *Finite* serve the subtraction in *One Coin*.
 
-## 3. One Coin (14 levels)
+## 3. One Coin (15 levels)
 
 **Goal.** One number fixes a distribution on `Bool` (`bool_ext`): every distribution on `Bool` is a
 coin, and a flipped coin is the coin `σ p`.
@@ -71,7 +74,7 @@ first board of *Laws of `do`*.
 **Open.** No board in the world itself. `cond_add_cond` and `Bool.apply_apply_apply` are not used
 again.
 
-## 5. Two Coins (8 levels)
+## 5. Two Coins (10 levels)
 
 **Goal.** A circuit with a coin at each input is a `do` block. Along a row the masses of the coins
 multiply, over the rows they add (`bind_true`): both `true` is `coin (p * q)`.
@@ -82,29 +85,32 @@ multiply, over the rows they add (`bind_true`): both `true` is `coin (p * q)`.
 simplifier on a board (at least one `true`, two ways) and its quiz. `coin_and`. The same product
 twice (`ring`). Boss: exactly one `true`, its mass computed.
 
-## 6. Laws of `do` (13 levels)
+## 6. Laws of `do` (16 levels)
 
-**Goal.** A circuit is rebuilt, not computed: three laws between moves and draws, and a coin that
+**Goal.** A circuit is rebuilt, not computed: five laws between moves and draws, and a coin that
 is not used.
 
 **Tactics.** `congr`; `cases f true <;> cases f false` for the laws; `simp_rw` under bound names.
 
-**Path.** A board: flipped twice, by `map_map`. Each law (`map_eq_pure_bind`, `bind_map_left`,
-`map_bind`, `coin_unused`), proved on `Bool` and then used on a board, in one line (a gate is a
-draw; the gate at the end; one coin too many). Boss: at least one `true`
-is `coin (σ (σ p * σ p))`, from `coin_not`, `coin_and` and De Morgan, without computing a mass.
+**Path.** A board: flipped twice, by `map_map`. Each law (`map_eq_pure_bind`, `pure_bind`,
+`bind_assoc`, `bind_map_left`, `map_bind`, `coin_unused`), proved on `Bool` (the last ones also from
+the first three) and then used on a board, in one line (a gate is a draw; the gate at the end; one
+coin too many). `eq_symm_of_add` before the boss. Boss: at least one `true` is
+`coin (σ (σ p * σ p))`, from `coin_not`, `coin_and` and De Morgan without computing a mass, or by
+computing the masses at `true` and `eq_symm_of_add`.
 
 **Open.** The laws are stated for general `μ`, `f`, `g`; only the first has its instance on a
 board before it.
 
-## 7. Counting (15 levels)
+## 7. Counting (11 levels)
 
 **Goal.** `binom p n` is the number of `true` among `n` coins, built one coin at a time; and
 counts add: `B(n, p)` and `B(m, p)` give `B(n + m, p)`.
 
 **Tactics.** `simp_rw` with `pure_bind`, `bind_assoc`; `induction'`.
 
-**Path.** `toNat`. `binom_zero`, `binom_succ`. Two and three coins are `binom p 2`, `binom p 3`; a
+**Path.** `toNat`. `binom_zero`, `binom_succ`. Two and three coins (with `pure_bind`, `bind_assoc`
+from Laws of `do`; the levels that brought them and `add_zero`, `add_assoc` are gone since 2026-11-28) are `binom p 2`, `binom p 3`; a
 quiz on which circuits are `binom`. The majority of three. A first induction with a one-line step:
 a coin that never shows `true` (`binom_never`). The coin at the other end (`binom_succ'`). Boss:
 `binom_add`.
@@ -216,6 +222,18 @@ A new tactic with a tip of its own shows only that tip, not the card of the tact
 convenience is better shown as what it means, with the handy form proved by the player as a lemma
 (`map_apply` as the image measure, `∑ a with f a = b, μ a`; `map_bool`, written out on `Bool`, is
 yours). Where `rfl` would skip the rewriting to be learnt, the level takes it away (`-rfl` in `uses`).
+
+**Proved before used.** As far as possible, a rule is proved by the player before it is in the
+inventory: the truth tables of `&&` and `||` and De Morgan in Bool, `add_zero` in One Coin (from
+`add_comm` and `zero_add`), `one_mul` and `zero_mul` in Two Coins, the laws `pure_bind` and
+`bind_assoc` in Laws of `do` (on `Bool`, then for every type). Given are only the basic rules of
+computing (`zero_add`, `mul_one`, `mul_zero`, `mul_comm`, `add_mul`, …) and Mathlib's tools.
+
+**The game's simp.** `simp` is `simp only` with the simp-marked rules that the player has: proved
+or given, nothing else. A lemma level whose lemma later goes into simp shows `@[simp] theorem`.
+
+**Several solutions.** Every level lists its natural solutions (several `:::solution`, 2–4): a
+theorem or tactic is shown and allowed in a level only when one of them uses it.
 
 **Tactics per world.** A world has the tactics that its levels use (their solutions and quizzes,
 written into `uses` by `tests/uses.py`), as far as earned; `rfl`, `exact`, `rw`, `cases` and `ring`

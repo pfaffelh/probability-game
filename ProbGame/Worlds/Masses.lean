@@ -137,7 +137,7 @@ rfl
 :::
 :::::
 
-:::::leanonly (proof := "(p : I) : coin p true = p ∧ coin p false = σ p") (new := "constructor") (uses := "constructor, rfl")
+:::::leanonly (proof := "(p : I) : coin p true = p ∧ coin p false = σ p") (new := "constructor") (uses := "coin_true, coin_false, coin_total, <;>, constructor, rfl, rw")
 ::::hint (anchor := "item:constructor")
 :::en
 `constructor`: a goal `A ∧ B` becomes two goals, `A` and `B`.
@@ -170,6 +170,18 @@ rfl
 rfl
 ```
 :::
+:::solution
+```
+constructor <;> rfl
+```
+:::
+:::solution
+```
+constructor
+rw [coin_true]
+rw [coin_false]
+```
+:::
 :::::
 
 ::::leanonly (proof := "(p : I) : 0 + coin p true = p") (new := "zero_add") (uses := "zero_add, coin_true, add_zero, mul_zero, coin_false, coin_total, rw, -rfl")
@@ -198,6 +210,12 @@ geschlossen.
 ```
 rw [zero_add]
 rw [coin_true]
+```
+:::
+:::solution
+```
+rw [coin_true]
+rw [zero_add]
 ```
 :::
 ::::
@@ -231,9 +249,14 @@ Hier ist `g a` gleich `bif a then x else y`.
 rw [Fintype.sum_bool, Bool.cond_true, Bool.cond_false]
 ```
 :::
+:::solution
+```
+rw [Fintype.sum_bool, Bool.cond_false, Bool.cond_true]
+```
+:::
 ::::
 
-::::leanonly (proof := "(c : Bool) : (c == true) = ⟦c ‖ c, !c, true⟧") (lemma := "beq_true") (uses := "<;>, cases, rfl")
+::::leanonly (proof := "(c : Bool) : (c == true) = ⟦c ‖ c, !c, true⟧") (lemma := "beq_true") (uses := "beq_self_eq_true, <;>, cases, rfl, rw")
 :::hint (anchor := "none")
 :::
 
@@ -260,9 +283,23 @@ aus.
 cases c <;> rfl
 ```
 :::
+:::solution
+```
+cases c
+rfl
+rfl
+```
+:::
+:::solution
+```
+cases c
+rfl
+rw [beq_self_eq_true]
+```
+:::
 ::::
 
-:::::leanonly (proof := "(b : Bool) : (true == b) = ⟦b ‖ b, !b, true⟧") (lemma := "Bool.true_beq") (uses := "beq_self_eq_true, cases, rfl, rw")
+:::::leanonly (proof := "(b : Bool) : (true == b) = ⟦b ‖ b, !b, true⟧") (lemma := "Bool.true_beq") (uses := "beq_self_eq_true, beq_true, <;>, cases, rfl, rw")
 ::::hint (anchor := "none")
 ::::
 
@@ -278,6 +315,18 @@ cases c <;> rfl
 cases b
 rfl
 rw [beq_self_eq_true]
+```
+:::
+:::solution
+```
+cases b <;> rfl
+```
+:::
+:::solution
+```
+cases b
+rfl
+rw [beq_true]
 ```
 :::
 :::::
@@ -320,7 +369,7 @@ rw [Fintype.sum_bool]
 :::
 ::::
 
-::::leanonly (proof := "(f : Bool → Bool) (μ : DiscreteMeasure Bool) : (μ.map f) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)") (lemma := "map_true") (uses := "map_bool, beq_true, rw")
+::::leanonly (proof := "(f : Bool → Bool) (μ : DiscreteMeasure Bool) : (μ.map f) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)") (lemma := "map_true") (uses := "map_bool, beq_true, map_apply, sum_with, Fintype.sum_bool, <;>, cases, rfl, rw")
 :::en
 *The rule of the gates.* `map_bool` at `b = true`.
 :::
@@ -342,9 +391,20 @@ rw [map_bool]
 rw [beq_true, beq_true]
 ```
 :::
+:::solution
+```
+rw [map_apply, sum_with, Fintype.sum_bool, beq_true, beq_true]
+```
+:::
+:::solution
+```
+rw [map_bool]
+cases f true <;> cases f false <;> rfl
+```
+:::
 ::::
 
-:::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (μ.map (fun _ => true)) true = ⟦μ true + μ false ‖ μ true, μ false, μ true + μ false, 0⟧") (uses := "map_true, Bool.cond_true, Bool.cond_false, rw, -rfl")
+:::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (μ.map (fun _ => true)) true = ⟦μ true + μ false ‖ μ true, μ false, μ true + μ false, 0⟧") (uses := "map_true, Bool.cond_true, map_bool, beq_self_eq_true, beq_true, Bool.cond_false, rw, -rfl")
 ::::hint (anchor := "gap")
 :::en
 Which masses of `μ` come to `true`?
@@ -376,9 +436,19 @@ rw [map_true]
 rw [Bool.cond_true, Bool.cond_true]
 ```
 :::
+:::solution
+```
+rw [map_bool, beq_self_eq_true, Bool.cond_true, Bool.cond_true]
+```
+:::
+:::solution
+```
+rw [map_bool, beq_true, Bool.cond_true, Bool.cond_true]
+```
+:::
 :::::
 
-:::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ true + μ false = 1") (lemma := "mass_total") (new := "Prob.total, tsum_fintype") (uses := "Prob.total, tsum_fintype, Fintype.sum_bool, rw")
+:::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ true + μ false = 1") (lemma := "mass_total") (new := "Prob.total, tsum_bool, add_comm") (uses := "Prob.total, tsum_bool, add_comm, add_assoc, rw")
 :::en
 *The whole mass.* `[Prob μ]` says: `μ` is a distribution, its masses add up to one. On `Bool` there
 are two of them.
@@ -413,23 +483,35 @@ ihre rechte steht. Tippe `←` an, oder tippe `\l`.
 
 :::proofen
 `Prob.total μ : ∑' a, μ a = 1` is a sum over all points, `∑'`; read from right to left, it makes the
-`1` of the goal this sum. `tsum_fintype` turns a sum over all points of a finite type into a finite
-sum `∑`.
+`1` of the goal this sum. `tsum_bool` writes a sum over `Bool` as its two terms, `false` first;
+`add_comm : a + b = b + a` turns them round.
 :::
 
 :::proofde
 `Prob.total μ : ∑' a, μ a = 1` ist eine Summe über alle Punkte, `∑'`; von rechts nach links gelesen
-macht sie die `1` des Ziels zu dieser Summe. `tsum_fintype` macht eine Summe über alle Punkte eines
-endlichen Typs zu einer endlichen Summe `∑`.
+macht sie die `1` des Ziels zu dieser Summe. `tsum_bool` schreibt eine Summe über `Bool` als ihre
+zwei Summanden, `false` zuerst; `add_comm : a + b = b + a` dreht sie um.
 :::
 :::solution
 ```
-rw [← Prob.total μ, tsum_fintype, Fintype.sum_bool]
+rw [← Prob.total μ, tsum_bool, add_comm]
+```
+:::
+:::solution
+```
+rw [← Prob.total μ]
+rw [tsum_bool]
+rw [add_comm]
+```
+:::
+:::solution
+```
+rw [add_comm, ← tsum_bool, Prob.total]
 ```
 :::
 :::::
 
-:::::leanonly (proof := "(p : I) : coin p true + coin p false = ⟦1 ‖ 0, 1, p⟧") (lemma := "coin_total") (new := "exact") (uses := "mass_total, coin_total, exact")
+:::::leanonly (proof := "(p : I) : coin p true + coin p false = ⟦1 ‖ 0, 1, p⟧") (lemma := "coin_total") (new := "exact") (uses := "mass_total, Prob.total, tsum_bool, add_comm, coin_total, add_assoc, exact, rw")
 ::::hint (anchor := "item:exact")
 :::en
 `exact h`: closes a goal that is exactly `h`.
@@ -464,9 +546,19 @@ als ein Name ist. Die neue Taktik `exact h` schließt ein Ziel, das genau `h` is
 exact mass_total (coin p)
 ```
 :::
+:::solution
+```
+rw [mass_total]
+```
+:::
+:::solution
+```
+rw [← Prob.total (coin p), tsum_bool, add_comm]
+```
+:::
 :::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b ≤ 1") (lemma := "mass_le_one") (new := "le_self_add, add_comm") (uses := "mass_total, add_comm, le_self_add, coin_total, add_assoc, cases, exact, rw")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (b : Bool) : μ b ≤ 1") (lemma := "mass_le_one") (new := "le_self_add") (uses := "mass_total, add_comm, le_self_add, coin_total, add_assoc, <;>, cases, exact, rw")
 :::en
 *At most one.* Each mass is a part of the whole mass, so at most one.
 :::
@@ -490,6 +582,23 @@ die Summe um.
 ```
 rw [← mass_total μ]
 cases b
+rw [add_comm]
+exact le_self_add
+exact le_self_add
+```
+:::
+:::solution
+```
+cases b
+rw [← mass_total μ, add_comm]
+exact le_self_add
+rw [← mass_total μ]
+exact le_self_add
+```
+:::
+:::solution
+```
+cases b <;> rw [← mass_total μ]
 rw [add_comm]
 exact le_self_add
 exact le_self_add
@@ -525,9 +634,20 @@ apply ne_top_of_le_ne_top ENNReal.one_ne_top
 exact mass_le_one μ b
 ```
 :::
+:::solution
+```
+exact ne_top_of_le_ne_top ENNReal.one_ne_top (mass_le_one μ b)
+```
+:::
+:::solution
+```
+apply ne_top_of_le_ne_top ENNReal.one_ne_top
+apply mass_le_one
+```
+:::
 :::::
 
-:::::circuit (height := "440") (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : ((coin p).map not) true = σ p") (lemma := "coin_not_true") (play := "a=not; x>a.0; a>out") (uses := "map_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, coin_false, add_zero, mul_zero, coin_true, coin_total, rw, -rfl")
+:::::circuit (height := "440") (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : ((coin p).map not) true = σ p") (lemma := "coin_not_true") (play := "a=not; x>a.0; a>out") (uses := "map_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, coin_false, map_bool, beq_true, add_zero, mul_zero, coin_true, coin_total, exact, rw, -rfl")
 :::hint (anchor := "none")
 :::
 
@@ -559,6 +679,19 @@ rw [map_true]
 rw [Bool.not_true, Bool.not_false]
 rw [Bool.cond_false, Bool.cond_true, zero_add]
 rw [coin_false]
+```
+:::
+:::solution
+```
+rw [map_bool, beq_true, beq_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, coin_false]
+```
+:::
+:::solution
+```
+rw [map_true]
+rw [Bool.not_true, Bool.not_false]
+rw [Bool.cond_false, Bool.cond_true, zero_add]
+exact coin_false p
 ```
 :::
 :::::

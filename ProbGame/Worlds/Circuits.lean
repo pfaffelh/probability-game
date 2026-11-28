@@ -106,6 +106,16 @@ rfl
 :::::
 
 :::::circuit (height := "400") (inputs := "x") (gates := "not") (table := "10") (goal := "!x") (shape := "!x") (proof := ": (!true) = false") (lemma := "Bool.not_true") (play := "a=not; x>a.0; a>out") (uses := "rfl")
+::::hint (anchor := "statement")
+:::en
+`@[simp]` marks a lemma for the simplifier `simp`, which you meet later: it then uses the lemma by itself.
+:::
+
+:::de
+`@[simp]` markiert ein Lemma für den Simplifier `simp`, den du später kennenlernst: Er benutzt das Lemma dann von selbst.
+:::
+::::
+
 :::en
 *Not.* The output is to be the other value: `false` for `true`, and `true` for `false`. Drag `not`
 onto the board, then wire `x` to it and it to the output.
@@ -296,6 +306,22 @@ rw [Bool.not_false, Bool.not_true]
 rw [Bool.not_true, Bool.not_false]
 ```
 :::
+:::solution
+```
+cases x
+rfl
+rw [Bool.not_true, Bool.not_false]
+```
+:::
+:::solution
+```
+cases x
+rw [Bool.not_false]
+rfl
+rw [Bool.not_true]
+rfl
+```
+:::
 :::::
 
 :::::circuit (height := "500") (inputs := "x") (gates := "not, or, and") (table := "11") (goal := "true") (proof := "(x : Bool) : (x || !x) = true") (lemma := "Bool.or_not_self") (play := "a=not; b=or; x>a.0; x>b.0; a>b.1; b>out") (uses := "Bool.not_false, Bool.not_true, cases, rfl, rw")
@@ -335,9 +361,25 @@ rw [Bool.not_true]
 rfl
 ```
 :::
+:::solution
+```
+cases x
+rw [Bool.not_false]
+rfl
+rfl
+```
+:::
+:::solution
+```
+cases x
+rfl
+rw [Bool.not_true]
+rfl
+```
+:::
 :::::
 
-::::leanonly (proof := "(a b : Bool) : (bif true then a else b) = ⟦a ‖ a, b, true, false⟧") (lemma := "Bool.cond_true") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "rfl")
+::::leanonly (proof := "(a b : Bool) : (bif true then a else b) = ⟦a ‖ a, b, true, false⟧") (lemma := "Bool.cond_true") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "cases, rfl")
 :::en
 *bif with true.* `bif` is Lean's *Boolean if*: `bif c then a else b` is if-then-else with a
 condition `c : Bool`.
@@ -350,6 +392,13 @@ Bedingung `c : Bool`.
 
 :::solution
 ```
+rfl
+```
+:::
+:::solution
+```
+cases a
+rfl
 rfl
 ```
 :::
@@ -438,9 +487,17 @@ rw [Bool.not_true]
 rfl
 ```
 :::
+:::solution
+```
+cases x
+rfl
+rw [Bool.not_true]
+rfl
+```
+:::
 :::::
 
-::::leanonly (proof := "(a b : Bool) : (bif false then a else b) = ⟦b ‖ a, b, true, false⟧") (lemma := "Bool.cond_false") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "rfl")
+::::leanonly (proof := "(a b : Bool) : (bif false then a else b) = ⟦b ‖ a, b, true, false⟧") (lemma := "Bool.cond_false") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "<;>, cases, rfl")
 :::hint (anchor := "none")
 :::
 
@@ -453,6 +510,138 @@ rfl
 :::
 :::solution
 ```
+rfl
+```
+:::
+:::solution
+```
+cases b
+rfl
+rfl
+```
+:::
+:::solution
+```
+cases b <;> rfl
+```
+:::
+::::
+
+::::leanonly (proof := "(x : Bool) : (true && x) = ⟦x ‖ x, true, false⟧") (lemma := "Bool.true_and") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "<;>, cases, rfl")
+:::hint (anchor := "none")
+:::
+
+:::en
+*true and x.* The table of `&&`, as a rule: `&&` looks at its left side first. If it is `true`, the right side decides.
+:::
+
+:::de
+*true und x.* Die Tabelle von `&&`, als Regel: `&&` schaut zuerst auf seine linke Seite. Ist sie `true`, entscheidet die rechte.
+:::
+:::solution
+```
+rfl
+```
+:::
+:::solution
+```
+cases x <;> rfl
+```
+:::
+:::solution
+```
+cases x
+rfl
+rfl
+```
+:::
+::::
+
+::::leanonly (proof := "(x : Bool) : (false && x) = ⟦false ‖ false, true, x⟧") (lemma := "Bool.false_and") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "<;>, cases, rfl")
+:::hint (anchor := "none")
+:::
+
+:::en
+*false and x.* If the left side is `false`, the right side does not matter.
+:::
+
+:::de
+*false und x.* Ist die linke Seite `false`, spielt die rechte keine Rolle.
+:::
+:::solution
+```
+rfl
+```
+:::
+:::solution
+```
+cases x <;> rfl
+```
+:::
+:::solution
+```
+cases x
+rfl
+rfl
+```
+:::
+::::
+
+::::leanonly (proof := "(x : Bool) : (true || x) = ⟦true ‖ true, false, x⟧") (lemma := "Bool.true_or") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "<;>, cases, rfl")
+:::hint (anchor := "none")
+:::
+
+:::en
+*true or x.* The table of `||`: with `true` on the left, the right side does not matter.
+:::
+
+:::de
+*true oder x.* Die Tabelle von `||`: Mit `true` links spielt die rechte Seite keine Rolle.
+:::
+:::solution
+```
+rfl
+```
+:::
+:::solution
+```
+cases x <;> rfl
+```
+:::
+:::solution
+```
+cases x
+rfl
+rfl
+```
+:::
+::::
+
+::::leanonly (proof := "(x : Bool) : (false || x) = ⟦x ‖ x, true, false⟧") (lemma := "Bool.false_or") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "<;>, cases, rfl")
+:::hint (anchor := "none")
+:::
+
+:::en
+*false or x.* With `false` on the left, the right side decides. With these four rules you can compute `&&` and `||` step by step.
+:::
+
+:::de
+*false oder x.* Mit `false` links entscheidet die rechte Seite. Mit diesen vier Regeln rechnest du `&&` und `||` Schritt für Schritt aus.
+:::
+:::solution
+```
+rfl
+```
+:::
+:::solution
+```
+cases x <;> rfl
+```
+:::
+:::solution
+```
+cases x
+rfl
 rfl
 ```
 :::
@@ -519,26 +708,70 @@ rfl
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "not, and") (table := "0111") (goal := "x || y") (proof := "(x y : Bool) : (x || y) = !(!x && !y)") (lemma := "or_eq") (play := "a=not; b=not; c=and; d=not; x>a.0; y>b.0; a>c.0; b>c.1; c>d.0; d>out") (uses := "Bool.not_false, Bool.not_true, <;>, cases, rfl, rw")
+::::leanonly (proof := "(x y : Bool) : (!(x && y)) = (!x || !y)") (lemma := "Bool.not_and") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "Bool.false_and, Bool.not_false, Bool.true_or, Bool.true_and, Bool.not_true, Bool.false_or, <;>, cases, rfl, rw")
+:::en
+*De Morgan.* Not both `true` means: at least one of them is not `true`.
+:::
+
+:::de
+*De Morgan.* Nicht beide `true` heißt: Mindestens eines von ihnen ist nicht `true`.
+:::
+
+:::proofen
+Your result becomes the lemma `Bool.not_and`.
+:::
+
+:::proofde
+Dein Ergebnis wird das Lemma `Bool.not_and`.
+:::
+:::solution
+```
+cases x <;> cases y <;> rfl
+```
+:::
+:::solution
+```
+cases x
+rw [Bool.false_and, Bool.not_false, Bool.true_or]
+rw [Bool.true_and, Bool.not_true, Bool.false_or]
+```
+:::
+:::solution
+```
+cases x <;> rfl
+```
+:::
+:::solution
+```
+cases x
+rw [Bool.false_and, Bool.not_false, Bool.true_or]
+rfl
+```
+:::
+::::
+
+::::circuit (inputs := "x y") (gates := "not, and") (table := "0111") (goal := "x || y") (proof := "(x y : Bool) : (x || y) = !(!x && !y)") (lemma := "or_eq") (play := "a=not; b=not; c=and; d=not; x>a.0; y>b.0; a>c.0; b>c.1; c>d.0; d>out") (uses := "Bool.not_false, Bool.not_true, Bool.true_and, Bool.not_not, Bool.false_or, Bool.false_and, Bool.true_or, Bool.not_and, <;>, cases, rfl, rw")
 :::hint (anchor := "none")
 :::
 
 :::en
-*De Morgan.* An `or`, built without `or`: from `not` and `and` alone. Two inputs now.
+*`or` from `and`.* An `or`, built without `or`: from `not` and `and` alone. Two inputs now.
 :::
 
 :::de
-*De Morgan.* Ein `oder`, gebaut ohne `oder`: nur aus `nicht` und `und`. Jetzt mit zwei Eingängen.
+*`oder` aus `und`.* Ein `oder`, gebaut ohne `oder`: nur aus `nicht` und `und`. Jetzt mit zwei Eingängen.
 :::
 
 :::proofen
 At least one is `true` exactly when not both are `false`. Two variables, so four cases: with `<;>`
-in one line. Your result becomes the lemma `or_eq`.
+in one line. Or without cases, with De Morgan from the level before. Your result becomes the lemma
+`or_eq`.
 :::
 
 :::proofde
 Mindestens eins ist `true` genau dann, wenn nicht beide `false` sind. Zwei Variablen, also vier Fälle:
-mit `<;>` in einer Zeile. Dein Ergebnis wird das Lemma `or_eq`.
+mit `<;>` in einer Zeile. Oder ohne Fälle, mit De Morgan aus dem Level davor. Dein Ergebnis wird das
+Lemma `or_eq`.
 :::
 :::solution
 ```
@@ -569,9 +802,30 @@ rw [Bool.not_true]
 rfl
 ```
 :::
+:::solution
+```
+cases x
+rw [Bool.not_false, Bool.true_and, Bool.not_not, Bool.false_or]
+rw [Bool.not_true, Bool.false_and, Bool.not_false, Bool.true_or]
+```
+:::
+:::solution
+```
+cases x
+rw [Bool.not_false, Bool.true_and, Bool.not_not]
+rfl
+rw [Bool.not_true, Bool.false_and, Bool.not_false]
+rfl
+```
+:::
+:::solution
+```
+rw [Bool.not_and, Bool.not_not, Bool.not_not]
+```
+:::
 ::::
 
-::::circuit (inputs := "x y") (gates := "and, or, not") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : ((x || y) && !(x && y)) = (x ^^ y)") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out") (uses := "<;>, cases, rfl")
+::::circuit (inputs := "x y") (gates := "and, or, not") (table := "0110") (goal := "x ^^ y") (proof := "(x y : Bool) : ((x || y) && !(x && y)) = (x ^^ y)") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out") (uses := "Bool.false_or, Bool.false_and, Bool.not_false, Bool.true_or, Bool.true_and, Bool.not_and, Bool.not_true, <;>, cases, rfl, rw")
 :::hint (anchor := "none")
 :::
 
@@ -607,6 +861,25 @@ rfl
 cases y
 rfl
 rfl
+```
+:::
+:::solution
+```
+cases x
+rw [Bool.false_or, Bool.false_and, Bool.not_false]
+cases y <;> rfl
+rw [Bool.true_or, Bool.true_and, Bool.true_and]
+cases y <;> rfl
+```
+:::
+:::solution
+```
+rw [Bool.not_and]
+cases x
+rw [Bool.false_or, Bool.not_false, Bool.true_or]
+cases y <;> rfl
+rw [Bool.true_or, Bool.true_and, Bool.not_true, Bool.false_or]
+cases y <;> rfl
 ```
 :::
 ::::

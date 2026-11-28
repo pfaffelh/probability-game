@@ -49,7 +49,7 @@ Die Schaltung, von oben nach unten gelesen, ist ein `do`-Block in Lean: jede Mü
 Ergebnis, mit dem, was die Bausteine rechnen. Die Beweise lernen die Regeln der `do`-Blöcke eine nach
 der anderen, wenn ein Level sie braucht; zuerst, was ein `do`-Block ist.
 :::
-:::::circuit (height := "440") (inputs := "x y") (gates := "") (coins := "p p") (target := "bool true:p false:1-p") (start := "a=and; a>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; pure (x && x)) = coin p") (new := "bind_pure") (play := "x>a.0; x>a.1") (uses := "Bool.and_self, bind_pure, pure_bind, simp_rw")
+:::::circuit (height := "440") (inputs := "x y") (gates := "") (coins := "p p") (target := "bool true:p false:1-p") (start := "a=and; a>out") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; pure (x && x)) = coin p") (new := "bind_pure") (play := "x>a.0; x>a.1") (uses := "Bool.and_self, bind_pure, pure_bind, exact, rw, simp_rw")
 ::::hint (anchor := "statement")
 :::en
 `x` is not a random variable: it is the name of one draw from `coin p`, and the whole `do` block is a
@@ -98,6 +98,18 @@ wie das `x` von `fun x => …` in *Abbildungen*. (Lean selbst liest `do let x �
 simp_rw [Bool.and_self, bind_pure]
 ```
 :::
+:::solution
+```
+simp_rw [Bool.and_self]
+rw [bind_pure]
+```
+:::
+:::solution
+```
+simp_rw [Bool.and_self]
+exact bind_pure (coin p)
+```
+:::
 :::::
 
 ::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (do let x ← μ; f x) = μ.bind f") (uses := "rfl")
@@ -128,7 +140,7 @@ rfl
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (do let x ← μ; f x) true = μ true * f true true + μ false * f false true") (new := "bind_apply") (lemma := "bind_true") (uses := "bind_apply, Fintype.sum_bool, rw")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) (f : Bool → DiscreteMeasure Bool) : (do let x ← μ; f x) true = μ true * f true true + μ false * f false true") (new := "bind_apply") (lemma := "bind_true") (uses := "bind_apply, Fintype.sum_bool, exact, rw, simp_rw")
 :::en
 *Two ways to true.* The mass of `do let x ← μ; f x` at `true` comes two ways: the first draw is
 `true`, or it is `false`.
@@ -168,9 +180,81 @@ Auf einem endlichen Typ ist `∑'` die endliche Summe `∑`, und das ist die neu
 rw [bind_apply, Fintype.sum_bool]
 ```
 :::
+:::solution
+```
+simp_rw [bind_apply, Fintype.sum_bool]
+```
+:::
+:::solution
+```
+rw [bind_apply]
+exact Fintype.sum_bool _
+```
+:::
 ::::
 
-:::::circuit (height := "440") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:2p-p^2 false:(1-p)^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x || y)) true = (↑p + ↑(σ p) * ↑p : ℝ≥0∞)") (play := "a=or; x>a.0; y>a.1; a>out") (new := "simp") (uses := "bind_true, bind_false, rw, simp")
+::::leanonly (proof := "(a : ℝ≥0∞) : 1 * a = ⟦a ‖ a, 1, 0⟧") (lemma := "one_mul") (new := "mul_one, mul_comm") (uses := "mul_comm, mul_one, one_mul, rw")
+:::en
+*One times.* In `bind_true` masses are multiplied, and a point mass brings factors `1` and `0`. You get
+`mul_one : a * 1 = a` and `mul_comm : a * b = b * a`; the one on the left is yours to prove.
+:::
+
+:::de
+*Eins mal.* In `bind_true` werden Massen multipliziert, und eine Punktmasse bringt Faktoren `1` und
+`0`. Du bekommst `mul_one : a * 1 = a` und `mul_comm : a * b = b * a`; die Eins links beweist du
+selbst.
+:::
+
+:::proofen
+Your result becomes the lemma `one_mul`.
+:::
+
+:::proofde
+Dein Ergebnis wird das Lemma `one_mul`.
+:::
+:::solution
+```
+rw [mul_comm, mul_one]
+```
+:::
+:::solution
+```
+rw [mul_comm]
+rw [mul_one]
+```
+:::
+::::
+
+::::leanonly (proof := "(a : ℝ≥0∞) : 0 * a = ⟦0 ‖ a, 1, 0⟧") (lemma := "zero_mul") (new := "mul_zero") (uses := "mul_comm, mul_zero, zero_add, rw")
+:::en
+*Zero times.* The same with `0`: you get `mul_zero : a * 0 = 0`.
+:::
+
+:::de
+*Null mal.* Dasselbe mit `0`: Du bekommst `mul_zero : a * 0 = 0`.
+:::
+
+:::proofen
+Your result becomes the lemma `zero_mul`.
+:::
+
+:::proofde
+Dein Ergebnis wird das Lemma `zero_mul`.
+:::
+:::solution
+```
+rw [mul_comm, mul_zero]
+```
+:::
+:::solution
+```
+rw [mul_comm]
+rw [mul_zero]
+```
+:::
+::::
+
+:::::circuit (height := "440") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:2p-p^2 false:(1-p)^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure (x || y)) true = (↑p + ↑(σ p) * ↑p : ℝ≥0∞)") (play := "a=or; x>a.0; y>a.1; a>out") (new := "simp") (uses := "bind_true, coin_true, coin_false, coin_total, rw, simp, simp_rw")
 ::::hint (anchor := "item:simp")
 :::en
 `simp`: the simplifier, with all rules marked simp.
@@ -194,8 +278,8 @@ The right side is the two ways: `bind_true`, once for each draw. What is left is
 now on the simplifier does it: `simp` rewrites with a whole list of rules, again and again, until
 none applies any more, and it computes with numbers.
 
-Which rules are in the list? In the inventory they now carry the mark *simp*; a few simple ones are
-always there, such as `zero_add`, `add_zero`, `mul_one` and `true && b = b`. Not in the list are
+Which rules are in the list? In the inventory they now carry the mark *simp*: rules that you proved
+or were given, such as `zero_add`, `add_zero`, `mul_one` and `Bool.true_and`. Not in the list are
 rules like `bool_ext`, `map_true`, `mass_not` or `add_comm`: they change what you prove, or could go
 on forever, and you apply them yourself. `simp [h]` puts a rule `h` into the list for this one call.
 :::
@@ -205,8 +289,8 @@ Die rechte Seite sind die zwei Wege: `bind_true`, einmal für jeden Zug. Was ble
 das macht ab jetzt der Simplifier: `simp` schreibt mit einer ganzen Liste von Regeln um, immer
 wieder, bis keine mehr passt, und er rechnet mit Zahlen.
 
-Welche Regeln stehen in der Liste? Im Inventar tragen sie jetzt die Marke *simp*; ein paar einfache
-sind immer dabei, etwa `zero_add`, `add_zero`, `mul_one` und `true && b = b`. Nicht in der Liste
+Welche Regeln stehen in der Liste? Im Inventar tragen sie jetzt die Marke *simp*: Regeln, die du
+bewiesen oder bekommen hast, etwa `zero_add`, `add_zero`, `mul_one` und `Bool.true_and`. Nicht in der Liste
 sind Regeln wie `bool_ext`, `map_true`, `mass_not` oder `add_comm`: Sie ändern, was du beweist, oder
 könnten endlos laufen, und du wendest sie selbst an. `simp [h]` nimmt eine Regel `h` für diesen
 einen Aufruf in die Liste auf.
@@ -214,6 +298,24 @@ einen Aufruf in die Liste auf.
 :::solution
 ```
 rw [bind_true, bind_true, bind_true]
+simp
+```
+:::
+:::solution
+```
+simp_rw [bind_true]
+simp
+```
+:::
+:::solution
+```
+simp [bind_true]
+```
+:::
+:::solution
+```
+rw [bind_true, bind_true, bind_true]
+rw [coin_true, coin_false]
 simp
 ```
 :::
@@ -231,7 +333,7 @@ dieser Aussagen beweist es?
 :::
 ::::
 
-::::circuit (height := "440") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:p^2 false:1-p^2") (context := "Lean/Rules.lean") (proof := "(p q : I) : (do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)") (lemma := "coin_and") (new := "mass_mul") (play := "a=and; x>a.0; y>a.1; a>out") (uses := "bool_ext, bind_true, mass_mul, bind_false, apply, rw, simp")
+::::circuit (height := "440") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:p^2 false:1-p^2") (context := "Lean/Rules.lean") (proof := "(p q : I) : (do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)") (lemma := "coin_and") (new := "mass_mul") (play := "a=and; x>a.0; y>a.1; a>out") (uses := "bool_ext, bind_true, mass_mul, eq_coin, apply, rw, simp")
 :::en
 *Both `true`.* Two coins, and `true` only when both show `true`.
 :::
@@ -269,6 +371,27 @@ rw [bind_true, bind_true, bind_true]
 simp [mass_mul]
 ```
 :::
+:::solution
+```
+apply eq_coin
+rw [bind_true, bind_true, bind_true]
+simp [mass_mul]
+```
+:::
+:::solution
+```
+apply bool_ext
+simp [bind_true, mass_mul]
+```
+:::
+:::solution
+```
+apply bool_ext
+rw [bind_true, bind_true, bind_true]
+simp
+rw [mass_mul]
+```
+:::
 ::::
 
 ::::leanonly (proof := "(a b : ℝ≥0∞) : a * b + b * a = 2 * a * b") (new := "ring") (uses := "ring")
@@ -303,7 +426,7 @@ ring
 :::
 ::::
 
-::::circuit (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:2p(1-p) false:p^2+(1-p)^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure ((x || y) && !(x && y))) true = (2 * ↑p * ↑(σ p) : ℝ≥0∞)") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out") (uses := "bind_true, bind_false, ring, rw, simp")
+::::circuit (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:2p(1-p) false:p^2+(1-p)^2") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; let y ← coin p; pure ((x || y) && !(x && y))) true = (2 * ↑p * ↑(σ p) : ℝ≥0∞)") (play := "a=or; b=and; c=not; d=and; x>a.0; y>a.1; x>b.0; y>b.1; b>c.0; a>d.0; c>d.1; d>out") (uses := "bind_true, coin_true, coin_false, coin_total, ring, rw, simp, simp_rw")
 :::en
 *Boss: exactly one `true`*, without a function for it: at least one, but not both.
 :::
@@ -322,6 +445,27 @@ ring
 :::solution
 ```
 rw [bind_true, bind_true, bind_true]
+simp
+ring
+```
+:::
+:::solution
+```
+simp_rw [bind_true]
+simp
+ring
+```
+:::
+:::solution
+```
+simp [bind_true]
+ring
+```
+:::
+:::solution
+```
+rw [bind_true, bind_true, bind_true]
+rw [coin_true, coin_false]
 simp
 ring
 ```
