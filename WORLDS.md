@@ -15,7 +15,7 @@ A world is measured against four questions.
 
 For each world: its goal, the tactics, how the levels get there, and what is open. The six
 proposals of the first version of this file are carried out, and after them the thin tactics got
-their levels (see the end); "open" is what is left. 13 worlds, 184 levels.
+their levels (see the end); "open" is what is left. 13 worlds, 187 levels.
 
 ## 1. Bool (31 levels)
 
@@ -33,7 +33,7 @@ from `and`, `or`, `not`, with its table. Lemma levels whose lemma goes into simp
 
 **Open.** The boss has the same proof line as De Morgan before it; it is harder on the board only.
 
-## 2. ENNReal (12 levels)
+## 2. ENNReal (15 levels)
 
 **Goal.** Computing with masses: numbers in `[0, ∞]` (`ℝ≥0∞`), where taking away stops at 0 and `∞`
 swallows.
@@ -44,8 +44,8 @@ swallows.
 (proved, from `mul_one`, `mul_zero`, `mul_comm`); `add_mul`, `mul_add`; taking away (`tsub_self`,
 `tsub_zero`); `ENNReal.add_sub_cancel_left` with a hypothesis `a ≠ ∞` (and `top_add`, why);
 `a ≤ b + a` (`le_self_add`, `exact`); `a ≤ 1 → a ≠ ∞` (`apply ne_top_of_le_ne_top`). Probabilities as masses: `I`, `↑p`, `σ p`, the rules
-`add_symm_eq_one` and `mass_one`. Boss: a
-computation with all of them.
+`add_symm_eq_one` and `mass_one`; `mass_mul`, `mass_zero`; `symm_twice`, `one_sub_symm`; `mass_finite`
+(as the hypothesis of `ENNReal.add_sub_cancel_left`). Boss: a computation with them, on a probability.
 
 ## 3. DiscreteMeasure (17 levels)
 

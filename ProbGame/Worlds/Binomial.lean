@@ -692,7 +692,7 @@ ring
 :::
 ::::
 
-::::circuit (height := "700") (size := "big") (route := "count") (inputs := "x y z") (gates := "not, toNat, plus") (coins := "p p p") (target := "nat 0:p^3 1:3p^2(1-p) 2:3p(1-p)^2 3:(1-p)^3") (context := "Lean/Rules.lean") (proof := "(p : I) (k m : ℕ) : binom (σ p) (k + m) m = binom p (k + m) k") (lemma := "binom_symm") (new := "symm_twice, Nat.choose_symm_add") (play := "a=not; b=not; c=not; d=toNat; e=toNat; f=toNat; g=plus; h=plus; x>a.0; y>b.0; z>c.0; a>d.0; b>e.0; c>f.0; d>g.0; e>g.1; g>h.0; f>h.1; h>out") (uses := "add_comm, binom_formula, symm_twice, Nat.choose_symm_add, add_assoc, ring, rw")
+::::circuit (height := "700") (size := "big") (route := "count") (inputs := "x y z") (gates := "not, toNat, plus") (coins := "p p p") (target := "nat 0:p^3 1:3p^2(1-p) 2:3p(1-p)^2 3:(1-p)^3") (context := "Lean/Rules.lean") (proof := "(p : I) (k m : ℕ) : binom (σ p) (k + m) m = binom p (k + m) k") (lemma := "binom_symm") (new := "Nat.choose_symm_add") (play := "a=not; b=not; c=not; d=toNat; e=toNat; f=toNat; g=plus; h=plus; x>a.0; y>b.0; z>c.0; a>d.0; b>e.0; c>f.0; d>g.0; e>g.1; g>h.0; f>h.1; h>out") (uses := "add_comm, binom_formula, symm_twice, Nat.choose_symm_add, add_assoc, ring, rw")
 :::en
 *Encore: true and false swapped.* $`m` times `true` with the coin $`1 - p` is as likely as $`k` times `true` with the coin $`p`: count the `false` instead of the `true`. With your formula, this is computing.
 

@@ -730,7 +730,7 @@ rw [← coin_not, map_eq_pure_bind]
 :::
 :::::
 
-::::circuit (height := "440") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:p^2 false:1-p^2") (context := "Lean/Rules.lean") (proof := "(p q : I) : (do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)") (lemma := "coin_and") (new := "mass_mul") (play := "a=and; x>a.0; y>a.1; a>out") (uses := "bool_ext, bind_true, mass_mul, eq_coin, apply, rw, simp")
+::::circuit (height := "440") (inputs := "x y") (gates := "and, or, not") (coins := "p p") (target := "bool true:p^2 false:1-p^2") (context := "Lean/Rules.lean") (proof := "(p q : I) : (do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)") (lemma := "coin_and") (play := "a=and; x>a.0; y>a.1; a>out") (uses := "bool_ext, bind_true, mass_mul, eq_coin, apply, rw, simp")
 :::en
 *Both `true`.* Two coins, and `true` only when both show `true`.
 :::
@@ -745,9 +745,8 @@ result `x`, and `pure` at the end is the result. Each `←` is a new throw, inde
 Prove it for two coins `p` and `q` (on the board both were `p`): both `true` with probability
 $`p \cdot q`. It becomes your lemma `coin_and`, independence itself.
 
-Compare the masses at `true`; every draw splits into its two ways (`bind_true`). One new rule:
-`mass_mul : ↑(p * q) = ↑p * ↑q`, the product `p * q` in $`[0, 1]` as a mass. It carries no mark
-simp: `simp [h]` takes a rule `h` along for one call.
+Compare the masses at `true`; every draw splits into its two ways (`bind_true`). The rule
+`mass_mul : ↑(p * q) = ↑p * ↑q` from *ENNReal* carries no mark simp: `simp [h]` takes a rule `h` along for one call.
 :::
 
 :::proofde
@@ -757,9 +756,8 @@ unabhängig von den anderen. Beweise es für zwei Münzen `p` und `q` (auf dem S
 `p`): beide `true` mit Wahrscheinlichkeit $`p \cdot q`. Es wird dein Lemma `coin_and`, die
 Unabhängigkeit selbst.
 
-Vergleiche die Massen bei `true`; jeder Zug teilt sich in seine zwei Wege (`bind_true`). Eine neue
-Regel: `mass_mul : ↑(p * q) = ↑p * ↑q`, das Produkt `p * q` in $`[0, 1]` als Masse. Sie trägt keine
-Marke simp: `simp [h]` nimmt eine Regel `h` für einen Aufruf mit.
+Vergleiche die Massen bei `true`; jeder Zug teilt sich in seine zwei Wege (`bind_true`). Die Regel
+`mass_mul : ↑(p * q) = ↑p * ↑q` aus *ENNReal* trägt keine Marke simp: `simp [h]` nimmt eine Regel `h` für einen Aufruf mit.
 :::
 :::solution
 ```

@@ -15,14 +15,16 @@ number := false
 Masses are numbers in $`[0, \infty]`, in Lean `ℝ≥0∞` (`ENNReal`): never negative, and $`\infty` is
 one of them. Most rules are those of the numbers you know. Two are different: taking away stops at
 $`0` ($`a - b = 0` when $`b \ge a`), and $`\infty` swallows ($`\infty + a = \infty`). This world
-practises the rules that the next worlds compute with.
+practises the rules that the next worlds compute with; at the end, probabilities: numbers in
+`I` = $`[0, 1]` as masses.
 :::
 
 :::de
 Massen sind Zahlen in $`[0, \infty]`, in Lean `ℝ≥0∞` (`ENNReal`): nie negativ, und $`\infty` gehört
 dazu. Die meisten Regeln sind die der Zahlen, die du kennst. Zwei sind anders: Abziehen hört bei $`0`
 auf ($`a - b = 0`, wenn $`b \ge a`), und $`\infty` verschluckt ($`\infty + a = \infty`). Diese Welt
-übt die Regeln, mit denen die nächsten Welten rechnen.
+übt die Regeln, mit denen die nächsten Welten rechnen; am Ende Wahrscheinlichkeiten: Zahlen in
+`I` = $`[0, 1]` als Massen.
 :::
 
 ::::leanonly (proof := "(a b : ℝ≥0∞) : 0 + (a + b) = b + a") (new := "zero_add, add_comm") (uses := "zero_add, add_comm, add_zero, mul_zero, add_assoc, rw")
@@ -430,7 +432,88 @@ rw [mass_one]
 :::
 ::::
 
-::::leanonly (proof := "(a b : ℝ≥0∞) (h : a ≠ ∞) : (a + b) * (1 + 0) - 1 * a = 0 + b") (uses := "add_zero, mul_one, one_mul, zero_add, ENNReal.add_sub_cancel_left, mul_zero, rw")
+::::leanonly (proof := "(p q : I) : ↑(p * q) + ↑(0 : I) = (↑q * ↑p : ℝ≥0∞)") (new := "mass_mul, mass_zero") (uses := "mass_mul, mass_zero, add_zero, mul_comm, zero_add, rw")
+:::en
+*Products and zero in `I`.* The product of two probabilities is again one: `p * q` is in `I`. As
+masses: `mass_mul : ↑(p * q) = ↑p * ↑q`, and `mass_zero : ↑(0 : I) = 0`.
+:::
+
+:::de
+*Produkte und Null in `I`.* Das Produkt zweier Wahrscheinlichkeiten ist wieder eine: `p * q` liegt in
+`I`. Als Massen: `mass_mul : ↑(p * q) = ↑p * ↑q`, und `mass_zero : ↑(0 : I) = 0`.
+:::
+:::solution
+```
+rw [mass_mul, mass_zero, add_zero, mul_comm]
+```
+:::
+:::solution
+```
+rw [mass_zero, add_zero, mass_mul, mul_comm]
+```
+:::
+:::solution
+```
+rw [mass_mul, mass_zero]
+rw [add_zero, mul_comm]
+```
+:::
+::::
+
+::::leanonly (proof := "(p : I) : ↑(σ (σ p)) + (1 - ↑(σ p)) = (↑p + ↑p : ℝ≥0∞)") (new := "symm_twice, one_sub_symm") (uses := "symm_twice, one_sub_symm, rw")
+:::en
+*The rest of the rest.* The rest of `σ p` to one is `p` again: `symm_twice : σ (σ p) = p`, and as
+masses `one_sub_symm : 1 - ↑(σ p) = ↑p`.
+:::
+
+:::de
+*Der Rest vom Rest.* Der Rest von `σ p` bis eins ist wieder `p`: `symm_twice : σ (σ p) = p`, und als
+Massen `one_sub_symm : 1 - ↑(σ p) = ↑p`.
+:::
+:::solution
+```
+rw [symm_twice, one_sub_symm]
+```
+:::
+:::solution
+```
+rw [one_sub_symm, symm_twice]
+```
+:::
+::::
+
+::::leanonly (proof := "(p : I) (a : ℝ≥0∞) : ↑p + a - ↑p = a") (new := "mass_finite") (uses := "ENNReal.add_sub_cancel_left, mass_finite, exact, rw")
+:::en
+*A probability is finite.* `mass_finite p : ↑p ≠ ∞`: a number of `I` is at most one as a mass. So
+what was added can be taken back.
+:::
+
+:::de
+*Eine Wahrscheinlichkeit ist endlich.* `mass_finite p : ↑p ≠ ∞`: Eine Zahl aus `I` ist als Masse
+höchstens eins. Was addiert wurde, kann man also wieder abziehen.
+:::
+
+:::proofen
+`ENNReal.add_sub_cancel_left` needs `↑p ≠ ∞`; give it `mass_finite p`, behind the rule.
+:::
+
+:::proofde
+`ENNReal.add_sub_cancel_left` braucht `↑p ≠ ∞`; gib ihr `mass_finite p`, hinter die Regel.
+:::
+:::solution
+```
+rw [ENNReal.add_sub_cancel_left (mass_finite p)]
+```
+:::
+:::solution
+```
+rw [ENNReal.add_sub_cancel_left]
+exact mass_finite p
+```
+:::
+::::
+
+::::leanonly (proof := "(p : I) (b : ℝ≥0∞) : (↑p + b) * ↑(1 : I) - ↑p = 0 + b") (uses := "mass_one, mul_one, ENNReal.add_sub_cancel_left, mass_finite, zero_add, one_mul, add_zero, mul_zero, rw")
 :::en
 *Boss: compute.* The rules of this world, one after the other.
 :::
@@ -440,20 +523,13 @@ rw [mass_one]
 :::
 :::solution
 ```
-rw [add_zero, mul_one, one_mul, zero_add, ENNReal.add_sub_cancel_left h]
+rw [mass_one, mul_one, ENNReal.add_sub_cancel_left (mass_finite p), zero_add]
 ```
 :::
 :::solution
 ```
-rw [add_zero, mul_one]
-rw [one_mul, zero_add]
-rw [ENNReal.add_sub_cancel_left h]
-```
-:::
-:::solution
-```
-rw [zero_add, one_mul, add_zero, mul_one]
-rw [ENNReal.add_sub_cancel_left h]
+rw [zero_add, mass_one, mul_one]
+rw [ENNReal.add_sub_cancel_left (mass_finite p)]
 ```
 :::
 ::::

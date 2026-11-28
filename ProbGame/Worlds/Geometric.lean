@@ -318,7 +318,7 @@ rw [add_assoc, add_comm 1 m, ← add_assoc, geom_succ, ih, ← mul_assoc, ← po
 :::
 :::::
 
-::::leanonly (proof := "(p : I) : ∑' k, (↑(σ p) : ℝ≥0∞) ^ k = (↑p)⁻¹") (new := "ENNReal.tsum_geometric, one_sub_symm") (group := "chance.count") (uses := "ENNReal.tsum_geometric, one_sub_symm, rw, simp")
+::::leanonly (proof := "(p : I) : ∑' k, (↑(σ p) : ℝ≥0∞) ^ k = (↑p)⁻¹") (new := "ENNReal.tsum_geometric") (group := "chance.count") (uses := "ENNReal.tsum_geometric, one_sub_symm, rw, simp")
 :::en
 *A geometric series.* $`\sum_k (1 - p)^k = 1 / p`. `∑' k, a k` is the sum over all $`k`, as a mass (it may be $`\infty`: for $`p = 0`).
 :::
@@ -386,7 +386,7 @@ simp [ENNReal.tsum_mul_right, one_sub_symm]
 :::
 ::::
 
-:::::leanonly (proof := "(p : I) (h : p ≠ 0) : ∑' k, geom p k = 1") (new := "ENNReal.inv_mul_cancel, mass_ne_zero, mass_finite") (group := "chance.count") (uses := "geom_formula, ENNReal.tsum_mul_right, ENNReal.tsum_geometric, one_sub_symm, ENNReal.inv_mul_cancel, mass_ne_zero, mass_finite, apply, exact, rw, simp, simp_rw")
+:::::leanonly (proof := "(p : I) (h : p ≠ 0) : ∑' k, geom p k = 1") (new := "ENNReal.inv_mul_cancel, mass_ne_zero") (group := "chance.count") (uses := "geom_formula, ENNReal.tsum_mul_right, ENNReal.tsum_geometric, one_sub_symm, ENNReal.inv_mul_cancel, mass_ne_zero, mass_finite, apply, exact, rw, simp, simp_rw")
 ::::hint (anchor := "item:simp_rw")
 :::en
 `rw` does not rewrite under `∑' k`, where `k` is a bound name; `simp_rw` does.

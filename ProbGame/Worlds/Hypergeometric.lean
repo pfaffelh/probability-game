@@ -238,7 +238,7 @@ rw [hyper_succ, coin_bind_apply, Bool.cond_true, Bool.cond_false, shift_succ, hy
 :::
 :::::
 
-::::leanonly (proof := "(b : ℕ) : coin (frac 0 b) = pure false") (new := "frac_zero, mass_zero") (group := "chance.count") (uses := "frac_zero, coin_zero, bool_ext, coin_true, pure_true, Bool.cond_false, mass_zero, frac_white, coin_one, coin_false, coin_total, Bool.cond_true, apply, rw, simp")
+::::leanonly (proof := "(b : ℕ) : coin (frac 0 b) = pure false") (new := "frac_zero") (group := "chance.count") (uses := "frac_zero, coin_zero, bool_ext, coin_true, pure_true, Bool.cond_false, mass_zero, frac_white, coin_one, coin_false, coin_total, Bool.cond_true, apply, rw, simp")
 :::en
 *No white ball.* Without white balls, the ball drawn is surely black.
 :::

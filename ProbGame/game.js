@@ -374,6 +374,15 @@
       localStorage.setItem('pg:moved:2026-11-29q', '1')
     }
   } catch {}
+  // (since 2026-11-29: ENNReal ends with probabilities: mass_mul and mass_zero, symm_twice and one_sub_symm,
+  // mass_finite, and a new boss with I)
+  try {
+    if (!localStorage.getItem('pg:moved:2026-11-29r')) {
+      const re = /^pg:(\/[^/]+\/)ENNReal\/:11((?::.*)?)$/
+      for (const k of Object.keys(localStorage)) { const m = re.exec(k); if (m) localStorage.removeItem(k) }
+      localStorage.setItem('pg:moved:2026-11-29r', '1')
+    }
+  } catch {}
   const DE = {
     Moves: 'Züge', Undo: 'Zurück', 'Add a gate': 'Baustein hinzufügen', Gate: 'Baustein', 'Start over': 'Neu anfangen', 'Next level ›': 'Nächstes Level ›',
     Target: 'Ziel', 'In Lean, for every p:': 'In Lean, für jedes p:', 'proved': 'bewiesen',
