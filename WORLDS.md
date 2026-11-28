@@ -15,7 +15,7 @@ A world is measured against four questions.
 
 For each world: its goal, the tactics, how the levels get there, and what is open. The six
 proposals of the first version of this file are carried out, and after them the thin tactics got
-their levels (see the end); "open" is what is left. 15 worlds, 182 levels.
+their levels (see the end); "open" is what is left. 15 worlds, 181 levels.
 
 ## 1. Bool (25 levels)
 
@@ -33,7 +33,7 @@ from `and`, `or`, `not`, with its table. Lemma levels whose lemma goes into simp
 
 **Open.** The boss has the same proof line as De Morgan before it; it is harder on the board only.
 
-## 2. ENNReal (12 levels)
+## 2. ENNReal (11 levels)
 
 **Goal.** Computing with masses: numbers in `[0, ∞]` (`ℝ≥0∞`), where taking away stops at 0 and `∞`
 swallows.
@@ -42,7 +42,7 @@ swallows.
 
 **Path.** `zero_add`, `add_comm`; `add_zero` (proved); `add_assoc` with `←`; `one_mul`, `zero_mul`
 (proved, from `mul_one`, `mul_zero`, `mul_comm`); `add_mul`, `mul_add`; taking away (`tsub_self`,
-`tsub_zero`); `∞ + b - ∞ = 0` (`top_add`); `ENNReal.add_sub_cancel_left` with a hypothesis `a ≠ ∞`;
+`tsub_zero`); `ENNReal.add_sub_cancel_left` with a hypothesis `a ≠ ∞` (and `top_add`, why);
 `a ≤ b + a` (`le_self_add`, `exact`); `a ≤ 1 → a ≠ ∞` (`apply ne_top_of_le_ne_top`). Boss: a
 computation with all of them.
 

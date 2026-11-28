@@ -281,46 +281,17 @@ rw [tsub_self, zero_add]
 :::
 :::::
 
-::::leanonly (proof := "(b : ℝ≥0∞) : ∞ + b - ∞ = ⟦0 ‖ b, 0, ∞⟧") (new := "top_add") (uses := "top_add, tsub_self, rw")
-:::en
-*∞ swallows.* `top_add : ∞ + a = ∞`. (In Lean `∞` is `⊤`, the largest element: hence the name.) So
-`∞ + b - ∞` is not `b`.
-:::
-
-:::de
-*∞ verschluckt.* `top_add : ∞ + a = ∞`. (In Lean ist `∞` das größte Element `⊤`: daher der Name.)
-Also ist `∞ + b - ∞` nicht `b`.
-:::
-
-:::proofen
-`tsub_self : a - a = 0` holds for `∞` too.
-:::
-
-:::proofde
-`tsub_self : a - a = 0` gilt auch für `∞`.
-:::
-:::solution
-```
-rw [top_add, tsub_self]
-```
-:::
-:::solution
-```
-rw [top_add]
-rw [tsub_self]
-```
-:::
-::::
-
-::::leanonly (proof := "(a b : ℝ≥0∞) (h : a ≠ ∞) : a + b - a = b") (new := "ENNReal.add_sub_cancel_left") (uses := "ENNReal.add_sub_cancel_left, rw")
+::::leanonly (proof := "(a b : ℝ≥0∞) (h : a ≠ ∞) : a + b - a = b") (new := "ENNReal.add_sub_cancel_left, top_add") (uses := "ENNReal.add_sub_cancel_left, rw")
 :::en
 *Taking back.* What was added can be taken away again, if it is finite:
-`ENNReal.add_sub_cancel_left (h : a ≠ ∞) : a + b - a = b`.
+`ENNReal.add_sub_cancel_left (h : a ≠ ∞) : a + b - a = b`. For `∞` it fails: `∞` swallows,
+`top_add : ∞ + a = ∞`, so `∞ + b - ∞ = ∞ - ∞ = 0`.
 :::
 
 :::de
 *Zurücknehmen.* Was addiert wurde, kann man wieder abziehen, wenn es endlich ist:
-`ENNReal.add_sub_cancel_left (h : a ≠ ∞) : a + b - a = b`.
+`ENNReal.add_sub_cancel_left (h : a ≠ ∞) : a + b - a = b`. Für `∞` geht es schief: `∞` verschluckt,
+`top_add : ∞ + a = ∞`, also `∞ + b - ∞ = ∞ - ∞ = 0`.
 :::
 
 :::proofen
