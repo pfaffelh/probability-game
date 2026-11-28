@@ -223,7 +223,17 @@ exact bool_ext μ (coin p) h
 :::
 ::::
 
-::::leanonly (proof := ": coin 1 = ⟦pure true ‖ pure true, pure false⟧") (lemma := "coin_one") (uses := "bool_ext, coin_true, pure_true, Bool.cond_true, mass_one, coin_false, coin_total, Bool.cond_false, apply, rw")
+:::::leanonly (proof := ": coin 1 = ⟦pure true ‖ pure true, pure false⟧") (lemma := "coin_one") (uses := "bool_ext, coin_true, pure_true, Bool.cond_true, mass_one, coin_false, coin_total, Bool.cond_false, apply, rw")
+::::hint (anchor := "item:mass_one")
+:::en
+`↑1` in the goal is `↑(1 : I)`, the number one of `I` as a mass: `mass_one` makes it `1`.
+:::
+
+:::de
+`↑1` im Ziel ist `↑(1 : I)`, die Zahl eins aus `I` als Masse: `mass_one` macht daraus `1`.
+:::
+::::
+
 :::en
 *A sure coin.* The coin with probability one shows `true` for sure.
 :::
@@ -251,7 +261,7 @@ apply bool_ext
 rw [coin_true, mass_one, pure_true, Bool.cond_true]
 ```
 :::
-::::
+:::::
 
 ::::circuit (height := "540") (inputs := "x") (gates := "not, alwaysT") (coins := "p") (target := "pure false") (context := "Lean/Rules.lean") (proof := "(p : I) : ((coin p).map (fun _ => true)).map not = pure false") (play := "a=alwaysT; b=not; x>a.0; a>b.0; b>out") (uses := "bool_ext, map_not_true, map_bool, Bool.true_beq, Bool.cond_false, zero_add, pure_true, Bool.cond_true, add_zero, mul_zero, apply, rw")
 :::hint (anchor := "none")
