@@ -1894,21 +1894,25 @@
       // (the masses chosen: per output, at false and at true)
       this.picks = this.spec.cols.map(() => [null, null])
       try { const p = JSON.parse(localStorage.getItem(this.key + ':fill') ?? 'null'); if (Array.isArray(p) && p.length === this.picks.length && p.every(c => c.every(v => v === null || FILL_VALUES.includes(v)))) this.picks = p } catch {}
+      // (solved before, but nothing to show, as after a change of the board: its solution)
+      if (this.solved && !this.picks.some(c => c.some(Boolean))) this.picks = this.spec.cols.map(c => [...c.answer])
       this.wrong = false; this.open = null
       this.render()
     }
     get solved() { try { return localStorage.getItem(this.key) === '1' } catch { return false } }
-    get done() { return this.solved }
+    // (what is on the board now: as for a circuit, it can be played again after it was solved)
+    get right() { return this.spec.cols.every((col, k) => col.answer.every((a, j) => this.picks[k][j] === a)) }
+    get done() { return this.right }
     get canUndo() { return false }
-    get canReset() { return !this.solved && this.picks.some(c => c.some(Boolean)) }
-    status() { return this.solved ? tr('Right: every mass is where the map sends it.') : this.wrong ? tr('Not quite: at least one mass is wrong.') : tr('Tap a field of an output to fill in its mass.') }
+    get canReset() { return this.picks.some(c => c.some(Boolean)) }
+    status() { return this.right ? tr('Right: every mass is where the map sends it.') : this.wrong ? tr('Not quite: at least one mass is wrong.') : tr('Tap a field of an output to fill in its mass.') }
     undo() {}
-    reset() { if (this.solved) return; this.picks = this.spec.cols.map(() => [null, null]); this.wrong = false; this.open = null; this.save(); this.render() }
+    reset() { this.picks = this.spec.cols.map(() => [null, null]); this.wrong = false; this.open = null; this.save(); this.render() }
     save() { try { localStorage.setItem(this.key + ':fill', JSON.stringify(this.picks)) } catch {} }
     put(c, i, v) {
       this.picks[c][i] = v; this.open = null; this.wrong = false; this.save()
       if (this.picks.every(p => p.every(Boolean))) {
-        if (this.spec.cols.every((col, k) => col.answer.every((a, j) => this.picks[k][j] === a))) {
+        if (this.right) {
           try { localStorage.setItem(this.key, '1') } catch {}
           this.render(); this.onRendered?.(); this.onSolved?.(); return
         }
@@ -1918,7 +1922,7 @@
     }
     render() {
       const W = CW, H = 450, n = this.spec.cols.length, xs = this.spec.cols.map((_, k) => W * (2 * k + 1) / (2 * n))
-      const s = svg('svg', { viewBox: `0 0 ${W} ${H}`, class: 'pg-svg pg-csvg pg-fill-svg' + (this.solved ? ' pg-done' : '') })
+      const s = svg('svg', { viewBox: `0 0 ${W} ${H}`, class: 'pg-svg pg-csvg pg-fill-svg' + (this.right ? ' pg-done' : '') })
       s.append(svg('rect', { class: 'pg-cbg', x: 0, y: 0, width: W, height: H }))
       // the coin on top: its block with the two bars, as an input of a circuit
       const top = { x: W / 2, y: 48 }, out0 = { x: top.x, y: top.y + 30 }
@@ -1954,8 +1958,8 @@
           // (the field: dashed while empty; a tap opens the choice)
           const fy = base + rh + 2, f = svg('g', { class: 'pg-fill-field' + (this.open?.[0] === k && this.open?.[1] === j ? ' pg-fill-open' : ''), 'data-col': k, 'data-i': j, 'data-answer': col.answer[j], 'data-value': v ?? '' })
           f.append(svg('rect', { class: 'pg-cslot' + (v ? ' pg-cslot-full' : ''), x: cx(j) - cw / 2 + 2, y: fy, width: cw - 4, height: rh + 4, rx: 6 }))
-          f.append(svg('text', { class: v ? 'pg-tmass pg-fill-v' + (this.solved ? ' pg-tmass-ok' : '') : 'pg-cfield pg-cfield-empty', x: cx(j), y: fy + rh / 2 + 6, 'text-anchor': 'middle' }, v ? fillText(v) : '?'))
-          if (!this.solved) f.addEventListener('click', ev => { ev.stopPropagation(); this.open = this.open?.[0] === k && this.open?.[1] === j ? null : [k, j]; this.render() })
+          f.append(svg('text', { class: v ? 'pg-tmass pg-fill-v' + (this.right ? ' pg-tmass-ok' : '') : 'pg-cfield pg-cfield-empty', x: cx(j), y: fy + rh / 2 + 6, 'text-anchor': 'middle' }, v ? fillText(v) : '?'))
+          f.addEventListener('click', ev => { ev.stopPropagation(); this.open = this.open?.[0] === k && this.open?.[1] === j ? null : [k, j]; this.render() })
           og.append(f)
         })
         og.append(svg('circle', { class: 'pg-cport', cx: x, cy: oy, r: 9 }))

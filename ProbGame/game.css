@@ -798,8 +798,8 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 @keyframes pg-quiz-shake { 25% { transform: translateX(-6px) } 75% { transform: translateX(6px) } }
 
 /* a board where masses are filled in (Fill): drawn as a circuit; the choice at a field as at a theorem */
-.pg-fill-wrap { position: relative; display: flex; justify-content: center; width: 100%; max-width: 480px; margin: 0 auto; }
-.pg-fill-wrap > .pg-svg.pg-csvg { flex: 1 1 auto; width: 100%; max-width: 480px; }
+.pg-fill-wrap { position: relative; display: flex; justify-content: center; width: 100%; max-width: 480px; margin: 0 auto; box-sizing: border-box; min-width: 0; }
+.pg-fill-wrap > .pg-svg.pg-csvg { flex: none; width: 100%; min-width: 0; max-width: 480px; height: auto; }
 .pg-fill-map { cursor: default; }
 .pg-fill-field { cursor: pointer; }
 .pg-fill-open rect { stroke: #2e6fb8; stroke-width: 2.5; stroke-dasharray: none; }
