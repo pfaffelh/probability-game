@@ -698,6 +698,94 @@ rfl
 :::
 ::::
 
+::::leanonly (proof := "(c : Bool) : (c == true) = ⟦c ‖ c, !c, true⟧") (lemma := "beq_true") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "beq_self_eq_true, <;>, cases, rfl, rw")
+:::en
+*Equal to true.* `c == b` is a test, itself a `Bool`. Testing `c == true` gives back `c` itself.
+:::
+
+:::de
+*Gleich true.* `c == b` ist ein Test, selbst ein `Bool`. Der Test `c == true` gibt `c` selbst zurück.
+:::
+
+:::proofen
+Two cases: `c` is `true` or `false`, and in each Lean computes both sides.
+:::
+
+:::proofde
+Zwei Fälle: `c` ist `true` oder `false`, und in jedem rechnet Lean beide Seiten aus.
+:::
+:::solution
+```
+cases c <;> rfl
+```
+:::
+:::solution
+```
+cases c
+rfl
+rfl
+```
+:::
+:::solution
+```
+cases c
+rfl
+rw [beq_self_eq_true]
+```
+:::
+::::
+
+::::leanonly (proof := "(b : Bool) : (true == b) = ⟦b ‖ b, !b, true⟧") (lemma := "Bool.true_beq") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "beq_self_eq_true, beq_true, <;>, cases, rfl, rw")
+:::en
+*true tested.* Now `true` stands in front: `true == b` is `b`.
+:::
+
+:::de
+*true getestet.* Jetzt steht `true` vorne: `true == b` ist `b`.
+:::
+:::solution
+```
+cases b <;> rfl
+```
+:::
+:::solution
+```
+cases b
+rfl
+rw [beq_self_eq_true]
+```
+:::
+:::solution
+```
+cases b
+rfl
+rw [beq_true]
+```
+:::
+::::
+
+::::leanonly (proof := "(b : Bool) : (false == b) = ⟦!b ‖ !b, b, false⟧") (lemma := "Bool.false_beq") (context := "Lean/WorldBool.lean") (group := "bool") (uses := "beq_self_eq_true, Bool.not_false, Bool.not_true, <;>, cases, rfl, rw")
+:::en
+*false tested.* With `false` in front, the test turns `b` round: `false == b` is `!b`.
+:::
+
+:::de
+*false getestet.* Mit `false` vorne dreht der Test `b` um: `false == b` ist `!b`.
+:::
+:::solution
+```
+cases b <;> rfl
+```
+:::
+:::solution
+```
+cases b
+rw [beq_self_eq_true, Bool.not_false]
+rfl
+```
+:::
+::::
+
 ::::quiz (tactic := "cases x <;> rfl") (statements := "(x : Bool) : (x && x) = x ;; (x : Bool) : x = true ;; (x : Bool) : (x || !x) = true ;; (x y : Bool) : (x && y) = (y && x) ;; (x : Bool) : (!x) = x ;; (x : Bool) : (true && x) = x") (answer := "1, 3, 6")
 :::en
 *Which ones?* Which of these statements does `cases x <;> rfl` prove?

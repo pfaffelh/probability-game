@@ -74,7 +74,7 @@ cases b <;> decide
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ.map (fun x => x) = ⟦μ ‖ μ, μ.map not⟧") (lemma := "map_id") (new := "Bool.false_beq") (uses := "map_bool, Bool.true_beq, Bool.false_beq, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, Bool.not_true, add_comm, bool_ext, map_true, add_zero, beq_self_eq_true, mul_zero, add_assoc, apply, cases, ext, rw")
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ.map (fun x => x) = ⟦μ ‖ μ, μ.map not⟧") (lemma := "map_id") (uses := "map_bool, Bool.true_beq, Bool.false_beq, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, Bool.not_true, add_comm, bool_ext, map_true, add_zero, beq_self_eq_true, mul_zero, add_assoc, apply, cases, ext, rw")
 :::en
 *Doing nothing.* The move `fun x => x` leaves every point where it is.
 :::
@@ -85,15 +85,15 @@ cases b <;> decide
 
 :::proofen
 Compare the masses at every point (`ext`, from *One Coin*), with `map_bool`. The
-tests `true == b` and `false == b` are `b` and `!b`: `Bool.true_beq` from *Masses*, and the new rule
-`Bool.false_beq`. You prove it on `Bool`; it holds for every type, and it is unlocked as `map_id` in
+tests `true == b` and `false == b` are `b` and `!b`: `Bool.true_beq` and
+`Bool.false_beq` from *Bool*. You prove it on `Bool`; it holds for every type, and it is unlocked as `map_id` in
 this general form.
 :::
 
 :::proofde
 Vergleiche die Massen an jedem Punkt (`ext`, aus *Eine Münze*), mit `map_bool`. Die
-Tests `true == b` und `false == b` sind `b` und `!b`: `Bool.true_beq` aus *Massen*, und die neue
-Regel `Bool.false_beq`. Du beweist es auf `Bool`; es gilt für jeden Typ und wird in dieser
+Tests `true == b` und `false == b` sind `b` und `!b`: `Bool.true_beq` und
+`Bool.false_beq` aus *Bool*. Du beweist es auf `Bool`; es gilt für jeden Typ und wird in dieser
 allgemeinen Form als `map_id` freigeschaltet.
 :::
 :::solution

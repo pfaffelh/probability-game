@@ -15,9 +15,9 @@ A world is measured against four questions.
 
 For each world: its goal, the tactics, how the levels get there, and what is open. The six
 proposals of the first version of this file are carried out, and after them the thin tactics got
-their levels (see the end); "open" is what is left. 14 worlds, 176 levels.
+their levels (see the end); "open" is what is left. 14 worlds, 177 levels.
 
-## 1. Bool (20 levels)
+## 1. Bool (23 levels)
 
 **Goal.** A circuit is a function, and a function on `Bool` is its truth table: two circuits are
 equal when all rows agree.
@@ -26,14 +26,14 @@ equal when all rows agree.
 
 **Path.** One input, read off (`rfl`). Rewriting with what is already proved (`rw`). One input,
 both cases (`cases`). The `bif` rules. The truth tables of `&&` and `||` as rules (`Bool.true_and`,
-`Bool.false_and`, `Bool.true_or`, `Bool.false_or`). A quiz on `cases x <;> rfl`. Two inputs, four
+`Bool.false_and`, `Bool.true_or`, `Bool.false_or`). Tests (`==`): `beq_self_eq_true`, `beq_true`, `Bool.true_beq`, `Bool.false_beq`, for the point tests of `map_apply` in Masses and Maps. A quiz on `cases x <;> rfl`. Two inputs, four
 cases: De Morgan (`Bool.not_and`), then `or` from `and` (`or_eq`, also from De Morgan). Boss: xor
 from `and`, `or`, `not`, with its table. Lemma levels whose lemma goes into simp later show
 `@[simp] theorem`; Bool 2 says what it means.
 
 **Open.** The boss has the same proof line as De Morgan before it; it is harder on the board only.
 
-## 2. Masses (15 levels)
+## 2. Masses (13 levels)
 
 **Goal.** A distribution on `Bool` is two masses that add up to 1, and a map moves each mass to its
 image (`map_true`).
@@ -41,7 +41,7 @@ image (`map_true`).
 **Tactics.** `rw` in chains (practised here), `constructor`, `exact`, `apply` (first contact).
 
 **Path.** The masses of the coin, and both in one statement (`∧`, `constructor`). Sums over `Bool`
-and point tests (`==`). Where the mass goes: on a board of its own (`board := "maps"`, game.js `Fill`, drawn as a circuit), `coin p` wired into the four maps `Bool → Bool` (their pictures, as in bind), the player fills in the mass at true of each output by the choice p, 1 − p, 1, 0 (the one at false follows); in Lean `map_apply`, then `map_true`. The whole mass; for the
+(the point tests `==` come from Bool). Where the mass goes: on a board of its own (`board := "maps"`, game.js `Fill`, drawn as a circuit), `coin p` wired into the four maps `Bool → Bool` (their pictures, as in bind), the player fills in the mass at true of each output by the choice p, 1 − p, 1, 0 (the one at false follows); in Lean `map_apply`, then `map_true`. The whole mass; for the
 coin, by `exact mass_total (coin p)`: a theorem with its argument. At most one, finite. Boss:
 `((coin p).map not) true = σ p`, on the board.
 
@@ -241,7 +241,7 @@ stay in every world once earned. So `linear_combination` and `field_simp` are th
 and Hypergeometric, `revert` and `decide` only in Maps and Multi-Stage Experiments.
 
 **Questions.** Levels with a gap in the statement, only in Lean levels (on a board the answer can be read
-off the board): Bool 3, Masses 6, One Coin 10, Maps 6, Two Coins 1, Laws of `do` 5, Counting 1, Balance 3, Sequences 1, Binomial 2, Geometric 6, Thinning 2, Hypergeometric 6. Five quizzes.
+off the board): Bool 6, Masses 4, One Coin 10, Maps 6, Two Coins 1, Laws of `do` 5, Counting 1, Balance 3, Sequences 1, Binomial 2, Geometric 6, Thinning 2, Hypergeometric 6. Five quizzes.
 
 **Tactics: three meetings.** A tactic is introduced (its text says what it does), practised in its world,
 and used again in a later world. `python3 tests/tactics.py` counts, from the solutions, the levels

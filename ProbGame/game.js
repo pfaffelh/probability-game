@@ -68,6 +68,25 @@
       localStorage.setItem('pg:moved:2026-11-28', '1')
     }
   } catch {}
+  // (since 2026-11-29: the tests `beq_true`, `Bool.true_beq` (Masses 6, 7) and `Bool.false_beq` (a rule in
+  // Maps) are levels in Bool, after `beq_self_eq_true`)
+  try {
+    if (!localStorage.getItem('pg:moved:2026-11-29')) {
+      const MOVES = { Circuits: [[16, 3]], Masses: [[5, null], [6, null], [7, -2]] }
+      const re = /^pg:(\/[^/]+\/)([^/]+)\/:(\d+)((?::.*)?)$/
+      const moved = []
+      for (const k of Object.keys(localStorage)) {
+        const m = re.exec(k), mv = m && MOVES[m[2]]
+        if (!mv) continue
+        const i = Number(m[3]); let j = i, drop = false
+        for (const [from, by] of mv) if (by === null ? i === from : i >= from) { if (by === null) drop = true; else j += by }
+        moved.push([k, drop ? null : `pg:${m[1]}${m[2]}/:${j}${m[4]}`, localStorage.getItem(k)])
+      }
+      for (const [k] of moved) localStorage.removeItem(k)
+      for (const [, k, v] of moved) if (k) localStorage.setItem(k, v)
+      localStorage.setItem('pg:moved:2026-11-29', '1')
+    }
+  } catch {}
   const DE = {
     Moves: 'Züge', Undo: 'Zurück', 'Add a gate': 'Baustein hinzufügen', Gate: 'Baustein', 'Start over': 'Neu anfangen', 'Next level ›': 'Nächstes Level ›',
     Target: 'Ziel', 'In Lean, for every p:': 'In Lean, für jedes p:', 'proved': 'bewiesen',
@@ -3293,8 +3312,8 @@
     { name: 'sum_with', kind: 'rule', sig: '(∑ a with f a = b, g a) = ∑ a, (bif f a == b then g a else 0)', en: 'A sum over the points with f a = b, as a sum over all points with a test.', de: 'Eine Summe über die Punkte mit f a = b, als Summe über alle Punkte mit einem Test.' },
     { name: 'map_bool', kind: 'lemma', sig: '(μ.map f) b = (bif f true == b then μ true else 0) + (bif f false == b then μ false else 0)', en: 'Proved by you in Masses: a move on Bool, written out.', de: 'Von dir bewiesen in „Massen“: ein Zug auf Bool, ausgeschrieben.' },
     { name: 'Fintype.sum_bool', kind: 'rule', sig: '∑ a, g a = g true + g false', en: 'A sum over Bool: its two summands.', de: 'Eine Summe über Bool: ihre zwei Summanden.' },
-    { name: 'Bool.true_beq', kind: 'lemma', sig: '(true == b) = b', en: 'Proved by you in Masses: testing true against b gives b itself.', de: 'Von dir bewiesen in „Massen“: Der Test von true gegen b gibt b selbst.' },
-    { name: 'beq_true', kind: 'lemma', sig: '(c == true) = c', en: 'Proved by you in Masses: testing for true gives c itself.', de: 'Von dir bewiesen in „Massen“: Der Test auf true gibt c selbst.' },
+    { name: 'Bool.true_beq', kind: 'lemma', sig: '(true == b) = b', en: 'Proved by you in Bool: testing true against b gives b itself.', de: 'Von dir bewiesen in „Bool“: Der Test von true gegen b gibt b selbst.' },
+    { name: 'beq_true', kind: 'lemma', sig: '(c == true) = c', en: 'Proved by you in Bool: testing for true gives c itself.', de: 'Von dir bewiesen in „Bool“: Der Test auf true gibt c selbst.' },
     { name: 'Bool.not_true', kind: 'lemma', sig: '(!true) = false', en: 'Proved by you in Bool: not true is false.', de: 'Von dir bewiesen in „Bool“: Nicht true ist false.' },
     { name: 'Bool.not_false', kind: 'lemma', sig: '(!false) = true', en: 'Proved by you in Bool: not false is true.', de: 'Von dir bewiesen in „Bool“: Nicht false ist true.' },
     { name: 'Bool.cond_true', kind: 'lemma', sig: '(bif true then a else b) = a', en: 'Proved by you in Bool: bif with true is the first.', de: 'Von dir bewiesen in „Bool“: bif mit true ist das Erste.' },
@@ -3317,7 +3336,7 @@
     { name: 'coin_const', kind: 'lemma', sig: '(coin p).map (fun _ => b) = pure b', en: 'Proved by you in One Coin: a constant move sends all the mass to one point.', de: 'Von dir bewiesen in „Eine Münze“: Ein konstanter Zug schickt die ganze Masse an einen Punkt.' },
     { name: 'map_pure', kind: 'lemma', sig: '(pure a).map f = pure (f a)', en0: 'A move on a sure point moves the point.', de0: 'Ein Zug auf einem sicheren Punkt verschiebt den Punkt.', en: 'Proved by you in One Coin, for Bool; it holds for every type: a move on a point mass moves the point.', de: 'Von dir bewiesen in „Eine Münze“, für Bool; es gilt für jeden Typ: Ein Zug auf einer Punktmasse verschiebt den Punkt.' },
     { name: 'map_id', kind: 'lemma', sig: 'μ.map (fun x => x) = μ', en: 'Proved by you in Maps, for Bool; it holds for every type: a move that does nothing.', de: 'Von dir bewiesen in „Abbildungen“, für Bool; es gilt für jeden Typ: ein Zug, der nichts tut.' },
-    { name: 'Bool.false_beq', kind: 'rule', sig: '(false == b) = !b', en: 'Testing false against b gives !b.', de: 'Der Test von false gegen b gibt !b.' },
+    { name: 'Bool.false_beq', kind: 'lemma', sig: '(false == b) = !b', en: 'Proved by you in Bool: testing false against b gives !b.', de: 'Von dir bewiesen in „Bool“: Der Test von false gegen b gibt !b.' },
     { name: 'map_map', kind: 'lemma', sig: '(μ.map f).map g = μ.map (fun x => g (f x))', sig0: 'g <$> (f <$> s) = (fun x => g (f x)) <$> s', en: 'Proved by you in Maps, for Bool; it holds for every type: two moves are one move.', de: 'Von dir bewiesen in „Abbildungen“, für Bool; es gilt für jeden Typ: Zwei Züge sind ein Zug.' },
     { name: 'cond_add_cond', kind: 'lemma', sig: '(bif c then x else 0) + (bif c then y else 0) = bif c then x + y else 0', en: 'Proved by you in Maps: two masses behind one test.', de: 'Von dir bewiesen in „Abbildungen“: zwei Massen hinter einem Test.' },
     { name: 'coin_and', kind: 'lemma', sig: '(do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)', en: 'Proved by you in Two Coins: independence, both true with probability p · q.', de: 'Von dir bewiesen in „Zwei Münzen“: Unabhängigkeit, beide true mit Wahrscheinlichkeit p · q.' },
