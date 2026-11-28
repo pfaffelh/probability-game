@@ -87,6 +87,25 @@
       localStorage.setItem('pg:moved:2026-11-29', '1')
     }
   } catch {}
+  // (since 2026-11-29: `p + σ p = 1` is a rule, given in Masses 3, where the player proves `coin_total`
+  // with it; the level `add_symm_eq_one` in One Coin (8) is gone)
+  try {
+    if (!localStorage.getItem('pg:moved:2026-11-29b')) {
+      const MOVES = { Masses: [[2, 1]], 'One-Coin': [[7, null], [8, -1]] }
+      const re = /^pg:(\/[^/]+\/)([^/]+)\/:(\d+)((?::.*)?)$/
+      const moved = []
+      for (const k of Object.keys(localStorage)) {
+        const m = re.exec(k), mv = m && MOVES[m[2]]
+        if (!mv) continue
+        const i = Number(m[3]); let j = i, drop = false
+        for (const [from, by] of mv) if (by === null ? i === from : i >= from) { if (by === null) drop = true; else j += by }
+        moved.push([k, drop ? null : `pg:${m[1]}${m[2]}/:${j}${m[4]}`, localStorage.getItem(k)])
+      }
+      for (const [k] of moved) localStorage.removeItem(k)
+      for (const [, k, v] of moved) if (k) localStorage.setItem(k, v)
+      localStorage.setItem('pg:moved:2026-11-29b', '1')
+    }
+  } catch {}
   const DE = {
     Moves: 'Züge', Undo: 'Zurück', 'Add a gate': 'Baustein hinzufügen', Gate: 'Baustein', 'Start over': 'Neu anfangen', 'Next level ›': 'Nächstes Level ›',
     Target: 'Ziel', 'In Lean, for every p:': 'In Lean, für jedes p:', 'proved': 'bewiesen',
@@ -3329,7 +3348,7 @@
     { name: 'coin_not', kind: 'lemma', sig: '(coin p).map not = coin (σ p)', en: 'Proved by you: the boss of One Coin. Flipping a coin swaps the masses.', de: 'Von dir bewiesen: der Endgegner von „Eine Münze“. Umdrehen tauscht die Massen.' },
     { name: 'coin_total', kind: 'lemma', sig: '(coin p) true + (coin p) false = 1', en: 'Proved by you in Masses: the total mass of a coin is one.', de: 'Von dir bewiesen in „Massen“: Die Gesamtmasse einer Münze ist eins.' },
     { name: 'pure_apply', kind: 'rule', sig: '(pure a) b = bif a == b then 1 else 0', en: 'The definition of a point mass: one at its point, zero elsewhere.', de: 'Die Definition einer Punktmasse: eins an ihrem Punkt, null sonst.' },
-    { name: 'add_symm_eq_one', kind: 'lemma', sig: 'add_symm_eq_one p : ↑p + ↑(σ p) = 1', en: 'Proved by you in One Coin: the two masses of the coin add up to one.', de: 'Von dir bewiesen in „Eine Münze“: Die beiden Massen der Münze ergeben zusammen eins.' },
+    { name: 'add_symm_eq_one', kind: 'rule', sig: 'add_symm_eq_one p : ↑p + ↑(σ p) = 1', en: 'A rule of the game: σ p is the rest of p to one, so the two masses of the coin add up to one.', de: 'Eine Spielregel: σ p ist der Rest von p bis eins; die beiden Massen der Münze ergeben zusammen eins.' },
     { name: 'eq_coin', kind: 'lemma', sig: 'eq_coin μ [Prob μ] p (h : μ true = p) : μ = coin p', en: 'Proved by you in One Coin: a distribution on Bool with mass p at true is the coin p.', de: 'Von dir bewiesen in „Eine Münze“: Eine Verteilung auf Bool mit Masse p bei true ist die Münze p.' },
     { name: 'pure_true', kind: 'lemma', sig: '(pure b) true = bif b then 1 else 0', en: 'Proved by you in One Coin: the mass of a point mass at true.', de: 'Von dir bewiesen in „Eine Münze“: die Masse einer Punktmasse bei true.' },
     { name: 'pure_false', kind: 'lemma', sig: '(pure b) false = bif b then 0 else 1', en: 'Proved by you in One Coin: the mass of a point mass at false.', de: 'Von dir bewiesen in „Eine Münze“: die Masse einer Punktmasse bei false.' },

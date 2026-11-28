@@ -369,42 +369,6 @@ exact bool_ext μ (coin p) h
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : ↑p + ↑(σ p) = (1 : ℝ≥0∞)") (lemma := "add_symm_eq_one") (uses := "coin_true, coin_false, coin_total, mass_total, rw")
-:::en
-*The coin is whole.* $`p + (1 - p) = 1`: the two masses of the coin add up to one.
-:::
-
-:::de
-*Die Münze ist ganz.* $`p + (1 - p) = 1`: Die beiden Massen der Münze ergeben zusammen eins.
-:::
-
-:::proofen
-Your lemma `coin_total : coin p true + coin p false = 1`, from *Masses*. To use it, the masses must
-first stand as masses of the coin. What you prove is unlocked as `add_symm_eq_one`.
-:::
-
-:::proofde
-Dein Lemma `coin_total : coin p true + coin p false = 1`, aus *Massen*. Um es zu benutzen, müssen
-die Massen zuerst als Massen der Münze dastehen. Was du beweist, wird als `add_symm_eq_one`
-freigeschaltet.
-:::
-:::solution
-```
-rw [← coin_true, ← coin_false, coin_total]
-```
-:::
-:::solution
-```
-rw [← coin_total p, coin_true, coin_false]
-```
-:::
-:::solution
-```
-rw [← coin_true, ← coin_false, mass_total]
-```
-:::
-::::
-
 :::::leanonly (proof := "(b : Bool) : (pure b : DiscreteMeasure Bool) true = bif b then ⟦1 ‖ 0, 1⟧ else ⟦0 ‖ 0, 1⟧") (new := "pure_apply") (lemma := "pure_true") (uses := "pure_apply, beq_true, <;>, cases, rfl, rw")
 :::en
 *Surely true.* `pure b` is the distribution that is surely `b`: all its mass lies at `b`. Its mass at

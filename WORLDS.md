@@ -33,22 +33,22 @@ from `and`, `or`, `not`, with its table. Lemma levels whose lemma goes into simp
 
 **Open.** The boss has the same proof line as De Morgan before it; it is harder on the board only.
 
-## 2. Masses (13 levels)
+## 2. Masses (14 levels)
 
 **Goal.** A distribution on `Bool` is two masses that add up to 1, and a map moves each mass to its
 image (`map_true`).
 
 **Tactics.** `rw` in chains (practised here), `constructor`, `exact`, `apply` (first contact).
 
-**Path.** The masses of the coin, and both in one statement (`∧`, `constructor`). Sums over `Bool`
-(the point tests `==` come from Bool). Where the mass goes: on a board of its own (`board := "maps"`, game.js `Fill`, drawn as a circuit), `coin p` wired into the four maps `Bool → Bool` (their pictures, as in bind), the player fills in the mass at true of each output by the choice p, 1 − p, 1, 0 (the one at false follows); in Lean `map_apply`, then `map_true`. The whole mass; for the
-coin, by `exact mass_total (coin p)`: a theorem with its argument. At most one, finite. Boss:
+**Path.** The masses of the coin; the rule `add_symm_eq_one : ↑p + ↑(σ p) = 1` (what σ is; proving it needs real numbers), with it `coin_total`; both masses in one statement (`∧`, `constructor`). Sums over `Bool`
+(the point tests `==` come from Bool). Where the mass goes: on a board of its own (`board := "maps"`, game.js `Fill`, drawn as a circuit), `coin p` wired into the four maps `Bool → Bool` (their pictures, as in bind), the player fills in the mass at true of each output by the choice p, 1 − p, 1, 0 (the one at false follows); in Lean `map_apply`, then `map_true`. The whole mass; after a
+move, by `exact mass_total ((coin p).map not)`: a theorem with its argument. At most one, finite. Boss:
 `((coin p).map not) true = σ p`, on the board.
 
 **Open.** `apply` meets the player first on `≠ ⊤`: a new tactic and a new kind of statement at once.
 *At most one* and *Finite* serve the subtraction in *One Coin*.
 
-## 3. One Coin (15 levels)
+## 3. One Coin (14 levels)
 
 **Goal.** One number fixes a distribution on `Bool` (`bool_ext`): every distribution on `Bool` is a
 coin, and a flipped coin is the coin `σ p`.
@@ -287,5 +287,5 @@ Then, for the tactics that occurred too seldom:
    used for "which coin is in balance?"; the lemma `balance`, used by `apply` in the boss.
 8. *Hypergeometric*: put back (`apply coin_stays`), two colours (`linear_combination`).
 9. `constructor` introduced in *Masses* (both masses), practised in *One Coin*; `exact` introduced on
-   an equation (`exact mass_total (coin p)`, which proves `coin_total`).
+   an equation (`exact mass_total ((coin p).map not)`).
 10. *Maps*: a quiz, where `rw` fails. `tests/tactics.py`: three meetings.

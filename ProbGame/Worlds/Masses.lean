@@ -137,6 +137,45 @@ rfl
 :::
 :::::
 
+::::leanonly (proof := "(p : I) : coin p true + coin p false = ⟦1 ‖ 0, 1, p⟧") (lemma := "coin_total") (new := "add_symm_eq_one") (uses := "coin_true, coin_false, add_symm_eq_one, coin_total, rw")
+:::en
+*The coin is whole.* $`p + (1 - p) = 1`: the two masses of the coin add up to one.
+:::
+
+:::de
+*Die Münze ist ganz.* $`p + (1 - p) = 1`: Die beiden Massen der Münze ergeben zusammen eins.
+:::
+
+:::proofen
+New, a rule of the game: `add_symm_eq_one p : ↑p + ↑(σ p) = 1`. It says what `σ p` is: the rest of
+$`p` to one. (In Lean it is a computation with real numbers; they come in *Balance*.) First write the
+masses of the coin as `↑p` and `↑(σ p)`. What you prove is unlocked as `coin_total`.
+:::
+
+:::proofde
+Neu, eine Spielregel: `add_symm_eq_one p : ↑p + ↑(σ p) = 1`. Sie sagt, was `σ p` ist: der Rest von
+$`p` bis eins. (In Lean ist das eine Rechnung mit reellen Zahlen; die kommen in *Gleichgewicht*.)
+Schreib zuerst die Massen der Münze als `↑p` und `↑(σ p)`. Was du beweist, wird als `coin_total`
+freigeschaltet.
+:::
+:::solution
+```
+rw [coin_true, coin_false, add_symm_eq_one]
+```
+:::
+:::solution
+```
+rw [coin_true, coin_false]
+rw [add_symm_eq_one p]
+```
+:::
+:::solution
+```
+rw [← add_symm_eq_one p, coin_true, coin_false]
+```
+:::
+::::
+
 :::::leanonly (proof := "(p : I) : coin p true = p ∧ coin p false = σ p") (new := "constructor") (uses := "coin_true, coin_false, coin_total, <;>, constructor, rfl, rw")
 ::::hint (anchor := "item:constructor")
 :::en
@@ -437,7 +476,7 @@ rw [add_comm, ← tsum_bool, Prob.total]
 :::
 :::::
 
-:::::leanonly (proof := "(p : I) : coin p true + coin p false = ⟦1 ‖ 0, 1, p⟧") (lemma := "coin_total") (new := "exact") (uses := "mass_total, Prob.total, tsum_bool, add_comm, coin_total, add_assoc, exact, rw")
+:::::leanonly (proof := "(p : I) : ((coin p).map not) true + ((coin p).map not) false = ⟦1 ‖ 0, 1, p⟧") (new := "exact") (uses := "mass_total, Prob.total, tsum_bool, add_comm, coin_total, add_assoc, exact, rw")
 ::::hint (anchor := "item:exact")
 :::en
 `exact h`: closes a goal that is exactly `h`.
@@ -449,11 +488,11 @@ rw [add_comm, ← tsum_bool, Prob.total]
 ::::
 
 :::en
-*The whole mass of the coin.* What you proved for every distribution holds for the coin.
+*The whole mass after a move.* What you proved for every distribution holds after a move too.
 :::
 
 :::de
-*Die ganze Masse der Münze.* Was du für jede Verteilung bewiesen hast, gilt für die Münze.
+*Die ganze Masse nach einem Zug.* Was du für jede Verteilung bewiesen hast, gilt auch nach einem Zug.
 :::
 
 :::proofen
@@ -469,7 +508,7 @@ als ein Name ist. Die neue Taktik `exact h` schließt ein Ziel, das genau `h` is
 :::
 :::solution
 ```
-exact mass_total (coin p)
+exact mass_total ((coin p).map not)
 ```
 :::
 :::solution
@@ -479,7 +518,7 @@ rw [mass_total]
 :::
 :::solution
 ```
-rw [← Prob.total (coin p), tsum_bool, add_comm]
+rw [← Prob.total ((coin p).map not), tsum_bool, add_comm]
 ```
 :::
 :::::
