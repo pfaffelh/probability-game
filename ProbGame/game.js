@@ -3380,13 +3380,13 @@
     { name: "induction'", kind: 'tactic', insert: "induction' n with n ih", sig: "induction' n with n ih",
       en: 'Induction on the natural number n: first the goal for 0, then the goal for n + 1, with the hypothesis ih for n.',
       de: 'Induktion nach der natürlichen Zahl n: zuerst das Ziel für 0, dann das Ziel für n + 1, mit der Annahme ih für n.' },
-    { name: 'Prob.total', kind: 'rule', sig: 'Prob.total μ : ∑\' a, μ a = 1', en: 'What [Prob μ] says: the masses of μ, summed over all points (∑\'), give one.', de: 'Was [Prob μ] sagt: Die Massen von μ, über alle Punkte summiert (∑\'), ergeben eins.' },
+    { name: 'Prob.total', kind: 'rule', measure: true, sig: 'Prob.total μ : ∑\' a, μ a = 1', en: 'What [Prob μ] says: the masses of μ, summed over all points (∑\'), give one.', de: 'Was [Prob μ] sagt: Die Massen von μ, über alle Punkte summiert (∑\'), ergeben eins.' },
     { name: 'tsum_bool', kind: 'rule', sig: '∑\' b, f b = f false + f true', en: 'A sum over Bool: its two terms (false first).', de: 'Eine Summe über Bool: ihre zwei Summanden (false zuerst).' },
     { name: 'tsum_fintype', kind: 'rule', sig: '∑\' a, f a = ∑ a, f a', en: 'Over a finite type (as Bool), the sum over all points is a finite sum.', de: 'Über einem endlichen Typ (wie Bool) ist die Summe über alle Punkte eine endliche Summe.' },
-    { name: 'mass_total', kind: 'lemma', sig: 'mass_total μ [Prob μ] : μ true + μ false = 1', en: 'Proved by you in DiscreteMeasure: a distribution on Bool has total mass one.', de: 'Von dir bewiesen in „DiscreteMeasure“: Eine Verteilung auf Bool hat die Gesamtmasse eins.' },
+    { name: 'mass_total', kind: 'lemma', measure: true, sig: 'mass_total μ [Prob μ] : μ true + μ false = 1', en: 'Proved by you in DiscreteMeasure: a distribution on Bool has total mass one.', de: 'Von dir bewiesen in „DiscreteMeasure“: Eine Verteilung auf Bool hat die Gesamtmasse eins.' },
     { name: 'le_self_add', kind: 'rule', sig: 'le_self_add : a ≤ a + c', en: 'A sum of masses is at least its first summand.', de: 'Eine Summe von Massen ist mindestens ihr erster Summand.' },
     { name: 'le_add_self', kind: 'rule', sig: 'le_add_self : a ≤ c + a', en: 'A sum of masses is at least its second summand.', de: 'Eine Summe von Massen ist mindestens ihr zweiter Summand.' },
-    { name: 'mass_le_one', kind: 'lemma', sig: 'mass_le_one μ [Prob μ] b : μ b ≤ 1', en: 'Proved by you in DiscreteMeasure: a mass of a distribution is at most one.', de: 'Von dir bewiesen in „DiscreteMeasure“: Eine Masse einer Verteilung ist höchstens eins.' },
+    { name: 'mass_le_one', kind: 'lemma', measure: true, sig: 'mass_le_one μ [Prob μ] b : μ b ≤ 1', en: 'Proved by you in DiscreteMeasure: a mass of a distribution is at most one.', de: 'Von dir bewiesen in „DiscreteMeasure“: Eine Masse einer Verteilung ist höchstens eins.' },
     { name: 'ne_top_of_le_ne_top', kind: 'rule', sig: 'ne_top_of_le_ne_top : b ≠ ⊤ → a ≤ b → a ≠ ⊤', en: 'Below something finite is finite.', de: 'Unter etwas Endlichem ist endlich.' },
     { name: 'ENNReal.one_ne_top', kind: 'rule', sig: 'ENNReal.one_ne_top : 1 ≠ ⊤', en: 'One is finite (⊤ is ∞).', de: 'Eins ist endlich (⊤ ist ∞).' },
     { name: 'mass_ne_top', kind: 'lemma', sig: 'mass_ne_top [Prob μ] : μ b ≠ ⊤', en: 'Proved by you in DiscreteMeasure: a mass of a distribution is finite (masses are numbers in [0, ∞], and ⊤ is ∞).', de: 'Von dir bewiesen in „DiscreteMeasure“: Eine Masse einer Verteilung ist endlich (Massen sind Zahlen in [0, ∞], und ⊤ ist ∞).' },
@@ -3399,7 +3399,7 @@
     { name: 'mul_one', kind: 'rule', sig: 'a * 1 = a', en: 'Times one.', de: 'Mal eins.' },
     { name: 'mul_zero', kind: 'rule', sig: 'a * 0 = 0', en: 'Times zero.', de: 'Mal null.' },
     { name: 'add_comm', kind: 'rule', sig: 'a + b = b + a', en: 'The order of a sum does not matter.', de: 'Die Reihenfolge einer Summe ist egal.' },
-    { name: 'mass_not', kind: 'lemma', sig: 'mass_not μ [Prob μ] b : μ b = 1 - μ (!b)', en: 'Proved by you in DiscreteMeasure: what is not at b lies at !b.', de: 'Von dir bewiesen in „DiscreteMeasure“: Was nicht bei b liegt, liegt bei !b.' },
+    { name: 'mass_not', kind: 'lemma', measure: true, sig: 'mass_not μ [Prob μ] b : μ b = 1 - μ (!b)', en: 'Proved by you in DiscreteMeasure: what is not at b lies at !b.', de: 'Von dir bewiesen in „DiscreteMeasure“: Was nicht bei b liegt, liegt bei !b.' },
     { name: 'bool_ext', kind: 'lemma', sig: 'bool_ext μ ν [Prob μ] [Prob ν] (h : μ true = ν true) : μ = ν', en: 'Proved by you in DiscreteMeasure: two distributions on Bool (total mass one, [Prob μ]) are the same when they have the same mass at true. Not for any measure on Bool: there the mass at false is free.', de: 'Von dir bewiesen in „DiscreteMeasure“: Zwei Verteilungen auf Bool (Gesamtmasse eins, [Prob μ]) sind gleich, wenn sie bei true dieselbe Masse haben. Nicht für irgendein Maß auf Bool: Dort ist die Masse bei false frei.' },
     { name: 'coin_true', kind: 'lemma', sig: '(coin p) true = ↑p', en: 'Proved by you in One Coin: the mass of the coin at true.', de: 'Von dir bewiesen in „Eine Münze“: die Masse der Münze bei true.' },
     { name: 'coin_false', kind: 'lemma', sig: '(coin p) false = ↑(σ p)', en: 'Proved by you in One Coin: the mass of the coin at false.', de: 'Von dir bewiesen in „Eine Münze“: die Masse der Münze bei false.' },
@@ -4009,24 +4009,41 @@
     // with a comma. After apply, exact or have: there, or as an argument. After rw [a]: into its brackets.
     // Else it starts a line: with which tactic, the player chooses (a bubble at the rule: rw, simp_rw,
     // apply, exact, those of the inventory), since that is what is to be learnt; with rw alone, rw [rule].
+    // (the distributions a theorem with a distribution as its first argument can be about: those of the
+    // context, μ, and the coins of the goal, (coin p); Lean cannot guess it from `1` in `rw [← mass_total]`)
+    measures() {
+      const goal = String(this.goals?.[0] ?? ''), i = goal.indexOf('⊢')
+      const vs = this.vars().filter(x => /^DiscreteMeasure\b/.test(x.type)).map(x => x.name)
+      const cs = [...(i < 0 ? '' : goal.slice(i)).matchAll(/\bcoin (\w+|\([^()]*\))/g)].map(m => `(coin ${m[1]})`)
+      return [...new Set([...vs, ...cs])]
+    }
     tapRule(it) {
       const v = this.input?.value ?? '', n = it.name, t = v.replace(/\s+$/, '')
       this.choice = null
-      const set = x => { this.input.value = this.typed = x; this.render() }
-      if (/\[[^\]]*$/.test(v)) {
-        if (/[\[←]$/.test(t)) return set(t + (t.endsWith('←') ? ' ' : '') + n)
-        if (/,$/.test(t)) return set(t + ' ' + n)
-        if (/ $/.test(v)) return set(v + n)
-        return set(t + ', ' + n)
+      // (a theorem about a distribution, `measure: true`: the name alone, or with one of them)
+      const ms = it.measure ? this.measures() : [], names = [n, ...ms.map(m => `${n} ${m}`)]
+      const set = make => {
+        if (names.length > 1) { this.choice = { from: n, options: names.map(x => ({ label: x, text: make(x), set: true })) }; return this.render() }
+        this.input.value = this.typed = make(n); this.render()
       }
-      if (/^(apply|exact)$/.test(t)) return this.put(`${t} ${n}`)
+      if (/\[[^\]]*$/.test(v)) {
+        if (/[\[←]$/.test(t)) return set(x => t + (t.endsWith('←') ? ' ' : '') + x)
+        if (/,$/.test(t)) return set(x => t + ' ' + x)
+        if (/ $/.test(v)) return set(x => v + x)
+        return set(x => t + ', ' + x)
+      }
+      if (/^(apply|exact)$/.test(t)) return set(x => `${t} ${x}`)
       if (/^(norm_num|simp)$/.test(t)) return this.put(`${t} [${n}]`)
-      if (/\[[^\]]*\S[^\]]*\]$/.test(t)) return set(t.replace(/\s*\]$/, `, ${n}]`))
-      if (/:=$/.test(t) || /^exists$/.test(t) || /^(apply|exact|have|exists)\b/.test(t)) return set(t + ' ' + n)
-      const ways = [['rw', `rw [${n}]`], ['simp_rw', `simp_rw [${n}]`], ['apply', `apply ${n}`], ['exact', `exact ${n}`]]
+      if (/\[[^\]]*\S[^\]]*\]$/.test(t)) return set(x => t.replace(/\s*\]$/, `, ${x}]`))
+      if (/:=$/.test(t) || /^exists$/.test(t) || /^(apply|exact|have|exists)\b/.test(t)) return set(x => t + ' ' + x)
+      const ways = [['rw', x => `rw [${x}]`], ['simp_rw', x => `simp_rw [${x}]`], ['apply', x => `apply ${x}`], ['exact', x => `exact ${x}`]]
         .filter(([k]) => { const i = INVENTORY.find(x => x.name === k); return i && this.available(i) })
-      if (ways.length > 1) { this.choice = { from: n, options: ways.map(([label, text]) => ({ text, label })) }; return this.render() }
-      this.put(`rw [${n}]`)
+      // (first the tactic, then, for a theorem about a distribution, which one)
+      const opt = ([label, make]) => names.length > 1 ? { label, next: names.map(x => ({ label: x, text: make(x) })) } : { label, text: make(n) }
+      if (ways.length > 1) { this.choice = { from: n, options: ways.map(opt) }; return this.render() }
+      const o = opt(ways[0] ?? ['rw', x => `rw [${x}]`])
+      if (o.next) { this.choice = { from: n, options: o.next }; return this.render() }
+      this.put(o.text)
     }
 
     // the choice of a tapped theorem or fact, right at it: rw, apply, exact, …
@@ -4035,7 +4052,12 @@
       for (const o of this.choice.options) {
         const c = el('button', 'pg-chip pg-chip-choice', o.label); c.type = 'button'; c.title = o.text
         // (an option with a second choice: `f`, then `true` or `false`)
-        c.addEventListener('click', () => { if (o.next) { this.choice = { from: this.choice.from, options: o.next }; this.render() } else this.put(o.text) })
+        c.addEventListener('click', () => {
+          if (o.next) { this.choice = { from: this.choice.from, options: o.next }; this.render() }
+          // (in an open line, rw [← …: the input as it is, with the choice)
+          else if (o.set) { this.choice = null; this.input.value = this.typed = o.text; this.render() }
+          else this.put(o.text)
+        })
         pop.append(c)
       }
       const x = el('button', 'pg-chip-x', '✕'); x.type = 'button'; x.addEventListener('click', () => { this.choice = null; this.render() })
