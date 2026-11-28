@@ -797,33 +797,12 @@ table.pg-truth { border-collapse: collapse; font-size: 0.95em; }
 .pg-quiz-warn { padding: 0.6em 0.9em; border: 2px solid #c53030; border-radius: 8px; background: #fde8e8; color: #9b2c2c; font-weight: 600; animation: pg-quiz-shake 0.35s; }
 @keyframes pg-quiz-shake { 25% { transform: translateX(-6px) } 75% { transform: translateX(6px) } }
 
-/* a board where masses are filled in (Fill): the coin, the four maps, the distribution after each */
-.pg-fill-box { display: flex; flex-direction: column; align-items: center; gap: 0.6em; padding: 1em 0.5em; font-family: var(--verso-structure-font-family, sans-serif); }
-.pg-fill-top { display: flex; flex-direction: column; align-items: center; gap: 0.3em; padding: 0.5em 1em; border: 2px solid #2f6fb3; border-radius: 10px; background: #eef4fb; }
-.pg-fill-coin { font-family: var(--verso-code-font-family, monospace); font-weight: 600; }
-.pg-fill-dist, .pg-fill-out { display: flex; flex-direction: column; gap: 0.25em; }
-.pg-fill-dist { flex-direction: row; gap: 0.8em; }
-.pg-fill-pair { display: flex; align-items: center; gap: 0.35em; }
-.pg-fill-pair > code { font-family: var(--verso-code-font-family, monospace); font-size: 0.85em; min-width: 2.9em; text-align: right; }
-.pg-fill-cols { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0.6em; width: 100%; max-width: 44em; }
-.pg-fill-col { display: flex; flex-direction: column; align-items: center; gap: 0.25em; min-width: 0; }
-.pg-fill-arrow { color: #6f7f90; line-height: 1; }
-.pg-fill-gate { display: flex; flex-direction: column; align-items: center; padding: 0.35em 0.4em; border: 1px solid #c9d3df; border-radius: 8px; background: #fff; text-align: center; width: 100%; box-sizing: border-box; }
-.pg-fill-gate code { font-family: var(--verso-code-font-family, monospace); font-size: 0.85em; overflow-wrap: anywhere; }
-.pg-fill-say { font-size: 0.75em; color: #555; }
-.pg-fill-val { font-family: var(--verso-code-font-family, monospace); min-width: 3.4em; padding: 0.25em 0.4em; border-radius: 6px; text-align: center; font-size: 0.9em; }
-.pg-fill-given { background: #fff; border: 1px solid #c9d3df; }
-.pg-fill-field { border: 1px solid #2f6fb3; background: #fff; cursor: pointer; color: inherit; }
-.pg-fill-field.pg-fill-empty { color: #8a96a3; border-style: dashed; }
-.pg-fill-field:disabled { cursor: default; }
-.pg-fill-solved .pg-fill-field { border-color: #2f855a; background: #e6f4ea; color: #1f6b27; }
-@media (max-width: 520px) {
-  .pg-fill-cols { gap: 0.3em; }
-  .pg-fill-gate { padding: 0.3em 0.15em; min-height: 4.4em; justify-content: center; }
-  .pg-fill-gate code { font-size: 0.72em; }
-  .pg-fill-say { font-size: 0.65em; }
-  .pg-fill-out .pg-fill-pair { flex-direction: column; gap: 0.1em; }
-  .pg-fill-out .pg-fill-pair > code { min-width: 0; text-align: center; font-size: 0.75em; }
-  .pg-fill-out .pg-fill-val { min-width: 0; width: 100%; box-sizing: border-box; padding: 0.3em 0.1em; }
-  .pg-fill-out { width: 100%; }
-}
+/* a board where masses are filled in (Fill): drawn as a circuit; the choice at a field as at a theorem */
+.pg-fill-wrap { position: relative; display: flex; justify-content: center; width: 100%; max-width: 480px; margin: 0 auto; }
+.pg-fill-wrap > .pg-svg.pg-csvg { flex: 1 1 auto; width: 100%; max-width: 480px; }
+.pg-fill-map { cursor: default; }
+.pg-fill-field { cursor: pointer; }
+.pg-fill-open rect { stroke: #2e6fb8; stroke-width: 2.5; stroke-dasharray: none; }
+.pg-fill-pop { position: absolute; z-index: 6; margin-left: 0; white-space: nowrap; visibility: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18); }
+.pg-fill-svg.pg-done .pg-cbox { stroke: #2e8b37; }
+.pg-fill-v { font-size: 12px; }

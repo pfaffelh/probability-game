@@ -41,7 +41,7 @@ image (`map_true`).
 **Tactics.** `rw` in chains (practised here), `constructor`, `exact`, `apply` (first contact).
 
 **Path.** The masses of the coin, and both in one statement (`∧`, `constructor`). Sums over `Bool`
-and point tests (`==`). Where the mass goes: on a board of its own (`board := "maps"`, game.js `Fill`), `coin p` through the four maps `Bool → Bool`, the player fills in the masses after each; in Lean `map_apply`, then `map_true`. The whole mass; for the
+and point tests (`==`). Where the mass goes: on a board of its own (`board := "maps"`, game.js `Fill`, drawn as a circuit), `coin p` wired into the four maps `Bool → Bool` (their pictures, as in bind), the player fills in the masses of each output by the choice p, 1 − p, 1, 0; in Lean `map_apply`, then `map_true`. The whole mass; for the
 coin, by `exact mass_total (coin p)`: a theorem with its argument. At most one, finite. Boss:
 `((coin p).map not) true = σ p`, on the board.
 

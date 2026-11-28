@@ -120,13 +120,13 @@ for (const path of paths) {
       board = green && says === lv.statements.length ? 'ok' : `NOT (${await status()})`
       if (board !== 'ok') fail(`${path} level ${i + 1}: choice ${board}`)
     } else if (lv.kind === 'leanonly' && lv.board) {
-      // (a board to fill in: first every field once (wrong: red, not done), then each up to its answer)
+      // (a board to fill in: a tap on a field, then the value in its choice; first every field p (wrong:
+      // red, not done), then each its answer)
       const fields = page.locator(`${L}.pg-fill-field`), m = await fields.count()
-      for (let k = 0; k < m; k++) await fields.nth(k).click()
+      const fill = async (k, v) => { await fields.nth(k).click(); await page.locator(`${L}.pg-fill-pop .pg-chip-choice[data-value="${v}"]`).click() }
+      for (let k = 0; k < m; k++) await fill(k, 'p')
       if (!(await page.locator(`${L}.pg-quiz-warn`).count())) fail(`${path} level ${i + 1}: a wrong filling is not told`)
-      for (let k = 0; k < m; k++) {
-        for (let t = 0; t < 4 && (await fields.nth(k).textContent()) !== (await fields.nth(k).getAttribute('data-answer')); t++) await fields.nth(k).click()
-      }
+      for (let k = 0; k < m; k++) await fill(k, await fields.nth(k).getAttribute('data-answer'))
       green = await page.locator(`${L}.pg-level-done, .pg-level-done:not([hidden])`).count() > 0
       board = green ? 'ok' : `NOT (${await status()})`
       if (board !== 'ok') fail(`${path} level ${i + 1}: fill ${board}`)
