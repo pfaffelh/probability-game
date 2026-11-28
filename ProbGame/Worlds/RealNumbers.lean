@@ -117,7 +117,7 @@ rw [ENNReal.ofReal_add] <;> apply real_mul_nonneg
 :::
 ::::
 
-::::leanonly (proof := "(p : I) : (p : ℝ) + (σ p : I) = 1") (new := "symm_real, ring") (uses := "symm_real, ring, rw")
+::::leanonly (proof := "(p : I) : (p : ℝ) + (σ p : I) = 1") (lemma := "add_symm_real") (new := "symm_real, ring") (uses := "symm_real, ring, rw")
 :::en
 *1 − p, really.* In `ℝ`, `σ p` is really $`1 - p`, and now computing knows that $`p + (1 - p) = 1`.
 :::
@@ -128,15 +128,56 @@ rw [ENNReal.ofReal_add] <;> apply real_mul_nonneg
 
 :::proofen
 `symm_real : ↑(σ p) = 1 - ↑p` (as real numbers). What is left holds by computing with `+`, `-`, `*`.
+Your result becomes the lemma `add_symm_real`.
 :::
 
 :::proofde
 `symm_real : ↑(σ p) = 1 - ↑p` (als reelle Zahlen). Was bleibt, gilt durch Rechnen mit `+`, `-`, `*`.
+Dein Ergebnis wird das Lemma `add_symm_real`.
 :::
 :::solution
 ```
 rw [symm_real]
 ring
+```
+:::
+::::
+
+::::leanonly (proof := "(p : I) : (↑p + ↑(σ p) : ℝ≥0∞) = 1") (new := "real_nonneg, ENNReal.ofReal_one") (uses := "mass_eq_ofReal, ENNReal.ofReal_add, real_nonneg, add_symm_real, ENNReal.ofReal_one, rw, -add_symm_eq_one, -simp")
+:::en
+*The rule from ENNReal, proved.* `add_symm_eq_one : ↑p + ↑(σ p) = 1` has been a rule of the game since
+*ENNReal*. With masses as real numbers you can prove it now.
+:::
+
+:::de
+*Die Regel aus ENNReal, bewiesen.* `add_symm_eq_one : ↑p + ↑(σ p) = 1` ist seit *ENNReal* eine
+Spielregel. Mit Massen als reellen Zahlen kannst du sie jetzt beweisen.
+:::
+
+:::proofen
+Write both masses as real numbers (`mass_eq_ofReal`) and the sum as one `ENNReal.ofReal`
+(`ENNReal.ofReal_add`, which needs both `≥ 0`: the new rule `real_nonneg p : 0 ≤ (p : ℝ)`). Then your
+lemma `add_symm_real` from the level before, and `ENNReal.ofReal_one : ENNReal.ofReal 1 = 1`. (The
+rule itself, and `simp` with it, are put away here.)
+:::
+
+:::proofde
+Schreib beide Massen als reelle Zahlen (`mass_eq_ofReal`) und die Summe als ein `ENNReal.ofReal`
+(`ENNReal.ofReal_add`, das beide `≥ 0` braucht: die neue Regel `real_nonneg p : 0 ≤ (p : ℝ)`). Dann
+dein Lemma `add_symm_real` aus dem Level davor, und `ENNReal.ofReal_one : ENNReal.ofReal 1 = 1`. (Die
+Regel selbst, und `simp` mit ihr, sind hier weggelegt.)
+:::
+:::solution
+```
+rw [mass_eq_ofReal, mass_eq_ofReal, ← ENNReal.ofReal_add (real_nonneg p) (real_nonneg (σ p)), add_symm_real, ENNReal.ofReal_one]
+```
+:::
+:::solution
+```
+rw [mass_eq_ofReal, mass_eq_ofReal]
+rw [← ENNReal.ofReal_add (real_nonneg p) (real_nonneg (σ p))]
+rw [add_symm_real]
+rw [ENNReal.ofReal_one]
 ```
 :::
 ::::

@@ -603,6 +603,13 @@ theorem real_mul_nonneg (p q : I) : 0 ≤ (p : ℝ) * q := mul_nonneg p.2.1 q.2.
 
 theorem symm_real (p : I) : ((σ p : I) : ℝ) = 1 - p := unitInterval.coe_symm_eq p
 
+/-- Balance: a number of `I` is `≥ 0` (as a real number). -/
+theorem real_nonneg (p : I) : 0 ≤ (p : ℝ) := p.2.1
+
+/-- Balance, *1 − p, really*: `p + (1 - p) = 1` in `ℝ`. -/
+theorem add_symm_real (p : I) : (p : ℝ) + (σ p : I) = 1 := by
+  rw [symm_real]; ring
+
 /-- Balance, *Computing with a hypothesis*: in balance, the mass at `true` stays (in `ℝ`). -/
 theorem balance {p q r : ℝ} (h : (1 - p) * r = p * (1 - q)) : p * q + (1 - p) * r = p := by
   linear_combination h

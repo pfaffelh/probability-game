@@ -15,7 +15,7 @@ A world is measured against four questions.
 
 For each world: its goal, the tactics, how the levels get there, and what is open. The six
 proposals of the first version of this file are carried out, and after them the thin tactics got
-their levels (see the end); "open" is what is left. 13 worlds, 185 levels.
+their levels (see the end); "open" is what is left. 13 worlds, 186 levels.
 
 ## 1. Bool (29 levels)
 
@@ -127,7 +127,7 @@ three tries.
 
 **Open.** The boss has the same proof as *A chain*.
 
-## 8. Balance (10 levels; before: Real Numbers)
+## 8. Balance (11 levels; before: Real Numbers)
 
 **Goal.** When does a waiting coin leave `coin p` unchanged? In balance,
 `(1 − p) · r = p · (1 − q)` (`coin_stays`). To use such an equation, the masses are taken from
@@ -135,7 +135,7 @@ three tries.
 
 **Tactics.** `ring` (once more), `linear_combination`, `field_simp`.
 
-**Path.** A mass as a real number; products; sums. `linear_combination`: twice a hypothesis, the
+**Path.** A mass as a real number; products; sums. `linear_combination`: twice a hypothesis, the After `add_symm_real`, the rule `add_symm_eq_one` of ENNReal proved (`mass_eq_ofReal`, `ENNReal.ofReal_add` with `real_nonneg`, `ENNReal.ofReal_one`; the rule and `simp` put away there).
 balance in `ℝ` (the lemma `balance`), two hypotheses (a gap: how much lies at `true`?). Fractions:
 shares add up to one (`field_simp`), and which coin is in balance (a gap: `p = r / (r + 1 − q)`).
 Boss: `coin_stays`, ending with `apply balance`, `exact h`; used again in *Hypergeometric*.

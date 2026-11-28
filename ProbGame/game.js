@@ -403,6 +403,20 @@
       localStorage.setItem('pg:moved:2026-11-29s', '1')
     }
   } catch {}
+  // (since 2026-11-29: Balance 5 proves the rule add_symm_eq_one with real numbers)
+  try {
+    if (!localStorage.getItem('pg:moved:2026-11-29t')) {
+      const re = /^pg:(\/[^/]+\/)Balance\/:(\d+)((?::.*)?)$/
+      const moved = []
+      for (const k of Object.keys(localStorage)) {
+        const m = re.exec(k)
+        if (m && Number(m[2]) >= 4) moved.push([k, `pg:${m[1]}Balance/:${Number(m[2]) + 1}${m[3]}`, localStorage.getItem(k)])
+      }
+      for (const [k] of moved) localStorage.removeItem(k)
+      for (const [, k, v] of moved) localStorage.setItem(k, v)
+      localStorage.setItem('pg:moved:2026-11-29t', '1')
+    }
+  } catch {}
   const DE = {
     Moves: 'Züge', Undo: 'Zurück', 'Add a gate': 'Baustein hinzufügen', Gate: 'Baustein', 'Start over': 'Neu anfangen', 'Next level ›': 'Nächstes Level ›',
     Target: 'Ziel', 'In Lean, for every p:': 'In Lean, für jedes p:', 'proved': 'bewiesen',
@@ -3557,6 +3571,9 @@
     "ENNReal.ofReal_add": "theorem ENNReal.ofReal_add {p q : ℝ} (hp : 0 ≤ p) (hq : 0 ≤ q) : ENNReal.ofReal (p + q) = ENNReal.ofReal p + ENNReal.ofReal q",
     "real_mul_nonneg": "theorem real_mul_nonneg (p q : I) : 0 ≤ ↑p * ↑q",
     "symm_real": "theorem symm_real (p : I) : ↑(σ p) = 1 - ↑p",
+    "add_symm_real": "theorem add_symm_real (p : I) : ↑p + ↑(σ p) = 1",
+    "real_nonneg": "theorem real_nonneg (p : I) : 0 ≤ ↑p",
+    "ENNReal.ofReal_one": "theorem ENNReal.ofReal_one : ENNReal.ofReal 1 = 1",
     "balance": "theorem balance {p q r : ℝ} (h : (1 - p) * r = p * (1 - q)) : p * q + (1 - p) * r = p",
     "coin_stays": "theorem coin_stays (p q r : I) (h : (1 - ↑p) * ↑r = ↑p * (1 - ↑q)) : (do let x ← coin p; bif x then coin q else coin r) = coin p",
     "coin_thin": "theorem coin_thin (p q : I) : (do let x ← coin p; bif x then coin q else pure false) = coin (p * q)",
@@ -3664,7 +3681,7 @@
     { name: 'coin_not', kind: 'lemma', sig: '(coin p).map not = coin (σ p)', en: 'Proved by you: the boss of One Coin. Flipping a coin swaps the masses.', de: 'Von dir bewiesen: der Endgegner von „Eine Münze“. Umdrehen tauscht die Massen.' },
     { name: 'coin_total', kind: 'lemma', sig: '(coin p) true + (coin p) false = 1', en: 'Proved by you in Coins: the total mass of a coin is one.', de: 'Von dir bewiesen in „Münzen“: Die Gesamtmasse einer Münze ist eins.' },
     { name: 'pure_apply', kind: 'rule', sig: '(pure a) b = bif a == b then 1 else 0', en: 'The definition of a point mass: one at its point, zero elsewhere.', de: 'Die Definition einer Punktmasse: eins an ihrem Punkt, null sonst.' },
-    { name: 'add_symm_eq_one', kind: 'rule', sig: 'add_symm_eq_one p : ↑p + ↑(σ p) = 1', en: 'A rule of the game: σ p is the rest of p to one, so the two masses of the coin add up to one.', de: 'Eine Spielregel: σ p ist der Rest von p bis eins; die beiden Massen der Münze ergeben zusammen eins.' },
+    { name: 'add_symm_eq_one', kind: 'rule', sig: 'add_symm_eq_one p : ↑p + ↑(σ p) = 1', en: 'A rule of the game (proved by you in Balance): σ p is the rest of p to one, so the two masses of the coin add up to one.', de: 'Eine Spielregel (von dir bewiesen in „Gleichgewicht“): σ p ist der Rest von p bis eins; die beiden Massen der Münze ergeben zusammen eins.' },
     { name: 'eq_coin', kind: 'lemma', sig: 'eq_coin μ [Prob μ] p (h : μ true = p) : μ = coin p', en: 'Proved by you in Coins: a distribution on Bool with mass p at true is the coin p.', de: 'Von dir bewiesen in „Münzen“: Eine Verteilung auf Bool mit Masse p bei true ist die Münze p.' },
     { name: 'mass_one', kind: 'rule', sig: '↑(1 : I) = 1', en: 'The number 1, as a mass.', de: 'Die Zahl 1, als Masse.' },
     { name: 'coin_one', kind: 'lemma', sig: 'coin 1 = pure true', en: 'Proved by you in Coins: a coin with chance 1 is surely true.', de: 'Von dir bewiesen in „Münzen“: Eine Münze mit Chance 1 ist sicher true.' },
@@ -3805,6 +3822,9 @@
     { name: 'ENNReal.ofReal_add', kind: 'rule', sig: '0 ≤ a → 0 ≤ b → ENNReal.ofReal (a + b) = ENNReal.ofReal a + ENNReal.ofReal b', en: 'A sum through ofReal, when both are ≥ 0.', de: 'Eine Summe durch ofReal, wenn beide ≥ 0 sind.' },
     { name: 'real_mul_nonneg', kind: 'rule', sig: '0 ≤ p * q', en: 'A product of numbers in [0, 1] is ≥ 0.', de: 'Ein Produkt von Zahlen aus [0, 1] ist ≥ 0.' },
     { name: 'symm_real', kind: 'rule', sig: '↑(σ p) = 1 - ↑p', en: '1 - p, as real numbers.', de: '1 - p, als reelle Zahlen.' },
+    { name: 'add_symm_real', kind: 'lemma', sig: '(p : ℝ) + (σ p : I) = 1', en: 'Proved by you in Balance: p + (1 - p) = 1, as real numbers.', de: 'Von dir bewiesen in „Gleichgewicht“: p + (1 - p) = 1, als reelle Zahlen.' },
+    { name: 'real_nonneg', kind: 'rule', sig: '0 ≤ (p : ℝ)', en: 'A number of [0, 1] is ≥ 0.', de: 'Eine Zahl aus [0, 1] ist ≥ 0.' },
+    { name: 'ENNReal.ofReal_one', kind: 'rule', sig: 'ENNReal.ofReal 1 = 1', en: 'The real number 1, as a mass.', de: 'Die reelle Zahl 1, als Masse.' },
     { name: 'balance', kind: 'lemma', sig: '(1 - p) * r = p * (1 - q) → p * q + (1 - p) * r = p', en: 'Proved by you in Balance: in balance, the mass at true stays (in ℝ).', de: 'Von dir bewiesen in „Gleichgewicht“: Im Gleichgewicht bleibt die Masse bei true (in ℝ).' },
     { name: 'coin_stays', kind: 'lemma', sig: '(1 - p) * r = p * (1 - q) → (do let x ← coin p; bif x then coin q else coin r) = coin p', en: 'Proved by you in Balance: a coin that stays.', de: 'Von dir bewiesen in „Gleichgewicht“: eine Münze, die bleibt.' },
     { name: 'coin_thin', kind: 'lemma', sig: '(do let x ← coin p; bif x then coin q else pure false) = coin (p * q)', en: 'Proved by you in Thinning: a coin p, kept with probability q.', de: 'Von dir bewiesen in „Ausdünnen“: eine Münze p, behalten mit Wahrscheinlichkeit q.' },
