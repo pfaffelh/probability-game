@@ -135,7 +135,7 @@ rfl
 :::
 :::::
 
-::::leanonly (proof := "(p : I) : coin p true + coin p false = ⟦1 ‖ 0, 1, p⟧") (lemma := "coin_total") (new := "add_symm_eq_one") (uses := "coin_true, coin_false, add_symm_eq_one, coin_total, rw")
+::::leanonly (proof := "(p : I) : coin p true + coin p false = ⟦1 ‖ 0, 1, p⟧") (lemma := "coin_total") (uses := "coin_true, coin_false, add_symm_eq_one, coin_total, rw")
 :::en
 *The coin is whole.* $`p + (1 - p) = 1`: the two masses of the coin add up to one.
 :::
@@ -145,15 +145,13 @@ rfl
 :::
 
 :::proofen
-New, a rule of the game: `add_symm_eq_one p : ↑p + ↑(σ p) = 1`. It says what `σ p` is: the rest of
-$`p` to one. (In Lean it is a computation with real numbers; they come in *Balance*.) First write the
-masses of the coin as `↑p` and `↑(σ p)`. What you prove is unlocked as `coin_total`.
+The rule `add_symm_eq_one p : ↑p + ↑(σ p) = 1` from *ENNReal*. First write the masses of the coin as
+`↑p` and `↑(σ p)`. What you prove is unlocked as `coin_total`.
 :::
 
 :::proofde
-Neu, eine Spielregel: `add_symm_eq_one p : ↑p + ↑(σ p) = 1`. Sie sagt, was `σ p` ist: der Rest von
-$`p` bis eins. (In Lean ist das eine Rechnung mit reellen Zahlen; die kommen in *Gleichgewicht*.)
-Schreib zuerst die Massen der Münze als `↑p` und `↑(σ p)`. Was du beweist, wird als `coin_total`
+Die Regel `add_symm_eq_one p : ↑p + ↑(σ p) = 1` aus *ENNReal*. Schreib zuerst die Massen der Münze als
+`↑p` und `↑(σ p)`. Was du beweist, wird als `coin_total`
 freigeschaltet.
 :::
 :::solution
@@ -173,53 +171,6 @@ rw [← add_symm_eq_one p, coin_true, coin_false]
 ```
 :::
 ::::
-
-:::::leanonly (proof := "(p : I) : coin p true = p ∧ coin p false = σ p") (new := "constructor") (uses := "coin_true, coin_false, coin_total, <;>, constructor, rfl, rw")
-::::hint (anchor := "item:constructor")
-:::en
-`constructor`: a goal `A ∧ B` becomes two goals, `A` and `B`.
-:::
-
-:::de
-`constructor`: Aus einem Ziel `A ∧ B` werden zwei Ziele, `A` und `B`.
-:::
-::::
-
-:::en
-*Both masses.* Two statements in one, joined by `∧` (and): the mass at `true`, and the mass at `false`.
-:::
-
-:::de
-*Beide Massen.* Zwei Aussagen in einer, verbunden mit `∧` (und): die Masse bei `true` und die Masse bei `false`.
-:::
-
-:::proofen
-The new tactic `constructor` makes two goals of `A ∧ B`: first `A`, then `B`. Each of them holds by definition, as before.
-:::
-
-:::proofde
-Die neue Taktik `constructor` macht aus `A ∧ B` zwei Ziele: erst `A`, dann `B`. Jedes gilt nach Definition, wie zuvor.
-:::
-:::solution
-```
-constructor
-rfl
-rfl
-```
-:::
-:::solution
-```
-constructor <;> rfl
-```
-:::
-:::solution
-```
-constructor
-rw [coin_true]
-rw [coin_false]
-```
-:::
-:::::
 
 ::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (p : I) (h : μ true = p) : μ = coin ⟦p ‖ p, σ p⟧") (lemma := "eq_coin") (uses := "bool_ext, coin_true, coin_false, coin_total, apply, exact, rfl, rw")
 :::hint (anchor := "none")
@@ -272,7 +223,7 @@ exact bool_ext μ (coin p) h
 :::
 ::::
 
-::::leanonly (proof := ": coin 1 = ⟦pure true ‖ pure true, pure false⟧") (lemma := "coin_one") (new := "mass_one") (uses := "bool_ext, coin_true, pure_true, Bool.cond_true, mass_one, coin_false, coin_total, Bool.cond_false, apply, rw")
+::::leanonly (proof := ": coin 1 = ⟦pure true ‖ pure true, pure false⟧") (lemma := "coin_one") (uses := "bool_ext, coin_true, pure_true, Bool.cond_true, mass_one, coin_false, coin_total, Bool.cond_false, apply, rw")
 :::en
 *A sure coin.* The coin with probability one shows `true` for sure.
 :::
@@ -282,13 +233,11 @@ exact bool_ext μ (coin p) h
 :::
 
 :::proofen
-Compare the masses at `true` (`bool_ext`). New, a rule of the game: `mass_one : ↑(1 : I) = 1`, the
-number one of `I` as a mass. What you prove is unlocked as `coin_one`.
+Compare the masses at `true` (`bool_ext`); `mass_one : ↑(1 : I) = 1` is from *ENNReal*. What you prove is unlocked as `coin_one`.
 :::
 
 :::proofde
-Vergleiche die Massen bei `true` (`bool_ext`). Neu, eine Spielregel: `mass_one : ↑(1 : I) = 1`, die
-Zahl eins aus `I` als Masse. Was du beweist, wird als `coin_one` freigeschaltet.
+Vergleiche die Massen bei `true` (`bool_ext`); `mass_one : ↑(1 : I) = 1` ist aus *ENNReal*. Was du beweist, wird als `coin_one` freigeschaltet.
 :::
 :::solution
 ```

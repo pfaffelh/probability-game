@@ -105,7 +105,17 @@ rfl
 :::
 ::::
 
-:::::leanonly (proof := "(p : I) (k : ℕ) : binom p 0 0 = ⟦1 ‖ 1, 0, ↑p⟧ ∧ binom p 0 (k + 1) = ⟦0 ‖ 0, 1, ↑p⟧") (new := "pure_zero_succ") (group := "chance.count") (uses := "binom_zero, pure_self, pure_zero_succ, binom_succ, constructor, rfl, rw, simp")
+:::::leanonly (proof := "(p : I) (k : ℕ) : binom p 0 0 = ⟦1 ‖ 1, 0, ↑p⟧ ∧ binom p 0 (k + 1) = ⟦0 ‖ 0, 1, ↑p⟧") (new := "pure_zero_succ, constructor") (group := "chance.count") (uses := "binom_zero, pure_self, pure_zero_succ, binom_succ, constructor, rfl, rw, simp")
+::::hint (anchor := "item:constructor")
+:::en
+`constructor`: a goal `A ∧ B` becomes two goals, `A` and `B`.
+:::
+
+:::de
+`constructor`: Aus einem Ziel `A ∧ B` werden zwei Ziele, `A` und `B`.
+:::
+::::
+
 ::::hint (anchor := "gap")
 :::en
 With no throw: how often `true`?
@@ -125,12 +135,14 @@ Ohne Wurf: wie oft `true`?
 :::
 
 :::proofen
-Two statements joined by `∧`, as in *One Coin*. For the second,
+Two statements joined by `∧` (and). The new tactic `constructor` makes two goals of `A ∧ B`: first
+`A`, then `B`. For the second,
 `pure_zero_succ : (pure 0) (k + 1) = 0`.
 :::
 
 :::proofde
-Zwei Aussagen, verbunden mit `∧`, wie in *Eine Münze*. Für die zweite
+Zwei Aussagen, verbunden mit `∧` (und). Die neue Taktik `constructor` macht aus `A ∧ B` zwei Ziele:
+erst `A`, dann `B`. Für die zweite
 `pure_zero_succ : (pure 0) (k + 1) = 0`.
 :::
 :::solution

@@ -15,7 +15,7 @@ A world is measured against four questions.
 
 For each world: its goal, the tactics, how the levels get there, and what is open. The six
 proposals of the first version of this file are carried out, and after them the thin tactics got
-their levels (see the end); "open" is what is left. 15 worlds, 181 levels.
+their levels (see the end); "open" is what is left. 15 worlds, 182 levels.
 
 ## 1. Bool (25 levels)
 
@@ -33,7 +33,7 @@ from `and`, `or`, `not`, with its table. Lemma levels whose lemma goes into simp
 
 **Open.** The boss has the same proof line as De Morgan before it; it is harder on the board only.
 
-## 2. ENNReal (11 levels)
+## 2. ENNReal (12 levels)
 
 **Goal.** Computing with masses: numbers in `[0, ∞]` (`ℝ≥0∞`), where taking away stops at 0 and `∞`
 swallows.
@@ -43,7 +43,8 @@ swallows.
 **Path.** `zero_add`, `add_comm`; `add_zero` (proved); `add_assoc` with `←`; `one_mul`, `zero_mul`
 (proved, from `mul_one`, `mul_zero`, `mul_comm`); `add_mul`, `mul_add`; taking away (`tsub_self`,
 `tsub_zero`); `ENNReal.add_sub_cancel_left` with a hypothesis `a ≠ ∞` (and `top_add`, why);
-`a ≤ b + a` (`le_self_add`, `exact`); `a ≤ 1 → a ≠ ∞` (`apply ne_top_of_le_ne_top`). Boss: a
+`a ≤ b + a` (`le_self_add`, `exact`); `a ≤ 1 → a ≠ ∞` (`apply ne_top_of_le_ne_top`). Probabilities as masses: `I`, `↑p`, `σ p`, the rules
+`add_symm_eq_one` and `mass_one`. Boss: a
 computation with all of them.
 
 ## 3. DiscreteMeasure (13 levels)
@@ -63,17 +64,16 @@ true of each output by the choice μ true, μ false, 1, 0 (the one at false foll
 `map_apply`, then `map_true`, `map_id` (by `bool_ext`, one line), `map_not_true :
 (μ.map not) true = μ false`. Boss: `map_pure`, the hardest of the moves.
 
-## 4. One Coin (9 levels)
+## 4. One Coin (8 levels)
 
 **Goal.** The coin: its two masses, and every distribution on `Bool` is a coin (`eq_coin`); a flipped
 coin is the coin `σ p`.
 
-**Tactics.** `apply bool_ext`, `constructor`.
+**Tactics.** `apply bool_ext`.
 
 **Path.** The masses of the coin (the first board with a coin); the rule
-`add_symm_eq_one : ↑p + ↑(σ p) = 1` (what σ is; proving it needs real numbers), with it `coin_total`;
-both masses in one statement (`∧`, `constructor`). Every distribution is a coin (`eq_coin`). The sure
-coin, `coin_one : coin 1 = pure true` (the rule `mass_one`). Surely `false` on the board.
+`add_symm_eq_one` (from ENNReal), with it `coin_total`. Every distribution is a coin (`eq_coin`). The sure
+coin, `coin_one : coin 1 = pure true`. Surely `false` on the board.
 `coin_not_true` on the board, by the boss of DiscreteMeasure. Boss: `coin_not`.
 
 ## 5. Maps (7 levels)
@@ -268,7 +268,7 @@ Its table now:
 | tactic | introduced | levels, by world | weak point |
 |---|---|---|---|
 | `rfl`, `rw`, `cases`, `<;>` | Bool | everywhere | none |
-| `constructor` | One Coin | Binomial 2 | three levels |
+| `constructor` | Binomial | Binomial 1 | two levels, far from the others |
 | `exact` | DiscreteMeasure | DiscreteMeasure 3, Multi-Stage Experiments 1, Balance 1, Thinning 1 | none; a theorem with its argument only twice |
 | `apply` | DiscreteMeasure | One Coin 4, Hypergeometric 2, five worlds 1 each | mostly `bool_ext`; now also `balance`, `coin_stays` twice |
 | `ext` | DiscreteMeasure | Laws of `do` 6, Maps 2, Counting 2, three worlds 1 | none |
@@ -303,6 +303,6 @@ Then, for the tactics that occurred too seldom:
 7. *Balance*: two hypotheses for `linear_combination`; `field_simp` introduced here, on shares, and
    used for "which coin is in balance?"; the lemma `balance`, used by `apply` in the boss.
 8. *Hypergeometric*: put back (`apply coin_stays`), two colours (`linear_combination`).
-9. `constructor` introduced in *One Coin* (both masses of the coin); `exact` introduced on
+9. `constructor` introduced in *Binomial* 2, where `∧` is first needed; `exact` introduced on
    `mass_le_one` (`exact le_self_add`).
 10. *Maps*: a quiz, where `rw` fails. `tests/tactics.py`: three meetings.

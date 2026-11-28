@@ -389,6 +389,47 @@ apply ne_top_of_le_ne_top ENNReal.one_ne_top h
 :::
 ::::
 
+::::leanonly (proof := "(p : I) (a : ℝ≥0∞) : (↑p + ↑(σ p)) * a = ↑(1 : I) * a") (new := "add_symm_eq_one, mass_one") (uses := "add_symm_eq_one, mass_one, rw")
+:::en
+*Probabilities as masses.* A probability is a number `p` in `I`, the interval $`[0, 1]`; `↑p` is it as
+a mass in `ℝ≥0∞`, and `σ p` is $`1 - p`, again in `I`. Two rules of the game:
+`add_symm_eq_one : ↑p + ↑(σ p) = 1` (it says what `σ p` is: the rest of $`p` to one) and
+`mass_one : ↑(1 : I) = 1`.
+:::
+
+:::de
+*Wahrscheinlichkeiten als Massen.* Eine Wahrscheinlichkeit ist eine Zahl `p` in `I`, dem Intervall
+$`[0, 1]`; `↑p` ist sie als Masse in `ℝ≥0∞`, und `σ p` ist $`1 - p`, wieder in `I`. Zwei Spielregeln:
+`add_symm_eq_one : ↑p + ↑(σ p) = 1` (sie sagt, was `σ p` ist: der Rest von $`p` bis eins) und
+`mass_one : ↑(1 : I) = 1`.
+:::
+
+:::proofen
+In Lean both are computations with real numbers; they come in *Balance*. Here they are rules.
+:::
+
+:::proofde
+In Lean sind beide Rechnungen mit reellen Zahlen; die kommen in *Gleichgewicht*. Hier sind sie
+Regeln.
+:::
+:::solution
+```
+rw [add_symm_eq_one, mass_one]
+```
+:::
+:::solution
+```
+rw [mass_one, add_symm_eq_one]
+```
+:::
+:::solution
+```
+rw [add_symm_eq_one]
+rw [mass_one]
+```
+:::
+::::
+
 ::::leanonly (proof := "(a b : ℝ≥0∞) (h : a ≠ ∞) : (a + b) * (1 + 0) - 1 * a = 0 + b") (uses := "add_zero, mul_one, one_mul, zero_add, ENNReal.add_sub_cancel_left, mul_zero, rw")
 :::en
 *Boss: compute.* The rules of this world, one after the other.

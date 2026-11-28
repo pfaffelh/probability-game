@@ -226,6 +226,34 @@
       localStorage.setItem('pg:moved:2026-11-29h', '1')
     }
   } catch {}
+  // (since 2026-11-29: ENNReal has a level for `add_symm_eq_one` and `mass_one` (before from One Coin), before its boss)
+  try {
+    if (!localStorage.getItem('pg:moved:2026-11-29i')) {
+      const re = /^pg:(\/[^/]+\/)ENNReal\/:(\d+)((?::.*)?)$/
+      const moved = []
+      for (const k of Object.keys(localStorage)) {
+        const m = re.exec(k)
+        if (m && Number(m[2]) >= 10) moved.push([k, `pg:${m[1]}ENNReal/:${Number(m[2]) + 1}${m[3]}`, localStorage.getItem(k)])
+      }
+      for (const [k] of moved) localStorage.removeItem(k)
+      for (const [, k, v] of moved) localStorage.setItem(k, v)
+      localStorage.setItem('pg:moved:2026-11-29i', '1')
+    }
+  } catch {}
+  // (since 2026-11-29: One Coin 4, both masses with `∧`, is gone; `constructor` comes in Binomial 2)
+  try {
+    if (!localStorage.getItem('pg:moved:2026-11-29j')) {
+      const re = /^pg:(\/[^/]+\/)One-Coin\/:(\d+)((?::.*)?)$/
+      const moved = []
+      for (const k of Object.keys(localStorage)) {
+        const m = re.exec(k), i = m && Number(m[2])
+        if (m && i >= 3) moved.push([k, i === 3 ? null : `pg:${m[1]}One-Coin/:${i - 1}${m[3]}`, localStorage.getItem(k)])
+      }
+      for (const [k] of moved) localStorage.removeItem(k)
+      for (const [, k, v] of moved) if (k) localStorage.setItem(k, v)
+      localStorage.setItem('pg:moved:2026-11-29j', '1')
+    }
+  } catch {}
   const DE = {
     Moves: 'Züge', Undo: 'Zurück', 'Add a gate': 'Baustein hinzufügen', Gate: 'Baustein', 'Start over': 'Neu anfangen', 'Next level ›': 'Nächstes Level ›',
     Target: 'Ziel', 'In Lean, for every p:': 'In Lean, für jedes p:', 'proved': 'bewiesen',
