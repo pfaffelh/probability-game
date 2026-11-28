@@ -80,7 +80,7 @@ and `y` would be two draws, with $`p^2` (soon, in `coin_and`). What is left, dra
 back, is `coin p` itself.
 
 New: the rule `bind_pure : (do let x ← μ; pure x) = μ`. The `x` of `let x ← coin p` is bound, as the
-`x` of `fun x => …` in *Maps*. (Lean itself reads `do let x ← μ; pure x` as `μ` at once, when you
+`x` of `fun x => …` in *DiscreteMeasure*. (Lean itself reads `do let x ← μ; pure x` as `μ` at once, when you
 type it.)
 :::
 
@@ -91,7 +91,7 @@ Münzen `x` und `y` wären zwei Züge, mit $`p^2` (bald, in `coin_and`). Was ble
 zurückgeben, ist `coin p` selbst.
 
 Neu: die Regel `bind_pure : (do let x ← μ; pure x) = μ`. Das `x` von `let x ← coin p` ist gebunden,
-wie das `x` von `fun x => …` in *Abbildungen*. (Lean selbst liest `do let x ← μ; pure x` sofort als
+wie das `x` von `fun x => …` in *DiscreteMeasure*. (Lean selbst liest `do let x ← μ; pure x` sofort als
 `μ`, wenn du es eintippst.)
 :::
 :::solution

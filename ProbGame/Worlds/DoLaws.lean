@@ -54,13 +54,13 @@ herleitest. Dann gehört es dir für jeden Typ, und ein `do`-Block wird umgeschr
 :::
 
 :::proofen
-Two moves, one after the other. No mass is computed: your boss lemma `map_map` from *Maps* makes
+Two moves, one after the other. No mass is computed: your lemma `map_map` from *DiscreteMeasure* makes
 them one move, and that move you know from *Turned over twice, in one move*.
 :::
 
 :::proofde
-Zwei Züge nacheinander. Keine Masse wird ausgerechnet: Dein Endgegner-Lemma `map_map` aus
-*Abbildungen* macht aus ihnen einen Zug, und diesen Zug kennst du aus *Zweimal umgedreht, in einem Zug*.
+Zwei Züge nacheinander. Keine Masse wird ausgerechnet: Dein Lemma `map_map` aus
+*DiscreteMeasure* macht aus ihnen einen Zug, und diesen Zug kennst du aus *Zweimal umgedreht, in einem Zug*.
 :::
 :::solution
 ```
@@ -347,11 +347,11 @@ simp
 :::
 
 :::proofen
-`rw` does not reach under bound names; `simp_rw` (from *Maps*) does.
+`rw` does not reach under bound names; `simp_rw` (from *DiscreteMeasure*) does.
 :::
 
 :::proofde
-`rw` reicht nicht unter gebundene Namen; `simp_rw` (aus *Abbildungen*) schon.
+`rw` reicht nicht unter gebundene Namen; `simp_rw` (aus *DiscreteMeasure*) schon.
 :::
 :::solution
 ```

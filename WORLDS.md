@@ -15,7 +15,7 @@ A world is measured against four questions.
 
 For each world: its goal, the tactics, how the levels get there, and what is open. The six
 proposals of the first version of this file are carried out, and after them the thin tactics got
-their levels (see the end); "open" is what is left. 15 worlds, 183 levels.
+their levels (see the end); "open" is what is left. 14 worlds, 184 levels.
 
 ## 1. Bool (31 levels)
 
@@ -47,13 +47,13 @@ swallows.
 `add_symm_eq_one` and `mass_one`. Boss: a
 computation with all of them.
 
-## 3. DiscreteMeasure (13 levels)
+## 3. DiscreteMeasure (17 levels)
 
 **Goal.** A distribution on `Bool`, any `μ : DiscreteMeasure Bool` with `[Prob μ]`, is two masses that
 add up to 1; one of them fixes it (`bool_ext`); a map moves each mass to its image (`map_true`). No
 coin in this world: the only concrete distribution is the sure one, `pure b`.
 
-**Tactics.** `rw` in chains (practised here), `exact` and `apply` (from ENNReal), `ext` (once).
+**Tactics.** `rw` in chains (practised here), `exact` and `apply` (from ENNReal), `ext`, `simp_rw`.
 
 **Path.** The whole mass (`mass_total`), first level: tips at `DiscreteMeasure` and `[Prob μ]`
 (`:::hint (anchor := "word:…")`, at that word of the statement); nothing at `true`, all at `false` (`zero_add`). At most one, with a theorem with its
@@ -61,8 +61,11 @@ argument (`rw [← mass_total μ]`); finite. The rest of the mass (`mass_not`). 
 the mass goes: on a board of its own (`board := "maps"`, game.js `Fill`, drawn as a circuit), `μ`
 wired into the four maps `Bool → Bool` (their pictures, as in bind), the player fills in the mass at
 true of each output by the choice μ true, μ false, 1, 0 (the one at false follows); in Lean
-`map_apply`, then `map_true`, `map_id` (by `bool_ext`, one line), `map_not_true :
-(μ.map not) true = μ false`. Boss: `map_pure`, the hardest of the moves.
+`map_apply`, then `map_true`, `map_id` (by `bool_ext`, one line). A quiz: where does `rw` fail (under
+`fun`)? After the answer it says why (`:::hint (anchor := "solved")`). Flipped twice with `simp_rw`.
+`map_not_true : (μ.map not) true = μ false`, `map_pure`, `map_map` (two moves are one; long, by `ext`,
+`map_bool`, `cases f true`, `cond_add_cond`). Boss: `((μ.map f).map f).map f = μ.map f`, by `map_map`
+and `Bool.apply_apply_apply` under `fun`.
 
 ## 4. One Coin (7 levels)
 
@@ -76,20 +79,7 @@ coin is the coin `σ p`.
 coin, `coin_one : coin 1 = pure true`. Surely `false` on the board.
 Boss: `coin_not`, on the board (a `not` after the coin), by `eq_coin` and the boss of DiscreteMeasure.
 
-## 5. Maps (3 levels)
-
-**Goal.** Two moves are one move (`map_map`). A statement about an unknown `f : Bool → Bool` is
-settled by the four maps, or by `f true` and `f false`.
-
-**Tactics.** `revert` and `decide`, `cases f true` (from Bool), `simp_rw` (rewriting under `fun`).
-
-**Path.** A quiz: where does `rw` fail (under `fun`)? After the answer it says why (`:::hint (anchor := "solved")`). Flipped twice with `simp_rw`. Boss: `map_map`, used at once on the
-first board of *Laws of `do`*.
-
-**Open.** No board in the world itself. `cond_add_cond` and `Bool.apply_apply_apply` are not used
-again.
-
-## 6. Two Coins (8 levels)
+## 5. Two Coins (8 levels)
 
 **Goal.** A circuit with a coin at each input is a `do` block. Along a row the masses of the coins
 multiply, over the rows they add (`bind_true`): both `true` is `coin (p * q)`.
@@ -100,7 +90,7 @@ multiply, over the rows they add (`bind_true`): both `true` is `coin (p * q)`.
 simplifier on a board (at least one `true`, two ways) and its quiz. `coin_and`. The same product
 twice (`ring`). Boss: exactly one `true`, its mass computed.
 
-## 7. Laws of `do` (16 levels)
+## 6. Laws of `do` (16 levels)
 
 **Goal.** A circuit is rebuilt, not computed: five laws between moves and draws, and a coin that
 is not used.
@@ -117,7 +107,7 @@ computing the masses at `true` and `eq_symm_of_add`.
 **Open.** The laws are stated for general `μ`, `f`, `g`; only the first has its instance on a
 board before it.
 
-## 8. Counting (11 levels)
+## 7. Counting (11 levels)
 
 **Goal.** `binom p n` is the number of `true` among `n` coins, built one coin at a time; and
 counts add: `B(n, p)` and `B(m, p)` give `B(n + m, p)`.
@@ -132,7 +122,7 @@ a coin that never shows `true` (`binom_never`). The coin at the other end (`bino
 
 **Open.** One level with a gap.
 
-## 9. Multi-Stage Experiments (15 levels)
+## 8. Multi-Stage Experiments (15 levels)
 
 **Goal.** Two-stage experiments: which coin is thrown second depends on the first. The mass of the
 result is the sum over the two ways, `p · q + (1 − p) · r` (total probability).
@@ -145,7 +135,7 @@ three tries.
 
 **Open.** The boss has the same proof as *A chain*.
 
-## 10. Balance (10 levels; before: Real Numbers)
+## 9. Balance (10 levels; before: Real Numbers)
 
 **Goal.** When does a waiting coin leave `coin p` unchanged? In balance,
 `(1 − p) · r = p · (1 − q)` (`coin_stays`). To use such an equation, the masses are taken from
@@ -158,7 +148,7 @@ balance in `ℝ` (the lemma `balance`), two hypotheses (a gap: how much lies at 
 shares add up to one (`field_simp`), and which coin is in balance (a gap: `p = r / (r + 1 − q)`).
 Boss: `coin_stays`, ending with `apply balance`, `exact h`; used again in *Hypergeometric*.
 
-## 11. Sequences (8 levels)
+## 10. Sequences (8 levels)
 
 **Goal.** `n` throws are a list. Its mass depends only on its numbers of `true` and `false`
 (`seq_mass`), and `binom p n` is the number of `true` in it (`binom_eq_count`).
@@ -172,7 +162,7 @@ Boss: `coin_stays`, ending with `apply balance`, `exact h`; used again in *Hyper
 **Open.** `seq_mass` is the summit of the new levels, the boss is another statement; both stand.
 The number of lists with `k` times `true` (`n.choose k`) is said in a text, not proved.
 
-## 12. Binomial (14 levels)
+## 11. Binomial (14 levels)
 
 **Goal.** The masses of `B(n, p)`: `binom p n k = n.choose k · p^k · (1 − p)^(n − k)`, from "one
 coin more" (Pascal's rule for masses).
@@ -184,7 +174,7 @@ The edges. Pascal's triangle. Boss: the formula. Encore: `binom_symm`.
 
 **Open.** It opens with tool levels before the question is posed.
 
-## 13. Geometric (11 levels)
+## 12. Geometric (11 levels)
 
 **Goal.** Waiting for the first `true`: mass `(1 − p)^k · p` at `k`, no memory, total mass 1; and
 the `do` block that waits (`geom_first`).
@@ -198,7 +188,7 @@ mass. Boss: `geom_first`.
 
 **Open.** No board.
 
-## 14. Thinning (9 levels)
+## 13. Thinning (9 levels)
 
 **Goal.** Keeping each `true` only with probability `q` keeps the family: a coin stays a coin, a
 geometric stays geometric, a binomial stays binomial (`binom_thin`).
@@ -207,7 +197,7 @@ geometric stays geometric, a binomial stays binomial (`binom_thin`).
 
 **Open.** Clear; the place where both ways (*Counting*, *Multi-Stage Experiments*) meet.
 
-## 15. Hypergeometric (14 levels)
+## 14. Hypergeometric (14 levels)
 
 **Goal.** Drawing without putting back: each draw is a waiting coin whose chance is the share of
 white balls left. And still the second ball is white as often as the first.
@@ -253,10 +243,10 @@ theorem or tactic is shown and allowed in a level only when one of them uses it.
 **Tactics per world.** A world has the tactics that its levels use (their solutions and quizzes,
 written into `uses` by `tests/uses.py`), as far as earned; `rfl`, `exact`, `rw`, `cases` and `ring`
 stay in every world once earned. So `linear_combination` and `field_simp` are there only in Balance
-and Hypergeometric, `revert` and `decide` only in Maps and Multi-Stage Experiments.
+and Hypergeometric, `revert` and `decide` only in Bool and Multi-Stage Experiments.
 
 **Questions.** Levels with a gap in the statement, only in Lean levels (on a board the answer can be read
-off the board): Bool 6, DiscreteMeasure 7, One Coin 6, Maps 6, Two Coins 1, Laws of `do` 5, Counting 1, Balance 3, Sequences 1, Binomial 2, Geometric 6, Thinning 2, Hypergeometric 6. Five quizzes.
+off the board): Bool 6, DiscreteMeasure 7, One Coin 6, Two Coins 1, Laws of `do` 5, Counting 1, Balance 3, Sequences 1, Binomial 2, Geometric 6, Thinning 2, Hypergeometric 6. Five quizzes.
 
 **Tactics: three meetings.** A tactic is introduced (its text says what it does), practised in its world,
 and used again in a later world. `python3 tests/tactics.py` counts, from the solutions, the levels
@@ -269,9 +259,9 @@ Its table now:
 | `constructor` | Binomial | Binomial 1 | two levels, far from the others |
 | `exact` | DiscreteMeasure | DiscreteMeasure 3, Multi-Stage Experiments 1, Balance 1, Thinning 1 | none; a theorem with its argument only twice |
 | `apply` | DiscreteMeasure | One Coin 4, Hypergeometric 2, five worlds 1 each | mostly `bool_ext`; now also `balance`, `coin_stays` twice |
-| `ext` | DiscreteMeasure | Laws of `do` 6, Maps 2, Counting 2, three worlds 1 | none |
-| `revert`, `decide` | Maps | Maps 2, Multi-Stage Experiments 3 | two worlds |
-| `simp_rw` | Maps | Laws of `do` 4, Maps 3, Two Coins 1 | used on to the end; `simp only` is not given (it would do the same) |
+| `ext` | DiscreteMeasure | Laws of `do` 6, DiscreteMeasure 2, Counting 2, three worlds 1 | none |
+| `revert`, `decide` | Bool | Bool 2, Multi-Stage Experiments 3 | two worlds |
+| `simp_rw` | DiscreteMeasure | Laws of `do` 4, DiscreteMeasure 3, Two Coins 1 | used on to the end; `simp only` is not given (it would do the same) |
 | `simp` | Two Coins | 31 levels in 9 worlds | none |
 | `congr` | Laws of `do` | Laws of `do` 2, Counting 2, Balance 1, Thinning 1 | none |
 | `ring` | Two Coins | 14 levels in 6 worlds | none |
@@ -291,7 +281,7 @@ When which of the three that rewrite: the inventory says it at each (`rw`: not u
 3. Gaps for the masses in *Multi-Stage Experiments*, *Geometric*, *Hypergeometric*.
 4. *Geometric* from the waiting coin; *Hypergeometric* with one draw, one of each, and the boss
    *the second ball*.
-5. A first, easy induction in *Counting* (`binom_never`); in *Maps* a quiz and a level for
+5. A first, easy induction in *Counting* (`binom_never`); in *DiscreteMeasure* a quiz and a level for
    `cases f true`; a board for `map_map` in *Laws of `do`*.
 6. *Sequences*: the mass of a list (`mass_cons`, `seq_mass`). *Real Numbers* is called *Balance*
    and is used by the boss of *Hypergeometric*.
@@ -303,4 +293,4 @@ Then, for the tactics that occurred too seldom:
 8. *Hypergeometric*: put back (`apply coin_stays`), two colours (`linear_combination`).
 9. `constructor` introduced in *Binomial* 2, where `∧` is first needed; `exact` introduced on
    `mass_le_one` (`exact le_self_add`).
-10. *Maps*: a quiz, where `rw` fails. `tests/tactics.py`: three meetings.
+10. *DiscreteMeasure*: a quiz, where `rw` fails. `tests/tactics.py`: three meetings.

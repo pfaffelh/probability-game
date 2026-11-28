@@ -335,6 +335,25 @@
       localStorage.setItem('pg:moved:2026-11-29o', '1')
     }
   } catch {}
+  // (since 2026-11-29: the world Maps is gone; its rw quiz, simp_rw and map_map are in DiscreteMeasure,
+  // before and after map_not_true and map_pure, with a new boss: three times the same move)
+  try {
+    if (!localStorage.getItem('pg:moved:2026-11-29p')) {
+      const M = 'DiscreteMeasure'
+      const TO = { DiscreteMeasure: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 13, 14], Maps: [11, 12, 15] }
+      const re = /^pg:(\/[^/]+\/)([^/]+)\/:(\d+)((?::.*)?)$/
+      const moved = []
+      for (const k of Object.keys(localStorage)) {
+        const m = re.exec(k), to = m && TO[m[2]]
+        if (!to) continue
+        const j = to[Number(m[3])]
+        moved.push([k, j === undefined ? null : `pg:${m[1]}${M}/:${j}${m[4]}`, localStorage.getItem(k)])
+      }
+      for (const [k] of moved) localStorage.removeItem(k)
+      for (const [, k, v] of moved) if (k) localStorage.setItem(k, v)
+      localStorage.setItem('pg:moved:2026-11-29p', '1')
+    }
+  } catch {}
   const DE = {
     Moves: 'Züge', Undo: 'Zurück', 'Add a gate': 'Baustein hinzufügen', Gate: 'Baustein', 'Start over': 'Neu anfangen', 'Next level ›': 'Nächstes Level ›',
     Target: 'Ziel', 'In Lean, for every p:': 'In Lean, für jedes p:', 'proved': 'bewiesen',
@@ -3605,7 +3624,7 @@
     { name: 'map_pure', kind: 'lemma', sig: '(pure a).map f = pure (f a)', en0: 'A move on a sure point moves the point.', de0: 'Ein Zug auf einem sicheren Punkt verschiebt den Punkt.', en: 'Proved by you in DiscreteMeasure, for Bool; it holds for every type: a move on a point mass moves the point.', de: 'Von dir bewiesen in „DiscreteMeasure“, für Bool; es gilt für jeden Typ: Ein Zug auf einer Punktmasse verschiebt den Punkt.' },
     { name: 'map_id', kind: 'lemma', sig: 'μ.map (fun x => x) = μ', en: 'Proved by you in DiscreteMeasure, for Bool; it holds for every type: a move that does nothing.', de: 'Von dir bewiesen in „DiscreteMeasure“, für Bool; es gilt für jeden Typ: ein Zug, der nichts tut.' },
     { name: 'Bool.false_beq', kind: 'lemma', sig: '(false == b) = !b', en: 'Proved by you in Bool: testing false against b gives !b.', de: 'Von dir bewiesen in „Bool“: Der Test von false gegen b gibt !b.' },
-    { name: 'map_map', kind: 'lemma', sig: '(μ.map f).map g = μ.map (fun x => g (f x))', sig0: 'g <$> (f <$> s) = (fun x => g (f x)) <$> s', en: 'Proved by you in Maps, for Bool; it holds for every type: two moves are one move.', de: 'Von dir bewiesen in „Abbildungen“, für Bool; es gilt für jeden Typ: Zwei Züge sind ein Zug.' },
+    { name: 'map_map', kind: 'lemma', sig: '(μ.map f).map g = μ.map (fun x => g (f x))', sig0: 'g <$> (f <$> s) = (fun x => g (f x)) <$> s', en: 'Proved by you in DiscreteMeasure, for Bool; it holds for every type: two moves are one move.', de: 'Von dir bewiesen in „DiscreteMeasure“, für Bool; es gilt für jeden Typ: Zwei Züge sind ein Zug.' },
     { name: 'cond_add_cond', kind: 'lemma', sig: '(bif c then x else 0) + (bif c then y else 0) = bif c then x + y else 0', en: 'Proved by you in Bool: two numbers behind one test (masses too).', de: 'Von dir bewiesen in „Bool“: zwei Zahlen hinter einem Test (auch Massen).' },
     { name: 'coin_and', kind: 'lemma', sig: '(do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)', en: 'Proved by you in Two Coins: independence, both true with probability p · q.', de: 'Von dir bewiesen in „Zwei Münzen“: Unabhängigkeit, beide true mit Wahrscheinlichkeit p · q.' },
     { name: 'bind_map_left', kind: 'lemma', sig: '(do let x ← μ.map f; g x) = (do let x ← μ; g (f x))', en: 'Proved by you in Laws of do, for Bool; it holds for every type: a move on a throw goes into the result.', de: 'Von dir bewiesen in „Gesetze von do“, für Bool; es gilt für jeden Typ: Ein Zug auf einem Wurf wandert ins Ergebnis.' },

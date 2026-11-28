@@ -3,7 +3,6 @@ import ProbGame.Level
 import ProbGame.Worlds.ENNReal
 import ProbGame.Worlds.Masses
 import ProbGame.Worlds.OneCoin
-import ProbGame.Worlds.Maps
 import ProbGame.Worlds.TwoCoins
 import ProbGame.Worlds.DoLaws
 import ProbGame.Worlds.Counting
@@ -83,8 +82,6 @@ notation, monad, Mathlib.
 {include 1 ProbGame.Worlds.Masses}
 
 {include 1 ProbGame.Worlds.OneCoin}
-
-{include 1 ProbGame.Worlds.Maps}
 
 {include 1 ProbGame.Worlds.TwoCoins}
 

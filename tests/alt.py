@@ -4,7 +4,7 @@ the level's inventory), and which tactics and theorems of the proof are not in t
 
     python3 -I tests/alt.py batch.json [bridge]     batch.json: [["Masses", 5, "rw [← mass_total μ, h, zero_add]"], …]
 
-World names as the modules (Circuits, Masses, OneCoin, Maps, TwoCoins, DoLaws, Counting, Bind,
+World names as the modules (Circuits, ENNReal, Masses, OneCoin, TwoCoins, DoLaws, Counting, Bind,
 RealNumbers, Sequences, Binomial, Geometric, Thinning, Hypergeometric); levels counted from 1 as on the
 page. Needs the built site (_out/html-multi) and a bridge (see README). Prints one line per proof:
 OK or FAIL (with Lean's first error), and `missing:` the names not in the inventory there."""
@@ -13,7 +13,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from levels import worlds, here
 
-SLUG = {'Circuits': 'Circuits', 'ENNReal': 'ENNReal', 'Masses': 'DiscreteMeasure', 'OneCoin': 'One-Coin', 'Maps': 'Maps', 'TwoCoins': 'Two-Coins',
+SLUG = {'Circuits': 'Circuits', 'ENNReal': 'ENNReal', 'Masses': 'DiscreteMeasure', 'OneCoin': 'One-Coin', 'TwoCoins': 'Two-Coins',
         'DoLaws': 'Laws-of--do', 'Counting': 'Counting', 'Bind': 'Multi-Stage-Experiments', 'RealNumbers': 'Balance',
         'Sequences': 'Sequences', 'Binomial': 'Binomial', 'Geometric': 'Geometric', 'Thinning': 'Thinning', 'Hypergeometric': 'Hypergeometric'}
 js = (here / 'ProbGame/game.js').read_text()
