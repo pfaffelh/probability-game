@@ -38,11 +38,13 @@ Masse bei `true` ist eins, wenn `b` gleich `true` ist, sonst null.
 
 ::::hint (anchor := "statement")
 :::en
-`pure b : DiscreteMeasure Bool` is the distribution that puts mass `1` on `b`.
+A `DiscreteMeasure Bool` is a distribution on `Bool`: a mass in $`[0, \infty]` at each point, at
+`true` and at `false`. `pure b` puts mass `1` on `b`.
 :::
 
 :::de
-`pure b : DiscreteMeasure Bool` ist die Verteilung, die Masse `1` auf `b` legt.
+Ein `DiscreteMeasure Bool` ist eine Verteilung auf `Bool`: eine Masse in $`[0, \infty]` an jedem
+Punkt, bei `true` und bei `false`. `pure b` legt Masse `1` auf `b`.
 :::
 ::::
 
