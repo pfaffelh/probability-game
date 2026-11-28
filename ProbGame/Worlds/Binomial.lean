@@ -607,11 +607,11 @@ simp [Nat.choose_succ_succ', Nat.cast_add]
 :::
 
 :::proofen
-An equation that holds by computing with `+`, `*` and powers alone: the tactic for that is from *Two Coins*.
+An equation that holds by computing with `+`, `*` and powers alone: the tactic for that is from *Coins*.
 :::
 
 :::proofde
-Eine Gleichung, die allein durch Rechnen mit `+`, `*` und Potenzen gilt: Die Taktik dafür ist aus *Zwei Münzen*.
+Eine Gleichung, die allein durch Rechnen mit `+`, `*` und Potenzen gilt: Die Taktik dafür ist aus *Münzen*.
 :::
 :::solution
 ```

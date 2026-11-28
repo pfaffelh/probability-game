@@ -354,6 +354,26 @@
       localStorage.setItem('pg:moved:2026-11-29p', '1')
     }
   } catch {}
+  // (since 2026-11-29: One Coin and Two Coins are one world, Coins; Laws of do 2 and 3 (map_eq_pure_bind and its
+  // board) are in it, after the quiz of simp)
+  try {
+    if (!localStorage.getItem('pg:moved:2026-11-29q')) {
+      const C = 'Coins', L = 'Laws-of--do'
+      const TO = { 'One-Coin': [0, 1, 2, 3, 4, 5, 6].map(j => [C, j]), 'Two-Coins': [7, 8, 9, 10, 11, 14, 15, 16].map(j => [C, j]),
+        'Laws-of--do': [[L, 0], [C, 12], [C, 13], ...[3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map(j => [L, j - 2])] }
+      const re = /^pg:(\/[^/]+\/)([^/]+)\/:(\d+)((?::.*)?)$/
+      const moved = []
+      for (const k of Object.keys(localStorage)) {
+        const m = re.exec(k), to = m && TO[m[2]]
+        if (!to) continue
+        const t = to[Number(m[3])]
+        moved.push([k, t ? `pg:${m[1]}${t[0]}/:${t[1]}${m[4]}` : null, localStorage.getItem(k)])
+      }
+      for (const [k] of moved) localStorage.removeItem(k)
+      for (const [, k, v] of moved) if (k) localStorage.setItem(k, v)
+      localStorage.setItem('pg:moved:2026-11-29q', '1')
+    }
+  } catch {}
   const DE = {
     Moves: 'Züge', Undo: 'Zurück', 'Add a gate': 'Baustein hinzufügen', Gate: 'Baustein', 'Start over': 'Neu anfangen', 'Next level ›': 'Nächstes Level ›',
     Target: 'Ziel', 'In Lean, for every p:': 'In Lean, für jedes p:', 'proved': 'bewiesen',
@@ -387,7 +407,7 @@
   // Headings of the site, which come from Verso.
   const DE_TITLES = {
     'The Probability Game': 'Das Wahrscheinlichkeits\u00ADspiel',  // (a soft hyphen, for phones)
-    'Thinning': 'Ausdünnen', 'Balance': 'Gleichgewicht', 'Hypergeometric': 'Hypergeometrisch', 'Sequences': 'Folgen', 'Binomial': 'Binomial', 'Geometric': 'Geometrisch', 'Rows and masses': 'Zeilen und Massen', 'One Coin': 'Eine Münze', 'Maps': 'Abbildungen', 'Draw, then Compute': 'Erst ziehen, dann rechnen', 'Two Coins': 'Zwei Münzen', 'Laws of ': 'Gesetze von ',
+    'Thinning': 'Ausdünnen', 'Balance': 'Gleichgewicht', 'Hypergeometric': 'Hypergeometrisch', 'Sequences': 'Folgen', 'Binomial': 'Binomial', 'Geometric': 'Geometrisch', 'Rows and masses': 'Zeilen und Massen', 'One Coin': 'Eine Münze', 'Coins': 'Münzen', 'Maps': 'Abbildungen', 'Draw, then Compute': 'Erst ziehen, dann rechnen', 'Two Coins': 'Zwei Münzen', 'Laws of ': 'Gesetze von ',
     'Counting': 'Zählen', 'Walking on the Grid': 'Gehen auf dem Gitter', 'True and False': 'Wahr und falsch', 'Circuits with Coins': 'Schaltungen mit Münzen', 'Multi-Stage Experiments': 'Mehrstufige Experimente', 'Circuits': 'Schaltungen', 'Lexicon': 'Lexikon', 'Table of Contents': 'Inhalt', 'Contents': 'Inhalt',
   }
   function translatePage() {
@@ -3585,14 +3605,14 @@
     { name: 'top_add', kind: 'rule', sig: '∞ + a = ∞', en: '∞ swallows what is added to it.', de: '∞ verschluckt, was dazukommt.' },
     { name: 'ENNReal.add_sub_cancel_left', kind: 'rule', sig: 'ENNReal.add_sub_cancel_left (h : a ≠ ∞) : a + b - a = b', en: 'Adding a and taking it away again: for a finite a.', de: 'a dazu und wieder weg: für ein endliches a.' },
     { name: 'bind_apply', kind: 'rule', sig: '(do let a ← μ; f a) b = ∑ a, μ a * f a b', en: 'The definition of a bind: the mass at b is the sum over the first steps a of the mass of a times the mass of f a at b.', de: 'Die Definition eines bind: Die Masse bei b ist die Summe über die ersten Schritte a von der Masse von a mal der Masse von f a bei b.' },
-    { name: 'bind_true', kind: 'lemma', sig: '(do let x ← μ; f x) true = μ true * f true true + μ false * f false true', en: 'Proved by you in Two Coins: the mass of a bind at true, the way through true (mass μ true, then f true) and the way through false.', de: 'Von dir bewiesen in „Zwei Münzen“: die Masse eines bind bei true, der Weg über true (Masse μ true, dann f true) und der Weg über false.' },
+    { name: 'bind_true', kind: 'lemma', sig: '(do let x ← μ; f x) true = μ true * f true true + μ false * f false true', en: 'Proved by you in Coins: the mass of a bind at true, the way through true (mass μ true, then f true) and the way through false.', de: 'Von dir bewiesen in „Münzen“: die Masse eines bind bei true, der Weg über true (Masse μ true, dann f true) und der Weg über false.' },
     { name: 'mul_one', kind: 'rule', sig: 'a * 1 = a', en: 'Times one.', de: 'Mal eins.' },
     { name: 'mul_zero', kind: 'rule', sig: 'a * 0 = 0', en: 'Times zero.', de: 'Mal null.' },
     { name: 'add_comm', kind: 'rule', sig: 'a + b = b + a', en: 'The order of a sum does not matter.', de: 'Die Reihenfolge einer Summe ist egal.' },
     { name: 'mass_not', kind: 'lemma', measure: true, sig: 'mass_not μ [Prob μ] b : μ b = 1 - μ (!b)', en: 'Proved by you in DiscreteMeasure: what is not at b lies at !b.', de: 'Von dir bewiesen in „DiscreteMeasure“: Was nicht bei b liegt, liegt bei !b.' },
     { name: 'bool_ext', kind: 'lemma', sig: 'bool_ext μ ν [Prob μ] [Prob ν] (h : μ true = ν true) : μ = ν', en: 'Proved by you in DiscreteMeasure: two distributions on Bool (total mass one, [Prob μ]) are the same when they have the same mass at true. Not for any measure on Bool: there the mass at false is free.', de: 'Von dir bewiesen in „DiscreteMeasure“: Zwei Verteilungen auf Bool (Gesamtmasse eins, [Prob μ]) sind gleich, wenn sie bei true dieselbe Masse haben. Nicht für irgendein Maß auf Bool: Dort ist die Masse bei false frei.' },
-    { name: 'coin_true', kind: 'lemma', sig: '(coin p) true = ↑p', en: 'Proved by you in One Coin: the mass of the coin at true.', de: 'Von dir bewiesen in „Eine Münze“: die Masse der Münze bei true.' },
-    { name: 'coin_false', kind: 'lemma', sig: '(coin p) false = ↑(σ p)', en: 'Proved by you in One Coin: the mass of the coin at false.', de: 'Von dir bewiesen in „Eine Münze“: die Masse der Münze bei false.' },
+    { name: 'coin_true', kind: 'lemma', sig: '(coin p) true = ↑p', en: 'Proved by you in Coins: the mass of the coin at true.', de: 'Von dir bewiesen in „Münzen“: die Masse der Münze bei true.' },
+    { name: 'coin_false', kind: 'lemma', sig: '(coin p) false = ↑(σ p)', en: 'Proved by you in Coins: the mass of the coin at false.', de: 'Von dir bewiesen in „Münzen“: die Masse der Münze bei false.' },
     { name: 'map_true', kind: 'lemma', sig: '(μ.map f) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)', en: 'Proved by you in DiscreteMeasure: where the mass of a move goes; to true comes the mass of the points that f sends to true.', de: 'Von dir bewiesen in „DiscreteMeasure“: wohin die Masse eines Zuges geht; nach true kommt die Masse der Punkte, die f nach true schickt.' },
     { name: 'map_not_true', kind: 'lemma', sig: '(μ.map not) true = μ false', en: 'Proved by you in DiscreteMeasure: not brings the mass at false to true.', de: 'Von dir bewiesen in „DiscreteMeasure“: not bringt die Masse bei false nach true.' },
     { name: 'map_apply', kind: 'rule', sig: '(μ.map f) b = ∑ a with f a = b, μ a', en: 'The definition of a move: the mass at b is the sum of the masses of the points a with f a = b.', de: 'Die Definition eines Zuges: Die Masse bei b ist die Summe der Massen der Punkte a mit f a = b.' },
@@ -3613,12 +3633,12 @@
     { name: 'Bool.cond_false', kind: 'lemma', sig: '(bif false then a else b) = b', en: 'Proved by you in Bool: bif with false is the second.', de: 'Von dir bewiesen in „Bool“: bif mit false ist das Zweite.' },
     { name: 'zero_add', kind: 'rule', sig: '0 + a = a', en: 'Adding to zero.', de: 'Zu null addieren.' },
     { name: 'coin_not', kind: 'lemma', sig: '(coin p).map not = coin (σ p)', en: 'Proved by you: the boss of One Coin. Flipping a coin swaps the masses.', de: 'Von dir bewiesen: der Endgegner von „Eine Münze“. Umdrehen tauscht die Massen.' },
-    { name: 'coin_total', kind: 'lemma', sig: '(coin p) true + (coin p) false = 1', en: 'Proved by you in One Coin: the total mass of a coin is one.', de: 'Von dir bewiesen in „Eine Münze“: Die Gesamtmasse einer Münze ist eins.' },
+    { name: 'coin_total', kind: 'lemma', sig: '(coin p) true + (coin p) false = 1', en: 'Proved by you in Coins: the total mass of a coin is one.', de: 'Von dir bewiesen in „Münzen“: Die Gesamtmasse einer Münze ist eins.' },
     { name: 'pure_apply', kind: 'rule', sig: '(pure a) b = bif a == b then 1 else 0', en: 'The definition of a point mass: one at its point, zero elsewhere.', de: 'Die Definition einer Punktmasse: eins an ihrem Punkt, null sonst.' },
     { name: 'add_symm_eq_one', kind: 'rule', sig: 'add_symm_eq_one p : ↑p + ↑(σ p) = 1', en: 'A rule of the game: σ p is the rest of p to one, so the two masses of the coin add up to one.', de: 'Eine Spielregel: σ p ist der Rest von p bis eins; die beiden Massen der Münze ergeben zusammen eins.' },
-    { name: 'eq_coin', kind: 'lemma', sig: 'eq_coin μ [Prob μ] p (h : μ true = p) : μ = coin p', en: 'Proved by you in One Coin: a distribution on Bool with mass p at true is the coin p.', de: 'Von dir bewiesen in „Eine Münze“: Eine Verteilung auf Bool mit Masse p bei true ist die Münze p.' },
+    { name: 'eq_coin', kind: 'lemma', sig: 'eq_coin μ [Prob μ] p (h : μ true = p) : μ = coin p', en: 'Proved by you in Coins: a distribution on Bool with mass p at true is the coin p.', de: 'Von dir bewiesen in „Münzen“: Eine Verteilung auf Bool mit Masse p bei true ist die Münze p.' },
     { name: 'mass_one', kind: 'rule', sig: '↑(1 : I) = 1', en: 'The number 1, as a mass.', de: 'Die Zahl 1, als Masse.' },
-    { name: 'coin_one', kind: 'lemma', sig: 'coin 1 = pure true', en: 'Proved by you in One Coin: a coin with chance 1 is surely true.', de: 'Von dir bewiesen in „Eine Münze“: Eine Münze mit Chance 1 ist sicher true.' },
+    { name: 'coin_one', kind: 'lemma', sig: 'coin 1 = pure true', en: 'Proved by you in Coins: a coin with chance 1 is surely true.', de: 'Von dir bewiesen in „Münzen“: Eine Münze mit Chance 1 ist sicher true.' },
     { name: 'pure_true', kind: 'lemma', sig: '(pure b) true = bif b then 1 else 0', en: 'Proved by you in DiscreteMeasure: the mass of a point mass at true.', de: 'Von dir bewiesen in „DiscreteMeasure“: die Masse einer Punktmasse bei true.' },
     { name: 'pure_false', kind: 'lemma', sig: '(pure b) false = bif b then 0 else 1', en: 'Proved by you in DiscreteMeasure: the mass of a point mass at false.', de: 'Von dir bewiesen in „DiscreteMeasure“: die Masse einer Punktmasse bei false.' },
     { name: 'map_pure', kind: 'lemma', sig: '(pure a).map f = pure (f a)', en0: 'A move on a sure point moves the point.', de0: 'Ein Zug auf einem sicheren Punkt verschiebt den Punkt.', en: 'Proved by you in DiscreteMeasure, for Bool; it holds for every type: a move on a point mass moves the point.', de: 'Von dir bewiesen in „DiscreteMeasure“, für Bool; es gilt für jeden Typ: Ein Zug auf einer Punktmasse verschiebt den Punkt.' },
@@ -3626,7 +3646,7 @@
     { name: 'Bool.false_beq', kind: 'lemma', sig: '(false == b) = !b', en: 'Proved by you in Bool: testing false against b gives !b.', de: 'Von dir bewiesen in „Bool“: Der Test von false gegen b gibt !b.' },
     { name: 'map_map', kind: 'lemma', sig: '(μ.map f).map g = μ.map (fun x => g (f x))', sig0: 'g <$> (f <$> s) = (fun x => g (f x)) <$> s', en: 'Proved by you in DiscreteMeasure, for Bool; it holds for every type: two moves are one move.', de: 'Von dir bewiesen in „DiscreteMeasure“, für Bool; es gilt für jeden Typ: Zwei Züge sind ein Zug.' },
     { name: 'cond_add_cond', kind: 'lemma', sig: '(bif c then x else 0) + (bif c then y else 0) = bif c then x + y else 0', en: 'Proved by you in Bool: two numbers behind one test (masses too).', de: 'Von dir bewiesen in „Bool“: zwei Zahlen hinter einem Test (auch Massen).' },
-    { name: 'coin_and', kind: 'lemma', sig: '(do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)', en: 'Proved by you in Two Coins: independence, both true with probability p · q.', de: 'Von dir bewiesen in „Zwei Münzen“: Unabhängigkeit, beide true mit Wahrscheinlichkeit p · q.' },
+    { name: 'coin_and', kind: 'lemma', sig: '(do let x ← coin p; let y ← coin q; pure (x && y)) = coin (p * q)', en: 'Proved by you in Coins: independence, both true with probability p · q.', de: 'Von dir bewiesen in „Münzen“: Unabhängigkeit, beide true mit Wahrscheinlichkeit p · q.' },
     { name: 'bind_map_left', kind: 'lemma', sig: '(do let x ← μ.map f; g x) = (do let x ← μ; g (f x))', en: 'Proved by you in Laws of do, for Bool; it holds for every type: a move on a throw goes into the result.', de: 'Von dir bewiesen in „Gesetze von do“, für Bool; es gilt für jeden Typ: Ein Zug auf einem Wurf wandert ins Ergebnis.' },
     { name: 'add_add_add_comm', kind: 'rule', sig: 'a + b + (c + d) = a + c + (b + d)', en: 'Two sums of two, regrouped.', de: 'Zwei Summen aus zwei, umgruppiert.' },
     { name: 'add_mul', kind: 'rule', sig: '(a + b) * c = a * c + b * c', en: 'Multiplying out a sum.', de: 'Eine Summe ausmultiplizieren.' },
@@ -3642,7 +3662,7 @@
     { name: 'add_zero', kind: 'lemma', sig: 'a + 0 = a', en: 'Proved by you in DiscreteMeasure: adding zero.', de: 'Von dir bewiesen in „DiscreteMeasure“: Null addieren.' },
     { name: 'add_assoc', kind: 'rule', sig: 'a + b + c = a + (b + c)', en: 'Brackets in sums.', de: 'Klammern in Summen.' },
     { name: 'map_eq_pure_bind', kind: 'lemma', sig: 'μ.map f = do let x ← μ; pure (f x)', sig0: 'f <$> s = s >>= fun x => pure (f x)',
-      en0: 'Applying f to every point, as a walk.', de0: 'f auf jeden Punkt anwenden, als Weg.', en: 'Proved by you in Laws of do, for Bool; it holds for every type: a move as a do block.', de: 'Von dir bewiesen in „Gesetze von do“, für Bool; es gilt für jeden Typ: ein Zug als do-Block.' },
+      en0: 'Applying f to every point, as a walk.', de0: 'f auf jeden Punkt anwenden, als Weg.', en: 'Proved by you in Coins, for Bool; it holds for every type: a move as a do block.', de: 'Von dir bewiesen in „Münzen“, für Bool; es gilt für jeden Typ: ein Zug als do-Block.' },
     { name: 'bind_pure', kind: 'rule', sig: '(do let x ← μ; pure x) = μ', en: 'Draw and give back: that is μ itself.', de: 'Ziehen und zurückgeben: Das ist μ selbst.' },
     { name: "binom_succ'", kind: 'lemma', sig: "(do let X ← binom p n; let Y ← coin p; pure (X + Y.toNat)) = binom p (n + 1)", en: 'Proved by you in Counting.', de: 'Von dir bewiesen in „Zählen“.' },
     // the first world only
@@ -3691,8 +3711,8 @@
     { name: 'pow_zero', kind: 'rule', sig: 'a ^ 0 = 1', en: 'The zeroth power.', de: 'Die nullte Potenz.' },
     { name: 'pow_succ', kind: 'rule', sig: 'a ^ (n + 1) = a ^ n * a', en: 'One factor more, at the end.', de: 'Ein Faktor mehr, am Ende.' },
     { name: 'mul_comm', kind: 'rule', sig: 'a * b = b * a', en: 'Turning a product round.', de: 'Ein Produkt umdrehen.' },
-    { name: 'one_mul', kind: 'lemma', sig: '1 * a = a', en: 'Proved by you in Two Coins: one times.', de: 'Von dir bewiesen in „Zwei Münzen“: Eins mal.' },
-    { name: 'zero_mul', kind: 'lemma', sig: '0 * a = 0', en: 'Proved by you in Two Coins: zero times.', de: 'Von dir bewiesen in „Zwei Münzen“: Null mal.' },
+    { name: 'one_mul', kind: 'lemma', sig: '1 * a = a', en: 'Proved by you in Coins: one times.', de: 'Von dir bewiesen in „Münzen“: Eins mal.' },
+    { name: 'zero_mul', kind: 'lemma', sig: '0 * a = 0', en: 'Proved by you in Coins: zero times.', de: 'Von dir bewiesen in „Münzen“: Null mal.' },
     { name: 'add_right_comm', kind: 'rule', sig: 'a + b + c = a + c + b', en: 'The last two summands swapped.', de: 'Die letzten beiden Summanden getauscht.' },
     { name: 'Nat.choose_self', kind: 'rule', sig: 'n.choose n = 1', en: 'All of n: one way.', de: 'Alle aus n: eine Möglichkeit.' },
     { name: 'Nat.choose_zero_right', kind: 'rule', sig: 'n.choose 0 = 1', en: 'None of n: one way.', de: 'Keins aus n: eine Möglichkeit.' },

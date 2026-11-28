@@ -90,11 +90,11 @@ decide
 :::
 
 :::proofen
-As in *Surely `false`* (of *One Coin*) and *From sides to numbers*, now with a number.
+As in *Surely `false`* (of *Coins*) and *From sides to numbers*, now with a number.
 :::
 
 :::proofde
-Wie in *Sicher `false`* (aus *Eine Münze*) und *Von Seiten zu Zahlen*, jetzt mit einer Zahl.
+Wie in *Sicher `false`* (aus *Münzen*) und *Von Seiten zu Zahlen*, jetzt mit einer Zahl.
 :::
 :::solution
 ```

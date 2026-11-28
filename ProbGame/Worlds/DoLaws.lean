@@ -12,14 +12,14 @@ htmlSplit := .never
 
 :::en
 A gate before a coin, a gate after two coins, a coin that is not used: the circuits grow. Computing
-every mass, as in *Two Coins*, grows faster: three coins have eight rows. This world goes another way:
+every mass, as in *Coins*, grows faster: three coins have eight rows. This world goes another way:
 laws that say how a circuit may be rebuilt without changing its distribution. On the board nothing is
 new: coins at the inputs, and the distribution of the output is the target.
 :::
 
 :::proofen
 A gate applied to a coin is a move, `(coin p).map not`; a throw is a draw, `let x ← coin p`. Laws say
-how moves and draws go together: a move is a `do` block; a draw from a point mass is no draw; a `do`
+how moves and draws go together: a move is a `do` block (from *Coins*); a draw from a point mass is no draw; a `do`
 block in a `do` block is one `do` block; a move before a draw goes into what follows; a move after a
 `do` block goes into it. You prove each of them on `Bool`, once, by computing masses or from the laws
 before. Then it is yours for every type, and a `do` block is rewritten, not computed.
@@ -27,7 +27,7 @@ before. Then it is yours for every type, and a `do` block is rewritten, not comp
 
 :::de
 Ein Baustein vor einer Münze, ein Baustein nach zwei Münzen, eine Münze, die nicht benutzt wird: Die
-Schaltungen wachsen. Jede Masse auszurechnen, wie in *Zwei Münzen*, wächst schneller: Drei Münzen haben
+Schaltungen wachsen. Jede Masse auszurechnen, wie in *Münzen*, wächst schneller: Drei Münzen haben
 acht Zeilen. Diese Welt geht einen anderen Weg: Gesetze, die sagen, wie man eine Schaltung umbauen darf,
 ohne ihre Verteilung zu ändern. Auf dem Spielfeld ist nichts neu: Münzen an den Eingängen, und die
 Verteilung des Ausgangs ist das Ziel.
@@ -41,6 +41,7 @@ vor einer Ziehung wandert in das, was folgt; ein Zug nach einem `do`-Block wande
 beweist jedes davon auf `Bool`, einmal, indem du Massen ausrechnest oder es aus den Gesetzen davor
 herleitest. Dann gehört es dir für jeden Typ, und ein `do`-Block wird umgeschrieben, nicht ausgerechnet.
 :::
+
 :::::circuit (height := "440") (inputs := "x") (gates := "not") (coins := "p") (target := "bool true:p false:1-p") (context := "Lean/Rules.lean") (proof := "(p : I) : ((coin p).map not).map not = coin p") (shape := "!(!x)") (start := "a=not; x>a.0") (play := "b=not; a>b.0; b>out") (uses := "map_map, Bool.not_not, map_id, rw, simp, simp_rw")
 :::hint (anchor := "none")
 :::
@@ -80,109 +81,6 @@ simp_rw [Bool.not_not, map_id]
 rw [map_map]
 simp
 rw [map_id]
-```
-:::
-:::::
-
-:::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] (f : Bool → Bool) : μ.map f = (do let x ← μ; ⟦pure (f x) ‖ pure (f x), pure x, μ.map f⟧)") (lemma := "map_eq_pure_bind") (uses := "map_bool, bind_apply, Fintype.sum_bool, pure_apply, bool_ext, map_true, bind_true, <;>, apply, cases, ext, rw, simp, simp_rw")
-::::hint (anchor := "statement")
-:::en
-A move `μ.map f` is a `do` block: draw `x` from `μ`, then `f x` for sure.
-:::
-
-:::de
-Ein Zug `μ.map f` ist ein `do`-Block: `x` aus `μ` ziehen, dann sicher `f x`.
-:::
-::::
-
-:::en
-*A move is a `do` block.* A move `μ.map f` draws `x` from `μ` and computes `f x`, for sure.
-:::
-
-:::de
-*Ein Zug ist ein `do`-Block.* Ein Zug `μ.map f` zieht `x` aus `μ` und rechnet `f x` aus, sicher.
-:::
-
-:::proofen
-Compare the masses at every `b`, with `map_bool` and the definition `bind_apply`. What `f` does is
-unknown, and so is `b`: eight cases, and in each `simp` computes. You prove it on `Bool`; it holds
-for every type, and it is unlocked as `map_eq_pure_bind` in this general form.
-:::
-
-:::proofde
-Vergleiche die Massen bei jedem `b`, mit `map_bool` und der Definition `bind_apply`. Was `f` tut,
-ist unbekannt, und `b` auch: acht Fälle, und in jedem rechnet `simp`. Du beweist es auf `Bool`; es
-gilt für jeden Typ und wird in dieser allgemeinen Form als `map_eq_pure_bind` freigeschaltet.
-:::
-:::solution
-```
-ext b
-rw [map_bool, bind_apply]
-simp_rw [Fintype.sum_bool, pure_apply]
-cases f true <;> cases f false <;> cases b <;> simp
-```
-:::
-:::solution
-```
-apply bool_ext
-rw [map_true, bind_true]
-cases f true <;> cases f false <;> simp
-```
-:::
-:::solution
-```
-ext b
-rw [map_bool, bind_apply, Fintype.sum_bool]
-cases b <;> simp <;> cases f true <;> cases f false <;> simp
-```
-:::
-:::solution
-```
-apply bool_ext
-simp [map_true, bind_true]
-cases f true <;> cases f false <;> simp
-```
-:::
-:::::
-
-:::::circuit (height := "440") (inputs := "x") (gates := "not, and, or") (coins := "p") (target := "bool true:1-p false:p") (context := "Lean/Rules.lean") (proof := "(p : I) : (do let x ← coin p; pure (!x)) = coin (σ p)") (play := "a=not; x>a.0; a>out") (uses := "map_eq_pure_bind, coin_not, bool_ext, bind_true, eq_coin, apply, rw, simp")
-:::en
-*A gate is a draw.* One coin, one `not`.
-:::
-
-:::de
-*Ein Baustein ist eine Ziehung.* Eine Münze, ein `not`.
-:::
-
-:::proofen
-Your new law `map_eq_pure_bind`, read the other way round: a `do` block that only applies a gate is a move.
-:::
-
-:::proofde
-Dein neues Gesetz `map_eq_pure_bind`, andersherum gelesen: Ein `do`-Block, der nur einen Baustein anwendet, ist ein Zug.
-:::
-:::solution
-```
-rw [← map_eq_pure_bind, coin_not]
-```
-:::
-:::solution
-```
-apply bool_ext
-rw [bind_true]
-simp
-```
-:::
-:::solution
-```
-apply eq_coin
-rw [bind_true]
-simp
-```
-:::
-:::solution
-```
-rw [← coin_not, map_eq_pure_bind]
 ```
 :::
 :::::

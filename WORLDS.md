@@ -15,7 +15,7 @@ A world is measured against four questions.
 
 For each world: its goal, the tactics, how the levels get there, and what is open. The six
 proposals of the first version of this file are carried out, and after them the thin tactics got
-their levels (see the end); "open" is what is left. 14 worlds, 184 levels.
+their levels (see the end); "open" is what is left. 13 worlds, 184 levels.
 
 ## 1. Bool (31 levels)
 
@@ -67,30 +67,23 @@ true of each output by the choice μ true, μ false, 1, 0 (the one at false foll
 `map_bool`, `cases f true`, `cond_add_cond`). Boss: `((μ.map f).map f).map f = μ.map f`, by `map_map`
 and `Bool.apply_apply_apply` under `fun`.
 
-## 4. One Coin (7 levels)
+## 4. Coins (17 levels)
 
-**Goal.** The coin: its two masses, and every distribution on `Bool` is a coin (`eq_coin`); a flipped
-coin is the coin `σ p`.
+**Goal.** The coin: its two masses, every distribution on `Bool` is a coin (`eq_coin`), a flipped coin
+is the coin `σ p`. Then several coins: a circuit with a coin at each input is a `do` block; along a
+row the masses multiply, over the rows they add (`bind_true`): both `true` is `coin (p * q)`.
 
-**Tactics.** `apply bool_ext`.
+**Tactics.** `apply bool_ext`, `simp` (the game's), `ring`.
 
-**Path.** The masses of the coin (the first board with a coin); the rule
-`add_symm_eq_one` (from ENNReal), with it `coin_total`. Every distribution is a coin (`eq_coin`). The sure
-coin, `coin_one : coin 1 = pure true`. Surely `false` on the board.
-Boss: `coin_not`, on the board (a `not` after the coin), by `eq_coin` and the boss of DiscreteMeasure.
+**Path.** The masses of the coin (the first board with a coin), `coin_total` (with `add_symm_eq_one`
+from ENNReal), `eq_coin`, `coin_one`, surely `false` on the board, `coin_not` on the board. One draw,
+used twice (`bind_pure`). `do` is `bind`; `bind_true`, with a board of its own (`board := "bind"`):
+`coin p`, then four second coins (T: a, F: b, fixed), the player fills in a and b in
+`p · a + (1 − p) · b`, the mass at true. The simplifier on a board and its quiz. A move is a `do`
+block (`map_eq_pure_bind`), and on the board `(do let x ← coin p; pure (!x)) = coin (σ p)`.
+`coin_and`. The same product twice (`ring`). Boss: exactly one `true`, its mass computed.
 
-## 5. Two Coins (8 levels)
-
-**Goal.** A circuit with a coin at each input is a `do` block. Along a row the masses of the coins
-multiply, over the rows they add (`bind_true`): both `true` is `coin (p * q)`.
-
-**Tactics.** `simp` (the game's), `ring`.
-
-**Path.** A board first: one draw, used twice (`bind_pure`). `do` is `bind`; `bind_true`, with a board of its own (`board := "bind"`): `coin p`, then four second coins (T: a, F: b, fixed), the player fills in a and b in `p · a + (1 − p) · b`, the mass at true. The
-simplifier on a board (at least one `true`, two ways) and its quiz. `coin_and`. The same product
-twice (`ring`). Boss: exactly one `true`, its mass computed.
-
-## 6. Laws of `do` (16 levels)
+## 5. Laws of `do` (14 levels)
 
 **Goal.** A circuit is rebuilt, not computed: five laws between moves and draws, and a coin that
 is not used.
@@ -107,7 +100,7 @@ computing the masses at `true` and `eq_symm_of_add`.
 **Open.** The laws are stated for general `μ`, `f`, `g`; only the first has its instance on a
 board before it.
 
-## 7. Counting (11 levels)
+## 6. Counting (11 levels)
 
 **Goal.** `binom p n` is the number of `true` among `n` coins, built one coin at a time; and
 counts add: `B(n, p)` and `B(m, p)` give `B(n + m, p)`.
@@ -122,7 +115,7 @@ a coin that never shows `true` (`binom_never`). The coin at the other end (`bino
 
 **Open.** One level with a gap.
 
-## 8. Multi-Stage Experiments (15 levels)
+## 7. Multi-Stage Experiments (15 levels)
 
 **Goal.** Two-stage experiments: which coin is thrown second depends on the first. The mass of the
 result is the sum over the two ways, `p · q + (1 − p) · r` (total probability).
@@ -135,7 +128,7 @@ three tries.
 
 **Open.** The boss has the same proof as *A chain*.
 
-## 9. Balance (10 levels; before: Real Numbers)
+## 8. Balance (10 levels; before: Real Numbers)
 
 **Goal.** When does a waiting coin leave `coin p` unchanged? In balance,
 `(1 − p) · r = p · (1 − q)` (`coin_stays`). To use such an equation, the masses are taken from
@@ -148,7 +141,7 @@ balance in `ℝ` (the lemma `balance`), two hypotheses (a gap: how much lies at 
 shares add up to one (`field_simp`), and which coin is in balance (a gap: `p = r / (r + 1 − q)`).
 Boss: `coin_stays`, ending with `apply balance`, `exact h`; used again in *Hypergeometric*.
 
-## 10. Sequences (8 levels)
+## 9. Sequences (8 levels)
 
 **Goal.** `n` throws are a list. Its mass depends only on its numbers of `true` and `false`
 (`seq_mass`), and `binom p n` is the number of `true` in it (`binom_eq_count`).
@@ -162,7 +155,7 @@ Boss: `coin_stays`, ending with `apply balance`, `exact h`; used again in *Hyper
 **Open.** `seq_mass` is the summit of the new levels, the boss is another statement; both stand.
 The number of lists with `k` times `true` (`n.choose k`) is said in a text, not proved.
 
-## 11. Binomial (14 levels)
+## 10. Binomial (14 levels)
 
 **Goal.** The masses of `B(n, p)`: `binom p n k = n.choose k · p^k · (1 − p)^(n − k)`, from "one
 coin more" (Pascal's rule for masses).
@@ -174,7 +167,7 @@ The edges. Pascal's triangle. Boss: the formula. Encore: `binom_symm`.
 
 **Open.** It opens with tool levels before the question is posed.
 
-## 12. Geometric (11 levels)
+## 11. Geometric (11 levels)
 
 **Goal.** Waiting for the first `true`: mass `(1 − p)^k · p` at `k`, no memory, total mass 1; and
 the `do` block that waits (`geom_first`).
@@ -188,7 +181,7 @@ mass. Boss: `geom_first`.
 
 **Open.** No board.
 
-## 13. Thinning (9 levels)
+## 12. Thinning (9 levels)
 
 **Goal.** Keeping each `true` only with probability `q` keeps the family: a coin stays a coin, a
 geometric stays geometric, a binomial stays binomial (`binom_thin`).
@@ -197,7 +190,7 @@ geometric stays geometric, a binomial stays binomial (`binom_thin`).
 
 **Open.** Clear; the place where both ways (*Counting*, *Multi-Stage Experiments*) meet.
 
-## 14. Hypergeometric (14 levels)
+## 13. Hypergeometric (14 levels)
 
 **Goal.** Drawing without putting back: each draw is a waiting coin whose chance is the share of
 white balls left. And still the second ball is white as often as the first.

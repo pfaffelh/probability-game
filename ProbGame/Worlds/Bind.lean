@@ -33,12 +33,12 @@ einander nicht.
 :::
 
 :::proofen
-The statements are about the mass at `true`; your lemma `bind_true` from *Two Coins* goes both
+The statements are about the mass at `true`; your lemma `bind_true` from *Coins* goes both
 ways: through `true` and through `false`.
 :::
 
 :::proofde
-Die Aussagen handeln von der Masse bei `true`; dein Lemma `bind_true` aus *Zwei Münzen* geht beide
+Die Aussagen handeln von der Masse bei `true`; dein Lemma `bind_true` aus *Münzen* geht beide
 Wege: über `true` und über `false`.
 :::
 
@@ -396,13 +396,13 @@ simp
 :::
 
 :::proofen
-Each step is sure: `pure_bind` from *Laws of do*. What is left you know from *Bool* and *Two Coins*;
+Each step is sure: `pure_bind` from *Laws of do*. What is left you know from *Bool* and *Coins*;
 all of it under the `do`.
 :::
 
 :::proofde
 Jeder Schritt ist sicher: `pure_bind` aus *Gesetze von do*. Was bleibt, kennst du aus *Bool* und
-*Zwei Münzen*; alles unter dem `do`.
+*Münzen*; alles unter dem `do`.
 :::
 :::solution
 ```
@@ -483,12 +483,12 @@ rw [coin_true, coin_true, coin_true, coin_false]
 :::
 
 :::proofen
-The two ways to `false`, as `bind_true` came about in *Two Coins*: `bind_apply` and the sum over
+The two ways to `false`, as `bind_true` came about in *Coins*: `bind_apply` and the sum over
 `Bool`.
 :::
 
 :::proofde
-Die zwei Wege zu `false`, so wie `bind_true` in *Zwei Münzen* entstand: `bind_apply` und die Summe
+Die zwei Wege zu `false`, so wie `bind_true` in *Münzen* entstand: `bind_apply` und die Summe
 über `Bool`.
 :::
 :::solution
