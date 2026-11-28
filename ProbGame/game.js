@@ -208,6 +208,24 @@
       localStorage.setItem('pg:moved:2026-11-29g', '1')
     }
   } catch {}
+  // (since 2026-11-29: `map_id` (Maps 3) is in DiscreteMeasure, after `map_true`; `map_pure` is the boss there)
+  try {
+    if (!localStorage.getItem('pg:moved:2026-11-29h')) {
+      const M = 'DiscreteMeasure', A = 'Maps'
+      const TO = { DiscreteMeasure: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 11].map(j => [M, j]), Maps: [[A, 0], [A, 1], [M, 10], [A, 2], [A, 3], [A, 4], [A, 5], [A, 6]] }
+      const re = /^pg:(\/[^/]+\/)([^/]+)\/:(\d+)((?::.*)?)$/
+      const moved = []
+      for (const k of Object.keys(localStorage)) {
+        const m = re.exec(k), to = m && TO[m[2]]
+        if (!to) continue
+        const t = to[Number(m[3])]
+        moved.push([k, t ? `pg:${m[1]}${t[0]}/:${t[1]}${m[4]}` : null, localStorage.getItem(k)])
+      }
+      for (const [k] of moved) localStorage.removeItem(k)
+      for (const [, k, v] of moved) if (k) localStorage.setItem(k, v)
+      localStorage.setItem('pg:moved:2026-11-29h', '1')
+    }
+  } catch {}
   const DE = {
     Moves: 'Züge', Undo: 'Zurück', 'Add a gate': 'Baustein hinzufügen', Gate: 'Baustein', 'Start over': 'Neu anfangen', 'Next level ›': 'Nächstes Level ›',
     Target: 'Ziel', 'In Lean, for every p:': 'In Lean, für jedes p:', 'proved': 'bewiesen',
@@ -3473,7 +3491,7 @@
     { name: 'pure_true', kind: 'lemma', sig: '(pure b) true = bif b then 1 else 0', en: 'Proved by you in DiscreteMeasure: the mass of a point mass at true.', de: 'Von dir bewiesen in „DiscreteMeasure“: die Masse einer Punktmasse bei true.' },
     { name: 'pure_false', kind: 'lemma', sig: '(pure b) false = bif b then 0 else 1', en: 'Proved by you in DiscreteMeasure: the mass of a point mass at false.', de: 'Von dir bewiesen in „DiscreteMeasure“: die Masse einer Punktmasse bei false.' },
     { name: 'map_pure', kind: 'lemma', sig: '(pure a).map f = pure (f a)', en0: 'A move on a sure point moves the point.', de0: 'Ein Zug auf einem sicheren Punkt verschiebt den Punkt.', en: 'Proved by you in DiscreteMeasure, for Bool; it holds for every type: a move on a point mass moves the point.', de: 'Von dir bewiesen in „DiscreteMeasure“, für Bool; es gilt für jeden Typ: Ein Zug auf einer Punktmasse verschiebt den Punkt.' },
-    { name: 'map_id', kind: 'lemma', sig: 'μ.map (fun x => x) = μ', en: 'Proved by you in Maps, for Bool; it holds for every type: a move that does nothing.', de: 'Von dir bewiesen in „Abbildungen“, für Bool; es gilt für jeden Typ: ein Zug, der nichts tut.' },
+    { name: 'map_id', kind: 'lemma', sig: 'μ.map (fun x => x) = μ', en: 'Proved by you in DiscreteMeasure, for Bool; it holds for every type: a move that does nothing.', de: 'Von dir bewiesen in „DiscreteMeasure“, für Bool; es gilt für jeden Typ: ein Zug, der nichts tut.' },
     { name: 'Bool.false_beq', kind: 'lemma', sig: '(false == b) = !b', en: 'Proved by you in Bool: testing false against b gives !b.', de: 'Von dir bewiesen in „Bool“: Der Test von false gegen b gibt !b.' },
     { name: 'map_map', kind: 'lemma', sig: '(μ.map f).map g = μ.map (fun x => g (f x))', sig0: 'g <$> (f <$> s) = (fun x => g (f x)) <$> s', en: 'Proved by you in Maps, for Bool; it holds for every type: two moves are one move.', de: 'Von dir bewiesen in „Abbildungen“, für Bool; es gilt für jeden Typ: Zwei Züge sind ein Zug.' },
     { name: 'cond_add_cond', kind: 'lemma', sig: '(bif c then x else 0) + (bif c then y else 0) = bif c then x + y else 0', en: 'Proved by you in Maps: two masses behind one test.', de: 'Von dir bewiesen in „Abbildungen“: zwei Massen hinter einem Test.' },

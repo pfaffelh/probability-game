@@ -46,7 +46,7 @@ swallows.
 `a ≤ b + a` (`le_self_add`, `exact`); `a ≤ 1 → a ≠ ∞` (`apply ne_top_of_le_ne_top`). Boss: a
 computation with all of them.
 
-## 3. DiscreteMeasure (12 levels)
+## 3. DiscreteMeasure (13 levels)
 
 **Goal.** A distribution on `Bool`, any `μ : DiscreteMeasure Bool` with `[Prob μ]`, is two masses that
 add up to 1; one of them fixes it (`bool_ext`); a map moves each mass to its image (`map_true`). No
@@ -60,8 +60,8 @@ argument (`rw [← mass_total μ]`); finite. The rest of the mass (`mass_not`). 
 the mass goes: on a board of its own (`board := "maps"`, game.js `Fill`, drawn as a circuit), `μ`
 wired into the four maps `Bool → Bool` (their pictures, as in bind), the player fills in the mass at
 true of each output by the choice μ true, μ false, 1, 0 (the one at false follows); in Lean
-`map_apply`, then `map_true`, `map_pure`. Boss: `map_not_true : (μ.map not) true = μ false`, right
-after `map_true`.
+`map_apply`, then `map_true`, `map_id` (by `bool_ext`, one line), `map_not_true :
+(μ.map not) true = μ false`. Boss: `map_pure`, the hardest of the moves.
 
 ## 4. One Coin (9 levels)
 
@@ -76,7 +76,7 @@ both masses in one statement (`∧`, `constructor`). Every distribution is a coi
 coin, `coin_one : coin 1 = pure true` (the rule `mass_one`). Surely `false` on the board.
 `coin_not_true` on the board, by the boss of DiscreteMeasure. Boss: `coin_not`.
 
-## 5. Maps (8 levels)
+## 5. Maps (7 levels)
 
 **Goal.** Two moves are one move (`map_map`). A statement about an unknown `f : Bool → Bool` is
 settled by the four maps, or by `f true` and `f false`.
@@ -84,7 +84,7 @@ settled by the four maps, or by `f true` and `f false`.
 **Tactics.** `revert` and `decide`, `simp_rw` (rewriting under `fun`), `cases f true`.
 
 **Path.** Three times `f`. A quiz: which statements hold for every `f` (`revert f b; decide`).
-Doing nothing (`map_id`). A quiz: where does `rw` fail (under `fun`)? Flipped twice with `simp_rw`. A test is `true` or `false`
+A quiz: where does `rw` fail (under `fun`)? Flipped twice with `simp_rw`. A test is `true` or `false`
 (`cases f true`, on its own). Two masses behind one test. Boss: `map_map`, used at once on the
 first board of *Laws of `do`*.
 
@@ -287,7 +287,7 @@ When which of the three that rewrite: the inventory says it at each (`rw`: not u
 ## What was done (2026-11-22)
 
 1. Fading tips, and no tip in a boss.
-2. Bosses: *DiscreteMeasure* `map_not_true`; `eq_coin` before the boss in *One Coin*; `binom_add` the boss of
+2. Bosses: *DiscreteMeasure* `map_pure`; `eq_coin` before the boss in *One Coin*; `binom_add` the boss of
    *Counting*; *Building with Coins* split into *Two Coins* (boss: exactly one `true`) and
    *Laws of `do`* (boss: at least one `true`).
 3. Gaps for the masses in *Multi-Stage Experiments*, *Geometric*, *Hypergeometric*.

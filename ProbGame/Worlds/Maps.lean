@@ -74,62 +74,6 @@ cases b <;> decide
 :::
 ::::
 
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ.map (fun x => x) = ⟦μ ‖ μ, μ.map not⟧") (lemma := "map_id") (uses := "map_bool, Bool.true_beq, Bool.false_beq, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, Bool.not_true, add_comm, bool_ext, map_true, add_zero, beq_self_eq_true, mul_zero, add_assoc, apply, cases, ext, rw")
-:::en
-*Doing nothing.* The move `fun x => x` leaves every point where it is.
-:::
-
-:::de
-*Nichts tun.* Der Zug `fun x => x` lässt jeden Punkt, wo er ist.
-:::
-
-:::proofen
-Compare the masses at every point (`ext`, from *DiscreteMeasure*), with `map_bool`. The
-tests `true == b` and `false == b` are `b` and `!b`: `Bool.true_beq` and
-`Bool.false_beq` from *Bool*. You prove it on `Bool`; it holds for every type, and it is unlocked as `map_id` in
-this general form.
-:::
-
-:::proofde
-Vergleiche die Massen an jedem Punkt (`ext`, aus *DiscreteMeasure*), mit `map_bool`. Die
-Tests `true == b` und `false == b` sind `b` und `!b`: `Bool.true_beq` und
-`Bool.false_beq` aus *Bool*. Du beweist es auf `Bool`; es gilt für jeden Typ und wird in dieser
-allgemeinen Form als `map_id` freigeschaltet.
-:::
-:::solution
-```
-ext b
-rw [map_bool, Bool.true_beq, Bool.false_beq]
-cases b
-rw [Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add]
-rw [Bool.not_true, Bool.cond_true, Bool.cond_false, add_comm, zero_add]
-```
-:::
-:::solution
-```
-apply bool_ext
-rw [map_true, Bool.cond_true, Bool.cond_false, add_zero]
-```
-:::
-:::solution
-```
-ext b
-cases b
-rw [map_bool, Bool.true_beq, beq_self_eq_true, Bool.cond_false, Bool.cond_true, zero_add]
-rw [map_true, Bool.cond_true, Bool.cond_false, add_zero]
-```
-:::
-:::solution
-```
-ext b
-rw [map_bool, Bool.true_beq, Bool.false_beq]
-cases b
-rw [Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add]
-rw [Bool.not_true, Bool.cond_true, Bool.cond_false, add_zero]
-```
-:::
-::::
-
 ::::quiz (tactic := "rw [Bool.not_not]") (context := "Lean/Rules.lean") (statements := "(b : Bool) : (!(!b)) = b ;; (μ : DiscreteMeasure Bool) : μ.map (fun b => !(!b)) = μ.map (fun b => b) ;; (f : Bool → Bool) (b : Bool) : f (!(!b)) = f b ;; : (fun b : Bool => !(!b)) = (fun b => b) ;; (a : Bool) : (a && !(!a)) = (a && a)") (answer := "1, 3, 5")
 :::en
 *Where does `rw` fail?* Your lemma from *Bool*, `Bool.not_not : (!(!b)) = b`. Every statement here has a `!(!…)` in it, and yet `rw [Bool.not_not]` proves only some of them. Which? Look at where the `b` comes from.

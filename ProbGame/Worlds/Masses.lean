@@ -524,6 +524,86 @@ cases f true <;> cases f false <;> rfl
 :::
 ::::
 
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) [Prob μ] : μ.map (fun x => x) = ⟦μ ‖ μ, μ.map not⟧") (lemma := "map_id") (uses := "bool_ext, map_true, Bool.cond_true, Bool.cond_false, add_zero, map_bool, Bool.true_beq, Bool.false_beq, Bool.not_false, zero_add, Bool.not_true, add_comm, mul_zero, add_assoc, apply, cases, ext, rw")
+:::en
+*Doing nothing.* The move `fun x => x` leaves every point where it is.
+:::
+
+:::de
+*Nichts tun.* Der Zug `fun x => x` lässt jeden Punkt, wo er ist.
+:::
+
+:::proofen
+One bar is enough (`bool_ext`): compare the masses at `true`, with `map_true`. You prove it on `Bool`; it holds for every type, and it is unlocked as `map_id` in
+this general form.
+:::
+
+:::proofde
+Eine Säule genügt (`bool_ext`): Vergleiche die Massen bei `true`, mit `map_true`. Du beweist es auf `Bool`; es gilt für jeden Typ und wird in dieser
+allgemeinen Form als `map_id` freigeschaltet.
+:::
+:::solution
+```
+apply bool_ext
+rw [map_true, Bool.cond_true, Bool.cond_false, add_zero]
+```
+:::
+:::solution
+```
+apply bool_ext
+rw [map_true]
+rw [Bool.cond_true, Bool.cond_false]
+rw [add_zero]
+```
+:::
+:::solution
+```
+ext b
+rw [map_bool, Bool.true_beq, Bool.false_beq]
+cases b
+rw [Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add]
+rw [Bool.not_true, Bool.cond_true, Bool.cond_false, add_comm, zero_add]
+```
+:::
+::::
+
+::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (μ.map not) true = ⟦μ false ‖ μ true, μ false⟧") (lemma := "map_not_true") (uses := "map_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, map_bool, beq_true, add_zero, mul_zero, rw")
+:::en
+*Where does the mass go?* `not` swaps the two points. The mass at `true` after the move: where
+did it come from?
+:::
+
+:::de
+*Wohin geht die Masse?* `not` vertauscht die beiden Punkte. Die Masse bei `true` nach dem
+Zug: Woher kam sie?
+:::
+
+:::proofen
+Your rule `map_true`, for the move `not`. What you prove is unlocked as `map_not_true`.
+:::
+
+:::proofde
+Deine Regel `map_true`, für den Zug `not`. Was du beweist, wird als `map_not_true` freigeschaltet.
+:::
+:::solution
+```
+rw [map_true]
+rw [Bool.not_true, Bool.not_false]
+rw [Bool.cond_false, Bool.cond_true, zero_add]
+```
+:::
+:::solution
+```
+rw [map_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add]
+```
+:::
+:::solution
+```
+rw [map_bool, beq_true, beq_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add]
+```
+:::
+::::
+
 :::::leanonly (proof := "(f : Bool → Bool) (b : Bool) : (pure b : DiscreteMeasure Bool).map f = ⟦pure (f b) ‖ pure b, pure (f b), pure (f (f b))⟧") (lemma := "map_pure") (uses := "bool_ext, map_true, pure_true, pure_false, Bool.cond_false, Bool.cond_self, zero_add, Bool.cond_true, add_comm, add_zero, mul_zero, add_assoc, apply, cases, rw")
 ::::hint (anchor := "gap")
 :::en
@@ -536,11 +616,11 @@ Das sichere `b`, von `f` bewegt: Wo liegt dann die ganze Masse?
 ::::
 
 :::en
-*A sure thing, moved.* A move applied to a sure value.
+*Boss: a sure thing, moved.* A move applied to a sure value.
 :::
 
 :::de
-*Eine sichere Sache, bewegt.* Ein Zug, angewandt auf einen sicheren Wert.
+*Endgegner: Eine sichere Sache, bewegt.* Ein Zug, angewandt auf einen sicheren Wert.
 :::
 
 :::proofen
@@ -582,40 +662,3 @@ rw [Bool.cond_true, Bool.cond_true, Bool.cond_self, add_zero]
 ```
 :::
 :::::
-
-::::leanonly (proof := "(μ : DiscreteMeasure Bool) : (μ.map not) true = ⟦μ false ‖ μ true, μ false⟧") (lemma := "map_not_true") (uses := "map_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add, map_bool, beq_true, add_zero, mul_zero, rw")
-:::en
-*Boss: where does the mass go?* `not` swaps the two points. The mass at `true` after the move: where
-did it come from?
-:::
-
-:::de
-*Endgegner: Wohin geht die Masse?* `not` vertauscht die beiden Punkte. Die Masse bei `true` nach dem
-Zug: Woher kam sie?
-:::
-
-:::proofen
-Your rule `map_true`, for the move `not`. What you prove is unlocked as `map_not_true`.
-:::
-
-:::proofde
-Deine Regel `map_true`, für den Zug `not`. Was du beweist, wird als `map_not_true` freigeschaltet.
-:::
-:::solution
-```
-rw [map_true]
-rw [Bool.not_true, Bool.not_false]
-rw [Bool.cond_false, Bool.cond_true, zero_add]
-```
-:::
-:::solution
-```
-rw [map_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add]
-```
-:::
-:::solution
-```
-rw [map_bool, beq_true, beq_true, Bool.not_true, Bool.not_false, Bool.cond_false, Bool.cond_true, zero_add]
-```
-:::
-::::
