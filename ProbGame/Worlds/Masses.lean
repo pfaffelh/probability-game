@@ -114,11 +114,11 @@ rw [add_comm, ← tsum_bool, Prob.total]
 :::
 
 :::en
-*The whole mass.* A distribution has the total mass one. If nothing lies at `true`, everything lies at `false`.
+*Nothing at true.* A distribution has the total mass one. If nothing lies at `true`, everything lies at `false`.
 :::
 
 :::de
-*Die ganze Masse.* Eine Verteilung hat die Gesamtmasse eins. Liegt bei `true` nichts, liegt alles bei `false`.
+*Nichts bei true.* Eine Verteilung hat die Gesamtmasse eins. Liegt bei `true` nichts, liegt alles bei `false`.
 :::
 
 :::proofen
@@ -492,11 +492,11 @@ rw [Fintype.sum_bool]
 
 ::::leanonly (proof := "(f : Bool → Bool) (μ : DiscreteMeasure Bool) : (μ.map f) true = (bif f true then μ true else 0) + (bif f false then μ false else 0)") (lemma := "map_true") (uses := "map_bool, beq_true, map_apply, sum_with, Fintype.sum_bool, <;>, cases, rfl, rw")
 :::en
-*The rule of the gates.* `map_bool` at `b = true`.
+*The mass at true after a move.* `map_bool` at `b = true`.
 :::
 
 :::de
-*Die Regel der Bausteine.* `map_bool` bei `b = true`.
+*Die Masse bei true nach einem Zug.* `map_bool` bei `b = true`.
 :::
 
 :::proofen
@@ -738,12 +738,17 @@ rw [Bool.cond_true, Bool.cond_true, Bool.cond_self, add_zero]
 :::
 
 :::proofen
-You prove it on `Bool`; it holds for every type, and it is unlocked as `map_map` in this general form.
+Compare the masses at every point (`ext b`), with `map_bool`. Then the cases `f true` and `f false`
+(`cases f true`, from *Bool*); where two masses stand behind the same test, `cond_add_cond` (from
+*Bool*) makes them one. You prove it on `Bool`; it holds for every type, and it is unlocked as
+`map_map` in this general form.
 :::
 
 :::proofde
-Du beweist es auf `Bool`; es gilt für jeden Typ und wird in dieser allgemeinen Form als `map_map`
-freigeschaltet.
+Vergleiche die Massen an jedem Punkt (`ext b`), mit `map_bool`. Dann die Fälle `f true` und `f false`
+(`cases f true`, aus *Bool*); wo zwei Massen hinter demselben Test stehen, macht `cond_add_cond` (aus
+*Bool*) eine daraus. Du beweist es auf `Bool`; es gilt für jeden Typ und wird in dieser allgemeinen
+Form als `map_map` freigeschaltet.
 :::
 :::solution
 ```

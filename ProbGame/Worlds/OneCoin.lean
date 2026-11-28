@@ -40,7 +40,7 @@ Beispiel-$`p`; der Schieberegler in der Leiste unten ändert es.
 :::
 
 :::en
-The circuits of the world *Bool*, now with a coin at each input: `x ← coin p`, `y ← coin p`, …,
+Then the circuits of *Bool*, with a coin at each input: `x ← coin p`, `y ← coin p`, …,
 all with the same $`p` and thrown independently of each other. Then the output is random too: its
 distribution is the target. Each row of the truth table has a mass, the product of the masses of its
 inputs ($`p` for `true`, $`1 - p` for `false`): with two coins, `true`–`true` has mass $`p^2`,
@@ -60,7 +60,7 @@ first, what a `do` block is.
 :::
 
 :::de
-Die Schaltungen der Welt *Bool*, jetzt mit einer Münze an jedem Eingang: `x ← coin p`,
+Dann die Schaltungen aus *Bool*, mit einer Münze an jedem Eingang: `x ← coin p`,
 `y ← coin p`, …, alle mit demselben $`p` und unabhängig voneinander geworfen. Dann ist auch der Ausgang
 zufällig: Seine Verteilung ist das Ziel. Jede Zeile der Wahrheitstafel hat eine Masse, das Produkt der
 Massen ihrer Eingänge ($`p` für `true`, $`1 - p` für `false`): Bei zwei Münzen hat `true`–`true` die
@@ -303,7 +303,7 @@ rw [coin_true, mass_one, pure_true, Bool.cond_true]
 :::
 :::::
 
-::::circuit (height := "540") (inputs := "x") (gates := "not, alwaysT") (coins := "p") (target := "pure false") (context := "Lean/Rules.lean") (proof := "(p : I) : ((coin p).map (fun _ => true)).map not = pure false") (play := "a=alwaysT; b=not; x>a.0; a>b.0; b>out") (uses := "bool_ext, map_not_true, map_bool, Bool.true_beq, Bool.cond_false, zero_add, pure_true, Bool.cond_true, add_zero, mul_zero, apply, rw")
+::::circuit (height := "540") (inputs := "x") (gates := "not, alwaysT") (coins := "p") (target := "pure false") (context := "Lean/Rules.lean") (proof := "(p : I) : ((coin p).map (fun _ => true)).map not = pure false") (play := "a=alwaysT; b=not; x>a.0; a>b.0; b>out") (uses := "map_map, bool_ext, map_true, Bool.not_true, Bool.cond_false, zero_add, pure_true, map_not_true, map_bool, Bool.true_beq, Bool.not_false, Bool.cond_true, add_zero, mul_zero, apply, rw")
 :::hint (anchor := "none")
 :::
 
@@ -318,13 +318,20 @@ das Bildmaß der Verkettung, $`(P \circ f^{-1}) \circ g^{-1} = P \circ (g \circ 
 :::
 
 :::proofen
-Compare the masses at `true` (`bool_ext`). The last gate is `not`: your boss `map_not_true` of
+Two moves are one (`map_map`, from *DiscreteMeasure*); or compare the masses at `true` (`bool_ext`) right away. The last gate is `not`: your lemma `map_not_true` from
 *DiscreteMeasure*. Before it, *always `true`* sends no mass to `false`: `map_bool`.
 :::
 
 :::proofde
-Vergleiche die Massen bei `true` (`bool_ext`). Der letzte Baustein ist `not`: dein Endgegner
+Zwei Züge sind einer (`map_map`, aus *DiscreteMeasure*); oder vergleiche gleich die Massen bei `true` (`bool_ext`). Der letzte Baustein ist `not`: dein Lemma
 `map_not_true` aus *DiscreteMeasure*. Davor schickt *immer `true`* keine Masse nach `false`: `map_bool`.
+:::
+:::solution
+```
+rw [map_map]
+apply bool_ext
+rw [map_true, Bool.not_true, Bool.cond_false, Bool.cond_false, zero_add, pure_true, Bool.cond_false]
+```
 :::
 :::solution
 ```
@@ -365,14 +372,14 @@ von `false`.
 
 :::proofen
 Flipping turns the coin `p` into the coin $`1 - p`: the whole coin, not only its mass at `true`. A
-distribution on `Bool` is a coin (`eq_coin`), and its mass at `true` is the boss of *DiscreteMeasure*.
+distribution on `Bool` is a coin (`eq_coin`), and its mass at `true` is `map_not_true` from *DiscreteMeasure*.
 Your result becomes the lemma `coin_not`, which the next worlds use all the time.
 :::
 
 :::proofde
 Umdrehen macht aus der Münze $`p` die Münze $`1 - p`: die ganze Münze, nicht nur ihre Masse bei
-`true`. Eine Verteilung auf `Bool` ist eine Münze (`eq_coin`), und ihre Masse bei `true` ist der
-Endgegner von *DiscreteMeasure*. Dein Ergebnis wird das Lemma `coin_not`, das die nächsten Welten
+`true`. Eine Verteilung auf `Bool` ist eine Münze (`eq_coin`), und ihre Masse bei `true` ist
+`map_not_true` aus *DiscreteMeasure*. Dein Ergebnis wird das Lemma `coin_not`, das die nächsten Welten
 ständig benutzen.
 :::
 :::solution
@@ -698,11 +705,11 @@ cases f true <;> cases f false <;> simp
 :::
 
 :::proofen
-Your new law `map_eq_pure_bind`, read the other way round: a `do` block that only applies a gate is a move.
+Your law `map_eq_pure_bind`, read the other way round: a `do` block that only applies a gate is a move.
 :::
 
 :::proofde
-Dein neues Gesetz `map_eq_pure_bind`, andersherum gelesen: Ein `do`-Block, der nur einen Baustein anwendet, ist ein Zug.
+Dein Gesetz `map_eq_pure_bind`, andersherum gelesen: Ein `do`-Block, der nur einen Baustein anwendet, ist ein Zug.
 :::
 :::solution
 ```
